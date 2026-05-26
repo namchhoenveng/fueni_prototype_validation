@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FUENI — Inscription Patient</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="naz-common.css">
+  <style>
+    body { background: #f0f4f8; font-family: 'Segoe UI', sans-serif; min-height: 100vh; }
+    .proto-bar { position: sticky; top: 0; z-index: 100; }
+    .brand-area { background: linear-gradient(135deg, #16a085, #48c9b0); color: white; padding: 2.5rem 0 2rem; text-align: center; }
+    .brand-logo { font-size: 2rem; font-weight: 800; letter-spacing: -1px; }
+    .brand-logo span { color: #fff; opacity: 0.85; }
+    .signup-card { background: white; border-radius: 16px; box-shadow: 0 4px 24px rgba(0,0,0,0.10); padding: 2rem; max-width: 480px; margin: -1.5rem auto 2rem; position: relative; }
+    .role-chip { display: inline-flex; align-items: center; gap: 8px; padding: 6px 14px; border-radius: 20px; font-size: 0.82rem; font-weight: 600; margin-bottom: 1.2rem; background: #d1f2eb; color: #117a65; }
+    .form-control, .form-select { border-radius: 8px; padding: 0.6rem 0.9rem; }
+    .form-control:focus, .form-select:focus { border-color: #16a085; box-shadow: 0 0 0 0.25rem rgba(22,160,133,0.18); }
+    .btn-patient { background: #16a085; border-color: #16a085; color: white; padding: 12px; border-radius: 8px; font-weight: 600; font-size: 1rem; transition: background 0.2s; }
+    .btn-patient:hover { background: #138d75; border-color: #138d75; color: white; }
+    .field-hint { font-size: 0.75rem; color: #95a5a6; margin-top: 4px; }
+    .pwd-rule { font-size: 0.78rem; display: flex; align-items: center; gap: 6px; color: #aaa; }
+    .pwd-rule.ok { color: #27ae60; }
+    .pwd-strength { height: 4px; border-radius: 4px; background: #e9ecef; overflow: hidden; margin-top: 6px; }
+    .pwd-strength-fill { height: 100%; border-radius: 4px; transition: width 0.3s, background 0.3s; width: 0%; }
+    .phone-group { display: flex; gap: 6px; }
+    .phone-group .form-select { flex: 0 0 110px; }
+    .divider { display: flex; align-items: center; gap: 12px; color: #bdc3c7; font-size: 0.8rem; margin: 1.2rem 0; }
+    .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: #e9ecef; }
+    .info-box { background: #e8f8f5; border: 1px solid #a3e4d7; border-radius: 8px; padding: 10px 14px; font-size: 0.82rem; color: #117a65; margin-bottom: 1.2rem; }
+  </style>
+</head>
+<body>
+
+  <!-- Proto bar -->
+  <div class="proto-bar d-flex align-items-center gap-3 flex-wrap">
+    <span><i class="fa fa-eye text-warning me-1"></i><strong>Écran 02 — Inscription Patient</strong></span>
+    <a href="01-home.html" class="text-decoration-none text-muted ms-auto small">← Retour à l'accueil</a>
+  </div>
+
+  <!-- Brand header -->
+  <div class="brand-area">
+    <div class="brand-logo"><span>F</span>UENI</div>
+    <div class="mt-1 opacity-75 small">Espace Patient — Votre santé entre vos mains</div>
+  </div>
+
+  <div class="container py-3" style="max-width:540px;">
+    <div class="signup-card">
+
+      <!-- Role indicator -->
+      <div class="role-chip">
+        <i class="fa fa-user"></i>
+        <span>Compte Patient particulier</span>
+      </div>
+
+      <h5 class="fw-bold mb-1">Créer mon compte</h5>
+      <p class="text-muted small mb-3">1 minute — quelques étapes pour finaliser votre inscription</p>
+
+      <div class="d-none alert alert-danger small mb-3" id="formError" role="alert">
+        <i class="fa fa-circle-exclamation me-2"></i>Veuillez compléter tous les champs obligatoires marqués d'un astérisque (*).
+      </div>
+
+      <form id="signupForm" novalidate>
+        <div class="row g-2 mb-3">
+          <div class="col-md-6">
+            <label class="form-label fw-semibold small">Prénom *</label>
+            <input type="text" class="form-control" id="firstName" placeholder="Ex : Aïssatou">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-semibold small">Nom *</label>
+            <input type="text" class="form-control" id="lastName" placeholder="Ex : Diop">
+          </div>
+        </div>
+
+        <div class="row g-2 mb-3">
+          <div class="col-md-6">
+            <label class="form-label fw-semibold small">Date de naissance *</label>
+            <input type="date" class="form-control" id="dobField" oninput="checkAge()">
+            <div class="field-hint" id="ageInfo"><i class="fa fa-info-circle me-1"></i>Vous devez avoir 18 ans ou plus</div>
+            <div class="field-hint d-none text-danger" id="ageHint"><i class="fa fa-circle-exclamation me-1"></i>Vous devez avoir 18 ans ou plus pour vous inscrire.</div>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-semibold small">Sexe *</label>
+            <select class="form-select" id="sexField">
+              <option value="" selected disabled>Choisir...</option>
+              <option>Féminin</option>
+              <option>Masculin</option>
+              <option>Autre</option>
+              <option>Préfère ne pas répondre</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label fw-semibold small">Adresse e-mail *</label>
+          <input type="email" class="form-control" id="emailField" placeholder="Ex : aissatou.diop@example.com" autocomplete="off" oninput="checkEmail()" onblur="checkEmail(true)">
+          <div class="field-hint d-none text-danger" id="emailHint"><i class="fa fa-circle-exclamation me-1"></i>Adresse e-mail invalide.</div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label fw-semibold small">Téléphone *</label>
+          <div class="phone-group">
+            <select class="form-select" id="countryCode" onchange="checkPhone()">
+              <option value="" selected disabled>Choisir...</option>
+              <option value="+221">🇸🇳 +221</option>
+              <option value="+225">🇨🇮 +225</option>
+              <option value="+223">🇲🇱 +223</option>
+              <option value="+229">🇧🇯 +229</option>
+              <option value="+228">🇹🇬 +228</option>
+              <option value="+226">🇧🇫 +226</option>
+              <option value="+227">🇳🇪 +227</option>
+              <option value="+237">🇨🇲 +237</option>
+              <option value="+243">🇨🇩 +243</option>
+            </select>
+            <input type="tel" class="form-control" id="phoneField" placeholder="Ex : 77 123 45 67" inputmode="numeric" pattern="[0-9 ]*" oninput="checkPhone()" onblur="checkPhone(true)">
+          </div>
+          <div class="field-hint d-none text-danger" id="phoneHint"><i class="fa fa-circle-exclamation me-1"></i>Numéro invalide pour le pays sélectionné.</div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label fw-semibold small">Mot de passe *</label>
+          <div class="position-relative">
+            <input type="password" class="form-control pe-5" id="pwdField" oninput="checkPwd()" autocomplete="new-password">
+            <button type="button" id="pwdToggle" onclick="togglePwd()" class="btn btn-link p-0 position-absolute" style="right:12px; top:50%; transform:translateY(-50%); color:#7f8c8d; text-decoration:none;" aria-label="Afficher le mot de passe">
+              <i class="fa fa-eye" id="pwdEye"></i>
+            </button>
+          </div>
+          <div class="pwd-strength"><div class="pwd-strength-fill" id="pwdBar"></div></div>
+          <div class="mt-2">
+            <div class="pwd-rule" id="r-len"><i class="fa fa-circle-check"></i>Au moins 8 caractères</div>
+            <div class="pwd-rule" id="r-upper"><i class="fa fa-circle-check"></i>Une majuscule</div>
+            <div class="pwd-rule" id="r-lower"><i class="fa fa-circle-check"></i>Une minuscule</div>
+            <div class="pwd-rule" id="r-num"><i class="fa fa-circle-check"></i>Un chiffre</div>
+            <div class="pwd-rule" id="r-spe"><i class="fa fa-circle-check"></i>Un caractère spécial (ex : ! ? @ # $ % & * …)</div>
+          </div>
+        </div>
+
+        <div class="mb-3 form-check">
+          <input class="form-check-input" type="checkbox" id="cgu">
+          <label class="form-check-label small" for="cgu">
+            J'accepte les <a href="#" class="text-decoration-none" style="color:#16a085;">Conditions Générales</a> et la
+            <a href="#" class="text-decoration-none" style="color:#16a085;">Politique de Confidentialité</a> *
+          </label>
+        </div>
+
+        <div class="mb-4 form-check">
+          <input class="form-check-input" type="checkbox" id="health-consent">
+          <label class="form-check-label small" for="health-consent">
+            Je consens au traitement de mes <strong>données de santé</strong> par FUENI dans le cadre du service *
+          </label>
+        </div>
+
+        <button type="button" onclick="validateForm()" class="btn btn-patient w-100">
+          <i class="fa fa-arrow-right me-2"></i>Créer mon compte
+        </button>
+
+        <div class="divider">ou</div>
+
+        <p class="text-center small mb-0">
+          Déjà un compte ? <a href="#" class="text-decoration-none fw-semibold" style="color:#16a085;">Connectez-vous</a>
+        </p>
+      </form>
+
+    </div>
+
+    <p class="text-center small text-muted mb-3">
+      <i class="fa fa-user-md me-1"></i>Vous êtes un professionnel de santé ?
+      <a href="#" class="text-decoration-none fw-semibold" style="color:#16a085;">Inscription pro</a>
+    </p>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    function checkPwd() {
+      const v = document.getElementById('pwdField').value;
+      const rules = {
+        'r-len': v.length >= 8,
+        'r-upper': /[A-Z]/.test(v),
+        'r-lower': /[a-z]/.test(v),
+        'r-num': /\d/.test(v),
+        'r-spe': /[^A-Za-z0-9\s]/.test(v)
+      };
+      let score = 0;
+      for (const id in rules) {
+        document.getElementById(id).classList.toggle('ok', rules[id]);
+        if (rules[id]) score++;
+      }
+      const bar = document.getElementById('pwdBar');
+      bar.style.width = (score * 20) + '%';
+      bar.style.background = score < 3 ? '#e74c3c' : score < 5 ? '#f39c12' : '#27ae60';
+    }
+
+    function checkEmail(force) {
+      const f = document.getElementById('emailField');
+      const hint = document.getElementById('emailHint');
+      const v = f.value.trim();
+      // Regex format RFC simplifié
+      const rx = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+      // Pendant la frappe : on tolère un état "en cours" si pas encore d'@ ou de point
+      // Sur blur (force = true) ou si > 4 caractères, on valide strictement
+      const shouldValidate = force === true || v.length > 4;
+      const invalid = shouldValidate && v.length > 0 && !rx.test(v);
+      hint.classList.toggle('d-none', !invalid);
+    }
+
+    // Longueurs locales attendues (sans indicatif) par pays — 9 pays MVP
+    const PHONE_LEN = {
+      '+221': 9,   // 🇸🇳 Sénégal
+      '+225': 10,  // 🇨🇮 Côte d'Ivoire
+      '+223': 8,   // 🇲🇱 Mali
+      '+229': 8,   // 🇧🇯 Bénin (transition 8→10 en cours, on tolère 8 ou 10)
+      '+228': 8,   // 🇹🇬 Togo
+      '+226': 8,   // 🇧🇫 Burkina Faso
+      '+227': 8,   // 🇳🇪 Niger
+      '+237': 9,   // 🇨🇲 Cameroun
+      '+243': 9    // 🇨🇩 RDC
+    };
+
+    function checkPhone(force) {
+      const f = document.getElementById('phoneField');
+      const cc = document.getElementById('countryCode').value;
+      const hint = document.getElementById('phoneHint');
+      // Strip tout caractère non-numérique (sauf espaces décoratifs autorisés à l'affichage)
+      const cleaned = f.value.replace(/[^\d ]/g, '');
+      if (cleaned !== f.value) f.value = cleaned;
+      const digits = cleaned.replace(/\s/g, '');
+      const expected = PHONE_LEN[cc] || 8;
+      // Bénin tolère 8 ou 10 chiffres
+      const okBenin = cc === '+229' && (digits.length === 8 || digits.length === 10);
+      const shouldValidate = force === true || digits.length >= 4;
+      const invalid = shouldValidate && digits.length > 0 && !okBenin && digits.length !== expected;
+      hint.classList.toggle('d-none', !invalid);
+    }
+
+    function showFormError() {
+      const box = document.getElementById('formError');
+      box.classList.remove('d-none');
+      box.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    function clearFormError() {
+      document.getElementById('formError').classList.add('d-none');
+    }
+
+    function validateForm() {
+      clearFormError();
+
+      const firstName = document.getElementById('firstName').value.trim();
+      const lastName = document.getElementById('lastName').value.trim();
+      const dobVal = document.getElementById('dobField').value;
+      const sex = document.getElementById('sexField').value;
+      const email = document.getElementById('emailField').value.trim();
+      const cc = document.getElementById('countryCode').value;
+      const phoneVal = document.getElementById('phoneField').value;
+      const pwd = document.getElementById('pwdField').value;
+      const cgu = document.getElementById('cgu').checked;
+      const health = document.getElementById('health-consent').checked;
+
+      // Calcul âge
+      let age = -1;
+      if (dobVal) {
+        const birth = new Date(dobVal);
+        const today = new Date();
+        age = today.getFullYear() - birth.getFullYear();
+        const m = today.getMonth() - birth.getMonth();
+        if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
+      }
+
+      // Validations e-mail / téléphone
+      const rxEmail = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+      const digits = phoneVal.replace(/\D/g, '');
+      const expectedLen = PHONE_LEN[cc] || 8;
+      const okBenin = cc === '+229' && (digits.length === 8 || digits.length === 10);
+      const phoneOk = digits && (okBenin || digits.length === expectedLen);
+
+      // Politique mot de passe
+      const pwdOk = pwd.length >= 8 && /[A-Z]/.test(pwd) && /[a-z]/.test(pwd) && /\d/.test(pwd) && /[^A-Za-z0-9\s]/.test(pwd);
+
+      // Validation globale : un seul message si quoi que ce soit ne passe pas
+      const allOk =
+        firstName &&
+        lastName &&
+        dobVal && age >= 18 &&
+        sex &&
+        email && rxEmail.test(email) &&
+        cc && phoneOk &&
+        pwdOk &&
+        cgu && health;
+
+      if (!allOk) {
+        // Déclenche aussi les validations inline pour pointer les champs en erreur
+        checkAge();
+        checkEmail(true);
+        checkPhone(true);
+        showFormError();
+        return;
+      }
+
+      // Tout est OK → sauvegarde des données pour les étapes suivantes
+      const formData = {
+        firstName: document.getElementById('firstName').value.trim(),
+        lastName: document.getElementById('lastName').value.trim(),
+        dob: document.getElementById('dobField').value,
+        sex: document.getElementById('sexField').value,
+        email: document.getElementById('emailField').value.trim(),
+        countryCode: document.getElementById('countryCode').value,
+        phone: document.getElementById('phoneField').value,
+        pwd: document.getElementById('pwdField').value,
+        cgu: document.getElementById('cgu').checked,
+        health: document.getElementById('health-consent').checked
+      };
+      sessionStorage.setItem('fueni_signup_data', JSON.stringify(formData));
+      window.location = '03-patient-otp.html';
+    }
+
+    // Préremplissage si l'utilisateur revient depuis l'étape OTP (« Modifier mon numéro »)
+    window.addEventListener('DOMContentLoaded', () => {
+      const raw = sessionStorage.getItem('fueni_signup_data');
+      if (!raw) return;
+      try {
+        const d = JSON.parse(raw);
+        if (d.firstName) document.getElementById('firstName').value = d.firstName;
+        if (d.lastName) document.getElementById('lastName').value = d.lastName;
+        if (d.dob) document.getElementById('dobField').value = d.dob;
+        if (d.sex) document.getElementById('sexField').value = d.sex;
+        if (d.email) document.getElementById('emailField').value = d.email;
+        if (d.countryCode) document.getElementById('countryCode').value = d.countryCode;
+        if (d.phone) document.getElementById('phoneField').value = d.phone;
+        if (d.pwd) {
+          document.getElementById('pwdField').value = d.pwd;
+          checkPwd();
+        }
+        if (d.cgu) document.getElementById('cgu').checked = true;
+        if (d.health) document.getElementById('health-consent').checked = true;
+      } catch (e) { /* ignore */ }
+    });
+
+    function togglePwd() {
+      const f = document.getElementById('pwdField');
+      const eye = document.getElementById('pwdEye');
+      const isHidden = f.type === 'password';
+      f.type = isHidden ? 'text' : 'password';
+      eye.className = isHidden ? 'fa fa-eye-slash' : 'fa fa-eye';
+    }
+
+    function checkAge() {
+      const dob = document.getElementById('dobField').value;
+      const hint = document.getElementById('ageHint');
+      const info = document.getElementById('ageInfo');
+      if (!dob) {
+        hint.classList.add('d-none');
+        info.classList.remove('d-none');
+        return;
+      }
+      const birthDate = new Date(dob);
+      const today = new Date();
+      let age = today.getFullYear() - birthDate.getFullYear();
+      const m = today.getMonth() - birthDate.getMonth();
+      if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) age--;
+      const tooYoung = age < 18;
+      hint.classList.toggle('d-none', !tooYoung);
+      info.classList.toggle('d-none', tooYoung);
+    }
+  </script>
+<!-- Prototype version badge -->
+<script>(function(){if(window.__pv)return;window.__pv=1;var v=document.createElement('div');v.style.cssText='position:fixed;top:0;left:50%;transform:translateX(-50%);background:#155e75;color:#fff;padding:6px 20px;border-radius:0 0 16px 16px;font:600 12px/1 system-ui,-apple-system,sans-serif;letter-spacing:.6px;z-index:99999;box-shadow:0 3px 10px rgba(0,0,0,.2);text-transform:uppercase;display:flex;align-items:center;gap:8px';v.innerHTML='🧪 Prototype <span style="background:#f59e0b;color:#1a1a1a;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:4px">v1.3.0</span>';document.body.appendChild(v);})();</script>
+</body>
+</html>

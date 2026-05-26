@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FUENI — Une plateforme. Tous vos soins.</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #155e75;          /* cyan-800 — deep brand, dark surfaces */
+      --primary-light: #0891b2;    /* cyan-600 — secondary deep */
+      --primary-lighter: #e0f2fe;  /* very light cyan — soft bg */
+      --accent-cyan: #06b6d4;      /* cyan-500 — bright accent text */
+      --accent-cyan-bright: #22d3ee; /* cyan-400 — title accent (bright) */
+      --accent-cyan-bg: #cffafe;   /* cyan-100 — pill backgrounds */
+      --accent-cyan-mid: #67e8f9;  /* cyan-300 — hover pill */
+      --accent: #f59e0b;
+      --accent-light: #fef3c7;
+      --dark: #0f172a;
+      --slate-700: #334155;
+      --slate-500: #64748b;
+      --slate-300: #cbd5e1;
+      --slate-100: #f1f5f9;
+      --slate-50: #f8fafc;
+      --bg: #f8fafc;
+    }
+    * { box-sizing: border-box; }
+    body { background: white; font-family: 'Inter', sans-serif; color: var(--dark); line-height: 1.6; margin: 0; }
+
+    /* Proto bar */
+    .proto-bar { background: #fff3cd; border-bottom: 2px solid #ffc107; padding: 6px 16px; font-size: 0.78rem; display: flex; align-items: center; gap: 12px; }
+    .proto-bar .proto-spacer { flex: 1; min-width: 160px; } /* réserve l'espace central pour le badge PROTOTYPE */
+    .proto-bar a { color: var(--primary); text-decoration: none; font-weight: 600; }
+
+    /* Navigation */
+    .topnav { background: white; border-bottom: 1px solid var(--slate-100); position: sticky; top: 0; z-index: 100; }
+    .topnav-inner { max-width: 1440px; margin: 0 auto; display: flex; align-items: center; padding: 18px 40px; gap: 16px; }
+    .logo { display: flex; align-items: center; gap: 10px; text-decoration: none; flex-shrink: 0; }
+    .logo-mark { width: 36px; height: 36px; border-radius: 50%; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1.05rem; }
+    .logo-text { font-weight: 800; font-size: 1.3rem; color: var(--dark); letter-spacing: -0.5px; }
+    .nav-links { display: flex; gap: 24px; margin-left: 40px; }
+    .nav-links a { color: var(--slate-700); text-decoration: none; font-size: 0.9rem; font-weight: 500; transition: color 0.15s; white-space: nowrap; }
+    .nav-links a:hover, .nav-links a.active { color: var(--accent-cyan); }
+    .nav-actions { margin-left: auto; display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+    .btn-pill { background: var(--accent-cyan-bg); color: var(--accent-cyan); border: none; padding: 9px 16px; border-radius: 24px; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.15s; text-decoration: none; white-space: nowrap; line-height: 1.4; }
+    .btn-pill:hover { background: var(--accent-cyan-mid); color: var(--primary); }
+    .btn-pill i { margin-right: 6px; opacity: 0.8; }
+    .btn-pill.patient { background: #fef3c7; color: #b45309; }
+    .btn-pill.patient:hover { background: #fde68a; color: #92400e; }
+    .lang-selector { display: flex; align-items: center; gap: 6px; color: var(--slate-500); font-size: 0.85rem; padding: 0 8px; white-space: nowrap; }
+    .lang-selector i { font-size: 0.85rem; }
+    .theme-toggle { background: none; border: none; color: var(--slate-500); padding: 8px; cursor: pointer; border-radius: 8px; font-size: 1rem; flex-shrink: 0; }
+    .theme-toggle:hover { background: var(--slate-100); }
+    .btn-signin { background: var(--dark); color: white; border: none; padding: 10px 22px; border-radius: 24px; font-weight: 600; font-size: 0.88rem; cursor: pointer; text-decoration: none; transition: background 0.15s; white-space: nowrap; line-height: 1.4; display: inline-flex; align-items: center; gap: 8px; }
+    .btn-signin:hover { background: #1e293b; color: white; }
+    .btn-signin i.fa-caret-down { font-size: 0.75rem; opacity: 0.8; }
+
+    /* Dropdown S'inscrire */
+    .signup-dropdown { position: relative; }
+    .signup-menu {
+      position: absolute;
+      top: calc(100% + 10px);
+      right: 0;
+      background: white;
+      border-radius: 14px;
+      padding: 12px;
+      box-shadow: 0 12px 32px rgba(15, 23, 42, 0.16), 0 2px 8px rgba(15, 23, 42, 0.06);
+      border: 1px solid #e5e7eb;
+      display: none;
+      flex-direction: column;
+      gap: 8px;
+      min-width: 280px;
+      z-index: 1100;
+    }
+    .signup-dropdown.open .signup-menu { display: flex; }
+    .signup-option {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      border-radius: 10px;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 0.92rem;
+      transition: all 0.15s;
+      white-space: nowrap;
+      line-height: 1.2;
+      background: white;
+      color: var(--dark);
+      border: 1.5px solid #e5e7eb;
+    }
+    .signup-option:hover {
+      background: var(--primary-lighter, #ecfeff);
+      border-color: var(--primary);
+      color: var(--primary);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px rgba(21, 94, 117, 0.15);
+    }
+    .signup-option i { font-size: 0.95rem; flex-shrink: 0; color: var(--primary); }
+    .signup-option:hover i { color: var(--primary); }
+
+    /* Hero */
+    .hero { background: linear-gradient(180deg, #f0f9ff 0%, white 100%); padding: 90px 40px 110px; }
+    .hero-inner { max-width: 1440px; margin: 0 auto; display: grid; grid-template-columns: 1.15fr 1fr; gap: 72px; align-items: center; }
+    .hero-tag { display: inline-flex; align-items: center; gap: 8px; color: var(--accent-cyan); font-weight: 600; font-size: 0.9rem; margin-bottom: 18px; letter-spacing: 0.2px; }
+    .hero-tag::before { content: ''; width: 8px; height: 8px; background: var(--accent-cyan); border-radius: 50%; flex-shrink: 0; }
+    .hero-title { font-size: 3.6rem; font-weight: 800; line-height: 1.08; letter-spacing: -1.8px; color: var(--dark); margin-bottom: 24px; }
+    .hero-title .accent { color: var(--accent-cyan-bright); }
+    .hero-desc { font-size: 1.05rem; color: var(--slate-500); margin-bottom: 36px; max-width: 540px; line-height: 1.65; }
+    /* Hero search bar (remplace les CTAs patient/pro) */
+    .hero-search {
+      background: white;
+      border-radius: 16px;
+      padding: 8px;
+      display: flex;
+      align-items: center;
+      gap: 0;
+      box-shadow: 0 10px 30px rgba(21, 94, 117, 0.12), 0 2px 8px rgba(21, 94, 117, 0.06);
+      max-width: 640px;
+      margin-bottom: 48px;
+      border: 1px solid #e5e7eb;
+    }
+    .hero-search .field {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 0 16px;
+      height: 52px;
+    }
+    .hero-search .field + .field { border-left: 1px solid #e5e7eb; }
+    .hero-search .field i { color: var(--slate-500); font-size: 0.95rem; flex-shrink: 0; }
+    .hero-search .field input {
+      border: none;
+      outline: none;
+      background: transparent;
+      font-size: 0.95rem;
+      font-family: inherit;
+      color: var(--dark);
+      width: 100%;
+      min-width: 0;
+    }
+    .hero-search .field input::placeholder { color: #94a3b8; }
+    .hero-search .btn-search {
+      height: 52px;
+      padding: 0 24px;
+      background: var(--accent-cyan-bright);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: all 0.15s;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      white-space: nowrap;
+      font-family: inherit;
+    }
+    .hero-search .btn-search:hover { background: var(--accent-cyan); transform: translateY(-1px); box-shadow: 0 6px 16px rgba(6, 182, 212, 0.3); }
+    .hero-search .btn-search i { font-size: 0.9rem; }
+    @media (max-width: 720px) {
+      .hero-search { flex-wrap: wrap; padding: 12px; gap: 8px; }
+      .hero-search .field { width: 100%; height: 48px; padding: 0 12px; border-radius: 10px; background: #f8fafc; }
+      .hero-search .field + .field { border-left: none; }
+      .hero-search .btn-search { width: 100%; }
+    }
+    .hero-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; max-width: 580px; }
+    .hero-stat .num { font-size: 2rem; font-weight: 800; color: var(--dark); letter-spacing: -1px; line-height: 1; margin-bottom: 6px; }
+    .hero-stat .label { font-size: 0.8rem; color: var(--slate-500); line-height: 1.4; }
+
+    /* Hero image */
+    .hero-image-wrapper { position: relative; }
+    .hero-image { background: linear-gradient(135deg, var(--primary-lighter), #cffafe 100%); border-radius: 24px; aspect-ratio: 4/5; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; box-shadow: 0 12px 40px rgba(21, 94, 117, 0.12); }
+    .hero-image::before { content: ''; position: absolute; top: -30%; right: -30%; width: 80%; height: 80%; background: radial-gradient(circle, rgba(245, 158, 11, 0.15), transparent 70%); }
+    .hero-figure { font-size: 16rem; color: var(--primary); opacity: 0.85; position: relative; z-index: 1; }
+    .hero-shape-1 { position: absolute; top: 15%; left: -20px; background: white; border-radius: 14px; padding: 14px 18px; box-shadow: 0 8px 24px rgba(0,0,0,0.08); display: flex; align-items: center; gap: 10px; }
+    .hero-shape-1 .icon { width: 38px; height: 38px; border-radius: 10px; background: var(--accent-light); color: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 1.1rem; }
+    .hero-shape-1 .info .label { font-size: 0.7rem; color: var(--slate-500); }
+    .hero-shape-1 .info .value { font-size: 0.92rem; font-weight: 700; color: var(--dark); }
+    .hero-shape-2 { position: absolute; bottom: 22%; right: -20px; background: white; border-radius: 14px; padding: 14px 18px; box-shadow: 0 8px 24px rgba(0,0,0,0.08); display: flex; align-items: center; gap: 10px; }
+    .hero-shape-2 .icon-pct { width: 42px; height: 42px; border-radius: 50%; background: var(--primary-lighter); color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 0.78rem; font-weight: 700; }
+    .hero-shape-2 .info .label { font-size: 0.7rem; color: var(--slate-500); }
+    .hero-shape-2 .info .value { font-size: 0.92rem; font-weight: 700; color: var(--dark); }
+
+    /* Section base */
+    section { padding: 110px 40px; }
+    .section-inner { max-width: 1440px; margin: 0 auto; }
+    .section-tag { display: inline-flex; align-items: center; gap: 8px; color: var(--accent-cyan); font-weight: 600; font-size: 0.92rem; margin-bottom: 14px; }
+    .section-tag::before { content: ''; width: 8px; height: 8px; background: var(--accent-cyan); border-radius: 50%; flex-shrink: 0; }
+    .section-title { font-size: 2.6rem; font-weight: 800; line-height: 1.15; letter-spacing: -1.2px; color: var(--dark); margin-bottom: 18px; max-width: 720px; }
+    .section-title .accent { color: var(--accent-cyan-bright); }
+    .section-subtitle { font-size: 1.05rem; color: var(--slate-500); max-width: 660px; line-height: 1.65; }
+
+    /* About / How it works */
+    .how-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; margin-top: 56px; }
+    .how-card { background: white; padding: 36px 32px; border-radius: 18px; border: 1px solid var(--slate-100); transition: all 0.2s; }
+    .how-card:hover { transform: translateY(-3px); box-shadow: 0 12px 32px rgba(0,0,0,0.06); border-color: var(--primary-lighter); }
+    .how-step { font-size: 0.75rem; color: var(--primary); font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 12px; }
+    .how-card h3 { font-size: 1.35rem; font-weight: 700; margin-bottom: 12px; color: var(--dark); }
+    .how-card p { color: var(--slate-500); font-size: 0.95rem; line-height: 1.65; }
+    .how-icon { width: 56px; height: 56px; border-radius: 16px; background: var(--primary-lighter); color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; margin-bottom: 22px; }
+
+    /* For who */
+    .audience-section { background: var(--slate-50); }
+    .audience-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-top: 56px; }
+    .audience-card { background: white; padding: 40px 32px; border-radius: 20px; position: relative; overflow: hidden; transition: all 0.2s; }
+    .audience-card:hover { transform: translateY(-4px); box-shadow: 0 16px 40px rgba(0,0,0,0.08); }
+    .audience-card.featured { background: linear-gradient(135deg, var(--primary) 0%, #0e7490 100%); color: white; }
+    .audience-card.featured .audience-title { color: white; }
+    .audience-card.featured .audience-desc { color: rgba(255,255,255,0.85); }
+    .audience-card.featured .audience-feature { color: white; }
+    .audience-card.featured .audience-feature i { background: rgba(255,255,255,0.18); color: white; }
+    .audience-icon { width: 64px; height: 64px; border-radius: 18px; background: var(--primary-lighter); color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 1.7rem; margin-bottom: 22px; }
+    .audience-card.featured .audience-icon { background: rgba(255,255,255,0.18); color: white; }
+    .audience-title { font-size: 1.5rem; font-weight: 800; margin-bottom: 6px; color: var(--dark); }
+    .audience-tagline { font-size: 0.88rem; font-style: italic; color: var(--accent-cyan); margin: 0 0 12px; font-weight: 500; }
+    .audience-card.featured .audience-tagline { color: var(--accent); }
+    .audience-desc { color: var(--slate-500); margin-bottom: 24px; font-size: 0.95rem; }
+    .audience-features { list-style: none; padding: 0; margin: 0 0 28px; }
+    .audience-feature { display: flex; align-items: center; gap: 10px; padding: 7px 0; font-size: 0.92rem; color: var(--slate-700); }
+    .audience-feature i { width: 22px; height: 22px; border-radius: 50%; background: var(--primary-lighter); color: var(--primary); font-size: 0.7rem; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .audience-cta { display: inline-flex; align-items: center; gap: 8px; padding: 13px 24px; border-radius: 10px; font-weight: 600; font-size: 0.92rem; text-decoration: none; transition: all 0.15s; }
+    .audience-cta-primary { background: var(--primary); color: white; }
+    .audience-cta-primary:hover { background: #0f4858; color: white; }
+    .audience-card.featured .audience-cta-primary { background: var(--accent); color: var(--dark); }
+    .audience-card.featured .audience-cta-primary:hover { background: #fcd34d; color: var(--dark); }
+    .audience-badge { position: absolute; top: 20px; right: 20px; background: var(--accent); color: var(--dark); padding: 4px 12px; border-radius: 12px; font-size: 0.72rem; font-weight: 700; }
+    .audience-card.coming-soon { opacity: 0.85; }
+    .audience-card.coming-soon .audience-cta { background: var(--slate-100); color: var(--slate-500); pointer-events: none; }
+
+    /* Features grid */
+    .features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-top: 56px; }
+    .feature-card { padding: 32px 28px; background: white; border-radius: 16px; border: 1px solid var(--slate-100); transition: all 0.2s; }
+    .feature-card:hover { border-color: var(--primary-lighter); background: linear-gradient(135deg, white, #f0f9ff); }
+    .feature-icon { width: 52px; height: 52px; border-radius: 14px; background: var(--primary-lighter); color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 1.3rem; margin-bottom: 20px; }
+    .feature-card h4 { font-size: 1.15rem; font-weight: 700; margin-bottom: 10px; color: var(--dark); }
+    .feature-card p { color: var(--slate-500); font-size: 0.92rem; line-height: 1.6; margin: 0; }
+
+    /* Security section */
+    .security-section { background: var(--dark); color: white; }
+    .security-section .section-title { color: white; }
+    .security-section .section-title .accent { color: var(--accent); }
+    .security-section .section-subtitle { color: rgba(255,255,255,0.7); }
+    .security-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-top: 56px; }
+    .security-item { padding: 28px 24px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; }
+    .security-item .ico { width: 44px; height: 44px; border-radius: 12px; background: rgba(245,158,11,0.15); color: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; margin-bottom: 16px; }
+    .security-item h5 { font-size: 1rem; font-weight: 700; margin-bottom: 8px; color: white; }
+    .security-item p { color: rgba(255,255,255,0.65); font-size: 0.85rem; margin: 0; line-height: 1.55; }
+
+    /* Coverage */
+    .coverage-section { background: linear-gradient(180deg, white, #f0f9ff); }
+    .coverage-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 14px; margin-top: 48px; max-width: 1100px; }
+    .country-chip { background: white; padding: 18px 20px; border-radius: 14px; display: flex; align-items: center; gap: 12px; font-size: 0.92rem; font-weight: 600; border: 1px solid var(--slate-100); }
+    .country-chip .flag { font-size: 1.6rem; }
+
+    /* Testimonials */
+    .testimonials-section { background: var(--slate-50); }
+    .testimonials-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-top: 56px; }
+    .testimonial-card { background: white; padding: 32px; border-radius: 18px; position: relative; }
+    .testimonial-card .quote { font-size: 1rem; color: var(--slate-700); line-height: 1.65; margin-bottom: 22px; font-style: italic; }
+    .testimonial-card .quote::before { content: '"'; font-size: 3rem; color: var(--primary); position: absolute; top: 8px; left: 18px; line-height: 1; opacity: 0.3; font-family: serif; }
+    .testimonial-author { display: flex; align-items: center; gap: 14px; }
+    .author-avatar { width: 48px; height: 48px; border-radius: 50%; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; }
+    .author-info .name { font-weight: 700; color: var(--dark); font-size: 0.92rem; }
+    .author-info .role { font-size: 0.8rem; color: var(--slate-500); }
+    .illustrative-badge { display: inline-block; background: var(--accent-light); color: #92400e; padding: 3px 10px; border-radius: 8px; font-size: 0.7rem; font-weight: 600; margin-bottom: 14px; }
+
+    /* Final CTA */
+    .cta-section { background: linear-gradient(135deg, var(--primary) 0%, #0e7490 100%); color: white; padding: 100px 40px; }
+    .cta-inner { max-width: 960px; margin: 0 auto; text-align: center; }
+    .cta-section h2 { font-size: 2.6rem; font-weight: 800; margin-bottom: 18px; letter-spacing: -1px; color: white; }
+    .cta-section p { color: rgba(255,255,255,0.85); font-size: 1.1rem; margin-bottom: 36px; max-width: 620px; margin-left: auto; margin-right: auto; }
+    .cta-buttons { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+    .btn-cta-final-primary { background: white; color: var(--primary); border: none; padding: 18px 32px; border-radius: 12px; font-size: 1rem; font-weight: 700; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 12px; transition: all 0.15s; }
+    .btn-cta-final-primary:hover { background: var(--accent); color: var(--dark); transform: translateY(-1px); }
+    .btn-cta-final-secondary { background: rgba(255,255,255,0.15); color: white; border: 2px solid rgba(255,255,255,0.4); padding: 16px 30px; border-radius: 12px; font-size: 1rem; font-weight: 600; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 12px; transition: all 0.15s; }
+    .btn-cta-final-secondary:hover { background: rgba(255,255,255,0.25); color: white; transform: translateY(-1px); }
+
+    /* Footer */
+    footer { background: var(--dark); color: white; padding: 72px 40px 28px; }
+    .footer-inner { max-width: 1440px; margin: 0 auto; }
+    .footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 1fr; gap: 48px; margin-bottom: 48px; }
+    .footer-brand .logo { margin-bottom: 18px; }
+    .footer-brand .logo-text { color: white; }
+    .footer-brand p { color: rgba(255,255,255,0.6); font-size: 0.92rem; line-height: 1.6; max-width: 320px; }
+    .footer-socials { display: flex; gap: 10px; margin-top: 20px; }
+    .footer-social { width: 38px; height: 38px; border-radius: 10px; background: rgba(255,255,255,0.08); color: white; display: flex; align-items: center; justify-content: center; text-decoration: none; }
+    .footer-social:hover { background: rgba(255,255,255,0.15); color: white; }
+    .footer-col h6 { color: white; font-size: 0.88rem; font-weight: 700; margin-bottom: 18px; text-transform: uppercase; letter-spacing: 1px; }
+    .footer-col ul { list-style: none; padding: 0; margin: 0; }
+    .footer-col li { margin-bottom: 10px; }
+    .footer-col a { color: rgba(255,255,255,0.65); font-size: 0.92rem; text-decoration: none; }
+    .footer-col a:hover { color: white; }
+    .footer-bottom { padding-top: 28px; border-top: 1px solid rgba(255,255,255,0.08); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; color: rgba(255,255,255,0.5); font-size: 0.85rem; }
+    .footer-legal-links { display: flex; gap: 24px; }
+    .footer-legal-links a { color: rgba(255,255,255,0.65); text-decoration: none; }
+
+    /* Mobile responsive */
+    @media (max-width: 992px) {
+      .hero-inner { grid-template-columns: 1fr; gap: 40px; }
+      .hero-title { font-size: 2.8rem; }
+      .nav-links { display: none; }
+      .how-grid, .audience-grid, .features-grid, .testimonials-grid, .security-grid { grid-template-columns: 1fr; }
+      .footer-grid { grid-template-columns: 1fr 1fr; }
+      .section-title { font-size: 2rem; }
+    }
+
+    /* Chat widget mockup */
+    .chat-widget { position: fixed; bottom: 24px; right: 24px; width: 56px; height: 56px; border-radius: 50%; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; box-shadow: 0 8px 24px rgba(21,94,117,0.4); cursor: pointer; z-index: 50; }
+  </style>
+</head>
+<body>
+
+  <!-- Proto bar -->
+  <div class="proto-bar">
+    <span><i class="fa fa-eye text-warning me-1"></i><strong>Écran 01 — Homepage publique FUENI</strong> · Site Public</span>
+    <span class="proto-spacer"></span>
+    
+  </div>
+
+  <!-- Navigation -->
+  <nav class="topnav">
+    <div class="topnav-inner">
+      <a href="01-home.html" class="logo">
+        <span class="logo-mark">F</span>
+        <span class="logo-text">FUENI</span>
+      </a>
+      <div class="nav-links">
+        <a href="#" class="active">Accueil</a>
+        <a href="#fonctionnalites">Fonctionnalités</a>
+        <a href="#audiences">Pour qui ?</a>
+        <a href="#securite">Sécurité</a>
+        <a href="#">Contact</a>
+      </div>
+      <div class="nav-actions">
+        <a href="02-patient-signup.html" class="btn-pill patient">
+          <i class="fa fa-user"></i>Espace patient
+        </a>
+        <a href="#" class="btn-pill">
+          <i class="fa fa-user-md"></i>Espace professionnel
+        </a>
+        <div class="lang-selector">
+          <span class="fw-semibold">FR</span>
+          <span style="opacity: 0.6;">·</span>
+          <span>XOF</span>
+          <i class="fa fa-globe"></i>
+        </div>
+        <button class="theme-toggle" title="Mode sombre">
+          <i class="fa-regular fa-moon"></i>
+        </button>
+        <div class="signup-dropdown" id="signupDropdown">
+          <button type="button" class="btn-signin" onclick="toggleSignupMenu(event)">
+            S'inscrire
+            <i class="fa fa-caret-down"></i>
+          </button>
+          <div class="signup-menu">
+            <a href="02-patient-signup.html" class="signup-option">
+              <i class="fa fa-user"></i>
+              Je suis patient
+            </a>
+            <a href="#" class="signup-option">
+              <i class="fa fa-user-md"></i>
+              Je suis professionnel de santé
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-inner">
+      <div>
+        <div class="hero-tag">Parce que votre santé mérite ce qu'il y a de mieux, où que vous soyez !</div>
+        <h1 class="hero-title">
+          Une plateforme.<br>
+          <span class="accent">Tous vos soins.</span>
+        </h1>
+        <p class="hero-desc">
+          FUENI rassemble patients, praticiens, pharmacies et hôpitaux dans une seule plateforme
+          moderne et sécurisée. Pensée pour vous garantir une tranquillité d'esprit, vous assister et
+          vous servir là où vous voulez, quand vous en avez besoin.
+        </p>
+        <form class="hero-search" onsubmit="event.preventDefault();">
+          <div class="field">
+            <i class="fa fa-search"></i>
+            <input type="text" placeholder="Nom, spécialité, établissement…" aria-label="Rechercher">
+          </div>
+          <div class="field">
+            <i class="fa fa-location-dot"></i>
+            <input type="text" placeholder="Ville, pays…" aria-label="Localisation">
+          </div>
+          <button type="submit" class="btn-search">
+            <i class="fa fa-search"></i>
+            Rechercher
+          </button>
+        </form>
+        <div class="hero-stats">
+          <div class="hero-stat">
+            <div class="num">14</div>
+            <div class="label">Pays francophones</div>
+          </div>
+          <div class="hero-stat">
+            <div class="num">5</div>
+            <div class="label">Devises supportées</div>
+          </div>
+          <div class="hero-stat">
+            <div class="num">100%</div>
+            <div class="label">Conforme RGPD</div>
+          </div>
+        </div>
+      </div>
+      <div class="hero-image-wrapper">
+        <div class="hero-image">
+          <i class="fa-solid fa-user-doctor hero-figure"></i>
+        </div>
+        <div class="hero-shape-1">
+          <div class="icon"><i class="fa fa-calendar-check"></i></div>
+          <div class="info">
+            <div class="label">Prochain RDV</div>
+            <div class="value">Aujourd'hui · 14:30</div>
+          </div>
+        </div>
+        <div class="hero-shape-2">
+          <div class="icon-pct">98%</div>
+          <div class="info">
+            <div class="label">Taux de satisfaction</div>
+            <div class="value">Patients FUENI</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- About / How it works -->
+  <section id="a-propos">
+    <div class="section-inner">
+      <div class="section-tag">Comment ça marche</div>
+      <h2 class="section-title">
+        Une solution simple,<br>
+        <span class="accent">en trois étapes.</span>
+      </h2>
+      <p class="section-subtitle">
+        Que vous soyez patient, professionnel ou structure de soins de santé, l'accès à FUENI est immédiat. Création de compte en moins d'une minute, vérification rapide, et c'est parti. L'excellence médicale, à portée de tous.
+      </p>
+
+      <div class="how-grid">
+        <div class="how-card">
+          <div class="how-icon"><i class="fa fa-user-plus"></i></div>
+          <div class="how-step">Étape 1</div>
+          <h3>Créez votre compte</h3>
+          <p>Inscription en quelques clics. Aucune carte bancaire requise. Patient, praticien ou institution : choisissez votre profil et commencez immédiatement.</p>
+        </div>
+        <div class="how-card">
+          <div class="how-icon"><i class="fa fa-shield-halved"></i></div>
+          <div class="how-step">Étape 2</div>
+          <h3>Vérifiez votre identité</h3>
+          <p>Vérification par SMS pour les patients · validation manuelle après vérification de vos qualifications pour les praticiens (RPPS, Ordre des Médecins, justificatifs).</p>
+        </div>
+        <div class="how-card">
+          <div class="how-icon"><i class="fa fa-stethoscope"></i></div>
+          <div class="how-step">Étape 3</div>
+          <h3>Profitez de FUENI</h3>
+          <p>Prenez vos RDV, consultez vos dossiers, communiquez avec votre médecin, second avis, expertises et plus, gérez vos paiements par divers moyens, y compris Mobile Money. Tout, depuis une seule plateforme.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- For who -->
+  <section id="audiences" class="audience-section">
+    <div class="section-inner">
+      <div class="section-tag">Pour qui ?</div>
+      <h2 class="section-title">
+        FUENI s'adapte à <span class="accent">votre rôle.</span>
+      </h2>
+      <p class="section-subtitle">
+        Chaque utilisateur a son espace dédié et ses outils. Choisissez le vôtre.
+      </p>
+
+      <div class="audience-grid">
+        <!-- Patient -->
+        <div class="audience-card">
+          <div class="audience-icon"><i class="fa fa-user"></i></div>
+          <h3 class="audience-title">Patient</h3>
+          <p class="audience-tagline">L'excellence médicale, à portée de tous.</p>
+          <p class="audience-desc">Pour particuliers — gérez votre santé et celle de vos proches.</p>
+          <ul class="audience-features">
+            <li class="audience-feature"><i class="fa fa-check"></i>Trouvez et réservez avec un médecin</li>
+            <li class="audience-feature"><i class="fa fa-check"></i>Trouver un service (examen, produit)</li>
+            <li class="audience-feature"><i class="fa fa-check"></i>Conservez vos documents médicaux</li>
+            <li class="audience-feature"><i class="fa fa-check"></i>Échangez avec votre praticien</li>
+            <li class="audience-feature"><i class="fa fa-check"></i>Paiement Mobile Money simple</li>
+          </ul>
+          <a href="02-patient-signup.html" class="audience-cta audience-cta-primary">
+            Créer mon compte patient
+            <i class="fa fa-arrow-right"></i>
+          </a>
+        </div>
+
+        <!-- Praticien (featured) -->
+        <div class="audience-card featured">
+          <div class="audience-badge">Le plus populaire</div>
+          <div class="audience-icon"><i class="fa fa-user-md"></i></div>
+          <h3 class="audience-title">Praticien</h3>
+          <p class="audience-tagline">Votre expertise à ceux qui en ont besoin.</p>
+          <p class="audience-desc">Médecin, pharmacien, infirmier — gérez votre activité de A à Z.</p>
+          <ul class="audience-features">
+            <li class="audience-feature"><i class="fa fa-check"></i>Planning + RDV intelligent</li>
+            <li class="audience-feature"><i class="fa fa-check"></i>Dossiers patients structurés (POMR/SOAP)</li>
+            <li class="audience-feature"><i class="fa fa-check"></i>Ordonnances électroniques signées</li>
+            <li class="audience-feature"><i class="fa fa-check"></i>Tableau de bord analytics</li>
+            <li class="audience-feature"><i class="fa fa-check"></i>Wallet · payouts automatiques</li>
+          </ul>
+          <a href="#" class="audience-cta audience-cta-primary">
+            Découvrir les plans praticien
+            <i class="fa fa-arrow-right"></i>
+          </a>
+        </div>
+
+        <!-- Cabinet / Hôpital -->
+        <div class="audience-card coming-soon">
+          <div class="audience-badge" style="background:#e2e8f0; color:#475569;">Phase 2</div>
+          <div class="audience-icon"><i class="fa fa-hospital"></i></div>
+          <h3 class="audience-title">Cabinet & Hôpital</h3>
+          <p class="audience-desc">Pour structures de santé — coordonnez votre équipe et vos services.</p>
+          <ul class="audience-features">
+            <li class="audience-feature"><i class="fa fa-check"></i>Gestion multi-praticiens</li>
+            <li class="audience-feature"><i class="fa fa-check"></i>Tableau de bord institutionnel</li>
+            <li class="audience-feature"><i class="fa fa-check"></i>Coordination des soins</li>
+            <li class="audience-feature"><i class="fa fa-check"></i>Accueil de patients non-résidents</li>
+            <li class="audience-feature"><i class="fa fa-check"></i>Statistiques avancées</li>
+            <li class="audience-feature"><i class="fa fa-check"></i>Intégration assurances</li>
+          </ul>
+          <a class="audience-cta">Disponible en 2026 →</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features grid -->
+  <section id="fonctionnalites">
+    <div class="section-inner">
+      <div class="section-tag">Fonctionnalités</div>
+      <h2 class="section-title">
+        Tout ce qu'il faut, <span class="accent">rien de superflu.</span>
+      </h2>
+      <p class="section-subtitle">
+        Des fonctionnalités pensées pour la pratique quotidienne en cabinet, à l'hôpital et au domicile du patient.
+      </p>
+
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon"><i class="fa fa-calendar-days"></i></div>
+          <h4>Prise de RDV intelligente</h4>
+          <p>Recherche par spécialité, ville et disponibilité. Réservation en quelques secondes. Notifications SMS + email automatiques 48 h et 1 h 30 avant.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon"><i class="fa fa-folder-open"></i></div>
+          <h4>Dossier médical structuré</h4>
+          <p>Format POMR/SOAP standard international. Antécédents, traitements, diagnostics SNOMED-CT. Accessible hors-ligne en cas de besoin.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon"><i class="fa fa-wallet"></i></div>
+          <h4>Paiement Mobile Money</h4>
+          <p>Flutterwave + Wave + Orange Money + MTN Money. Wallet praticien avec payout automatique sous quelques jours.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Security -->
+  <section id="securite" class="security-section">
+    <div class="section-inner">
+      <div class="section-tag" style="color: var(--accent);">
+        <span style="background: var(--accent); width: 8px; height: 8px; border-radius: 50%;"></span>
+        Sécurité &amp; conformité
+      </div>
+      <h2 class="section-title">
+        Vos données restent <span class="accent">vos données.</span>
+      </h2>
+      <p class="section-subtitle">
+        FUENI est conçu avec les standards de sécurité les plus exigeants de l'industrie santé. Chiffrement de bout en bout, audit complet, et conformité dans chaque pays où vous exercez.
+      </p>
+
+      <div class="security-grid">
+        <div class="security-item">
+          <div class="ico"><i class="fa fa-lock"></i></div>
+          <h5>Chiffrement AES-256</h5>
+          <p>Vos dossiers médicaux sont chiffrés AVANT stockage. Même nos équipes ne peuvent pas y accéder.</p>
+        </div>
+        <div class="security-item">
+          <div class="ico"><i class="fa fa-signature"></i></div>
+          <h5>Signatures électroniques PKI</h5>
+          <p>Ordonnances et comptes-rendus signés cryptographiquement, immuables, légalement opposables.</p>
+        </div>
+        <div class="security-item">
+          <div class="ico"><i class="fa fa-shield-halved"></i></div>
+          <h5>Authentification forte</h5>
+          <p>Double authentification (SMS, application, clé physique) pour tous les professionnels.</p>
+        </div>
+        <div class="security-item">
+          <div class="ico"><i class="fa fa-balance-scale"></i></div>
+          <h5>Conforme par pays</h5>
+          <p>RGPD (Europe), CDP (Sénégal), ARTCI (CI), APDP (Mali, Bénin), HDS (option France).</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Coverage -->
+  <section class="coverage-section">
+    <div class="section-inner">
+      <div class="section-tag">Couverture</div>
+      <h2 class="section-title">
+        14 pays. <span class="accent">Une seule plateforme.</span>
+      </h2>
+      <p class="section-subtitle">
+        FUENI est conçue pour fonctionner dans chaque pays francophone d'Afrique et en Europe.
+        Affichage en devise locale, paiements adaptés, conformité locale.
+      </p>
+
+      <div class="coverage-grid">
+        <div class="country-chip"><span class="flag">🇸🇳</span>Sénégal</div>
+        <div class="country-chip"><span class="flag">🇨🇮</span>Côte d'Ivoire</div>
+        <div class="country-chip"><span class="flag">🇨🇲</span>Cameroun</div>
+        <div class="country-chip"><span class="flag">🇲🇱</span>Mali</div>
+        <div class="country-chip"><span class="flag">🇨🇩</span>RDC</div>
+        <div class="country-chip"><span class="flag">🇧🇯</span>Bénin</div>
+        <div class="country-chip"><span class="flag">🇹🇬</span>Togo</div>
+        <div class="country-chip"><span class="flag">🇧🇫</span>Burkina Faso</div>
+        <div class="country-chip"><span class="flag">🇳🇪</span>Niger</div>
+        <div class="country-chip"><span class="flag">🇹🇩</span>Tchad</div>
+        <div class="country-chip"><span class="flag">🇬🇦</span>Gabon</div>
+        <div class="country-chip"><span class="flag">🇨🇬</span>Congo</div>
+        <div class="country-chip"><span class="flag">🇲🇬</span>Madagascar</div>
+        <div class="country-chip"><span class="flag">🇫🇷</span>France (export)</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Testimonials -->
+  <section class="testimonials-section">
+    <div class="section-inner">
+      <div class="section-tag">Ils utilisent FUENI</div>
+      <h2 class="section-title">
+        Adoptés par des professionnels.<br>
+        <span class="accent">Plébiscités par leurs patients.</span>
+      </h2>
+      <p class="section-subtitle">
+        Témoignages illustratifs — la plateforme étant en cours de lancement, ces témoignages sont fictifs mais représentent les retours que nous visons.
+      </p>
+
+      <div class="testimonials-grid">
+        <div class="testimonial-card">
+          <span class="illustrative-badge">Exemple illustratif</span>
+          <p class="quote">FUENI m'a permis de gagner 2 h par jour sur la gestion administrative. Mes patients adorent prendre RDV en ligne. Le dossier patient structuré est devenu indispensable au quotidien.</p>
+          <div class="testimonial-author">
+            <div class="author-avatar">MS</div>
+            <div class="author-info">
+              <div class="name">Dr. Mamadou Sow</div>
+              <div class="role">Cardiologue · Dakar, Sénégal</div>
+            </div>
+          </div>
+        </div>
+        <div class="testimonial-card">
+          <span class="illustrative-badge">Exemple illustratif</span>
+          <p class="quote">En tant que pharmacienne en zone rurale, FUENI est une révolution. Les ordonnances signées électroniquement arrivent directement, plus de doute sur l'authenticité.</p>
+          <div class="testimonial-author">
+            <div class="author-avatar" style="background: #f59e0b;">AD</div>
+            <div class="author-info">
+              <div class="name">Aminata Diallo</div>
+              <div class="role">Pharmacienne · Bamako, Mali</div>
+            </div>
+          </div>
+        </div>
+        <div class="testimonial-card">
+          <span class="illustrative-badge">Exemple illustratif</span>
+          <p class="quote">Prendre RDV avec mon médecin depuis mon téléphone, c'est devenu naturel. Et tous mes documents médicaux sont au même endroit, je ne perds plus rien.</p>
+          <div class="testimonial-author">
+            <div class="author-avatar" style="background: #8b5cf6;">FK</div>
+            <div class="author-info">
+              <div class="name">Fatou Konaté</div>
+              <div class="role">Patiente · Abidjan, Côte d'Ivoire</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Final CTA -->
+  <section class="cta-section">
+    <div class="cta-inner">
+      <h2>Prêt(e) à transformer votre santé ?</h2>
+      <p>Rejoignez la plateforme qui rassemble patients, praticiens et établissements de santé francophones. Aucune carte bancaire requise pour démarrer.</p>
+      <div class="cta-buttons">
+        <a href="02-patient-signup.html" class="btn-cta-final-primary">
+          <i class="fa fa-user"></i>
+          Créer mon compte patient
+          <i class="fa fa-arrow-right"></i>
+        </a>
+        <a href="#" class="btn-cta-final-secondary">
+          <i class="fa fa-user-md"></i>
+          Inscription professionnel de santé
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <div class="logo">
+            <span class="logo-mark">F</span>
+            <span class="logo-text">FUENI</span>
+          </div>
+          <p>La plateforme santé numérique pour l'Afrique francophone et l'Europe. Une plateforme. Tous vos soins.</p>
+          <div class="footer-socials">
+            <a href="#" class="footer-social"><i class="fa-brands fa-linkedin-in"></i></a>
+            <a href="#" class="footer-social"><i class="fa-brands fa-x-twitter"></i></a>
+            <a href="#" class="footer-social"><i class="fa-brands fa-facebook-f"></i></a>
+            <a href="#" class="footer-social"><i class="fa-brands fa-instagram"></i></a>
+          </div>
+        </div>
+        <div class="footer-col">
+          <h6>Produit</h6>
+          <ul>
+            <li><a href="#fonctionnalites">Fonctionnalités</a></li>
+            <li><a href="#audiences">Pour qui ?</a></li>
+            <li><a href="#">Tarifs</a></li>
+            <li><a href="#securite">Sécurité</a></li>
+            <li><a href="#">Roadmap</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h6>Ressources</h6>
+          <ul>
+            <li><a href="#">Centre d'aide</a></li>
+            <li><a href="#">Blog</a></li>
+            <li><a href="#">Webinaires</a></li>
+            <li><a href="#">API</a></li>
+            <li><a href="#">Partenaires</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h6>Société</h6>
+          <ul>
+            <li><a href="#">À propos</a></li>
+            <li><a href="#">Carrières</a></li>
+            <li><a href="#">Presse</a></li>
+            <li><a href="#">Contact</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h6>Légal</h6>
+          <ul>
+            <li><a href="#">Mentions légales</a></li>
+            <li><a href="#">CGU</a></li>
+            <li><a href="#">Confidentialité</a></li>
+            <li><a href="#">Cookies</a></li>
+            <li><a href="#">Conformité par pays</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <div>© 2026 FUENI — Tous droits réservés.</div>
+        <div class="footer-legal-links">
+          <a href="#">FR</a>
+          <a href="#">EN</a>
+          <a href="#">PT</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Chat widget mockup -->
+  <div class="chat-widget" title="Discuter avec nous">
+    <i class="fa fa-comment-dots"></i>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    function toggleSignupMenu(event) {
+      event.stopPropagation();
+      document.getElementById('signupDropdown').classList.toggle('open');
+    }
+    document.addEventListener('click', function (e) {
+      const dd = document.getElementById('signupDropdown');
+      if (dd && !dd.contains(e.target)) dd.classList.remove('open');
+    });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') document.getElementById('signupDropdown')?.classList.remove('open');
+    });
+  </script>
+<!-- Prototype version badge -->
+<script>(function(){if(window.__pv)return;window.__pv=1;var v=document.createElement('div');v.style.cssText='position:fixed;top:0;left:50%;transform:translateX(-50%);background:#155e75;color:#fff;padding:6px 20px;border-radius:0 0 16px 16px;font:600 12px/1 system-ui,-apple-system,sans-serif;letter-spacing:.6px;z-index:99999;box-shadow:0 3px 10px rgba(0,0,0,.2);text-transform:uppercase;display:flex;align-items:center;gap:8px';v.innerHTML='🧪 Prototype <span style="background:#f59e0b;color:#1a1a1a;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:4px">v1.3.0</span>';document.body.appendChild(v);})();</script>
+</body>
+</html>

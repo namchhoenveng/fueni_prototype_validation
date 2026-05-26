@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FUENI — Profil de base</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="naz-common.css">
+  <style>
+    body { background: #f0f4f8; font-family: 'Segoe UI', sans-serif; min-height: 100vh; }
+    .proto-bar { position: sticky; top: 0; z-index: 100; }
+    .brand-area { background: linear-gradient(135deg, #16a085, #48c9b0); color: white; padding: 2rem 0 1.5rem; text-align: center; }
+    .brand-logo { font-size: 1.8rem; font-weight: 800; }
+    .step-card { background: white; border-radius: 16px; box-shadow: 0 4px 24px rgba(0,0,0,0.08); padding: 2rem; max-width: 560px; margin: -1.5rem auto 2rem; }
+    .progress-steps .step.active .step-circle { background: #16a085; color: white; }
+    .progress-steps .step.done .step-circle { background: #16a085; color: white; }
+    .progress-steps .step.done::after { background: #16a085; }
+    .progress-steps .step.active .step-label { color: #16a085; font-weight: 600; }
+    .btn-patient { background: #16a085; border-color: #16a085; color: white; padding: 12px; border-radius: 8px; font-weight: 600; }
+    .btn-patient:hover { background: #138d75; border-color: #138d75; color: white; }
+    .form-control, .form-select { border-radius: 8px; padding: 0.6rem 0.9rem; }
+    .form-control:focus, .form-select:focus { border-color: #16a085; box-shadow: 0 0 0 0.25rem rgba(22,160,133,0.18); }
+    .field-hint { font-size: 0.75rem; color: #95a5a6; margin-top: 4px; }
+  </style>
+</head>
+<body>
+
+  <div class="proto-bar d-flex align-items-center gap-3 flex-wrap">
+    <span><i class="fa fa-eye text-warning me-1"></i><strong>Écran 04 — Profil de base</strong></span>
+    <a href="01-home.html" class="text-decoration-none text-muted ms-auto small">← Retour à l'accueil</a>
+  </div>
+
+  <div class="brand-area">
+    <div class="brand-logo"><span style="opacity:0.85;">F</span>UENI</div>
+    <div class="mt-1 opacity-75 small">Dernière étape pour finaliser votre inscription</div>
+  </div>
+
+  <div class="container py-3" style="max-width:620px;">
+
+    <div class="progress-steps mb-4">
+      <div class="step done" id="step1-marker">
+        <div class="step-circle"><i class="fa fa-check"></i></div>
+        <div class="step-label">Inscription</div>
+      </div>
+      <div class="step done" id="step2-marker">
+        <div class="step-circle"><i class="fa fa-check"></i></div>
+        <div class="step-label">Vérification SMS</div>
+      </div>
+      <div class="step active" id="step3-marker">
+        <div class="step-circle">3</div>
+        <div class="step-label">Profil de base</div>
+      </div>
+      <div class="step inactive">
+        <div class="step-circle">4</div>
+        <div class="step-label">Bienvenue</div>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <h5 class="fw-bold mb-1">Complétez votre profil</h5>
+      <p class="text-muted small mb-3">Dernière étape (30 secondes).</p>
+
+      <div class="d-none alert alert-danger small mb-3" id="step2Error" role="alert">
+        <i class="fa fa-circle-exclamation me-2"></i>Veuillez compléter tous les champs obligatoires marqués d'un astérisque (*).
+      </div>
+
+      <form>
+        <div class="row g-2 mb-3">
+          <div class="col-md-6">
+            <label class="form-label fw-semibold small">Pays de résidence *</label>
+            <select class="form-select" id="countrySelect" onchange="updateCityList()">
+              <option value="" selected disabled>Choisir...</option>
+              <option value="SN">🇸🇳 Sénégal</option>
+              <option value="CI">🇨🇮 Côte d'Ivoire</option>
+              <option value="ML">🇲🇱 Mali</option>
+              <option value="BJ">🇧🇯 Bénin</option>
+              <option value="TG">🇹🇬 Togo</option>
+              <option value="BF">🇧🇫 Burkina Faso</option>
+              <option value="NE">🇳🇪 Niger</option>
+              <option value="CM">🇨🇲 Cameroun</option>
+              <option value="CD">🇨🇩 RDC</option>
+            </select>
+            <div class="field-hint mt-1"><i class="fa fa-info-circle me-1"></i>Pré-rempli selon votre indicatif téléphonique</div>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-semibold small">Ville *</label>
+            <select class="form-select" id="citySelect">
+              <option value="" selected disabled>Choisir...</option>
+            </select>
+            <div class="d-none mt-1" id="otherCityWrap">
+              <input type="text" class="form-control" id="otherCityInput" placeholder="Précisez votre ville">
+            </div>
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label fw-semibold small">Langue de communication *</label>
+          <select class="form-select" id="langSelect">
+            <option value="fr" selected>Français</option>
+            <option value="en">English</option>
+          </select>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label fw-semibold small">Adresse <span class="text-muted fw-normal">(optionnel)</span></label>
+          <textarea class="form-control" id="addressInput" rows="2" placeholder="Ex : Sacré-Cœur 3, Villa 12, face à la pharmacie El Hadji"></textarea>
+        </div>
+
+        <button type="button" class="btn btn-patient w-100" onclick="validateStep2()">
+          Finaliser et accéder à mon espace <i class="fa fa-check ms-2"></i>
+        </button>
+      </form>
+    </div>
+
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // Mapping indicatif téléphonique → code pays (pour la pré-sélection)
+    const PHONE_CC_TO_COUNTRY = {
+      '+221': 'SN', '+225': 'CI', '+223': 'ML', '+229': 'BJ', '+228': 'TG',
+      '+226': 'BF', '+227': 'NE', '+237': 'CM', '+243': 'CD'
+    };
+
+    // Villes principales par pays MVP (top villes + capitales)
+    const CITIES = {
+      SN: ['Dakar', 'Thiès', 'Saint-Louis', 'Kaolack', 'Ziguinchor', 'Touba', 'Mbour', 'Diourbel', 'Rufisque', 'Tambacounda'],
+      CI: ['Abidjan', 'Yamoussoukro', 'Bouaké', 'Daloa', 'San-Pédro', 'Korhogo', 'Man', 'Gagnoa', 'Divo', 'Anyama'],
+      ML: ['Bamako', 'Sikasso', 'Mopti', 'Ségou', 'Kayes', 'Koutiala', 'Gao', 'Tombouctou', 'Kita', 'Bougouni'],
+      BJ: ['Cotonou', 'Porto-Novo', 'Parakou', 'Abomey-Calavi', 'Djougou', 'Bohicon', 'Kandi', 'Lokossa', 'Ouidah', 'Abomey'],
+      TG: ['Lomé', 'Sokodé', 'Kara', 'Kpalimé', 'Atakpamé', 'Tsévié', 'Dapaong', 'Aného', 'Bassar', 'Mango'],
+      BF: ['Ouagadougou', 'Bobo-Dioulasso', 'Koudougou', 'Ouahigouya', 'Banfora', 'Dédougou', 'Kaya', 'Tenkodogo', 'Fada N\'Gourma', 'Houndé'],
+      NE: ['Niamey', 'Zinder', 'Maradi', 'Agadez', 'Tahoua', 'Dosso', 'Tillabéri', 'Diffa', 'Arlit', 'Birni N\'Konni'],
+      CM: ['Douala', 'Yaoundé', 'Bafoussam', 'Bamenda', 'Garoua', 'Maroua', 'Ngaoundéré', 'Buéa', 'Kribi', 'Limbé', 'Edéa', 'Dschang'],
+      CD: ['Kinshasa', 'Lubumbashi', 'Mbuji-Mayi', 'Kananga', 'Kisangani', 'Bukavu', 'Goma', 'Likasi', 'Kolwezi', 'Matadi', 'Tshikapa', 'Mbandaka']
+    };
+
+    function updateCityList() {
+      const country = document.getElementById('countrySelect').value;
+      const citySelect = document.getElementById('citySelect');
+      const otherWrap = document.getElementById('otherCityWrap');
+      const otherInput = document.getElementById('otherCityInput');
+
+      citySelect.innerHTML = '<option value="" selected disabled>Choisir...</option>';
+      otherWrap.classList.add('d-none');
+      if (otherInput) otherInput.value = '';
+
+      const list = CITIES[country] || [];
+      list.forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = c;
+        opt.textContent = c;
+        citySelect.appendChild(opt);
+      });
+      // Option "Autre" en fin de liste
+      const otherOpt = document.createElement('option');
+      otherOpt.value = '__other__';
+      otherOpt.textContent = 'Autre (préciser)';
+      citySelect.appendChild(otherOpt);
+
+      citySelect.onchange = () => {
+        otherWrap.classList.toggle('d-none', citySelect.value !== '__other__');
+        if (citySelect.value === '__other__' && otherInput) otherInput.focus();
+      };
+    }
+
+    function validateStep2() {
+      const errBox = document.getElementById('step2Error');
+      const country = document.getElementById('countrySelect').value;
+      const city = document.getElementById('citySelect').value;
+      const otherCity = document.getElementById('otherCityInput')?.value.trim() || '';
+      const lang = document.getElementById('langSelect').value;
+
+      const cityOk = city && (city !== '__other__' || otherCity.length > 0);
+      const allOk = country && cityOk && lang;
+
+      if (!allOk) {
+        errBox.classList.remove('d-none');
+        errBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return;
+      }
+
+      errBox.classList.add('d-none');
+      try {
+        const raw = sessionStorage.getItem('fueni_signup_data');
+        const d = raw ? JSON.parse(raw) : {};
+        d.country = country;
+        d.city = city === '__other__' ? otherCity : city;
+        d.lang = lang;
+        d.address = document.getElementById('addressInput').value.trim();
+        sessionStorage.setItem('fueni_signup_data', JSON.stringify(d));
+      } catch (e) { /* ignore */ }
+
+      window.location = '05-patient-dashboard.html';
+    }
+
+    // Au chargement : pré-sélection pays selon indicatif tél de l'inscription
+    document.addEventListener('DOMContentLoaded', () => {
+      try {
+        const raw = sessionStorage.getItem('fueni_signup_data');
+        if (raw) {
+          const d = JSON.parse(raw);
+          const country = PHONE_CC_TO_COUNTRY[d.countryCode];
+          if (country) {
+            document.getElementById('countrySelect').value = country;
+          }
+        }
+      } catch (e) { /* ignore */ }
+      updateCityList();
+    });
+  </script>
+<!-- Prototype version badge -->
+<script>(function(){if(window.__pv)return;window.__pv=1;var v=document.createElement('div');v.style.cssText='position:fixed;top:0;left:50%;transform:translateX(-50%);background:#155e75;color:#fff;padding:6px 20px;border-radius:0 0 16px 16px;font:600 12px/1 system-ui,-apple-system,sans-serif;letter-spacing:.6px;z-index:99999;box-shadow:0 3px 10px rgba(0,0,0,.2);text-transform:uppercase;display:flex;align-items:center;gap:8px';v.innerHTML='🧪 Prototype <span style="background:#f59e0b;color:#1a1a1a;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:4px">v1.3.0</span>';document.body.appendChild(v);})();</script>
+</body>
+</html>

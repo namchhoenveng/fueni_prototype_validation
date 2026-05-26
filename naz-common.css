@@ -1,0 +1,243 @@
+/**
+ * naz-common.css — Shared FUENI prototype styles
+ * Modernized 2026-05-11 to match 01-home.html public homepage aesthetic.
+ * Include in all prototype HTML files.
+ */
+
+/* ── Inter font ─────────────────────────────────────────────────────────── */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+/* ── FUENI design tokens ────────────────────────────────────────────────── */
+:root {
+  --fueni-primary:        #155e75;   /* bleu canard profond — V2 primary */
+  --fueni-primary-dark:   #0f4858;
+  --fueni-primary-light:  #0891b2;
+  --fueni-cyan-accent:    #06b6d4;   /* bright cyan accent text */
+  --fueni-cyan-bright:    #22d3ee;   /* cyan-400 — title accent */
+  --fueni-cyan-bg:        #cffafe;   /* cyan-100 — pill backgrounds */
+  --fueni-cyan-soft:      #e0f2fe;
+  --fueni-amber:          #f59e0b;
+  --fueni-amber-light:    #fef3c7;
+  --fueni-dark:           #0f172a;
+  --fueni-slate-700:      #334155;
+  --fueni-slate-500:      #64748b;
+  --fueni-slate-300:      #cbd5e1;
+  --fueni-slate-100:      #f1f5f9;
+  --fueni-slate-50:       #f8fafc;
+}
+
+/* ── Inter font everywhere (EXCLUDING Font Awesome icons!) ───────────────── */
+/* CRITICAL : never apply Inter to <i> elements with FA classes — their
+   font-family is "Font Awesome 6 Free/Brands" and overriding it = broken glyphs */
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+h1, h2, h3, h4, h5, h6, p, span, div, a, li, td, th, table, label, strong, em,
+.btn, .form-control, .form-select, .form-label, .form-check-label, .badge,
+.alert, .modal-title, .card-title, .nav-link, .navbar-brand,
+input, button, select, textarea {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important;
+}
+
+/* Restore Font Awesome font-family for icons — defensive against any global rule */
+.fa, .fas, .far, .fab, .fa-solid, .fa-regular, .fa-brands,
+i[class*="fa-"], i[class*=" fa-"], i[class^="fa-"], i.fa {
+  font-family: "Font Awesome 6 Free", "Font Awesome 6 Brands", "FontAwesome" !important;
+}
+.fa-brands, .fab, i.fa-brands, i.fab {
+  font-family: "Font Awesome 6 Brands" !important;
+}
+
+/* ── Bootstrap component overrides — modern aesthetic ──────────────────── */
+.form-control, .form-select {
+  border-radius: 10px !important;
+  border: 1.5px solid #e2e8f0;
+  padding: 11px 14px;
+  font-size: 0.94rem;
+  transition: all 0.15s !important;
+}
+.form-control:focus, .form-select:focus {
+  border-color: var(--fueni-cyan-accent) !important;
+  box-shadow: 0 0 0 3px rgba(6,182,212,0.12) !important;
+  outline: none;
+}
+
+.btn {
+  border-radius: 10px !important;
+  font-weight: 600 !important;
+  font-size: 0.92rem !important;
+  padding: 10px 22px;
+  transition: all 0.15s !important;
+  letter-spacing: 0;
+}
+.btn-sm { padding: 6px 14px; font-size: 0.85rem !important; border-radius: 8px !important; }
+.btn-lg { padding: 14px 28px; font-size: 1rem !important; border-radius: 12px !important; }
+
+.btn-primary {
+  background: var(--fueni-primary) !important;
+  border-color: var(--fueni-primary) !important;
+  color: white !important;
+}
+.btn-primary:hover, .btn-primary:focus {
+  background: var(--fueni-primary-dark) !important;
+  border-color: var(--fueni-primary-dark) !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(21, 94, 117, 0.25) !important;
+}
+.btn-outline-primary {
+  border-color: var(--fueni-primary) !important;
+  color: var(--fueni-primary) !important;
+}
+.btn-outline-primary:hover {
+  background: var(--fueni-primary) !important;
+  color: white !important;
+}
+.btn-success { background: #16a34a !important; border-color: #16a34a !important; }
+.btn-success:hover { background: #15803d !important; border-color: #15803d !important; transform: translateY(-1px); }
+.btn-warning { background: var(--fueni-amber) !important; border-color: var(--fueni-amber) !important; color: var(--fueni-dark) !important; }
+.btn-warning:hover { background: #d97706 !important; border-color: #d97706 !important; transform: translateY(-1px); }
+.btn-danger { background: #dc2626 !important; border-color: #dc2626 !important; }
+.btn-danger:hover { background: #b91c1c !important; border-color: #b91c1c !important; transform: translateY(-1px); }
+
+/* Card modernization */
+.card {
+  border-radius: 16px !important;
+  border: 1px solid #f1f5f9 !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  overflow: hidden;
+}
+.card-body { padding: 1.5rem; }
+.card-header { background: white !important; border-bottom: 1px solid #f1f5f9 !important; padding: 1rem 1.5rem; }
+.card-footer { background: var(--fueni-slate-50) !important; border-top: 1px solid #f1f5f9 !important; }
+
+/* Typography */
+h1, h2, h3, h4, h5, h6 {
+  color: var(--fueni-dark);
+  letter-spacing: -0.02em;
+  font-weight: 700;
+}
+h1 { letter-spacing: -0.04em; }
+.text-muted, .small.text-muted, small.text-muted { color: var(--fueni-slate-500) !important; }
+.text-primary { color: var(--fueni-primary) !important; }
+
+/* Badge modernization */
+.badge {
+  font-weight: 600 !important;
+  border-radius: 8px !important;
+  padding: 4px 10px !important;
+  font-size: 0.72rem !important;
+  letter-spacing: 0.02em;
+}
+
+/* Alert modernization */
+.alert {
+  border-radius: 12px !important;
+  border: 1px solid transparent !important;
+  padding: 14px 18px !important;
+}
+.alert-info { background: var(--fueni-cyan-bg) !important; color: var(--fueni-primary) !important; border-color: #a5f3fc !important; }
+.alert-success { background: #dcfce7 !important; color: #15803d !important; border-color: #bbf7d0 !important; }
+.alert-warning { background: var(--fueni-amber-light) !important; color: #b45309 !important; border-color: #fde68a !important; }
+.alert-danger { background: #fee2e2 !important; color: #b91c1c !important; border-color: #fecaca !important; }
+
+/* Modal modernization */
+.modal-content { border-radius: 18px !important; border: none !important; }
+.modal-header { padding: 1.25rem 1.5rem; border-bottom: 1px solid #f1f5f9; }
+.modal-body { padding: 1.5rem; }
+.modal-footer { padding: 1rem 1.5rem; border-top: 1px solid #f1f5f9; }
+
+/* Table modernization */
+.table {
+  font-size: 0.9rem;
+}
+.table thead th {
+  background: var(--fueni-slate-50);
+  color: var(--fueni-slate-500);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 700 !important;
+  border-bottom: 1px solid #e2e8f0;
+  padding: 12px 16px;
+}
+.table tbody td { padding: 14px 16px; vertical-align: middle; border-bottom: 1px solid #f1f5f9; }
+
+/* List group modernization */
+.list-group-item {
+  border-color: #f1f5f9 !important;
+  padding: 14px 18px;
+}
+
+/* Nav tabs modernization */
+.nav-tabs { border-bottom: 2px solid #e9ecef; }
+.nav-tabs .nav-link {
+  border: none;
+  color: var(--fueni-slate-500);
+  font-weight: 600;
+  padding: 12px 20px;
+}
+.nav-tabs .nav-link.active {
+  color: var(--fueni-cyan-accent);
+  background: transparent;
+  border-bottom: 3px solid var(--fueni-cyan-accent);
+  margin-bottom: -2px;
+}
+
+/* Bootstrap variable overrides for native components */
+:root {
+  --bs-primary: #155e75;
+  --bs-primary-rgb: 21, 94, 117;
+  --bs-body-font-family: 'Inter', sans-serif;
+  --bs-body-color: #0f172a;
+}
+
+/* ──────────────────────────────────────────────────────────────────────── *
+ * Legacy styles kept for backwards compatibility with existing screens
+ * ──────────────────────────────────────────────────────────────────────── */
+
+/* ── Navbar (legacy) ────────────────────────────────────────────────────── */
+.navbar { background: var(--fueni-primary) !important; }
+.navbar-brand span { color: var(--fueni-cyan-bright); }
+
+/* ── Proto bar ───────────────────────────────────────────────────────────── */
+.proto-bar { background: #fff3cd; border-bottom: 2px solid #ffc107; padding: 6px 16px; font-size: 0.82rem; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.proto-bar .proto-spacer { flex: 1; min-width: 160px; } /* réserve l'espace central pour le badge PROTOTYPE fixed */
+.proto-bar a { color: var(--fueni-primary); text-decoration: none; font-weight: 600; }
+/* Les éléments inline (icônes, badges Bootstrap) sans wrapper restent alignés au flux flex */
+.proto-bar > i, .proto-bar > strong, .proto-bar > .btn-group { flex-shrink: 0; }
+
+/* ── Progress steps ─────────────────────────────────────────────────────── */
+.progress-steps { display: flex; margin-bottom: 2rem; }
+.step { flex: 1; text-align: center; position: relative; }
+.step::after { content: ''; position: absolute; top: 14px; left: 50%; width: 100%; height: 2px; background: #dee2e6; z-index: 0; }
+.step:last-child::after { display: none; }
+.step.done::after { background: #27ae60; }
+.step-circle { width: 30px; height: 30px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 700; position: relative; z-index: 1; }
+.step.done .step-circle  { background: #27ae60; color: white; }
+.step.active .step-circle { background: var(--step-color, var(--fueni-primary)); color: white; }
+.step.inactive .step-circle { background: #dee2e6; color: #aaa; }
+.step-label { font-size: 0.72rem; color: var(--fueni-slate-500); margin-top: 4px; }
+.step.done .step-label   { color: #27ae60; }
+.step.active .step-label { color: var(--step-color, var(--fueni-primary)); font-weight: 600; }
+
+/* ── Zone toggle (proto-bar) ─────────────────────────────────────────────── */
+.zone-toggle .btn { font-size: 0.78rem !important; padding: 3px 12px !important; border-radius: 20px !important; }
+.zone-toggle .btn.active     { background: var(--fueni-primary) !important; color: white !important; border-color: var(--fueni-primary) !important; }
+.zone-toggle .btn:not(.active) { background: white !important; color: var(--fueni-primary) !important; border-color: var(--fueni-primary) !important; }
+
+/* ── Currency conversion line ────────────────────────────────────────────── */
+.conversion-line { font-size: 0.75rem; color: var(--fueni-slate-500); margin-top: 2px; min-height: 18px; }
+.conv-val { font-weight: 600; color: #5d6d7e; }
+
+/* ── Password rules & strength bar ──────────────────────────────────────── */
+.pwd-rule { font-size: 0.78rem; display: flex; align-items: center; gap: 6px; color: #aaa; transition: color 0.2s; }
+.pwd-rule.ok { color: #27ae60; }
+.pwd-rule i { width: 14px; }
+.pwd-strength { height: 4px; border-radius: 4px; background: #e9ecef; overflow: hidden; margin-top: 6px; }
+.pwd-strength-fill { height: 100%; border-radius: 4px; transition: width 0.3s, background 0.3s; width: 0%; }
+
+/* ── Field hints ─────────────────────────────────────────────────────────── */
+.field-hint { font-size: 0.75rem; color: var(--fueni-slate-500); margin-top: 3px; }
+.section-title { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--fueni-slate-500); margin-bottom: 12px; margin-top: 20px; }
