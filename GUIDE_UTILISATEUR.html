@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FUENI — Guide d'utilisation du prototype</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #155e75;
+      --accent-cyan: #0e7490;
+      --accent-orange: #f59e0b;
+      --teal: #16a085;
+      --teal-soft: #e8f8f5;
+      --teal-dark: #117a65;
+      --slate-50: #f8fafc;
+      --slate-100: #f1f5f9;
+      --slate-200: #e2e8f0;
+      --slate-500: #64748b;
+      --slate-700: #334155;
+      --slate-900: #0f172a;
+    }
+    * { box-sizing: border-box; }
+    body { font-family: 'Inter', sans-serif; color: var(--slate-900); background: var(--slate-50); line-height: 1.6; margin: 0; }
+
+    /* Hero */
+    .hero { background: linear-gradient(135deg, var(--primary), var(--accent-cyan)); color: white; padding: 56px 20px 40px; }
+    .hero-content { max-width: 880px; margin: 0 auto; }
+    .hero-eyebrow { font-size: 0.78rem; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; opacity: 0.8; margin-bottom: 14px; display: flex; align-items: center; gap: 10px; }
+    .hero-eyebrow .badge-version { background: var(--accent-orange); color: var(--slate-900); padding: 2px 10px; border-radius: 20px; font-weight: 800; }
+    .hero h1 { font-size: 2.6rem; font-weight: 800; line-height: 1.1; margin: 0 0 14px; letter-spacing: -1px; }
+    .hero h1 .accent { color: #5eead4; }
+    .hero p.lead { font-size: 1.15rem; opacity: 0.92; margin: 0 0 28px; max-width: 720px; }
+    .hero-cta { display: inline-flex; align-items: center; gap: 10px; background: white; color: var(--primary); padding: 14px 28px; border-radius: 12px; font-weight: 700; text-decoration: none; box-shadow: 0 4px 16px rgba(0,0,0,0.15); transition: transform 0.15s, box-shadow 0.15s; }
+    .hero-cta:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.22); color: var(--primary); }
+
+    /* Layout */
+    .container { max-width: 880px; margin: 0 auto; padding: 0 20px; }
+    .section { background: white; border-radius: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); padding: 32px; margin: 24px 0; }
+    h2 { font-size: 1.6rem; font-weight: 700; color: var(--primary); margin: 0 0 18px; display: flex; align-items: center; gap: 12px; }
+    h2 .icon { width: 36px; height: 36px; border-radius: 10px; background: var(--teal-soft); color: var(--teal); display: flex; align-items: center; justify-content: center; font-size: 1.1rem; }
+    h3 { font-size: 1.15rem; font-weight: 700; color: var(--slate-900); margin: 24px 0 10px; }
+
+    /* TOC */
+    .toc { background: linear-gradient(135deg, #f0fdfa, #ccfbf1); border-radius: 14px; padding: 20px 24px; border-left: 4px solid var(--teal); }
+    .toc-title { font-size: 0.78rem; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--teal-dark); margin-bottom: 12px; }
+    .toc ul { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 8px 20px; }
+    .toc a { color: var(--slate-700); text-decoration: none; font-weight: 500; padding: 4px 0; border-bottom: 1px solid transparent; transition: color 0.15s, border-color 0.15s; }
+    .toc a:hover { color: var(--teal); border-color: var(--teal); }
+    @media (max-width: 640px) {
+      .toc ul { grid-template-columns: 1fr; }
+    }
+
+    /* Steps */
+    .step-list { display: grid; gap: 14px; margin: 16px 0; }
+    .step-card { display: flex; align-items: flex-start; gap: 16px; padding: 18px 20px; background: var(--slate-50); border-radius: 12px; border-left: 4px solid var(--teal); }
+    .step-num { background: var(--teal); color: white; width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1rem; flex-shrink: 0; }
+    .step-body h4 { font-weight: 700; margin: 0 0 4px; font-size: 1.02rem; }
+    .step-body p { margin: 0; color: var(--slate-700); font-size: 0.92rem; }
+    .step-body .step-link { display: inline-block; margin-top: 8px; color: var(--accent-cyan); font-weight: 600; text-decoration: none; font-size: 0.88rem; }
+    .step-body .step-link:hover { text-decoration: underline; }
+
+    /* Data table */
+    .data-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 0.92rem; }
+    .data-table th, .data-table td { padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--slate-200); }
+    .data-table th { background: var(--slate-50); font-weight: 600; color: var(--slate-700); font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.5px; }
+    .data-table code { background: var(--slate-100); padding: 2px 8px; border-radius: 4px; font-size: 0.88em; color: var(--primary); font-family: 'Courier New', monospace; }
+
+    /* Callouts */
+    .callout { border-radius: 10px; padding: 16px 20px; margin: 16px 0; display: flex; gap: 14px; align-items: flex-start; }
+    .callout i { font-size: 1.2rem; flex-shrink: 0; margin-top: 2px; }
+    .callout-tip { background: #ecfdf5; border-left: 4px solid #10b981; color: #064e3b; }
+    .callout-tip i { color: #10b981; }
+    .callout-warn { background: #fffbeb; border-left: 4px solid var(--accent-orange); color: #78350f; }
+    .callout-warn i { color: var(--accent-orange); }
+    .callout-info { background: #eff6ff; border-left: 4px solid #3b82f6; color: #1e3a8a; }
+    .callout-info i { color: #3b82f6; }
+
+    /* Test scenarios */
+    .scenario { background: white; border: 1px solid var(--slate-200); border-radius: 10px; padding: 16px 18px; margin: 12px 0; }
+    .scenario-title { font-weight: 700; margin-bottom: 8px; color: var(--slate-900); display: flex; align-items: center; gap: 8px; }
+    .scenario-title i { color: var(--accent-orange); }
+    .scenario ul { margin: 0; padding-left: 22px; font-size: 0.92rem; color: var(--slate-700); }
+
+    /* Footer */
+    .footer { text-align: center; padding: 40px 20px; color: var(--slate-500); font-size: 0.88rem; }
+
+    /* Code */
+    code.inline { background: var(--slate-100); padding: 2px 8px; border-radius: 4px; font-size: 0.92em; color: var(--primary); font-family: 'Courier New', monospace; }
+
+    /* Disclaimer banner */
+    .proto-disclaimer { background: #155e75; color: white; text-align: center; padding: 10px 16px; font-size: 0.86rem; font-weight: 500; }
+    .proto-disclaimer i { margin-right: 8px; color: var(--accent-orange); }
+  </style>
+</head>
+<body>
+
+  <div class="proto-disclaimer">
+    <i class="fa fa-flask-vial"></i> <strong>Prototype interactif</strong> — Toutes les données sont fictives. Aucune information saisie n'est sauvegardée ni transmise.
+  </div>
+
+  <!-- Hero -->
+  <header class="hero">
+    <div class="hero-content">
+      <div class="hero-eyebrow">
+        <i class="fa fa-circle-check"></i> Guide d'utilisation
+        <span class="badge-version">v1.3.0</span>
+      </div>
+      <h1>Validez le parcours d'<span class="accent">inscription patient</span></h1>
+      <p class="lead">
+        Ce prototype interactif présente le parcours complet d'inscription d'un patient sur FUENI,
+        de la page d'accueil publique jusqu'au tableau de bord personnel. ~5 minutes pour tout tester.
+      </p>
+      <a href="01-home.html" class="hero-cta">
+        <i class="fa fa-play"></i> Démarrer le parcours
+      </a>
+    </div>
+  </header>
+
+  <div class="container">
+
+    <!-- TOC -->
+    <div class="section toc">
+      <div class="toc-title"><i class="fa fa-list-ul me-1"></i> Sommaire</div>
+      <ul>
+        <li><a href="#objectif">1. Objectif de cette validation</a></li>
+        <li><a href="#parcours">2. Le parcours en 5 écrans</a></li>
+        <li><a href="#donnees">3. Données de test à utiliser</a></li>
+        <li><a href="#scenarios">4. Scénarios à tester</a></li>
+        <li><a href="#points-cles">5. Points clés à valider</a></li>
+        <li><a href="#hors-perimetre">6. Hors périmètre validation</a></li>
+        <li><a href="#feedback">7. Comment donner votre avis</a></li>
+      </ul>
+    </div>
+
+    <!-- 1. Objectif -->
+    <section class="section" id="objectif">
+      <h2><span class="icon"><i class="fa fa-bullseye"></i></span> 1. Objectif de cette validation</h2>
+      <p>
+        FUENI démarre le développement par le <strong>parcours d'inscription patient</strong>, qui est la première priorité MVP.
+        Ce prototype permet à <strong>Nazounki</strong> de valider l'expérience utilisateur avant que l'équipe technique ne démarre l'implémentation.
+      </p>
+      <p>Cette session de validation vous invite à :</p>
+      <ul>
+        <li>Naviguer le parcours <strong>complet</strong> comme le ferait un vrai patient</li>
+        <li>Vérifier que les <strong>libellés</strong>, <strong>champs</strong> et <strong>messages</strong> sont clairs et adaptés au public africain francophone</li>
+        <li>Identifier d'éventuels <strong>freins UX</strong>, <strong>ambiguïtés</strong> ou <strong>incohérences</strong></li>
+        <li>Valider les <strong>règles métier</strong> implémentées (âge ≥ 18 ans, validation téléphone par pays, politique mot de passe, etc.)</li>
+      </ul>
+      <div class="callout callout-info">
+        <i class="fa fa-circle-info"></i>
+        <div>
+          <strong>À noter :</strong> ce prototype est entièrement côté navigateur. Aucune donnée saisie n'est sauvegardée ailleurs que dans la session de votre onglet, ni transmise à un serveur. Vous pouvez tester librement avec n'importe quelle donnée.
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. Parcours -->
+    <section class="section" id="parcours">
+      <h2><span class="icon"><i class="fa fa-route"></i></span> 2. Le parcours en 5 écrans</h2>
+      <p>Le parcours est <strong>linéaire et obligatoire</strong>. Chaque écran mène au suivant via un bouton d'action principal.</p>
+
+      <div class="step-list">
+        <div class="step-card">
+          <div class="step-num">1</div>
+          <div class="step-body">
+            <h4>Homepage publique FUENI</h4>
+            <p>Page d'accueil grand public. Le visiteur découvre la proposition de valeur et choisit son espace (Patient).</p>
+            <a href="01-home.html" class="step-link">Ouvrir l'écran 1 →</a>
+          </div>
+        </div>
+
+        <div class="step-card">
+          <div class="step-num">2</div>
+          <div class="step-body">
+            <h4>Inscription — Créer mon compte</h4>
+            <p>Formulaire de création : prénom, nom, date de naissance, sexe, e-mail, téléphone, mot de passe + consentements (CGU + RGPD). Validation en temps réel.</p>
+            <a href="02-patient-signup.html" class="step-link">Ouvrir l'écran 2 →</a>
+          </div>
+        </div>
+
+        <div class="step-card">
+          <div class="step-num">3</div>
+          <div class="step-body">
+            <h4>Vérification SMS (OTP)</h4>
+            <p>Le patient reçoit un code à 6 chiffres par SMS. Saisie obligatoire pour confirmer la possession du téléphone.</p>
+            <a href="03-patient-otp.html" class="step-link">Ouvrir l'écran 3 →</a>
+          </div>
+        </div>
+
+        <div class="step-card">
+          <div class="step-num">4</div>
+          <div class="step-body">
+            <h4>Profil de base</h4>
+            <p>Pays, ville et langue de communication. L'adresse complète est optionnelle. Étape rapide (~30 secondes).</p>
+            <a href="04-patient-profile-base.html" class="step-link">Ouvrir l'écran 4 →</a>
+          </div>
+        </div>
+
+        <div class="step-card">
+          <div class="step-num">5</div>
+          <div class="step-body">
+            <h4>Tableau de bord patient</h4>
+            <p>Point d'arrivée — l'espace personnel du patient. Affiche les RDV à venir, les documents récents, et l'invitation à vérifier son e-mail.</p>
+            <a href="05-patient-dashboard.html" class="step-link">Ouvrir l'écran 5 →</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="callout callout-tip">
+        <i class="fa fa-lightbulb"></i>
+        <div>
+          <strong>Astuce :</strong> à l'écran 3 (OTP), n'importe quel code à 6 chiffres est accepté (ex : <code class="inline">123456</code>). Le bouton « Vérifier » s'active automatiquement.
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. Données de test -->
+    <section class="section" id="donnees">
+      <h2><span class="icon"><i class="fa fa-keyboard"></i></span> 3. Données de test à utiliser</h2>
+      <p>Pour gagner du temps, voici un jeu de données prêt à copier-coller :</p>
+
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Champ</th>
+            <th>Valeur suggérée</th>
+            <th>Commentaire</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Prénom</td><td><code>Aïssatou</code></td><td>Ou n'importe quel prénom</td></tr>
+          <tr><td>Nom</td><td><code>Diop</code></td><td>Ou n'importe quel nom</td></tr>
+          <tr><td>Date de naissance</td><td><code>15/03/1990</code></td><td>≥ 18 ans obligatoire</td></tr>
+          <tr><td>Sexe</td><td>Féminin</td><td>4 options disponibles</td></tr>
+          <tr><td>E-mail</td><td><code>aissatou.diop@example.com</code></td><td>Format RFC valide</td></tr>
+          <tr><td>Indicatif téléphone</td><td>🇸🇳 +221</td><td>9 pays MVP disponibles</td></tr>
+          <tr><td>Numéro téléphone</td><td><code>771234567</code></td><td>9 chiffres pour le Sénégal</td></tr>
+          <tr><td>Mot de passe</td><td><code>Aissatou2026!</code></td><td>≥ 8 caractères + composition</td></tr>
+          <tr><td>Code SMS OTP</td><td><code>123456</code></td><td>N'importe quels 6 chiffres</td></tr>
+          <tr><td>Pays de résidence</td><td>Sénégal</td><td>Pré-rempli depuis l'indicatif</td></tr>
+          <tr><td>Ville</td><td>Dakar</td><td>10 villes par pays + « Autre »</td></tr>
+          <tr><td>Langue</td><td>Français</td><td>FR ou EN</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- 4. Scénarios à tester -->
+    <section class="section" id="scenarios">
+      <h2><span class="icon"><i class="fa fa-vial"></i></span> 4. Scénarios à tester</h2>
+      <p>Au-delà du parcours nominal, testez quelques cas particuliers pour valider la robustesse du flux :</p>
+
+      <div class="scenario">
+        <div class="scenario-title"><i class="fa fa-circle-exclamation"></i> Scénario 1 — Âge inférieur à 18 ans</div>
+        <ul>
+          <li>Saisissez une date de naissance qui rend l'utilisateur mineur (ex : <code>15/03/2015</code>)</li>
+          <li>Vérifiez qu'un message d'erreur apparaît immédiatement sous le champ</li>
+          <li>Vérifiez que la soumission reste bloquée tant que la date n'est pas corrigée</li>
+        </ul>
+      </div>
+
+      <div class="scenario">
+        <div class="scenario-title"><i class="fa fa-circle-exclamation"></i> Scénario 2 — Format e-mail invalide</div>
+        <ul>
+          <li>Saisissez un e-mail mal formé (ex : <code>aissatou@gnail</code> sans <code>.com</code>)</li>
+          <li>Quittez le champ → un message d'erreur doit apparaître</li>
+          <li>Corrigez → le message disparaît</li>
+        </ul>
+      </div>
+
+      <div class="scenario">
+        <div class="scenario-title"><i class="fa fa-circle-exclamation"></i> Scénario 3 — Numéro de téléphone trop court</div>
+        <ul>
+          <li>Sélectionnez 🇸🇳 +221 et saisissez <code>77 123 45</code> (seulement 7 chiffres au lieu de 9)</li>
+          <li>Vérifiez qu'un message d'erreur apparaît : « Numéro invalide pour le pays sélectionné »</li>
+          <li>Changez d'indicatif pour 🇲🇱 +223 (Mali = 8 chiffres) et vérifiez que la validation s'adapte</li>
+        </ul>
+      </div>
+
+      <div class="scenario">
+        <div class="scenario-title"><i class="fa fa-circle-exclamation"></i> Scénario 4 — Mot de passe non conforme</div>
+        <ul>
+          <li>Saisissez <code>aissatou</code> (que des minuscules) → les coches restent grises</li>
+          <li>Ajoutez progressivement majuscule, chiffre, caractère spécial → les coches passent au vert</li>
+          <li>Cliquez sur l'icône <i class="fa fa-eye"></i> pour afficher / masquer le mot de passe</li>
+        </ul>
+      </div>
+
+      <div class="scenario">
+        <div class="scenario-title"><i class="fa fa-circle-exclamation"></i> Scénario 5 — Modifier ses informations depuis l'écran OTP</div>
+        <ul>
+          <li>Arrivez à l'écran OTP (écran 3)</li>
+          <li>Cliquez sur <strong>« Modifier mes informations »</strong> en bas</li>
+          <li>Vérifiez que vous revenez à l'écran d'inscription avec <strong>tous les champs préremplis</strong></li>
+          <li>Modifiez le numéro de téléphone, soumettez → vérifiez que le nouveau numéro masqué s'affiche sur l'OTP</li>
+        </ul>
+      </div>
+
+      <div class="scenario">
+        <div class="scenario-title"><i class="fa fa-circle-exclamation"></i> Scénario 6 — Cascade pays → ville</div>
+        <ul>
+          <li>Sur l'écran Profil de base, le pays est pré-sélectionné selon l'indicatif tél de l'inscription</li>
+          <li>Changez le pays manuellement → vérifiez que la liste des villes se met à jour automatiquement</li>
+          <li>Choisissez « Autre (préciser) » dans la liste des villes → un champ texte libre apparaît</li>
+        </ul>
+      </div>
+
+      <div class="scenario">
+        <div class="scenario-title"><i class="fa fa-circle-exclamation"></i> Scénario 7 — Affichage dynamique du nom au dashboard</div>
+        <ul>
+          <li>Arrivez au dashboard (écran 5)</li>
+          <li>Vérifiez que <strong>« Bonjour {Prénom} »</strong> affiche bien le prénom que vous avez saisi à l'inscription</li>
+          <li>Vérifiez que la sidebar gauche montre le nom complet et les initiales (avatar)</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- 5. Points clés à valider -->
+    <section class="section" id="points-cles">
+      <h2><span class="icon"><i class="fa fa-clipboard-check"></i></span> 5. Points clés à valider</h2>
+      <p>Lors de votre revue, prêtez une attention particulière aux éléments suivants :</p>
+
+      <h3><i class="fa fa-language me-1" style="color:var(--teal)"></i> Français et terminologie</h3>
+      <ul>
+        <li>Les libellés sont-ils naturels et compréhensibles pour un public africain francophone ?</li>
+        <li>Les messages d'erreur sont-ils clairs et actionnables ?</li>
+        <li>Les exemples (Ex : Aïssatou, Diop, etc.) sont-ils culturellement appropriés ?</li>
+      </ul>
+
+      <h3><i class="fa fa-mobile-screen me-1" style="color:var(--teal)"></i> Adaptation au contexte africain</h3>
+      <ul>
+        <li>Les 9 pays MVP sont bien présents : Sénégal, Côte d'Ivoire, Mali, Bénin, Togo, Burkina Faso, Niger, Cameroun, RDC</li>
+        <li>Les indicatifs téléphoniques sont corrects et la validation respecte les formats nationaux</li>
+        <li>L'identifiant flexible (e-mail OU téléphone) reflète l'usage mobile-first</li>
+      </ul>
+
+      <h3><i class="fa fa-shield-halved me-1" style="color:var(--teal)"></i> Sécurité et conformité</h3>
+      <ul>
+        <li>La politique de mot de passe est-elle suffisamment robuste sans être trop contraignante ?</li>
+        <li>Les deux consentements (CGU + données de santé) sont-ils bien obligatoires ?</li>
+        <li>La protection de la vie privée est-elle évoquée au bon moment ?</li>
+      </ul>
+
+      <h3><i class="fa fa-stopwatch me-1" style="color:var(--teal)"></i> Friction et durée</h3>
+      <ul>
+        <li>L'ensemble du parcours peut-il être complété en moins de 3 minutes ?</li>
+        <li>Y a-t-il des étapes ou des champs qui semblent superflus ?</li>
+        <li>Le patient comprend-il qu'il pourra compléter son profil plus tard ?</li>
+      </ul>
+    </section>
+
+    <!-- 6. Hors périmètre -->
+    <section class="section" id="hors-perimetre">
+      <h2><span class="icon"><i class="fa fa-circle-xmark"></i></span> 6. Hors périmètre de cette validation</h2>
+      <p>Les fonctionnalités suivantes existeront dans le produit final mais <strong>ne sont pas l'objet de cette validation</strong> :</p>
+      <ul>
+        <li><strong>Reconnexion</strong> (login d'un patient déjà inscrit) — couvert dans une SF dédiée à venir</li>
+        <li><strong>Sous-pages de l'espace patient</strong> (Mes RDV, Prendre RDV, Mes documents, Mon profil) — visibles dans la sidebar mais non-cliquables ici</li>
+        <li><strong>Prise de rendez-vous</strong> avec un praticien — flux séparé (Epic 11 dans le backlog MVP)</li>
+        <li><strong>Authentification multi-facteurs (MFA)</strong> — reportée en post-MVP</li>
+        <li><strong>Suppression de compte</strong>, <strong>profils dépendants</strong> (enfants, parents sous tutelle) — post-MVP</li>
+      </ul>
+      <div class="callout callout-warn">
+        <i class="fa fa-triangle-exclamation"></i>
+        <div>
+          Les liens vers ces sections (sidebar du dashboard, bouton « Prendre un RDV ») sont volontairement <strong>désactivés</strong> dans cette validation. Cela ne reflète pas le produit final.
+        </div>
+      </div>
+    </section>
+
+    <!-- 7. Feedback -->
+    <section class="section" id="feedback">
+      <h2><span class="icon"><i class="fa fa-comments"></i></span> 7. Comment donner votre avis</h2>
+      <p>Votre retour est essentiel pour finaliser la spécification fonctionnelle et lancer le développement. Nous vous proposons trois canaux :</p>
+
+      <h3>Pendant le test</h3>
+      <p>
+        Notez vos remarques au fil de l'eau (capture d'écran + commentaire). Format suggéré :
+      </p>
+      <ul>
+        <li><strong>Écran concerné</strong> (ex : Écran 2 — Inscription)</li>
+        <li><strong>Type</strong> (bug · suggestion UX · libellé · règle métier · autre)</li>
+        <li><strong>Description</strong> (ce que vous avez observé, ce qui pose question, et idéalement votre suggestion d'amélioration)</li>
+      </ul>
+
+      <h3>Après le test</h3>
+      <p>
+        Transmettez votre liste consolidée à <strong>Namchhoen VENG (Product Owner FUENI)</strong> par e-mail ou via le canal habituel.
+        Les retours seront consolidés et présentés au prochain comité de pilotage.
+      </p>
+
+      <div class="callout callout-tip">
+        <i class="fa fa-handshake"></i>
+        <div>
+          <strong>Merci pour votre temps !</strong> Vos retours conditionnent directement la qualité de l'expérience finale pour les patients du Sénégal, de la Côte d'Ivoire et des 7 autres pays MVP.
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <footer class="footer">
+    <p>
+      <strong>FUENI MVP — Prototype Validation</strong> · v1.3.0<br>
+      Document préparé par Paris Partners pour <strong>Nazounki</strong> · Mai 2026<br>
+      <a href="01-home.html" style="color: var(--teal); font-weight: 600; text-decoration: none;">
+        <i class="fa fa-arrow-right me-1"></i>Démarrer le parcours
+      </a>
+    </p>
+  </footer>
+
+</body>
+</html>
