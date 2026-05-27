@@ -4,6 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>FUENI — Une plateforme. Tous vos soins.</title>
+  <script>try{localStorage.setItem('fueni_lang','fr');}catch(e){}</script>
+  <script src="naz-i18n.js" defer></script>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -313,13 +315,13 @@
     .chat-widget { position: fixed; bottom: 24px; right: 24px; width: 56px; height: 56px; border-radius: 50%; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; box-shadow: 0 8px 24px rgba(21,94,117,0.4); cursor: pointer; z-index: 50; }
   </style>
 </head>
-<body>
+<body data-i18n-pagetitle="home.page_title" data-i18n-toggle>
 
   <!-- Proto bar -->
   <div class="proto-bar">
-    <span><i class="fa fa-eye text-warning me-1"></i><strong>Écran 01 — Homepage publique FUENI</strong> · Site Public</span>
+    <span><i class="fa fa-eye text-warning me-1"></i><span data-i18n="home.proto_bar">Écran 01 — Homepage publique FUENI · Site Public</span></span>
     <span class="proto-spacer"></span>
-    
+
   </div>
 
   <!-- Navigation -->
@@ -330,41 +332,35 @@
         <span class="logo-text">FUENI</span>
       </a>
       <div class="nav-links">
-        <a href="#" class="active">Accueil</a>
-        <a href="#fonctionnalites">Fonctionnalités</a>
-        <a href="#audiences">Pour qui ?</a>
-        <a href="#securite">Sécurité</a>
-        <a href="#">Contact</a>
+        <a href="#" class="active" data-i18n="home.nav.home">Accueil</a>
+        <a href="#fonctionnalites" data-i18n="home.nav.features">Fonctionnalités</a>
+        <a href="#audiences" data-i18n="home.nav.audiences">Pour qui ?</a>
+        <a href="#securite" data-i18n="home.nav.security">Sécurité</a>
+        <a href="#" data-i18n="home.nav.contact">Contact</a>
       </div>
       <div class="nav-actions">
         <a href="02-patient-signup.html" class="btn-pill patient">
-          <i class="fa fa-user"></i>Espace patient
+          <i class="fa fa-user"></i><span data-i18n="home.nav.patient_area">Espace patient</span>
         </a>
         <a href="#" class="btn-pill">
-          <i class="fa fa-user-md"></i>Espace professionnel
+          <i class="fa fa-user-md"></i><span data-i18n="home.nav.pro_area">Espace professionnel</span>
         </a>
-        <div class="lang-selector">
-          <span class="fw-semibold">FR</span>
-          <span style="opacity: 0.6;">·</span>
-          <span>XOF</span>
-          <i class="fa fa-globe"></i>
-        </div>
-        <button class="theme-toggle" title="Mode sombre">
+        <button class="theme-toggle" data-i18n-title="home.nav.dark_mode" title="Mode sombre">
           <i class="fa-regular fa-moon"></i>
         </button>
         <div class="signup-dropdown" id="signupDropdown">
           <button type="button" class="btn-signin" onclick="toggleSignupMenu(event)">
-            S'inscrire
+            <span data-i18n="home.nav.signup">S'inscrire</span>
             <i class="fa fa-caret-down"></i>
           </button>
           <div class="signup-menu">
             <a href="02-patient-signup.html" class="signup-option">
               <i class="fa fa-user"></i>
-              Je suis patient
+              <span data-i18n="home.nav.signup_patient">Je suis patient</span>
             </a>
             <a href="#" class="signup-option">
               <i class="fa fa-user-md"></i>
-              Je suis professionnel de santé
+              <span data-i18n="home.nav.signup_pro">Je suis professionnel de santé</span>
             </a>
           </div>
         </div>
@@ -376,12 +372,12 @@
   <section class="hero">
     <div class="hero-inner">
       <div>
-        <div class="hero-tag">Parce que votre santé mérite ce qu'il y a de mieux, où que vous soyez !</div>
-        <h1 class="hero-title">
+        <div class="hero-tag" data-i18n="home.hero.tag">Parce que votre santé mérite ce qu'il y a de mieux, où que vous soyez !</div>
+        <h1 class="hero-title" data-i18n-html="home.hero.title_html">
           Une plateforme.<br>
           <span class="accent">Tous vos soins.</span>
         </h1>
-        <p class="hero-desc">
+        <p class="hero-desc" data-i18n="home.hero.desc">
           FUENI rassemble patients, praticiens, pharmacies et hôpitaux dans une seule plateforme
           moderne et sécurisée. Pensée pour vous garantir une tranquillité d'esprit, vous assister et
           vous servir là où vous voulez, quand vous en avez besoin.
@@ -389,29 +385,29 @@
         <form class="hero-search" onsubmit="event.preventDefault();">
           <div class="field">
             <i class="fa fa-search"></i>
-            <input type="text" placeholder="Nom, spécialité, établissement…" aria-label="Rechercher">
+            <input type="text" data-i18n-placeholder="home.hero.search_ph" placeholder="Nom, spécialité, établissement…" data-i18n-aria="home.hero.search_aria" aria-label="Rechercher">
           </div>
           <div class="field">
             <i class="fa fa-location-dot"></i>
-            <input type="text" placeholder="Ville, pays…" aria-label="Localisation">
+            <input type="text" data-i18n-placeholder="home.hero.location_ph" placeholder="Ville, pays…" data-i18n-aria="home.hero.location_aria" aria-label="Localisation">
           </div>
           <button type="submit" class="btn-search">
             <i class="fa fa-search"></i>
-            Rechercher
+            <span data-i18n="home.hero.search_btn">Rechercher</span>
           </button>
         </form>
         <div class="hero-stats">
           <div class="hero-stat">
             <div class="num">14</div>
-            <div class="label">Pays francophones</div>
+            <div class="label" data-i18n="home.hero.stat1_label">Pays francophones</div>
           </div>
           <div class="hero-stat">
             <div class="num">5</div>
-            <div class="label">Devises supportées</div>
+            <div class="label" data-i18n="home.hero.stat2_label">Devises supportées</div>
           </div>
           <div class="hero-stat">
             <div class="num">100%</div>
-            <div class="label">Conforme RGPD</div>
+            <div class="label" data-i18n="home.hero.stat3_label">Conforme RGPD</div>
           </div>
         </div>
       </div>
@@ -422,15 +418,15 @@
         <div class="hero-shape-1">
           <div class="icon"><i class="fa fa-calendar-check"></i></div>
           <div class="info">
-            <div class="label">Prochain RDV</div>
-            <div class="value">Aujourd'hui · 14:30</div>
+            <div class="label" data-i18n="home.hero.shape1_label">Prochain RDV</div>
+            <div class="value" data-i18n="home.hero.shape1_value">Aujourd'hui · 14:30</div>
           </div>
         </div>
         <div class="hero-shape-2">
           <div class="icon-pct">98%</div>
           <div class="info">
-            <div class="label">Taux de satisfaction</div>
-            <div class="value">Patients FUENI</div>
+            <div class="label" data-i18n="home.hero.shape2_label">Taux de satisfaction</div>
+            <div class="value" data-i18n="home.hero.shape2_value">Patients FUENI</div>
           </div>
         </div>
       </div>
@@ -440,33 +436,33 @@
   <!-- About / How it works -->
   <section id="a-propos">
     <div class="section-inner">
-      <div class="section-tag">Comment ça marche</div>
-      <h2 class="section-title">
+      <div class="section-tag" data-i18n="home.how.tag">Comment ça marche</div>
+      <h2 class="section-title" data-i18n-html="home.how.title_html">
         Une solution simple,<br>
         <span class="accent">en trois étapes.</span>
       </h2>
-      <p class="section-subtitle">
+      <p class="section-subtitle" data-i18n="home.how.subtitle">
         Que vous soyez patient, professionnel ou structure de soins de santé, l'accès à FUENI est immédiat. Création de compte en moins d'une minute, vérification rapide, et c'est parti. L'excellence médicale, à portée de tous.
       </p>
 
       <div class="how-grid">
         <div class="how-card">
           <div class="how-icon"><i class="fa fa-user-plus"></i></div>
-          <div class="how-step">Étape 1</div>
-          <h3>Créez votre compte</h3>
-          <p>Inscription en quelques clics. Aucune carte bancaire requise. Patient, praticien ou institution : choisissez votre profil et commencez immédiatement.</p>
+          <div class="how-step" data-i18n="home.how.step1_label">Étape 1</div>
+          <h3 data-i18n="home.how.step1_title">Créez votre compte</h3>
+          <p data-i18n="home.how.step1_desc">Inscription en quelques clics. Aucune carte bancaire requise. Patient, praticien ou institution : choisissez votre profil et commencez immédiatement.</p>
         </div>
         <div class="how-card">
           <div class="how-icon"><i class="fa fa-shield-halved"></i></div>
-          <div class="how-step">Étape 2</div>
-          <h3>Vérifiez votre identité</h3>
-          <p>Vérification par SMS pour les patients · validation manuelle après vérification de vos qualifications pour les praticiens (RPPS, Ordre des Médecins, justificatifs).</p>
+          <div class="how-step" data-i18n="home.how.step2_label">Étape 2</div>
+          <h3 data-i18n="home.how.step2_title">Vérifiez votre identité</h3>
+          <p data-i18n="home.how.step2_desc">Vérification par SMS pour les patients · validation manuelle après vérification de vos qualifications pour les praticiens (RPPS, Ordre des Médecins, justificatifs).</p>
         </div>
         <div class="how-card">
           <div class="how-icon"><i class="fa fa-stethoscope"></i></div>
-          <div class="how-step">Étape 3</div>
-          <h3>Profitez de FUENI</h3>
-          <p>Prenez vos RDV, consultez vos dossiers, communiquez avec votre médecin, second avis, expertises et plus, gérez vos paiements par divers moyens, y compris Mobile Money. Tout, depuis une seule plateforme.</p>
+          <div class="how-step" data-i18n="home.how.step3_label">Étape 3</div>
+          <h3 data-i18n="home.how.step3_title">Profitez de FUENI</h3>
+          <p data-i18n="home.how.step3_desc">Prenez vos RDV, consultez vos dossiers, communiquez avec votre médecin, second avis, expertises et plus, gérez vos paiements par divers moyens, y compris Mobile Money. Tout, depuis une seule plateforme.</p>
         </div>
       </div>
     </div>
@@ -475,11 +471,11 @@
   <!-- For who -->
   <section id="audiences" class="audience-section">
     <div class="section-inner">
-      <div class="section-tag">Pour qui ?</div>
-      <h2 class="section-title">
+      <div class="section-tag" data-i18n="home.audiences.tag">Pour qui ?</div>
+      <h2 class="section-title" data-i18n-html="home.audiences.title_html">
         FUENI s'adapte à <span class="accent">votre rôle.</span>
       </h2>
-      <p class="section-subtitle">
+      <p class="section-subtitle" data-i18n="home.audiences.subtitle">
         Chaque utilisateur a son espace dédié et ses outils. Choisissez le vôtre.
       </p>
 
@@ -487,57 +483,56 @@
         <!-- Patient -->
         <div class="audience-card">
           <div class="audience-icon"><i class="fa fa-user"></i></div>
-          <h3 class="audience-title">Patient</h3>
-          <p class="audience-tagline">L'excellence médicale, à portée de tous.</p>
-          <p class="audience-desc">Pour particuliers — gérez votre santé et celle de vos proches.</p>
+          <h3 class="audience-title" data-i18n="home.audiences.patient_title">Patient</h3>
+          <p class="audience-tagline" data-i18n="home.audiences.patient_tag">L'excellence médicale, à portée de tous.</p>
+          <p class="audience-desc" data-i18n="home.audiences.patient_desc">Pour particuliers — gérez votre santé et celle de vos proches.</p>
           <ul class="audience-features">
-            <li class="audience-feature"><i class="fa fa-check"></i>Trouvez et réservez avec un médecin</li>
-            <li class="audience-feature"><i class="fa fa-check"></i>Trouver un service (examen, produit)</li>
-            <li class="audience-feature"><i class="fa fa-check"></i>Conservez vos documents médicaux</li>
-            <li class="audience-feature"><i class="fa fa-check"></i>Échangez avec votre praticien</li>
-            <li class="audience-feature"><i class="fa fa-check"></i>Paiement Mobile Money simple</li>
+            <li class="audience-feature"><i class="fa fa-check"></i><span data-i18n="home.audiences.patient_f1">Trouvez et réservez avec un médecin</span></li>
+            <li class="audience-feature"><i class="fa fa-check"></i><span data-i18n="home.audiences.patient_f2">Trouver un service (examen, produit)</span></li>
+            <li class="audience-feature"><i class="fa fa-check"></i><span data-i18n="home.audiences.patient_f3">Conservez vos documents médicaux</span></li>
+            <li class="audience-feature"><i class="fa fa-check"></i><span data-i18n="home.audiences.patient_f4">Paiement Mobile Money simple</span></li>
           </ul>
           <a href="02-patient-signup.html" class="audience-cta audience-cta-primary">
-            Créer mon compte patient
+            <span data-i18n="home.audiences.patient_cta">Créer mon compte patient</span>
             <i class="fa fa-arrow-right"></i>
           </a>
         </div>
 
         <!-- Praticien (featured) -->
         <div class="audience-card featured">
-          <div class="audience-badge">Le plus populaire</div>
+          <div class="audience-badge" data-i18n="home.audiences.badge_popular">Le plus populaire</div>
           <div class="audience-icon"><i class="fa fa-user-md"></i></div>
-          <h3 class="audience-title">Praticien</h3>
-          <p class="audience-tagline">Votre expertise à ceux qui en ont besoin.</p>
-          <p class="audience-desc">Médecin, pharmacien, infirmier — gérez votre activité de A à Z.</p>
+          <h3 class="audience-title" data-i18n="home.audiences.pro_title">Praticien</h3>
+          <p class="audience-tagline" data-i18n="home.audiences.pro_tag">Votre expertise à ceux qui en ont besoin.</p>
+          <p class="audience-desc" data-i18n="home.audiences.pro_desc">Médecin, pharmacien, infirmier — gérez votre activité de A à Z.</p>
           <ul class="audience-features">
-            <li class="audience-feature"><i class="fa fa-check"></i>Planning + RDV intelligent</li>
-            <li class="audience-feature"><i class="fa fa-check"></i>Dossiers patients structurés (POMR/SOAP)</li>
-            <li class="audience-feature"><i class="fa fa-check"></i>Ordonnances électroniques signées</li>
-            <li class="audience-feature"><i class="fa fa-check"></i>Tableau de bord analytics</li>
-            <li class="audience-feature"><i class="fa fa-check"></i>Wallet · payouts automatiques</li>
+            <li class="audience-feature"><i class="fa fa-check"></i><span data-i18n="home.audiences.pro_f1">Planning + RDV intelligent</span></li>
+            <li class="audience-feature"><i class="fa fa-check"></i><span data-i18n="home.audiences.pro_f2">Dossiers patients structurés (POMR/SOAP)</span></li>
+            <li class="audience-feature"><i class="fa fa-check"></i><span data-i18n="home.audiences.pro_f3">Partage sécurisé d'ordonnances et comptes-rendus</span></li>
+            <li class="audience-feature"><i class="fa fa-check"></i><span data-i18n="home.audiences.pro_f4">Tableau de bord analytics</span></li>
+            <li class="audience-feature"><i class="fa fa-check"></i><span data-i18n="home.audiences.pro_f5">Wallet · payouts automatiques</span></li>
           </ul>
           <a href="#" class="audience-cta audience-cta-primary">
-            Découvrir les plans praticien
+            <span data-i18n="home.audiences.pro_cta">Découvrir les plans praticien</span>
             <i class="fa fa-arrow-right"></i>
           </a>
         </div>
 
         <!-- Cabinet / Hôpital -->
         <div class="audience-card coming-soon">
-          <div class="audience-badge" style="background:#e2e8f0; color:#475569;">Phase 2</div>
+          <div class="audience-badge" style="background:#e2e8f0; color:#475569;" data-i18n="home.audiences.badge_phase2">Phase 2</div>
           <div class="audience-icon"><i class="fa fa-hospital"></i></div>
-          <h3 class="audience-title">Cabinet & Hôpital</h3>
-          <p class="audience-desc">Pour structures de santé — coordonnez votre équipe et vos services.</p>
+          <h3 class="audience-title" data-i18n="home.audiences.hosp_title">Cabinet & Hôpital</h3>
+          <p class="audience-desc" data-i18n="home.audiences.hosp_desc">Pour structures de santé — coordonnez votre équipe et vos services.</p>
           <ul class="audience-features">
-            <li class="audience-feature"><i class="fa fa-check"></i>Gestion multi-praticiens</li>
-            <li class="audience-feature"><i class="fa fa-check"></i>Tableau de bord institutionnel</li>
-            <li class="audience-feature"><i class="fa fa-check"></i>Coordination des soins</li>
-            <li class="audience-feature"><i class="fa fa-check"></i>Accueil de patients non-résidents</li>
-            <li class="audience-feature"><i class="fa fa-check"></i>Statistiques avancées</li>
-            <li class="audience-feature"><i class="fa fa-check"></i>Intégration assurances</li>
+            <li class="audience-feature"><i class="fa fa-check"></i><span data-i18n="home.audiences.hosp_f1">Gestion multi-praticiens</span></li>
+            <li class="audience-feature"><i class="fa fa-check"></i><span data-i18n="home.audiences.hosp_f2">Tableau de bord institutionnel</span></li>
+            <li class="audience-feature"><i class="fa fa-check"></i><span data-i18n="home.audiences.hosp_f3">Coordination des soins</span></li>
+            <li class="audience-feature"><i class="fa fa-check"></i><span data-i18n="home.audiences.hosp_f4">Accueil de patients non-résidents</span></li>
+            <li class="audience-feature"><i class="fa fa-check"></i><span data-i18n="home.audiences.hosp_f5">Statistiques avancées</span></li>
+            <li class="audience-feature"><i class="fa fa-check"></i><span data-i18n="home.audiences.hosp_f6">Intégration assurances</span></li>
           </ul>
-          <a class="audience-cta">Disponible en 2026 →</a>
+          <a class="audience-cta" data-i18n="home.audiences.hosp_cta">Bientôt disponible →</a>
         </div>
       </div>
     </div>
@@ -546,29 +541,29 @@
   <!-- Features grid -->
   <section id="fonctionnalites">
     <div class="section-inner">
-      <div class="section-tag">Fonctionnalités</div>
-      <h2 class="section-title">
+      <div class="section-tag" data-i18n="home.features.tag">Fonctionnalités</div>
+      <h2 class="section-title" data-i18n-html="home.features.title_html">
         Tout ce qu'il faut, <span class="accent">rien de superflu.</span>
       </h2>
-      <p class="section-subtitle">
+      <p class="section-subtitle" data-i18n="home.features.subtitle">
         Des fonctionnalités pensées pour la pratique quotidienne en cabinet, à l'hôpital et au domicile du patient.
       </p>
 
       <div class="features-grid">
         <div class="feature-card">
           <div class="feature-icon"><i class="fa fa-calendar-days"></i></div>
-          <h4>Prise de RDV intelligente</h4>
-          <p>Recherche par spécialité, ville et disponibilité. Réservation en quelques secondes. Notifications SMS + email automatiques 48 h et 1 h 30 avant.</p>
+          <h4 data-i18n="home.features.f1_title">Prise de RDV intelligente</h4>
+          <p data-i18n="home.features.f1_desc">Recherche par spécialité, ville et disponibilité. Réservation en quelques secondes. Notifications SMS + email automatiques 48 h et 1 h 30 avant.</p>
         </div>
         <div class="feature-card">
           <div class="feature-icon"><i class="fa fa-folder-open"></i></div>
-          <h4>Dossier médical structuré</h4>
-          <p>Format POMR/SOAP standard international. Antécédents, traitements, diagnostics SNOMED-CT. Accessible hors-ligne en cas de besoin.</p>
+          <h4 data-i18n="home.features.f2_title">Dossier médical structuré</h4>
+          <p data-i18n="home.features.f2_desc">Format POMR/SOAP standard international. Antécédents, traitements, diagnostics SNOMED-CT. Accessible hors-ligne en cas de besoin.</p>
         </div>
         <div class="feature-card">
           <div class="feature-icon"><i class="fa fa-wallet"></i></div>
-          <h4>Paiement Mobile Money</h4>
-          <p>Flutterwave + Wave + Orange Money + MTN Money. Wallet praticien avec payout automatique sous quelques jours.</p>
+          <h4 data-i18n="home.features.f3_title">Paiement Mobile Money</h4>
+          <p data-i18n="home.features.f3_desc">Flutterwave + Wave + Orange Money + MTN Money. Wallet praticien avec payout automatique sous quelques jours.</p>
         </div>
       </div>
     </div>
@@ -579,35 +574,35 @@
     <div class="section-inner">
       <div class="section-tag" style="color: var(--accent);">
         <span style="background: var(--accent); width: 8px; height: 8px; border-radius: 50%;"></span>
-        Sécurité &amp; conformité
+        <span data-i18n="home.security.tag">Sécurité &amp; conformité</span>
       </div>
-      <h2 class="section-title">
+      <h2 class="section-title" data-i18n-html="home.security.title_html">
         Vos données restent <span class="accent">vos données.</span>
       </h2>
-      <p class="section-subtitle">
+      <p class="section-subtitle" data-i18n="home.security.subtitle">
         FUENI est conçu avec les standards de sécurité les plus exigeants de l'industrie santé. Chiffrement de bout en bout, audit complet, et conformité dans chaque pays où vous exercez.
       </p>
 
       <div class="security-grid">
         <div class="security-item">
           <div class="ico"><i class="fa fa-lock"></i></div>
-          <h5>Chiffrement AES-256</h5>
-          <p>Vos dossiers médicaux sont chiffrés AVANT stockage. Même nos équipes ne peuvent pas y accéder.</p>
+          <h5 data-i18n="home.security.s1_title">Chiffrement AES-256</h5>
+          <p data-i18n="home.security.s1_desc">Vos dossiers médicaux sont chiffrés AVANT stockage. Même nos équipes ne peuvent pas y accéder.</p>
         </div>
         <div class="security-item">
           <div class="ico"><i class="fa fa-signature"></i></div>
-          <h5>Signatures électroniques PKI</h5>
-          <p>Ordonnances et comptes-rendus signés cryptographiquement, immuables, légalement opposables.</p>
+          <h5 data-i18n="home.security.s2_title">Signatures électroniques PKI</h5>
+          <p data-i18n="home.security.s2_desc">Ordonnances et comptes-rendus signés cryptographiquement, immuables, légalement opposables.</p>
         </div>
         <div class="security-item">
           <div class="ico"><i class="fa fa-shield-halved"></i></div>
-          <h5>Authentification forte</h5>
-          <p>Double authentification (SMS, application, clé physique) pour tous les professionnels.</p>
+          <h5 data-i18n="home.security.s3_title">Authentification forte</h5>
+          <p data-i18n="home.security.s3_desc">Double authentification (SMS, application, clé physique) pour tous les professionnels.</p>
         </div>
         <div class="security-item">
           <div class="ico"><i class="fa fa-balance-scale"></i></div>
-          <h5>Conforme par pays</h5>
-          <p>RGPD (Europe), CDP (Sénégal), ARTCI (CI), APDP (Mali, Bénin), HDS (option France).</p>
+          <h5 data-i18n="home.security.s4_title">Conforme par pays</h5>
+          <p data-i18n="home.security.s4_desc">RGPD (Europe), CDP (Sénégal), ARTCI (CI), APDP (Mali, Bénin), HDS (option France).</p>
         </div>
       </div>
     </div>
@@ -616,30 +611,25 @@
   <!-- Coverage -->
   <section class="coverage-section">
     <div class="section-inner">
-      <div class="section-tag">Couverture</div>
-      <h2 class="section-title">
-        14 pays. <span class="accent">Une seule plateforme.</span>
+      <div class="section-tag" data-i18n="home.coverage.tag">Couverture</div>
+      <h2 class="section-title" data-i18n-html="home.coverage.title_html">
+        9 pays au lancement. <span class="accent">Une seule plateforme.</span>
       </h2>
-      <p class="section-subtitle">
-        FUENI est conçue pour fonctionner dans chaque pays francophone d'Afrique et en Europe.
-        Affichage en devise locale, paiements adaptés, conformité locale.
+      <p class="section-subtitle" data-i18n="home.coverage.subtitle">
+        FUENI démarre dans 9 pays francophones d'Afrique de l'Ouest et Centrale (UEMOA + Cameroun + RDC).
+        Affichage en devise locale, paiements adaptés, conformité locale. D'autres pays suivront.
       </p>
 
       <div class="coverage-grid">
         <div class="country-chip"><span class="flag">🇸🇳</span>Sénégal</div>
         <div class="country-chip"><span class="flag">🇨🇮</span>Côte d'Ivoire</div>
-        <div class="country-chip"><span class="flag">🇨🇲</span>Cameroun</div>
         <div class="country-chip"><span class="flag">🇲🇱</span>Mali</div>
-        <div class="country-chip"><span class="flag">🇨🇩</span>RDC</div>
         <div class="country-chip"><span class="flag">🇧🇯</span>Bénin</div>
         <div class="country-chip"><span class="flag">🇹🇬</span>Togo</div>
         <div class="country-chip"><span class="flag">🇧🇫</span>Burkina Faso</div>
         <div class="country-chip"><span class="flag">🇳🇪</span>Niger</div>
-        <div class="country-chip"><span class="flag">🇹🇩</span>Tchad</div>
-        <div class="country-chip"><span class="flag">🇬🇦</span>Gabon</div>
-        <div class="country-chip"><span class="flag">🇨🇬</span>Congo</div>
-        <div class="country-chip"><span class="flag">🇲🇬</span>Madagascar</div>
-        <div class="country-chip"><span class="flag">🇫🇷</span>France (export)</div>
+        <div class="country-chip"><span class="flag">🇨🇲</span>Cameroun</div>
+        <div class="country-chip"><span class="flag">🇨🇩</span>RDC</div>
       </div>
     </div>
   </section>
@@ -647,46 +637,46 @@
   <!-- Testimonials -->
   <section class="testimonials-section">
     <div class="section-inner">
-      <div class="section-tag">Ils utilisent FUENI</div>
-      <h2 class="section-title">
+      <div class="section-tag" data-i18n="home.testimonials.tag">Ils utilisent FUENI</div>
+      <h2 class="section-title" data-i18n-html="home.testimonials.title_html">
         Adoptés par des professionnels.<br>
         <span class="accent">Plébiscités par leurs patients.</span>
       </h2>
-      <p class="section-subtitle">
+      <p class="section-subtitle" data-i18n="home.testimonials.subtitle">
         Témoignages illustratifs — la plateforme étant en cours de lancement, ces témoignages sont fictifs mais représentent les retours que nous visons.
       </p>
 
       <div class="testimonials-grid">
         <div class="testimonial-card">
-          <span class="illustrative-badge">Exemple illustratif</span>
-          <p class="quote">FUENI m'a permis de gagner 2 h par jour sur la gestion administrative. Mes patients adorent prendre RDV en ligne. Le dossier patient structuré est devenu indispensable au quotidien.</p>
+          <span class="illustrative-badge" data-i18n="home.testimonials.illustrative">Exemple illustratif</span>
+          <p class="quote" data-i18n="home.testimonials.t1_quote">FUENI m'a permis de gagner 2 h par jour sur la gestion administrative. Mes patients adorent prendre RDV en ligne. Le dossier patient structuré est devenu indispensable au quotidien.</p>
           <div class="testimonial-author">
             <div class="author-avatar">MS</div>
             <div class="author-info">
               <div class="name">Dr. Mamadou Sow</div>
-              <div class="role">Cardiologue · Dakar, Sénégal</div>
+              <div class="role" data-i18n="home.testimonials.t1_role">Cardiologue · Dakar, Sénégal</div>
             </div>
           </div>
         </div>
         <div class="testimonial-card">
-          <span class="illustrative-badge">Exemple illustratif</span>
-          <p class="quote">En tant que pharmacienne en zone rurale, FUENI est une révolution. Les ordonnances signées électroniquement arrivent directement, plus de doute sur l'authenticité.</p>
+          <span class="illustrative-badge" data-i18n="home.testimonials.illustrative">Exemple illustratif</span>
+          <p class="quote" data-i18n="home.testimonials.t2_quote">En tant que pharmacienne en zone rurale, FUENI est une révolution. Les ordonnances signées électroniquement arrivent directement, plus de doute sur l'authenticité.</p>
           <div class="testimonial-author">
             <div class="author-avatar" style="background: #f59e0b;">AD</div>
             <div class="author-info">
               <div class="name">Aminata Diallo</div>
-              <div class="role">Pharmacienne · Bamako, Mali</div>
+              <div class="role" data-i18n="home.testimonials.t2_role">Pharmacienne · Bamako, Mali</div>
             </div>
           </div>
         </div>
         <div class="testimonial-card">
-          <span class="illustrative-badge">Exemple illustratif</span>
-          <p class="quote">Prendre RDV avec mon médecin depuis mon téléphone, c'est devenu naturel. Et tous mes documents médicaux sont au même endroit, je ne perds plus rien.</p>
+          <span class="illustrative-badge" data-i18n="home.testimonials.illustrative">Exemple illustratif</span>
+          <p class="quote" data-i18n="home.testimonials.t3_quote">Prendre RDV avec mon médecin depuis mon téléphone, c'est devenu naturel. Et tous mes documents médicaux sont au même endroit, je ne perds plus rien.</p>
           <div class="testimonial-author">
             <div class="author-avatar" style="background: #8b5cf6;">FK</div>
             <div class="author-info">
               <div class="name">Fatou Konaté</div>
-              <div class="role">Patiente · Abidjan, Côte d'Ivoire</div>
+              <div class="role" data-i18n="home.testimonials.t3_role">Patiente · Abidjan, Côte d'Ivoire</div>
             </div>
           </div>
         </div>
@@ -697,17 +687,17 @@
   <!-- Final CTA -->
   <section class="cta-section">
     <div class="cta-inner">
-      <h2>Prêt(e) à transformer votre santé ?</h2>
-      <p>Rejoignez la plateforme qui rassemble patients, praticiens et établissements de santé francophones. Aucune carte bancaire requise pour démarrer.</p>
+      <h2 data-i18n="home.cta.title">Prêt(e) à transformer votre santé ?</h2>
+      <p data-i18n="home.cta.desc">Rejoignez la plateforme qui rassemble patients, praticiens et établissements de santé francophones. Aucune carte bancaire requise pour démarrer.</p>
       <div class="cta-buttons">
         <a href="02-patient-signup.html" class="btn-cta-final-primary">
           <i class="fa fa-user"></i>
-          Créer mon compte patient
+          <span data-i18n="home.cta.primary">Créer mon compte patient</span>
           <i class="fa fa-arrow-right"></i>
         </a>
         <a href="#" class="btn-cta-final-secondary">
           <i class="fa fa-user-md"></i>
-          Inscription professionnel de santé
+          <span data-i18n="home.cta.secondary">Inscription professionnel de santé</span>
         </a>
       </div>
     </div>
@@ -722,7 +712,7 @@
             <span class="logo-mark">F</span>
             <span class="logo-text">FUENI</span>
           </div>
-          <p>La plateforme santé numérique pour l'Afrique francophone et l'Europe. Une plateforme. Tous vos soins.</p>
+          <p data-i18n="home.footer.brand_desc">La plateforme santé numérique pour l'Afrique francophone et l'Europe. Une plateforme. Tous vos soins.</p>
           <div class="footer-socials">
             <a href="#" class="footer-social"><i class="fa-brands fa-linkedin-in"></i></a>
             <a href="#" class="footer-social"><i class="fa-brands fa-x-twitter"></i></a>
@@ -731,47 +721,47 @@
           </div>
         </div>
         <div class="footer-col">
-          <h6>Produit</h6>
+          <h6 data-i18n="home.footer.col_product">Produit</h6>
           <ul>
-            <li><a href="#fonctionnalites">Fonctionnalités</a></li>
-            <li><a href="#audiences">Pour qui ?</a></li>
-            <li><a href="#">Tarifs</a></li>
-            <li><a href="#securite">Sécurité</a></li>
-            <li><a href="#">Roadmap</a></li>
+            <li><a href="#fonctionnalites" data-i18n="home.footer.link_features">Fonctionnalités</a></li>
+            <li><a href="#audiences" data-i18n="home.footer.link_audiences">Pour qui ?</a></li>
+            <li><a href="#" data-i18n="home.footer.link_pricing">Tarifs</a></li>
+            <li><a href="#securite" data-i18n="home.footer.link_security">Sécurité</a></li>
+            <li><a href="#" data-i18n="home.footer.link_roadmap">Roadmap</a></li>
           </ul>
         </div>
         <div class="footer-col">
-          <h6>Ressources</h6>
+          <h6 data-i18n="home.footer.col_resources">Ressources</h6>
           <ul>
-            <li><a href="#">Centre d'aide</a></li>
-            <li><a href="#">Blog</a></li>
-            <li><a href="#">Webinaires</a></li>
-            <li><a href="#">API</a></li>
-            <li><a href="#">Partenaires</a></li>
+            <li><a href="#" data-i18n="home.footer.link_help">Centre d'aide</a></li>
+            <li><a href="#" data-i18n="home.footer.link_blog">Blog</a></li>
+            <li><a href="#" data-i18n="home.footer.link_webinars">Webinaires</a></li>
+            <li><a href="#" data-i18n="home.footer.link_api">API</a></li>
+            <li><a href="#" data-i18n="home.footer.link_partners">Partenaires</a></li>
           </ul>
         </div>
         <div class="footer-col">
-          <h6>Société</h6>
+          <h6 data-i18n="home.footer.col_company">Société</h6>
           <ul>
-            <li><a href="#">À propos</a></li>
-            <li><a href="#">Carrières</a></li>
-            <li><a href="#">Presse</a></li>
-            <li><a href="#">Contact</a></li>
+            <li><a href="#" data-i18n="home.footer.link_about">À propos</a></li>
+            <li><a href="#" data-i18n="home.footer.link_careers">Carrières</a></li>
+            <li><a href="#" data-i18n="home.footer.link_press">Presse</a></li>
+            <li><a href="#" data-i18n="home.footer.link_contact">Contact</a></li>
           </ul>
         </div>
         <div class="footer-col">
-          <h6>Légal</h6>
+          <h6 data-i18n="home.footer.col_legal">Légal</h6>
           <ul>
-            <li><a href="#">Mentions légales</a></li>
-            <li><a href="#">CGU</a></li>
-            <li><a href="#">Confidentialité</a></li>
-            <li><a href="#">Cookies</a></li>
-            <li><a href="#">Conformité par pays</a></li>
+            <li><a href="#" data-i18n="home.footer.link_terms">Mentions légales</a></li>
+            <li><a href="#" data-i18n="home.footer.link_cgu">CGU</a></li>
+            <li><a href="#" data-i18n="home.footer.link_privacy">Confidentialité</a></li>
+            <li><a href="#" data-i18n="home.footer.link_cookies">Cookies</a></li>
+            <li><a href="#" data-i18n="home.footer.link_compliance">Conformité par pays</a></li>
           </ul>
         </div>
       </div>
       <div class="footer-bottom">
-        <div>© 2026 FUENI — Tous droits réservés.</div>
+        <div data-i18n="home.footer.copyright">© 2026 FUENI — Tous droits réservés.</div>
         <div class="footer-legal-links">
           <a href="#">FR</a>
           <a href="#">EN</a>
@@ -782,7 +772,7 @@
   </footer>
 
   <!-- Chat widget mockup -->
-  <div class="chat-widget" title="Discuter avec nous">
+  <div class="chat-widget" data-i18n-title="home.chat.title" title="Discuter avec nous">
     <i class="fa fa-comment-dots"></i>
   </div>
 

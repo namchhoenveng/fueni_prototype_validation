@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>FUENI — Profil de base</title>
+  <script src="naz-i18n.js" defer></script>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
   <link rel="stylesheet" href="naz-common.css">
@@ -24,16 +25,16 @@
     .field-hint { font-size: 0.75rem; color: #95a5a6; margin-top: 4px; }
   </style>
 </head>
-<body>
+<body data-i18n-pagetitle="profile.page_title">
 
   <div class="proto-bar d-flex align-items-center gap-3 flex-wrap">
-    <span><i class="fa fa-eye text-warning me-1"></i><strong>Écran 04 — Profil de base</strong></span>
-    <a href="01-home.html" class="text-decoration-none text-muted ms-auto small">← Retour à l'accueil</a>
+    <span><i class="fa fa-eye text-warning me-1"></i><strong data-i18n="profile.proto_bar">Écran 04 — Profil de base</strong></span>
+    <a href="01-home.html" class="text-decoration-none text-muted ms-auto small" data-i18n="common.back_home">← Retour à l'accueil</a>
   </div>
 
   <div class="brand-area">
     <div class="brand-logo"><span style="opacity:0.85;">F</span>UENI</div>
-    <div class="mt-1 opacity-75 small">Dernière étape pour finaliser votre inscription</div>
+    <div class="mt-1 opacity-75 small" data-i18n="profile.brand.tagline">Dernière étape pour finaliser votre inscription</div>
   </div>
 
   <div class="container py-3" style="max-width:620px;">
@@ -41,36 +42,36 @@
     <div class="progress-steps mb-4">
       <div class="step done" id="step1-marker">
         <div class="step-circle"><i class="fa fa-check"></i></div>
-        <div class="step-label">Inscription</div>
+        <div class="step-label" data-i18n="otp.steps.signup">Inscription</div>
       </div>
       <div class="step done" id="step2-marker">
         <div class="step-circle"><i class="fa fa-check"></i></div>
-        <div class="step-label">Vérification SMS</div>
+        <div class="step-label" data-i18n="otp.steps.sms">Vérification SMS</div>
       </div>
       <div class="step active" id="step3-marker">
         <div class="step-circle">3</div>
-        <div class="step-label">Profil de base</div>
+        <div class="step-label" data-i18n="otp.steps.profile">Profil de base</div>
       </div>
       <div class="step inactive">
         <div class="step-circle">4</div>
-        <div class="step-label">Bienvenue</div>
+        <div class="step-label" data-i18n="otp.steps.welcome">Bienvenue</div>
       </div>
     </div>
 
     <div class="step-card">
-      <h5 class="fw-bold mb-1">Complétez votre profil</h5>
-      <p class="text-muted small mb-3">Dernière étape (30 secondes).</p>
+      <h5 class="fw-bold mb-1" data-i18n="profile.title">Complétez votre profil</h5>
+      <p class="text-muted small mb-3" data-i18n="profile.subtitle">Dernière étape (30 secondes).</p>
 
       <div class="d-none alert alert-danger small mb-3" id="step2Error" role="alert">
-        <i class="fa fa-circle-exclamation me-2"></i>Veuillez compléter tous les champs obligatoires marqués d'un astérisque (*).
+        <i class="fa fa-circle-exclamation me-2"></i><span data-i18n="profile.error.required">Veuillez compléter tous les champs obligatoires marqués d'un astérisque (*).</span>
       </div>
 
       <form>
         <div class="row g-2 mb-3">
           <div class="col-md-6">
-            <label class="form-label fw-semibold small">Pays de résidence *</label>
+            <label class="form-label fw-semibold small" data-i18n="profile.field.country_label">Pays de résidence *</label>
             <select class="form-select" id="countrySelect" onchange="updateCityList()">
-              <option value="" selected disabled>Choisir...</option>
+              <option value="" selected disabled data-i18n="profile.field.country_choose">Choisir...</option>
               <option value="SN">🇸🇳 Sénégal</option>
               <option value="CI">🇨🇮 Côte d'Ivoire</option>
               <option value="ML">🇲🇱 Mali</option>
@@ -81,33 +82,33 @@
               <option value="CM">🇨🇲 Cameroun</option>
               <option value="CD">🇨🇩 RDC</option>
             </select>
-            <div class="field-hint mt-1"><i class="fa fa-info-circle me-1"></i>Pré-rempli selon votre indicatif téléphonique</div>
+            <div class="field-hint mt-1"><i class="fa fa-info-circle me-1"></i><span data-i18n="profile.field.country_hint">Pré-rempli selon votre indicatif téléphonique</span></div>
           </div>
           <div class="col-md-6">
-            <label class="form-label fw-semibold small">Ville *</label>
+            <label class="form-label fw-semibold small" data-i18n="profile.field.city_label">Ville *</label>
             <select class="form-select" id="citySelect">
-              <option value="" selected disabled>Choisir...</option>
+              <option value="" selected disabled data-i18n="profile.field.city_choose">Choisir...</option>
             </select>
             <div class="d-none mt-1" id="otherCityWrap">
-              <input type="text" class="form-control" id="otherCityInput" placeholder="Précisez votre ville">
+              <input type="text" class="form-control" id="otherCityInput" data-i18n-placeholder="profile.field.city_other_ph" placeholder="Précisez votre ville">
             </div>
           </div>
         </div>
 
         <div class="mb-3">
-          <label class="form-label fw-semibold small">Langue de communication *</label>
+          <label class="form-label fw-semibold small" data-i18n="profile.field.lang_label">Langue de communication *</label>
           <select class="form-select" id="langSelect">
-            <option value="fr" selected>Français</option>
-            <option value="en">English</option>
+            <option value="fr" selected data-i18n="profile.field.lang_fr">Français</option>
+            <option value="en" data-i18n="profile.field.lang_en">English</option>
           </select>
         </div>
 
         <div class="mb-3">
-          <label class="form-label fw-semibold small">Adresse <span class="text-muted fw-normal">(optionnel)</span></label>
-          <textarea class="form-control" id="addressInput" rows="2" placeholder="Ex : Sacré-Cœur 3, Villa 12, face à la pharmacie El Hadji"></textarea>
+          <label class="form-label fw-semibold small" data-i18n-html="profile.field.address_label_html">Adresse <span class="text-muted fw-normal">(optionnel)</span></label>
+          <textarea class="form-control" id="addressInput" rows="2" data-i18n-placeholder="profile.field.address_ph" placeholder="Ex : Sacré-Cœur 3, Villa 12, face à la pharmacie El Hadji"></textarea>
         </div>
 
-        <button type="button" class="btn btn-patient w-100" onclick="validateStep2()">
+        <button type="button" class="btn btn-patient w-100" onclick="validateStep2()" data-i18n-html="profile.submit_html">
           Finaliser et accéder à mon espace <i class="fa fa-check ms-2"></i>
         </button>
       </form>
@@ -142,7 +143,15 @@
       const otherWrap = document.getElementById('otherCityWrap');
       const otherInput = document.getElementById('otherCityInput');
 
-      citySelect.innerHTML = '<option value="" selected disabled>Choisir...</option>';
+      const chooseTxt = (window.NazI18n ? NazI18n.t('profile.field.city_choose') : '') || 'Choisir...';
+      citySelect.innerHTML = '';
+      const ph = document.createElement('option');
+      ph.value = '';
+      ph.selected = true;
+      ph.disabled = true;
+      ph.setAttribute('data-i18n', 'profile.field.city_choose');
+      ph.textContent = chooseTxt;
+      citySelect.appendChild(ph);
       otherWrap.classList.add('d-none');
       if (otherInput) otherInput.value = '';
 
@@ -153,10 +162,11 @@
         opt.textContent = c;
         citySelect.appendChild(opt);
       });
-      // Option "Autre" en fin de liste
+      // Option "Autre" en fin de liste — taggée pour re-traduction
       const otherOpt = document.createElement('option');
       otherOpt.value = '__other__';
-      otherOpt.textContent = 'Autre (préciser)';
+      otherOpt.setAttribute('data-i18n', 'profile.city.other');
+      otherOpt.textContent = (window.NazI18n ? NazI18n.t('profile.city.other') : '') || 'Autre (préciser)';
       citySelect.appendChild(otherOpt);
 
       citySelect.onchange = () => {
@@ -164,6 +174,10 @@
         if (citySelect.value === '__other__' && otherInput) otherInput.focus();
       };
     }
+
+    // Note: dynamically-injected <option> elements carry data-i18n attributes,
+    // so naz-i18n's own applyLang() pass (which runs before fueni:langchange
+    // is dispatched) re-translates them automatically — no extra work needed here.
 
     function validateStep2() {
       const errBox = document.getElementById('step2Error');

@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>FUENI — Inscription Patient</title>
+  <script src="naz-i18n.js" defer></script>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
   <link rel="stylesheet" href="naz-common.css">
@@ -31,18 +32,18 @@
     .info-box { background: #e8f8f5; border: 1px solid #a3e4d7; border-radius: 8px; padding: 10px 14px; font-size: 0.82rem; color: #117a65; margin-bottom: 1.2rem; }
   </style>
 </head>
-<body>
+<body data-i18n-pagetitle="signup.page_title">
 
   <!-- Proto bar -->
   <div class="proto-bar d-flex align-items-center gap-3 flex-wrap">
-    <span><i class="fa fa-eye text-warning me-1"></i><strong>Écran 02 — Inscription Patient</strong></span>
-    <a href="01-home.html" class="text-decoration-none text-muted ms-auto small">← Retour à l'accueil</a>
+    <span><i class="fa fa-eye text-warning me-1"></i><strong data-i18n="signup.proto_bar">Écran 02 — Inscription Patient</strong></span>
+    <a href="01-home.html" class="text-decoration-none text-muted ms-auto small" data-i18n="common.back_home">← Retour à l'accueil</a>
   </div>
 
   <!-- Brand header -->
   <div class="brand-area">
     <div class="brand-logo"><span>F</span>UENI</div>
-    <div class="mt-1 opacity-75 small">Espace Patient — Votre santé entre vos mains</div>
+    <div class="mt-1 opacity-75 small" data-i18n="signup.brand.tagline">Espace Patient — Votre santé entre vos mains</div>
   </div>
 
   <div class="container py-3" style="max-width:540px;">
@@ -51,58 +52,58 @@
       <!-- Role indicator -->
       <div class="role-chip">
         <i class="fa fa-user"></i>
-        <span>Compte Patient particulier</span>
+        <span data-i18n="signup.role_chip">Compte Patient particulier</span>
       </div>
 
-      <h5 class="fw-bold mb-1">Créer mon compte</h5>
-      <p class="text-muted small mb-3">1 minute — quelques étapes pour finaliser votre inscription</p>
+      <h5 class="fw-bold mb-1" data-i18n="signup.title">Créer mon compte</h5>
+      <p class="text-muted small mb-3" data-i18n="signup.subtitle">1 minute — quelques étapes pour finaliser votre inscription</p>
 
       <div class="d-none alert alert-danger small mb-3" id="formError" role="alert">
-        <i class="fa fa-circle-exclamation me-2"></i>Veuillez compléter tous les champs obligatoires marqués d'un astérisque (*).
+        <i class="fa fa-circle-exclamation me-2"></i><span data-i18n="signup.error.required">Veuillez compléter tous les champs obligatoires marqués d'un astérisque (*).</span>
       </div>
 
       <form id="signupForm" novalidate>
         <div class="row g-2 mb-3">
           <div class="col-md-6">
-            <label class="form-label fw-semibold small">Prénom *</label>
-            <input type="text" class="form-control" id="firstName" placeholder="Ex : Aïssatou">
+            <label class="form-label fw-semibold small" data-i18n="signup.field.firstname_label">Prénom *</label>
+            <input type="text" class="form-control" id="firstName" data-i18n-placeholder="signup.field.firstname_ph" placeholder="Ex : Aïssatou">
           </div>
           <div class="col-md-6">
-            <label class="form-label fw-semibold small">Nom *</label>
-            <input type="text" class="form-control" id="lastName" placeholder="Ex : Diop">
+            <label class="form-label fw-semibold small" data-i18n="signup.field.lastname_label">Nom *</label>
+            <input type="text" class="form-control" id="lastName" data-i18n-placeholder="signup.field.lastname_ph" placeholder="Ex : Diop">
           </div>
         </div>
 
         <div class="row g-2 mb-3">
           <div class="col-md-6">
-            <label class="form-label fw-semibold small">Date de naissance *</label>
+            <label class="form-label fw-semibold small" data-i18n="signup.field.dob_label">Date de naissance *</label>
             <input type="date" class="form-control" id="dobField" oninput="checkAge()">
-            <div class="field-hint" id="ageInfo"><i class="fa fa-info-circle me-1"></i>Vous devez avoir 18 ans ou plus</div>
-            <div class="field-hint d-none text-danger" id="ageHint"><i class="fa fa-circle-exclamation me-1"></i>Vous devez avoir 18 ans ou plus pour vous inscrire.</div>
+            <div class="field-hint" id="ageInfo"><i class="fa fa-info-circle me-1"></i><span data-i18n="signup.field.dob_info">Vous devez avoir 18 ans ou plus</span></div>
+            <div class="field-hint d-none text-danger" id="ageHint"><i class="fa fa-circle-exclamation me-1"></i><span data-i18n="signup.field.dob_hint">Vous devez avoir 18 ans ou plus pour vous inscrire.</span></div>
           </div>
           <div class="col-md-6">
-            <label class="form-label fw-semibold small">Sexe *</label>
+            <label class="form-label fw-semibold small" data-i18n="signup.field.sex_label">Sexe *</label>
             <select class="form-select" id="sexField">
-              <option value="" selected disabled>Choisir...</option>
-              <option>Féminin</option>
-              <option>Masculin</option>
-              <option>Autre</option>
-              <option>Préfère ne pas répondre</option>
+              <option value="" selected disabled data-i18n="signup.field.sex_choose">Choisir...</option>
+              <option data-i18n="signup.field.sex_female">Féminin</option>
+              <option data-i18n="signup.field.sex_male">Masculin</option>
+              <option data-i18n="signup.field.sex_other">Autre</option>
+              <option data-i18n="signup.field.sex_norep">Préfère ne pas répondre</option>
             </select>
           </div>
         </div>
 
         <div class="mb-3">
-          <label class="form-label fw-semibold small">Adresse e-mail *</label>
-          <input type="email" class="form-control" id="emailField" placeholder="Ex : aissatou.diop@example.com" autocomplete="off" oninput="checkEmail()" onblur="checkEmail(true)">
-          <div class="field-hint d-none text-danger" id="emailHint"><i class="fa fa-circle-exclamation me-1"></i>Adresse e-mail invalide.</div>
+          <label class="form-label fw-semibold small" data-i18n="signup.field.email_label">Adresse e-mail *</label>
+          <input type="email" class="form-control" id="emailField" data-i18n-placeholder="signup.field.email_ph" placeholder="Ex : aissatou.diop@example.com" autocomplete="off" oninput="checkEmail()" onblur="checkEmail(true)">
+          <div class="field-hint d-none text-danger" id="emailHint"><i class="fa fa-circle-exclamation me-1"></i><span data-i18n="signup.field.email_hint">Adresse e-mail invalide.</span></div>
         </div>
 
         <div class="mb-3">
-          <label class="form-label fw-semibold small">Téléphone *</label>
+          <label class="form-label fw-semibold small" data-i18n="signup.field.phone_label">Téléphone *</label>
           <div class="phone-group">
             <select class="form-select" id="countryCode" onchange="checkPhone()">
-              <option value="" selected disabled>Choisir...</option>
+              <option value="" selected disabled data-i18n="signup.field.phone_choose">Choisir...</option>
               <option value="+221">🇸🇳 +221</option>
               <option value="+225">🇨🇮 +225</option>
               <option value="+223">🇲🇱 +223</option>
@@ -113,32 +114,32 @@
               <option value="+237">🇨🇲 +237</option>
               <option value="+243">🇨🇩 +243</option>
             </select>
-            <input type="tel" class="form-control" id="phoneField" placeholder="Ex : 77 123 45 67" inputmode="numeric" pattern="[0-9 ]*" oninput="checkPhone()" onblur="checkPhone(true)">
+            <input type="tel" class="form-control" id="phoneField" data-i18n-placeholder="signup.field.phone_ph" placeholder="Ex : 77 123 45 67" inputmode="numeric" pattern="[0-9 ]*" oninput="checkPhone()" onblur="checkPhone(true)">
           </div>
-          <div class="field-hint d-none text-danger" id="phoneHint"><i class="fa fa-circle-exclamation me-1"></i>Numéro invalide pour le pays sélectionné.</div>
+          <div class="field-hint d-none text-danger" id="phoneHint"><i class="fa fa-circle-exclamation me-1"></i><span data-i18n="signup.field.phone_hint">Numéro invalide pour le pays sélectionné.</span></div>
         </div>
 
         <div class="mb-3">
-          <label class="form-label fw-semibold small">Mot de passe *</label>
+          <label class="form-label fw-semibold small" data-i18n="signup.field.pwd_label">Mot de passe *</label>
           <div class="position-relative">
             <input type="password" class="form-control pe-5" id="pwdField" oninput="checkPwd()" autocomplete="new-password">
-            <button type="button" id="pwdToggle" onclick="togglePwd()" class="btn btn-link p-0 position-absolute" style="right:12px; top:50%; transform:translateY(-50%); color:#7f8c8d; text-decoration:none;" aria-label="Afficher le mot de passe">
+            <button type="button" id="pwdToggle" onclick="togglePwd()" class="btn btn-link p-0 position-absolute" style="right:12px; top:50%; transform:translateY(-50%); color:#7f8c8d; text-decoration:none;" data-i18n-aria="signup.field.pwd_aria" aria-label="Afficher le mot de passe">
               <i class="fa fa-eye" id="pwdEye"></i>
             </button>
           </div>
           <div class="pwd-strength"><div class="pwd-strength-fill" id="pwdBar"></div></div>
           <div class="mt-2">
-            <div class="pwd-rule" id="r-len"><i class="fa fa-circle-check"></i>Au moins 8 caractères</div>
-            <div class="pwd-rule" id="r-upper"><i class="fa fa-circle-check"></i>Une majuscule</div>
-            <div class="pwd-rule" id="r-lower"><i class="fa fa-circle-check"></i>Une minuscule</div>
-            <div class="pwd-rule" id="r-num"><i class="fa fa-circle-check"></i>Un chiffre</div>
-            <div class="pwd-rule" id="r-spe"><i class="fa fa-circle-check"></i>Un caractère spécial (ex : ! ? @ # $ % & * …)</div>
+            <div class="pwd-rule" id="r-len"><i class="fa fa-circle-check"></i><span data-i18n="signup.field.pwd_r_len">Au moins 8 caractères</span></div>
+            <div class="pwd-rule" id="r-upper"><i class="fa fa-circle-check"></i><span data-i18n="signup.field.pwd_r_upper">Une majuscule</span></div>
+            <div class="pwd-rule" id="r-lower"><i class="fa fa-circle-check"></i><span data-i18n="signup.field.pwd_r_lower">Une minuscule</span></div>
+            <div class="pwd-rule" id="r-num"><i class="fa fa-circle-check"></i><span data-i18n="signup.field.pwd_r_num">Un chiffre</span></div>
+            <div class="pwd-rule" id="r-spe"><i class="fa fa-circle-check"></i><span data-i18n="signup.field.pwd_r_spe">Un caractère spécial (ex : ! ? @ # $ % & * …)</span></div>
           </div>
         </div>
 
         <div class="mb-3 form-check">
           <input class="form-check-input" type="checkbox" id="cgu">
-          <label class="form-check-label small" for="cgu">
+          <label class="form-check-label small" for="cgu" data-i18n-html="signup.cgu_html">
             J'accepte les <a href="#" class="text-decoration-none" style="color:#16a085;">Conditions Générales</a> et la
             <a href="#" class="text-decoration-none" style="color:#16a085;">Politique de Confidentialité</a> *
           </label>
@@ -146,25 +147,25 @@
 
         <div class="mb-4 form-check">
           <input class="form-check-input" type="checkbox" id="health-consent">
-          <label class="form-check-label small" for="health-consent">
+          <label class="form-check-label small" for="health-consent" data-i18n-html="signup.health_html">
             Je consens au traitement de mes <strong>données de santé</strong> par FUENI dans le cadre du service *
           </label>
         </div>
 
         <button type="button" onclick="validateForm()" class="btn btn-patient w-100">
-          <i class="fa fa-arrow-right me-2"></i>Créer mon compte
+          <i class="fa fa-arrow-right me-2"></i><span data-i18n="signup.submit">Créer mon compte</span>
         </button>
 
-        <div class="divider">ou</div>
+        <div class="divider" data-i18n="signup.divider_or">ou</div>
 
-        <p class="text-center small mb-0">
+        <p class="text-center small mb-0" data-i18n-html="signup.have_account_html">
           Déjà un compte ? <a href="#" class="text-decoration-none fw-semibold" style="color:#16a085;">Connectez-vous</a>
         </p>
       </form>
 
     </div>
 
-    <p class="text-center small text-muted mb-3">
+    <p class="text-center small text-muted mb-3" data-i18n-html="signup.are_you_pro_html">
       <i class="fa fa-user-md me-1"></i>Vous êtes un professionnel de santé ?
       <a href="#" class="text-decoration-none fw-semibold" style="color:#16a085;">Inscription pro</a>
     </p>

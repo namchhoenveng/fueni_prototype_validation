@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>FUENI — Vérification SMS</title>
+  <script src="naz-i18n.js" defer></script>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
   <link rel="stylesheet" href="naz-common.css">
@@ -40,16 +41,16 @@
     .state-tester .btn-state { font-size: 0.8rem; padding: 4px 10px; }
   </style>
 </head>
-<body>
+<body data-i18n-pagetitle="otp.page_title">
 
   <div class="proto-bar d-flex align-items-center gap-3 flex-wrap">
-    <span><i class="fa fa-eye text-warning me-1"></i><strong>Écran 03 — Vérification SMS (OTP)</strong></span>
-    <a href="01-home.html" class="text-decoration-none text-muted ms-auto small">← Retour à l'accueil</a>
+    <span><i class="fa fa-eye text-warning me-1"></i><strong data-i18n="otp.proto_bar">Écran 03 — Vérification SMS (OTP)</strong></span>
+    <a href="01-home.html" class="text-decoration-none text-muted ms-auto small" data-i18n="common.back_home">← Retour à l'accueil</a>
   </div>
 
   <div class="brand-area">
     <div class="brand-logo"><span style="opacity:0.85;">F</span>UENI</div>
-    <div class="mt-1 opacity-75 small">Plus que quelques étapes pour finaliser votre inscription</div>
+    <div class="mt-1 opacity-75 small" data-i18n="otp.brand.tagline">Plus que quelques étapes pour finaliser votre inscription</div>
   </div>
 
   <div class="container py-3" style="max-width:620px;">
@@ -57,19 +58,19 @@
     <div class="progress-steps mb-4">
       <div class="step done" id="step1-marker">
         <div class="step-circle"><i class="fa fa-check"></i></div>
-        <div class="step-label">Inscription</div>
+        <div class="step-label" data-i18n="otp.steps.signup">Inscription</div>
       </div>
       <div class="step active" id="step2-marker">
         <div class="step-circle">2</div>
-        <div class="step-label">Vérification SMS</div>
+        <div class="step-label" data-i18n="otp.steps.sms">Vérification SMS</div>
       </div>
       <div class="step inactive" id="step3-marker">
         <div class="step-circle">3</div>
-        <div class="step-label">Profil de base</div>
+        <div class="step-label" data-i18n="otp.steps.profile">Profil de base</div>
       </div>
       <div class="step inactive">
         <div class="step-circle">4</div>
-        <div class="step-label">Bienvenue</div>
+        <div class="step-label" data-i18n="otp.steps.welcome">Bienvenue</div>
       </div>
     </div>
 
@@ -77,12 +78,12 @@
       <div class="text-center mb-3">
         <i class="fa fa-mobile-screen-button sms-illustration"></i>
       </div>
-      <h5 class="fw-bold text-center mb-1">Vérification de votre numéro</h5>
-      <p class="text-muted small text-center mb-3">
+      <h5 class="fw-bold text-center mb-1" data-i18n="otp.title">Vérification de votre numéro</h5>
+      <p class="text-muted small text-center mb-3" data-i18n-html="otp.subtitle_html">
         Un code à 6 chiffres a été envoyé par SMS au <strong id="maskedPhone">+221 ** *** ** 67</strong>
       </p>
 
-      <div class="demo-hint mb-3">
+      <div class="demo-hint mb-3" data-i18n-html="otp.demo_hint_html">
         <i class="fa fa-flask me-1"></i>
         <strong>Démo :</strong> saisissez <code>123456</code> pour valider · n'importe quel autre code → état d'erreur
       </div>
@@ -94,13 +95,13 @@
       </div>
 
       <!-- Lockout state (3 attempts used) -->
-      <div id="lockoutMsg" class="alert alert-warning py-2 px-3 small mb-3 d-none">
+      <div id="lockoutMsg" class="alert alert-warning py-2 px-3 small mb-3 d-none" data-i18n-html="otp.lockout_html">
         <i class="fa fa-lock me-2"></i>
         <strong>Trop de tentatives.</strong> Votre code est désactivé. Demandez un nouveau code <span id="lockoutHint">dès que le renvoi est disponible</span>.
       </div>
 
       <!-- Expired state (timer 5 min over) -->
-      <div id="expiredMsg" class="alert alert-warning py-2 px-3 small mb-3 d-none">
+      <div id="expiredMsg" class="alert alert-warning py-2 px-3 small mb-3 d-none" data-i18n-html="otp.expired_html">
         <i class="fa fa-clock-rotate-left me-2"></i>
         <strong>Code expiré.</strong> Cliquez sur « Renvoyer le code » pour en recevoir un nouveau.
       </div>
@@ -114,29 +115,29 @@
         <input type="text" class="otp-input" maxlength="1" inputmode="numeric" value="">
       </div>
 
-      <p class="text-center small text-muted mb-3">
+      <p class="text-center small text-muted mb-3" data-i18n-html="otp.resend_html">
         Pas reçu ? <span id="resendLink" class="resend-link disabled">Renvoyer le code</span>
         <span id="resendTimerWrap">· disponible dans <strong id="resendTimer">00:30</strong></span>
       </p>
 
-      <button id="verifyBtn" class="btn btn-patient w-100 mb-2" disabled>
+      <button id="verifyBtn" class="btn btn-patient w-100 mb-2" disabled data-i18n-html="otp.verify_btn_html">
         Vérifier <i class="fa fa-arrow-right ms-2"></i>
       </button>
-      <a href="02-patient-signup.html" class="btn btn-link w-100 text-muted small">Modifier mes informations</a>
+      <a href="02-patient-signup.html" class="btn btn-link w-100 text-muted small" data-i18n="otp.edit_info">Modifier mes informations</a>
 
       <details class="state-tester">
-        <summary><i class="fa fa-vial me-1"></i> Tester les états (raccourcis démo)</summary>
+        <summary data-i18n-html="otp.tester_summary_html"><i class="fa fa-vial me-1"></i> Tester les états (raccourcis démo)</summary>
         <div class="mt-2 d-flex flex-wrap gap-2">
-          <button type="button" class="btn btn-outline-secondary btn-state" onclick="testWrongCode()">
+          <button type="button" class="btn btn-outline-secondary btn-state" onclick="testWrongCode()" data-i18n="otp.tester.wrong">
             Code incorrect (1 essai)
           </button>
-          <button type="button" class="btn btn-outline-secondary btn-state" onclick="testLockout()">
+          <button type="button" class="btn btn-outline-secondary btn-state" onclick="testLockout()" data-i18n="otp.tester.lockout">
             Verrouillage (3 essais épuisés)
           </button>
-          <button type="button" class="btn btn-outline-secondary btn-state" onclick="testExpired()">
+          <button type="button" class="btn btn-outline-secondary btn-state" onclick="testExpired()" data-i18n="otp.tester.expired">
             Code expiré
           </button>
-          <button type="button" class="btn btn-outline-secondary btn-state" onclick="resetState()">
+          <button type="button" class="btn btn-outline-secondary btn-state" onclick="resetState()" data-i18n-html="otp.tester.reset_html">
             <i class="fa fa-rotate-right me-1"></i>Réinitialiser
           </button>
         </div>
@@ -154,20 +155,32 @@
     let isExpired = false;
     let resendSeconds = 30;
     let resendInterval;
+    // Tracks whether the resend link is currently active; used to re-apply state
+    // after a language switch (which re-renders the resend paragraph via innerHTML).
+    let resendActive = false;
+    // Tracks the last error text shown so we can re-translate it on language switch.
+    let lastErrorMode = null; // null | 'wrong'
 
     const inputs = document.querySelectorAll('.otp-input');
     const verifyBtn = document.getElementById('verifyBtn');
     const errorMsg = document.getElementById('errorMsg');
-    const errorText = document.getElementById('errorText');
+    let errorText = document.getElementById('errorText');
     const lockoutMsg = document.getElementById('lockoutMsg');
     const expiredMsg = document.getElementById('expiredMsg');
-    const resendLink = document.getElementById('resendLink');
-    const resendTimerEl = document.getElementById('resendTimer');
-    const resendTimerWrap = document.getElementById('resendTimerWrap');
+    // Resend-area elements are re-acquired dynamically via getters because the
+    // paragraph that wraps them is re-rendered via data-i18n-html on language switch.
+    function getResendLink() { return document.getElementById('resendLink'); }
+    function getResendTimerEl() { return document.getElementById('resendTimer'); }
+    function getResendTimerWrap() { return document.getElementById('resendTimerWrap'); }
 
     function updateVerifyButton() {
       const allFilled = Array.from(inputs).every(i => /^\d$/.test(i.value));
       verifyBtn.disabled = !allFilled || isLocked || isExpired;
+    }
+
+    function formatWrongCodeError() {
+      const tpl = NazI18n.t(attemptsLeft > 1 ? 'otp.error.wrong_plural' : 'otp.error.wrong_singular');
+      return tpl.replace('{n}', attemptsLeft);
     }
 
     function hideAllMessages() {
@@ -202,8 +215,8 @@
       attemptsLeft--;
       markInputsError();
       if (attemptsLeft > 0) {
-        const word = attemptsLeft > 1 ? 'tentatives' : 'tentative';
-        errorText.textContent = `Code incorrect. Il vous reste ${attemptsLeft} ${word}.`;
+        lastErrorMode = 'wrong';
+        errorText.textContent = formatWrongCodeError();
         errorMsg.classList.remove('d-none');
         setTimeout(clearInputs, 600);
       } else {
@@ -229,30 +242,38 @@
 
     function startResendTimer() {
       clearInterval(resendInterval);
-      resendLink.classList.add('disabled');
-      resendTimerWrap.style.display = '';
+      resendActive = false;
+      const link = getResendLink();
+      const wrap = getResendTimerWrap();
+      if (link) link.classList.add('disabled');
+      if (wrap) wrap.style.display = '';
       resendInterval = setInterval(() => {
         resendSeconds--;
         const mm = String(Math.floor(resendSeconds / 60)).padStart(2, '0');
         const ss = String(resendSeconds % 60).padStart(2, '0');
-        resendTimerEl.textContent = `${mm}:${ss}`;
+        const el = getResendTimerEl();
+        if (el) el.textContent = `${mm}:${ss}`;
         if (resendSeconds <= 0) {
           clearInterval(resendInterval);
-          resendLink.classList.remove('disabled');
-          resendTimerWrap.style.display = 'none';
+          resendActive = true;
+          const l = getResendLink();
+          const w = getResendTimerWrap();
+          if (l) l.classList.remove('disabled');
+          if (w) w.style.display = 'none';
         }
       }, 1000);
     }
 
     function resendCode() {
-      if (resendLink.classList.contains('disabled')) return;
+      const link = getResendLink();
+      if (!link || link.classList.contains('disabled')) return;
       resetState();
       resendSeconds = 30;
       startResendTimer();
       // Brief feedback flash
       const flash = document.createElement('div');
       flash.className = 'alert alert-success py-2 px-3 small mb-3';
-      flash.innerHTML = '<i class="fa fa-check-circle me-2"></i>Nouveau code envoyé par SMS.';
+      flash.innerHTML = NazI18n.t('otp.flash.resent_html');
       const card = document.querySelector('.step-card');
       card.insertBefore(flash, card.querySelector('.otp-group'));
       setTimeout(() => flash.remove(), 2500);
@@ -262,6 +283,7 @@
       attemptsLeft = MAX_ATTEMPTS;
       isLocked = false;
       isExpired = false;
+      lastErrorMode = null;
       hideAllMessages();
       disableInputs(false);
       clearInputs();
@@ -270,9 +292,9 @@
     // Demo helpers
     function testWrongCode() {
       resetState();
-      attemptsLeft = 2;
-      errorText.textContent = `Code incorrect. Il vous reste 1 tentative.`;
       attemptsLeft = 1;
+      lastErrorMode = 'wrong';
+      errorText.textContent = formatWrongCodeError();
       errorMsg.classList.remove('d-none');
       markInputsError();
     }
@@ -299,10 +321,32 @@
     });
 
     verifyBtn.addEventListener('click', verifyCode);
-    resendLink.addEventListener('click', resendCode);
+
+    // Delegated handler for the resend link, which is re-rendered on language switch.
+    document.addEventListener('click', e => {
+      const target = e.target;
+      if (target && target.id === 'resendLink') resendCode();
+    });
 
     updateVerifyButton();
     startResendTimer();
+
+    // Re-render dynamic content after a language switch
+    document.addEventListener('fueni:langchange', () => {
+      // Re-acquire #errorText (parent text was not changed by i18n, but be defensive)
+      errorText = document.getElementById('errorText');
+      // Re-translate the wrong-code error if currently displayed
+      if (lastErrorMode === 'wrong' && !errorMsg.classList.contains('d-none')) {
+        errorText.textContent = formatWrongCodeError();
+      }
+      // Restore resend link / timer state after re-render
+      const link = getResendLink();
+      const wrap = getResendTimerWrap();
+      if (link) link.classList.toggle('disabled', !resendActive);
+      if (wrap) wrap.style.display = resendActive ? 'none' : '';
+      // Re-mask phone (the <strong id="maskedPhone"> was rebuilt by data-i18n-html on its parent)
+      applyMaskedPhone();
+    });
 
     // Masquage dynamique du numéro à partir des données saisies à l'étape 2 (Inscription)
     function maskPhoneDisplay(countryCode, rawPhone) {
@@ -319,7 +363,7 @@
       return `${countryCode} ${pattern} ${last2}`;
     }
 
-    document.addEventListener('DOMContentLoaded', () => {
+    function applyMaskedPhone() {
       try {
         const raw = sessionStorage.getItem('fueni_signup_data');
         if (!raw) return;
@@ -329,7 +373,9 @@
           el.textContent = maskPhoneDisplay(d.countryCode, d.phone);
         }
       } catch (e) { /* ignore */ }
-    });
+    }
+
+    document.addEventListener('DOMContentLoaded', applyMaskedPhone);
   </script>
 <!-- Prototype version badge -->
 <script>(function(){if(window.__pv)return;window.__pv=1;var v=document.createElement('div');v.style.cssText='position:fixed;top:0;left:50%;transform:translateX(-50%);background:#155e75;color:#fff;padding:6px 20px;border-radius:0 0 16px 16px;font:600 12px/1 system-ui,-apple-system,sans-serif;letter-spacing:.6px;z-index:99999;box-shadow:0 3px 10px rgba(0,0,0,.2);text-transform:uppercase;display:flex;align-items:center;gap:8px';v.innerHTML='🧪 Prototype <span style="background:#f59e0b;color:#1a1a1a;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:4px">v1.3.0</span>';document.body.appendChild(v);})();</script>

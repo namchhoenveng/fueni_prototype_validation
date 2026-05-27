@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>FUENI — Mon espace patient</title>
+  <script src="naz-i18n.js" defer></script>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
   <link rel="stylesheet" href="naz-common.css">
@@ -59,9 +60,9 @@
     .email-banner .btn-verify:hover { background: #e65100; color: white; }
   </style>
 </head>
-<body>
+<body data-i18n-pagetitle="dash.page_title">
 
-  <div class="proto-bar d-flex align-items-center gap-3">
+  <div class="proto-bar d-flex align-items-center gap-3" data-i18n-html="dash.proto_bar_html">
     <span><i class="fa fa-eye me-1"></i> Espace Patient · Tableau de bord · <a href="01-home.html" class="text-decoration-none">← Retour à l'accueil</a></span>
   </div>
 
@@ -69,7 +70,7 @@
   <div class="sidebar">
     <div class="sidebar-brand">
       <span style="opacity:0.85;">F</span>UENI
-      <small>Espace Patient</small>
+      <small data-i18n="dash.sidebar.area">Espace Patient</small>
     </div>
 
     <div class="sidebar-user d-flex align-items-center gap-2">
@@ -77,26 +78,26 @@
       <div>
         <div class="text-white fw-semibold small" id="userFullName">Aïssatou Diop</div>
         <div style="color:rgba(255,255,255,0.65); font-size:0.72rem;">
-          <i class="fa fa-circle-check me-1"></i>Compte vérifié
+          <i class="fa fa-circle-check me-1"></i><span data-i18n="dash.sidebar.verified">Compte vérifié</span>
         </div>
       </div>
     </div>
 
-    <div class="nav-section">Mon espace</div>
-    <a class="nav-link-side active"><i class="fa fa-home"></i>Tableau de bord</a>
-    <a href="#" class="nav-link-side"><i class="fa fa-calendar-check"></i>Mes RDV</a>
-    <a href="#" class="nav-link-side"><i class="fa fa-plus-circle"></i>Prendre RDV</a>
-    <a href="#" class="nav-link-side"><i class="fa fa-folder"></i>Mes documents</a>
+    <div class="nav-section" data-i18n="dash.sidebar.section_my_space">Mon espace</div>
+    <a class="nav-link-side active"><i class="fa fa-home"></i><span data-i18n="dash.sidebar.dashboard">Tableau de bord</span></a>
+    <a href="#" class="nav-link-side"><i class="fa fa-calendar-check"></i><span data-i18n="dash.sidebar.my_appts">Mes RDV</span></a>
+    <a href="#" class="nav-link-side"><i class="fa fa-plus-circle"></i><span data-i18n="dash.sidebar.book">Prendre RDV</span></a>
+    <a href="#" class="nav-link-side"><i class="fa fa-folder"></i><span data-i18n="dash.sidebar.my_docs">Mes documents</span></a>
 
-    <div class="nav-section">Mon compte</div>
-    <a class="nav-link-side"><i class="fa fa-user"></i>Mon profil</a>
-    <a class="nav-link-side"><i class="fa fa-bell"></i>Notifications</a>
-    <a class="nav-link-side"><i class="fa fa-shield-halved"></i>Mes droits et données</a>
+    <div class="nav-section" data-i18n="dash.sidebar.section_account">Mon compte</div>
+    <a class="nav-link-side"><i class="fa fa-user"></i><span data-i18n="dash.sidebar.my_profile">Mon profil</span></a>
+    <a class="nav-link-side"><i class="fa fa-bell"></i><span data-i18n="dash.sidebar.notifications">Notifications</span></a>
+    <a class="nav-link-side"><i class="fa fa-shield-halved"></i><span data-i18n="dash.sidebar.rights">Mes droits et données</span></a>
 
-    <div class="nav-section">Aide</div>
-    <a class="nav-link-side"><i class="fa fa-circle-question"></i>FAQ</a>
-    <a class="nav-link-side"><i class="fa fa-headset"></i>Contacter le support</a>
-    <a href="#" class="nav-link-side"><i class="fa fa-right-from-bracket"></i>Se déconnecter</a>
+    <div class="nav-section" data-i18n="dash.sidebar.section_help">Aide</div>
+    <a class="nav-link-side"><i class="fa fa-circle-question"></i><span data-i18n="dash.sidebar.faq">FAQ</span></a>
+    <a class="nav-link-side"><i class="fa fa-headset"></i><span data-i18n="dash.sidebar.support">Contacter le support</span></a>
+    <a href="#" class="nav-link-side"><i class="fa fa-right-from-bracket"></i><span data-i18n="dash.sidebar.logout">Se déconnecter</span></a>
   </div>
 
   <!-- Main -->
@@ -106,19 +107,19 @@
       <!-- Email verification banner (persistante tant que email_verified = false) -->
       <div class="email-banner">
         <i class="fa fa-envelope-circle-check"></i>
-        <div class="banner-text">
+        <div class="banner-text" data-i18n-html="dash.email_banner_html">
           <strong>Votre adresse e-mail n'est pas encore vérifiée.</strong> Vérifiez-la pour pouvoir prendre des rendez-vous et recevoir vos documents médicaux.
         </div>
-        <button class="btn btn-verify">Vérifier maintenant</button>
+        <button class="btn btn-verify" data-i18n="dash.email_banner.verify">Vérifier maintenant</button>
       </div>
 
       <!-- Welcome banner -->
       <div class="welcome-banner d-flex justify-content-between align-items-center flex-wrap gap-3">
         <div>
-          <h3 class="fw-bold mb-1">Bonjour <span id="userFirstName">Aïssatou</span> 👋</h3>
-          <p class="mb-0 opacity-90">Comment allez-vous aujourd'hui ?</p>
+          <h3 class="fw-bold mb-1" data-i18n-html="dash.welcome.hello_html">Bonjour <span id="userFirstName">Aïssatou</span> 👋</h3>
+          <p class="mb-0 opacity-90" data-i18n="dash.welcome.question">Comment allez-vous aujourd'hui ?</p>
         </div>
-        <a href="#" class="btn btn-light fw-semibold">
+        <a href="#" class="btn btn-light fw-semibold" data-i18n-html="dash.welcome.book_html">
           <i class="fa fa-plus me-1"></i>Prendre un RDV
         </a>
       </div>
@@ -129,32 +130,32 @@
         <div class="col-lg-7">
           <div class="card-section">
             <div class="d-flex justify-content-between align-items-center mb-3">
-              <h6 class="fw-bold mb-0"><i class="fa fa-calendar me-2" style="color:#16a085;"></i>Mes prochains rendez-vous</h6>
-              <a href="#" class="small text-decoration-none" style="color:#16a085;">Tout voir →</a>
+              <h6 class="fw-bold mb-0" data-i18n-html="dash.appts.title_html"><i class="fa fa-calendar me-2" style="color:#16a085;"></i>Mes prochains rendez-vous</h6>
+              <a href="#" class="small text-decoration-none" style="color:#16a085;" data-i18n="dash.appts.view_all">Tout voir →</a>
             </div>
 
             <div class="rdv-item">
               <div class="rdv-date">
                 <div class="day">18</div>
-                <div class="month">Mai</div>
+                <div class="month" data-i18n="dash.appts.month_may">Mai</div>
               </div>
               <div class="rdv-info">
                 <div class="doctor">Dr. Mamadou Sow</div>
-                <div class="meta">Cardiologie · 14:30 · Cabinet Médical Plateau, Dakar</div>
+                <div class="meta" data-i18n="dash.appts.specialty1">Cardiologie · 14:30 · Cabinet Médical Plateau, Dakar</div>
               </div>
-              <span class="badge" style="background:#e8f8f5; color:#117a65;">Confirmé</span>
+              <span class="badge" style="background:#e8f8f5; color:#117a65;" data-i18n="dash.appts.status_confirmed">Confirmé</span>
             </div>
 
             <div class="rdv-item">
               <div class="rdv-date">
                 <div class="day">02</div>
-                <div class="month">Juin</div>
+                <div class="month" data-i18n="dash.appts.month_jun">Juin</div>
               </div>
               <div class="rdv-info">
                 <div class="doctor">Dr. Fatou Ndiaye</div>
-                <div class="meta">Médecine générale · 10:00 · Clinique Pasteur</div>
+                <div class="meta" data-i18n="dash.appts.specialty2">Médecine générale · 10:00 · Clinique Pasteur</div>
               </div>
-              <span class="badge" style="background:#e8f8f5; color:#117a65;">Confirmé</span>
+              <span class="badge" style="background:#e8f8f5; color:#117a65;" data-i18n="dash.appts.status_confirmed">Confirmé</span>
             </div>
           </div>
         </div>
@@ -163,35 +164,35 @@
         <div class="col-lg-5">
           <div class="card-section">
             <div class="d-flex justify-content-between align-items-center mb-3">
-              <h6 class="fw-bold mb-0"><i class="fa fa-folder me-2" style="color:#16a085;"></i>Documents récents</h6>
-              <a href="#" class="small text-decoration-none" style="color:#16a085;">Tout voir →</a>
+              <h6 class="fw-bold mb-0" data-i18n-html="dash.docs.title_html"><i class="fa fa-folder me-2" style="color:#16a085;"></i>Documents récents</h6>
+              <a href="#" class="small text-decoration-none" style="color:#16a085;" data-i18n="dash.appts.view_all">Tout voir →</a>
             </div>
 
             <div class="rdv-item">
               <div style="width:38px; height:38px; background:#fdedec; color:#c0392b; border-radius:8px; display:flex; align-items:center; justify-content:center;"><i class="fa fa-file-pdf"></i></div>
               <div class="rdv-info">
-                <div class="fw-semibold small">Ordonnance Dr. Sow</div>
-                <div class="meta">Partagé par praticien · 10/05/2026</div>
+                <div class="fw-semibold small" data-i18n="dash.docs.doc1_title">Ordonnance Dr. Sow</div>
+                <div class="meta" data-i18n="dash.docs.doc1_meta">Partagé par praticien · 10/05/2026</div>
               </div>
-              <span class="badge bg-light text-dark">Nouveau</span>
+              <span class="badge bg-light text-dark" data-i18n="dash.docs.status_new">Nouveau</span>
             </div>
 
             <div class="rdv-item">
               <div style="width:38px; height:38px; background:#ebf5fb; color:#2980b9; border-radius:8px; display:flex; align-items:center; justify-content:center;"><i class="fa fa-file-image"></i></div>
               <div class="rdv-info">
-                <div class="fw-semibold small">Résultat analyse sang</div>
-                <div class="meta">Mon upload · 05/05/2026 · En attente validation</div>
+                <div class="fw-semibold small" data-i18n="dash.docs.doc2_title">Résultat analyse sang</div>
+                <div class="meta" data-i18n="dash.docs.doc2_meta">Mon upload · 05/05/2026 · En attente validation</div>
               </div>
-              <span class="badge bg-warning text-dark">En attente</span>
+              <span class="badge bg-warning text-dark" data-i18n="dash.docs.status_pending">En attente</span>
             </div>
 
             <div class="rdv-item">
               <div style="width:38px; height:38px; background:#fef9e7; color:#f39c12; border-radius:8px; display:flex; align-items:center; justify-content:center;"><i class="fa fa-file-medical"></i></div>
               <div class="rdv-info">
-                <div class="fw-semibold small">Compte-rendu Dr. Diallo</div>
-                <div class="meta">Partagé par praticien · 28/04/2026</div>
+                <div class="fw-semibold small" data-i18n="dash.docs.doc3_title">Compte-rendu Dr. Diallo</div>
+                <div class="meta" data-i18n="dash.docs.doc3_meta">Partagé par praticien · 28/04/2026</div>
               </div>
-              <span class="badge bg-secondary">Vu</span>
+              <span class="badge bg-secondary" data-i18n="dash.docs.status_seen">Vu</span>
             </div>
           </div>
         </div>
@@ -201,13 +202,14 @@
       <!-- Discreet profile completion cue -->
       <a href="#" class="profile-completion-cue">
         <i class="fa fa-circle-info"></i>
-        <span class="cue-text">Profil complété à <strong>60 %</strong></span>
-        <span class="cue-link">Compléter mon profil →</span>
+        <span class="cue-text" data-i18n-html="dash.completion.text_html">Profil complété à <strong>60 %</strong></span>
+        <span class="cue-link" data-i18n="dash.completion.link">Compléter mon profil →</span>
       </a>
 
     </div>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script>
     // À l'arrivée sur le dashboard, l'inscription est terminée.
     // - On copie les infos du patient dans une clé persistante (fueni_user)
@@ -231,27 +233,38 @@
         sessionStorage.setItem('fueni_user', JSON.stringify(user));
         sessionStorage.removeItem('fueni_signup_data');
       }
+    } catch (e) { /* ignore */ }
 
-      // Affichage dynamique du nom + initiales
-      const userRaw = sessionStorage.getItem('fueni_user');
-      if (userRaw) {
+    // Affichage dynamique du nom + initiales — wrapped so we can re-apply
+    // after a language switch (which re-renders the welcome H3 via data-i18n-html
+    // and therefore recreates #userFirstName).
+    function applyUserDisplay() {
+      try {
+        const userRaw = sessionStorage.getItem('fueni_user');
+        if (!userRaw) return;
         const u = JSON.parse(userRaw);
         const first = (u.firstName || '').trim();
         const last = (u.lastName || '').trim();
-        if (first || last) {
-          const fullName = (first + ' ' + last).trim();
-          const initials = ((first[0] || '') + (last[0] || '')).toUpperCase() || 'P';
-          const elFull = document.getElementById('userFullName');
-          const elFirst = document.getElementById('userFirstName');
-          const elAvatar = document.getElementById('userAvatar');
-          if (elFull) elFull.textContent = fullName;
-          if (elFirst) elFirst.textContent = first || fullName;
-          if (elAvatar) elAvatar.textContent = initials;
-        }
-      }
-    } catch (e) { /* ignore */ }
+        if (!first && !last) return;
+        const fullName = (first + ' ' + last).trim();
+        const initials = ((first[0] || '') + (last[0] || '')).toUpperCase() || 'P';
+        const elFull = document.getElementById('userFullName');
+        const elFirst = document.getElementById('userFirstName');
+        const elAvatar = document.getElementById('userAvatar');
+        if (elFull) elFull.textContent = fullName;
+        if (elFirst) elFirst.textContent = first || fullName;
+        if (elAvatar) elAvatar.textContent = initials;
+      } catch (e) { /* ignore */ }
+    }
+    // Run after naz-i18n's initial DOMContentLoaded pass so the user's name
+    // isn't immediately overwritten by the welcome H3 innerHTML replacement.
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', applyUserDisplay);
+    } else {
+      applyUserDisplay();
+    }
+    document.addEventListener('fueni:langchange', applyUserDisplay);
   </script>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <!-- Prototype version badge -->
 <script>(function(){if(window.__pv)return;window.__pv=1;var v=document.createElement('div');v.style.cssText='position:fixed;top:0;left:50%;transform:translateX(-50%);background:#155e75;color:#fff;padding:6px 20px;border-radius:0 0 16px 16px;font:600 12px/1 system-ui,-apple-system,sans-serif;letter-spacing:.6px;z-index:99999;box-shadow:0 3px 10px rgba(0,0,0,.2);text-transform:uppercase;display:flex;align-items:center;gap:8px';v.innerHTML='🧪 Prototype <span style="background:#f59e0b;color:#1a1a1a;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:4px">v1.3.0</span>';document.body.appendChild(v);})();</script>
 </body>
