@@ -17,13 +17,27 @@
     .progress-steps .step.done .step-circle { background: #16a085; color: white; }
     .progress-steps .step.done::after { background: #16a085; }
     .progress-steps .step.active .step-label { color: #16a085; font-weight: 600; }
-    .otp-input { width: 50px; height: 60px; text-align: center; font-size: 1.5rem; font-weight: 700; border-radius: 8px; border: 2px solid #dee2e6; }
+    .otp-input { width: 50px; height: 60px; text-align: center; font-size: 1.5rem; font-weight: 700; border-radius: 8px; border: 2px solid #dee2e6; transition: all 0.2s; }
     .otp-input:focus { border-color: #16a085; outline: none; box-shadow: 0 0 0 0.25rem rgba(22,160,133,0.18); }
+    .otp-input.error { border-color: #dc3545; background: #fef5f5; animation: shake 0.4s; }
+    .otp-input:disabled { background: #f1f3f5; opacity: 0.6; cursor: not-allowed; }
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-4px); }
+      75% { transform: translateX(4px); }
+    }
     .otp-group { display: flex; gap: 8px; justify-content: center; }
     .btn-patient { background: #16a085; border-color: #16a085; color: white; padding: 12px; border-radius: 8px; font-weight: 600; }
-    .btn-patient:hover { background: #138d75; border-color: #138d75; color: white; }
+    .btn-patient:hover:not(:disabled) { background: #138d75; border-color: #138d75; color: white; }
+    .btn-patient:disabled { opacity: 0.5; cursor: not-allowed; }
     .sms-illustration { font-size: 4rem; color: #16a085; opacity: 0.4; }
     .resend-link { color: #16a085; cursor: pointer; font-weight: 600; }
+    .resend-link.disabled { color: #adb5bd; cursor: not-allowed; pointer-events: none; }
+    .demo-hint { background: #fff8e1; border: 1px dashed #f59e0b; color: #b45309; border-radius: 8px; padding: 10px 12px; font-size: 0.85rem; }
+    .demo-hint code { background: #fde68a; color: #92400e; padding: 1px 6px; border-radius: 4px; font-weight: 700; }
+    .state-tester { background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 8px; padding: 12px; margin-top: 1rem; }
+    .state-tester summary { cursor: pointer; font-size: 0.85rem; color: #495057; font-weight: 600; }
+    .state-tester .btn-state { font-size: 0.8rem; padding: 4px 10px; }
   </style>
 </head>
 <body>
@@ -64,9 +78,32 @@
         <i class="fa fa-mobile-screen-button sms-illustration"></i>
       </div>
       <h5 class="fw-bold text-center mb-1">Vérification de votre numéro</h5>
-      <p class="text-muted small text-center mb-4">
+      <p class="text-muted small text-center mb-3">
         Un code à 6 chiffres a été envoyé par SMS au <strong id="maskedPhone">+221 ** *** ** 67</strong>
       </p>
+
+      <div class="demo-hint mb-3">
+        <i class="fa fa-flask me-1"></i>
+        <strong>Démo :</strong> saisissez <code>123456</code> pour valider · n'importe quel autre code → état d'erreur
+      </div>
+
+      <!-- Error inline (wrong code, attempts remaining) -->
+      <div id="errorMsg" class="alert alert-danger py-2 px-3 small mb-3 d-none">
+        <i class="fa fa-circle-exclamation me-2"></i>
+        <span id="errorText">Code incorrect. Il vous reste 2 tentatives.</span>
+      </div>
+
+      <!-- Lockout state (3 attempts used) -->
+      <div id="lockoutMsg" class="alert alert-warning py-2 px-3 small mb-3 d-none">
+        <i class="fa fa-lock me-2"></i>
+        <strong>Trop de tentatives.</strong> Votre code est désactivé. Demandez un nouveau code <span id="lockoutHint">dès que le renvoi est disponible</span>.
+      </div>
+
+      <!-- Expired state (timer 5 min over) -->
+      <div id="expiredMsg" class="alert alert-warning py-2 px-3 small mb-3 d-none">
+        <i class="fa fa-clock-rotate-left me-2"></i>
+        <strong>Code expiré.</strong> Cliquez sur « Renvoyer le code » pour en recevoir un nouveau.
+      </div>
 
       <div class="otp-group mb-3">
         <input type="text" class="otp-input" maxlength="1" inputmode="numeric" value="">
@@ -78,31 +115,180 @@
       </div>
 
       <p class="text-center small text-muted mb-3">
-        Pas reçu ? <span class="resend-link">Renvoyer le code</span> · disponible dans <strong>00:42</strong>
+        Pas reçu ? <span id="resendLink" class="resend-link disabled">Renvoyer le code</span>
+        <span id="resendTimerWrap">· disponible dans <strong id="resendTimer">00:30</strong></span>
       </p>
 
-      <button id="verifyBtn" onclick="window.location='04-patient-profile-base.html'" class="btn btn-patient w-100 mb-2" disabled>
+      <button id="verifyBtn" class="btn btn-patient w-100 mb-2" disabled>
         Vérifier <i class="fa fa-arrow-right ms-2"></i>
       </button>
       <a href="02-patient-signup.html" class="btn btn-link w-100 text-muted small">Modifier mes informations</a>
+
+      <details class="state-tester">
+        <summary><i class="fa fa-vial me-1"></i> Tester les états (raccourcis démo)</summary>
+        <div class="mt-2 d-flex flex-wrap gap-2">
+          <button type="button" class="btn btn-outline-secondary btn-state" onclick="testWrongCode()">
+            Code incorrect (1 essai)
+          </button>
+          <button type="button" class="btn btn-outline-secondary btn-state" onclick="testLockout()">
+            Verrouillage (3 essais épuisés)
+          </button>
+          <button type="button" class="btn btn-outline-secondary btn-state" onclick="testExpired()">
+            Code expiré
+          </button>
+          <button type="button" class="btn btn-outline-secondary btn-state" onclick="resetState()">
+            <i class="fa fa-rotate-right me-1"></i>Réinitialiser
+          </button>
+        </div>
+      </details>
     </div>
 
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script>
-    // Activation du bouton Vérifier dès que les 6 cases sont remplies
+    const CORRECT_CODE = '123456';
+    const MAX_ATTEMPTS = 3;
+    let attemptsLeft = MAX_ATTEMPTS;
+    let isLocked = false;
+    let isExpired = false;
+    let resendSeconds = 30;
+    let resendInterval;
+
+    const inputs = document.querySelectorAll('.otp-input');
+    const verifyBtn = document.getElementById('verifyBtn');
+    const errorMsg = document.getElementById('errorMsg');
+    const errorText = document.getElementById('errorText');
+    const lockoutMsg = document.getElementById('lockoutMsg');
+    const expiredMsg = document.getElementById('expiredMsg');
+    const resendLink = document.getElementById('resendLink');
+    const resendTimerEl = document.getElementById('resendTimer');
+    const resendTimerWrap = document.getElementById('resendTimerWrap');
+
     function updateVerifyButton() {
-      const btn = document.getElementById('verifyBtn');
-      if (!btn) return;
-      const inputs = document.querySelectorAll('.otp-input');
       const allFilled = Array.from(inputs).every(i => /^\d$/.test(i.value));
-      btn.disabled = !allFilled;
+      verifyBtn.disabled = !allFilled || isLocked || isExpired;
     }
 
-    document.querySelectorAll('.otp-input').forEach((input, idx, arr) => {
+    function hideAllMessages() {
+      errorMsg.classList.add('d-none');
+      lockoutMsg.classList.add('d-none');
+      expiredMsg.classList.add('d-none');
+    }
+
+    function markInputsError() {
+      inputs.forEach(i => i.classList.add('error'));
+      setTimeout(() => inputs.forEach(i => i.classList.remove('error')), 1200);
+    }
+
+    function clearInputs() {
+      inputs.forEach(i => { i.value = ''; });
+      inputs[0].focus();
+      updateVerifyButton();
+    }
+
+    function disableInputs(disabled) {
+      inputs.forEach(i => { i.disabled = disabled; if (disabled) i.value = ''; });
+    }
+
+    function verifyCode() {
+      if (isLocked || isExpired) return;
+      const code = Array.from(inputs).map(i => i.value).join('');
+      if (code === CORRECT_CODE) {
+        sessionStorage.setItem('fueni_otp_verified', '1');
+        window.location = '04-patient-profile-base.html';
+        return;
+      }
+      attemptsLeft--;
+      markInputsError();
+      if (attemptsLeft > 0) {
+        const word = attemptsLeft > 1 ? 'tentatives' : 'tentative';
+        errorText.textContent = `Code incorrect. Il vous reste ${attemptsLeft} ${word}.`;
+        errorMsg.classList.remove('d-none');
+        setTimeout(clearInputs, 600);
+      } else {
+        triggerLockout();
+      }
+    }
+
+    function triggerLockout() {
+      isLocked = true;
+      hideAllMessages();
+      lockoutMsg.classList.remove('d-none');
+      disableInputs(true);
+      verifyBtn.disabled = true;
+    }
+
+    function triggerExpired() {
+      isExpired = true;
+      hideAllMessages();
+      expiredMsg.classList.remove('d-none');
+      disableInputs(true);
+      verifyBtn.disabled = true;
+    }
+
+    function startResendTimer() {
+      clearInterval(resendInterval);
+      resendLink.classList.add('disabled');
+      resendTimerWrap.style.display = '';
+      resendInterval = setInterval(() => {
+        resendSeconds--;
+        const mm = String(Math.floor(resendSeconds / 60)).padStart(2, '0');
+        const ss = String(resendSeconds % 60).padStart(2, '0');
+        resendTimerEl.textContent = `${mm}:${ss}`;
+        if (resendSeconds <= 0) {
+          clearInterval(resendInterval);
+          resendLink.classList.remove('disabled');
+          resendTimerWrap.style.display = 'none';
+        }
+      }, 1000);
+    }
+
+    function resendCode() {
+      if (resendLink.classList.contains('disabled')) return;
+      resetState();
+      resendSeconds = 30;
+      startResendTimer();
+      // Brief feedback flash
+      const flash = document.createElement('div');
+      flash.className = 'alert alert-success py-2 px-3 small mb-3';
+      flash.innerHTML = '<i class="fa fa-check-circle me-2"></i>Nouveau code envoyé par SMS.';
+      const card = document.querySelector('.step-card');
+      card.insertBefore(flash, card.querySelector('.otp-group'));
+      setTimeout(() => flash.remove(), 2500);
+    }
+
+    function resetState() {
+      attemptsLeft = MAX_ATTEMPTS;
+      isLocked = false;
+      isExpired = false;
+      hideAllMessages();
+      disableInputs(false);
+      clearInputs();
+    }
+
+    // Demo helpers
+    function testWrongCode() {
+      resetState();
+      attemptsLeft = 2;
+      errorText.textContent = `Code incorrect. Il vous reste 1 tentative.`;
+      attemptsLeft = 1;
+      errorMsg.classList.remove('d-none');
+      markInputsError();
+    }
+    function testLockout() {
+      resetState();
+      attemptsLeft = 0;
+      triggerLockout();
+    }
+    function testExpired() {
+      resetState();
+      triggerExpired();
+    }
+
+    // Wire inputs
+    inputs.forEach((input, idx, arr) => {
       input.addEventListener('input', e => {
-        // Filtrer : seuls les chiffres sont acceptés
         e.target.value = e.target.value.replace(/\D/g, '').slice(0, 1);
         if (e.target.value && idx < arr.length - 1) arr[idx + 1].focus();
         updateVerifyButton();
@@ -112,7 +298,11 @@
       });
     });
 
+    verifyBtn.addEventListener('click', verifyCode);
+    resendLink.addEventListener('click', resendCode);
+
     updateVerifyButton();
+    startResendTimer();
 
     // Masquage dynamique du numéro à partir des données saisies à l'étape 2 (Inscription)
     function maskPhoneDisplay(countryCode, rawPhone) {
@@ -121,9 +311,9 @@
       const last2 = digits.slice(-2);
       let pattern;
       switch (digits.length) {
-        case 8:  pattern = '** ** **';   break; // ML, TG, BF, NE
-        case 9:  pattern = '** *** **';  break; // SN, CM, RDC
-        case 10: pattern = '** *** ***'; break; // CI
+        case 8:  pattern = '** ** **';   break;
+        case 9:  pattern = '** *** **';  break;
+        case 10: pattern = '** *** ***'; break;
         default: pattern = '*'.repeat(Math.max(0, digits.length - 2));
       }
       return `${countryCode} ${pattern} ${last2}`;
