@@ -30,6 +30,7 @@
     .hero-content { max-width: 880px; margin: 0 auto; }
     .hero-eyebrow { font-size: 0.78rem; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; opacity: 0.8; margin-bottom: 14px; display: flex; align-items: center; gap: 10px; }
     .hero-eyebrow .badge-version { background: var(--accent-orange); color: var(--slate-900); padding: 2px 10px; border-radius: 20px; font-weight: 800; }
+    .hero-eyebrow .badge-validated { background: #10b981; color: #fff; padding: 2px 10px; border-radius: 20px; font-weight: 700; letter-spacing: 0.5px; text-transform: none; }
     .hero h1 { font-size: 2.6rem; font-weight: 800; line-height: 1.1; margin: 0 0 14px; letter-spacing: -1px; }
     .hero h1 .accent { color: #5eead4; }
     .hero p.lead { font-size: 1.15rem; opacity: 0.92; margin: 0 0 28px; max-width: 720px; }
@@ -107,11 +108,12 @@
       <div class="hero-eyebrow">
         <i class="fa fa-circle-check"></i> Guide d'utilisation
         <span class="badge-version">v1.3.0</span>
+        <span class="badge-validated">✅ Validé par Nazounki — 2026-05-27</span>
       </div>
-      <h1>Validez le parcours d'<span class="accent">inscription patient</span></h1>
+      <h1>Parcours d'<span class="accent">inscription patient</span></h1>
       <p class="lead">
         Ce prototype interactif présente le parcours complet d'inscription d'un patient sur FUENI,
-        de la page d'accueil publique jusqu'au tableau de bord personnel. ~5 minutes pour tout tester.
+        de la page d'accueil publique jusqu'au tableau de bord personnel. Il a été <strong>validé par Nazounki le 2026-05-27</strong> et sert désormais de référence pour le développement.
       </p>
       <a href="01-home.html" class="hero-cta">
         <i class="fa fa-play"></i> Démarrer le parcours
@@ -138,16 +140,24 @@
     <!-- 1. Objectif -->
     <section class="section" id="objectif">
       <h2><span class="icon"><i class="fa fa-bullseye"></i></span> 1. Objectif de cette validation</h2>
+
+      <div class="callout callout-tip" style="margin-bottom:18px;">
+        <i class="fa fa-circle-check"></i>
+        <div>
+          <strong>Validé par Nazounki le 2026-05-27.</strong> Les décisions produit associées (D3 à D12 de la SF Patient Registration) ont été actées. Ce guide reste disponible comme <strong>référence du parcours validé</strong> et support des tests de recette à venir.
+        </div>
+      </div>
+
       <p>
         FUENI démarre le développement par le <strong>parcours d'inscription patient</strong>, qui est la première priorité MVP.
-        Ce prototype permet à <strong>Nazounki</strong> de valider l'expérience utilisateur avant que l'équipe technique ne démarre l'implémentation.
+        Ce prototype a permis à <strong>Nazounki</strong> de valider l'expérience utilisateur avant que l'équipe technique ne démarre l'implémentation.
       </p>
-      <p>Cette session de validation vous invite à :</p>
+      <p>La session de validation a couvert :</p>
       <ul>
-        <li>Naviguer le parcours <strong>complet</strong> comme le ferait un vrai patient</li>
-        <li>Vérifier que les <strong>libellés</strong>, <strong>champs</strong> et <strong>messages</strong> sont clairs et adaptés au public africain francophone</li>
-        <li>Identifier d'éventuels <strong>freins UX</strong>, <strong>ambiguïtés</strong> ou <strong>incohérences</strong></li>
-        <li>Valider les <strong>règles métier</strong> implémentées (âge ≥ 18 ans, validation téléphone par pays, politique mot de passe, etc.)</li>
+        <li>Le parcours <strong>complet</strong> tel qu'un vrai patient le suivrait</li>
+        <li>Les <strong>libellés</strong>, <strong>champs</strong> et <strong>messages</strong>, leur clarté et leur adaptation au public africain francophone</li>
+        <li>Les <strong>freins UX</strong>, <strong>ambiguïtés</strong> ou <strong>incohérences</strong> identifiés et corrigés</li>
+        <li>Les <strong>règles métier</strong> implémentées (âge ≥ 18 ans, validation téléphone par pays, politique mot de passe, états d'erreur OTP, etc.)</li>
       </ul>
       <div class="callout callout-info">
         <i class="fa fa-circle-info"></i>
@@ -176,7 +186,7 @@
           <div class="step-num">2</div>
           <div class="step-body">
             <h4>Inscription — Créer mon compte</h4>
-            <p>Formulaire de création : prénom, nom, date de naissance, sexe, e-mail, téléphone, mot de passe + consentements (CGU + RGPD). Validation en temps réel.</p>
+            <p>Formulaire de création : prénom, nom, date de naissance, sexe à la naissance, e-mail, téléphone (9 pays + option Autre), mot de passe + consentements (CGU + RGPD). Validation en temps réel.</p>
             <a href="02-patient-signup.html" class="step-link">Ouvrir l'écran 2 →</a>
           </div>
         </div>
@@ -194,7 +204,7 @@
           <div class="step-num">4</div>
           <div class="step-body">
             <h4>Profil de base</h4>
-            <p>Pays, ville et langue de communication. L'adresse complète est optionnelle. Étape rapide (~30 secondes).</p>
+            <p>Pays (strictement 9 pays MVP), ville et langue de communication. L'adresse complète est optionnelle. Étape rapide (~30 secondes).</p>
             <a href="04-patient-profile-base.html" class="step-link">Ouvrir l'écran 4 →</a>
           </div>
         </div>
@@ -234,15 +244,15 @@
           <tr><td>Prénom</td><td><code>Aïssatou</code></td><td>Ou n'importe quel prénom</td></tr>
           <tr><td>Nom</td><td><code>Diop</code></td><td>Ou n'importe quel nom</td></tr>
           <tr><td>Date de naissance</td><td><code>15/03/1990</code></td><td>≥ 18 ans obligatoire</td></tr>
-          <tr><td>Sexe</td><td>Féminin</td><td>4 options disponibles</td></tr>
+          <tr><td>Sexe à la naissance</td><td>Féminin</td><td>2 valeurs uniquement (Féminin · Masculin) — donnée d'identité légale, pas d'identité de genre</td></tr>
           <tr><td>E-mail</td><td><code>aissatou.diop@example.com</code></td><td>Format RFC valide</td></tr>
-          <tr><td>Indicatif téléphone</td><td>🇸🇳 +221</td><td>9 pays MVP disponibles</td></tr>
-          <tr><td>Numéro téléphone</td><td><code>771234567</code></td><td>9 chiffres pour le Sénégal</td></tr>
+          <tr><td>Indicatif téléphone</td><td>🇸🇳 +221</td><td>9 pays MVP + option « 🌍 Autre » pour saisie manuelle d'un indicatif étranger (ex. +33)</td></tr>
+          <tr><td>Numéro téléphone</td><td><code>771234567</code></td><td>9 chiffres pour le Sénégal (longueur variable selon le pays)</td></tr>
           <tr><td>Mot de passe</td><td><code>Aissatou2026!</code></td><td>≥ 8 caractères + composition</td></tr>
-          <tr><td>Code SMS OTP</td><td><code>123456</code></td><td>N'importe quels 6 chiffres</td></tr>
-          <tr><td>Pays de résidence</td><td>Sénégal</td><td>Pré-rempli depuis l'indicatif</td></tr>
+          <tr><td>Code SMS OTP</td><td><code>123456</code></td><td>Code démo « valide » — tout autre code déclenche l'état d'erreur (compteur de tentatives, verrouillage, expiration)</td></tr>
+          <tr><td>Pays</td><td>Sénégal</td><td>Strictement limité aux 9 pays MVP. Pré-rempli depuis l'indicatif (sauf « Autre » → Choisir...)</td></tr>
           <tr><td>Ville</td><td>Dakar</td><td>10 villes par pays + « Autre »</td></tr>
-          <tr><td>Langue</td><td>Français</td><td>FR ou EN</td></tr>
+          <tr><td>Langue</td><td>Français</td><td>FR ou EN (toggle disponible sur la homepage)</td></tr>
         </tbody>
       </table>
     </section>
@@ -271,11 +281,22 @@
       </div>
 
       <div class="scenario">
-        <div class="scenario-title"><i class="fa fa-circle-exclamation"></i> Scénario 3 — Numéro de téléphone trop court</div>
+        <div class="scenario-title"><i class="fa fa-circle-exclamation"></i> Scénario 3 — Numéro de téléphone trop court / indicatif étranger</div>
         <ul>
           <li>Sélectionnez 🇸🇳 +221 et saisissez <code>77 123 45</code> (seulement 7 chiffres au lieu de 9)</li>
-          <li>Vérifiez qu'un message d'erreur apparaît : « Numéro invalide pour le pays sélectionné »</li>
+          <li>Vérifiez qu'un message d'erreur apparaît : « Numéro invalide pour l'indicatif sélectionné »</li>
           <li>Changez d'indicatif pour 🇲🇱 +223 (Mali = 8 chiffres) et vérifiez que la validation s'adapte</li>
+          <li>Sélectionnez <strong>« 🌍 Autre »</strong> en bas de la liste → un champ « Indicatif » apparaît (saisissez par exemple <code>+33</code>)</li>
+          <li>Vérifiez qu'un <strong>avertissement ambre</strong> s'affiche : « La réception du SMS peut prendre quelques minutes pour les numéros hors zone de service »</li>
+        </ul>
+      </div>
+
+      <div class="scenario">
+        <div class="scenario-title"><i class="fa fa-circle-exclamation"></i> Scénario 3 bis — États d'erreur OTP (écran 3)</div>
+        <ul>
+          <li>Saisissez n'importe quel code <strong>autre que 123456</strong> → état « Code incorrect » avec compteur de tentatives dégressif (3 → 2 → 1)</li>
+          <li>Après 3 échecs → état <strong>verrouillage</strong> : inputs désactivés, bouton Vérifier bloqué jusqu'au renvoi disponible</li>
+          <li>Utilisez le panneau « <strong>Tester les états</strong> » en bas de carte pour visualiser instantanément le verrouillage et le code expiré</li>
         </ul>
       </div>
 
@@ -299,9 +320,10 @@
       </div>
 
       <div class="scenario">
-        <div class="scenario-title"><i class="fa fa-circle-exclamation"></i> Scénario 6 — Cascade pays → ville</div>
+        <div class="scenario-title"><i class="fa fa-circle-exclamation"></i> Scénario 6 — Cascade pays → ville + héritage depuis l'indicatif</div>
         <ul>
-          <li>Sur l'écran Profil de base, le pays est pré-sélectionné selon l'indicatif tél de l'inscription</li>
+          <li>Sur l'écran Profil de base, le Pays est pré-sélectionné selon l'indicatif téléphonique de l'inscription (héritage automatique)</li>
+          <li><strong>Si vous aviez choisi « 🌍 Autre »</strong> à l'inscription (ex. +33) → le Pays s'affiche par défaut à <strong>« Choisir... »</strong>, le patient doit sélectionner manuellement parmi les 9 pays MVP</li>
           <li>Changez le pays manuellement → vérifiez que la liste des villes se met à jour automatiquement</li>
           <li>Choisissez « Autre (préciser) » dans la liste des villes → un champ texte libre apparaît</li>
         </ul>
@@ -403,7 +425,7 @@
 
   <footer class="footer">
     <p>
-      <strong>FUENI MVP — Prototype Validation</strong> · v1.3.0<br>
+      <strong>FUENI MVP — Prototype Validation</strong> · v1.3.0 · ✅ Validé par Nazounki le 2026-05-27<br>
       Document préparé par Paris Partners pour <strong>Nazounki</strong> · Mai 2026<br>
       <a href="01-home.html" style="color: var(--teal); font-weight: 600; text-decoration: none;">
         <i class="fa fa-arrow-right me-1"></i>Démarrer le parcours

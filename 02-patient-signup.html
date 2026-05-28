@@ -82,13 +82,11 @@
             <div class="field-hint d-none text-danger" id="ageHint"><i class="fa fa-circle-exclamation me-1"></i><span data-i18n="signup.field.dob_hint">Vous devez avoir 18 ans ou plus pour vous inscrire.</span></div>
           </div>
           <div class="col-md-6">
-            <label class="form-label fw-semibold small" data-i18n="signup.field.sex_label">Sexe *</label>
+            <label class="form-label fw-semibold small" data-i18n="signup.field.sex_label">Sexe à la naissance *</label>
             <select class="form-select" id="sexField">
               <option value="" selected disabled data-i18n="signup.field.sex_choose">Choisir...</option>
-              <option data-i18n="signup.field.sex_female">Féminin</option>
-              <option data-i18n="signup.field.sex_male">Masculin</option>
-              <option data-i18n="signup.field.sex_other">Autre</option>
-              <option data-i18n="signup.field.sex_norep">Préfère ne pas répondre</option>
+              <option value="F" data-i18n="signup.field.sex_female">Féminin</option>
+              <option value="M" data-i18n="signup.field.sex_male">Masculin</option>
             </select>
           </div>
         </div>
@@ -102,7 +100,7 @@
         <div class="mb-3">
           <label class="form-label fw-semibold small" data-i18n="signup.field.phone_label">Téléphone *</label>
           <div class="phone-group">
-            <select class="form-select" id="countryCode" onchange="checkPhone()">
+            <select class="form-select" id="countryCode" onchange="onCountryCodeChange()">
               <option value="" selected disabled data-i18n="signup.field.phone_choose">Choisir...</option>
               <option value="+221">🇸🇳 +221</option>
               <option value="+225">🇨🇮 +225</option>
@@ -113,10 +111,15 @@
               <option value="+227">🇳🇪 +227</option>
               <option value="+237">🇨🇲 +237</option>
               <option value="+243">🇨🇩 +243</option>
+              <option value="OTHER" data-i18n="signup.field.phone_other">🌍 Autre</option>
             </select>
             <input type="tel" class="form-control" id="phoneField" data-i18n-placeholder="signup.field.phone_ph" placeholder="Ex : 77 123 45 67" inputmode="numeric" pattern="[0-9 ]*" oninput="checkPhone()" onblur="checkPhone(true)">
           </div>
-          <div class="field-hint d-none text-danger" id="phoneHint"><i class="fa fa-circle-exclamation me-1"></i><span data-i18n="signup.field.phone_hint">Numéro invalide pour le pays sélectionné.</span></div>
+          <div class="mt-2 d-none" id="customCcWrap">
+            <input type="text" class="form-control form-control-sm" id="customCc" data-i18n-placeholder="signup.field.phone_other_ph" placeholder="Indicatif (ex. +33)" pattern="\+\d{1,3}" oninput="checkPhone()">
+            <div class="field-hint mt-1" style="color:#b45309;"><i class="fa fa-circle-info me-1"></i><span data-i18n="signup.field.phone_other_warn">La réception du SMS peut prendre quelques minutes pour les numéros hors zone de service.</span></div>
+          </div>
+          <div class="field-hint d-none text-danger" id="phoneHint"><i class="fa fa-circle-exclamation me-1"></i><span data-i18n="signup.field.phone_hint">Numéro invalide pour l'indicatif sélectionné.</span></div>
         </div>
 
         <div class="mb-3">
@@ -218,6 +221,23 @@
       '+243': 9    // 🇨🇩 RDC
     };
 
+    function onCountryCodeChange() {
+      const cc = document.getElementById('countryCode').value;
+      const wrap = document.getElementById('customCcWrap');
+      const customCc = document.getElementById('customCc');
+      const isOther = cc === 'OTHER';
+      wrap.classList.toggle('d-none', !isOther);
+      if (!isOther && customCc) customCc.value = '';
+      checkPhone();
+    }
+
+    function getEffectiveCountryCode() {
+      const cc = document.getElementById('countryCode').value;
+      if (cc !== 'OTHER') return cc;
+      const customRaw = (document.getElementById('customCc')?.value || '').trim();
+      return /^\+\d{1,3}$/.test(customRaw) ? customRaw : '';
+    }
+
     function checkPhone(force) {
       const f = document.getElementById('phoneField');
       const cc = document.getElementById('countryCode').value;
@@ -226,11 +246,18 @@
       const cleaned = f.value.replace(/[^\d ]/g, '');
       if (cleaned !== f.value) f.value = cleaned;
       const digits = cleaned.replace(/\s/g, '');
-      const expected = PHONE_LEN[cc] || 8;
-      // Bénin tolère 8 ou 10 chiffres
-      const okBenin = cc === '+229' && (digits.length === 8 || digits.length === 10);
       const shouldValidate = force === true || digits.length >= 4;
-      const invalid = shouldValidate && digits.length > 0 && !okBenin && digits.length !== expected;
+      let invalid = false;
+      if (cc === 'OTHER') {
+        // Autre : on valide que l'indicatif manuel est au bon format + numéro ≥ 6 chiffres
+        const eff = getEffectiveCountryCode();
+        invalid = shouldValidate && digits.length > 0 && (!eff || digits.length < 6 || digits.length > 15);
+      } else if (cc) {
+        const expected = PHONE_LEN[cc] || 8;
+        // Bénin tolère 8 ou 10 chiffres
+        const okBenin = cc === '+229' && (digits.length === 8 || digits.length === 10);
+        invalid = shouldValidate && digits.length > 0 && !okBenin && digits.length !== expected;
+      }
       hint.classList.toggle('d-none', !invalid);
     }
 
@@ -271,9 +298,16 @@
       // Validations e-mail / téléphone
       const rxEmail = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
       const digits = phoneVal.replace(/\D/g, '');
-      const expectedLen = PHONE_LEN[cc] || 8;
-      const okBenin = cc === '+229' && (digits.length === 8 || digits.length === 10);
-      const phoneOk = digits && (okBenin || digits.length === expectedLen);
+      let phoneOk = false;
+      let effectiveCc = cc;
+      if (cc === 'OTHER') {
+        effectiveCc = getEffectiveCountryCode();
+        phoneOk = !!effectiveCc && digits.length >= 6 && digits.length <= 15;
+      } else if (cc) {
+        const expectedLen = PHONE_LEN[cc] || 8;
+        const okBenin = cc === '+229' && (digits.length === 8 || digits.length === 10);
+        phoneOk = digits && (okBenin || digits.length === expectedLen);
+      }
 
       // Politique mot de passe
       const pwdOk = pwd.length >= 8 && /[A-Z]/.test(pwd) && /[a-z]/.test(pwd) && /\d/.test(pwd) && /[^A-Za-z0-9\s]/.test(pwd);
@@ -299,13 +333,17 @@
       }
 
       // Tout est OK → sauvegarde des données pour les étapes suivantes
+      const ccSelect = document.getElementById('countryCode').value;
       const formData = {
         firstName: document.getElementById('firstName').value.trim(),
         lastName: document.getElementById('lastName').value.trim(),
         dob: document.getElementById('dobField').value,
         sex: document.getElementById('sexField').value,
         email: document.getElementById('emailField').value.trim(),
-        countryCode: document.getElementById('countryCode').value,
+        // countryCode = la valeur effective (indicatif numérique ex. +33), pour la masquage / affichage
+        countryCode: ccSelect === 'OTHER' ? getEffectiveCountryCode() : ccSelect,
+        // countryCodeSelector = la valeur du select (OTHER ou un des 9), pour le repré-remplissage et la logique d'héritage côté §4.3
+        countryCodeSelector: ccSelect,
         phone: document.getElementById('phoneField').value,
         pwd: document.getElementById('pwdField').value,
         cgu: document.getElementById('cgu').checked,
@@ -326,7 +364,15 @@
         if (d.dob) document.getElementById('dobField').value = d.dob;
         if (d.sex) document.getElementById('sexField').value = d.sex;
         if (d.email) document.getElementById('emailField').value = d.email;
-        if (d.countryCode) document.getElementById('countryCode').value = d.countryCode;
+        if (d.countryCodeSelector) {
+          document.getElementById('countryCode').value = d.countryCodeSelector;
+          if (d.countryCodeSelector === 'OTHER' && d.countryCode) {
+            document.getElementById('customCc').value = d.countryCode;
+          }
+          onCountryCodeChange();
+        } else if (d.countryCode) {
+          document.getElementById('countryCode').value = d.countryCode;
+        }
         if (d.phone) document.getElementById('phoneField').value = d.phone;
         if (d.pwd) {
           document.getElementById('pwdField').value = d.pwd;
@@ -365,6 +411,6 @@
     }
   </script>
 <!-- Prototype version badge -->
-<script>(function(){if(window.__pv)return;window.__pv=1;var v=document.createElement('div');v.style.cssText='position:fixed;top:0;left:50%;transform:translateX(-50%);background:#155e75;color:#fff;padding:6px 20px;border-radius:0 0 16px 16px;font:600 12px/1 system-ui,-apple-system,sans-serif;letter-spacing:.6px;z-index:99999;box-shadow:0 3px 10px rgba(0,0,0,.2);text-transform:uppercase;display:flex;align-items:center;gap:8px';v.innerHTML='🧪 Prototype <span style="background:#f59e0b;color:#1a1a1a;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:4px">v1.3.0</span>';document.body.appendChild(v);})();</script>
+<script>(function(){if(window.__pv)return;window.__pv=1;var v=document.createElement('div');v.style.cssText='position:fixed;top:0;left:50%;transform:translateX(-50%);background:#155e75;color:#fff;padding:6px 20px;border-radius:0 0 16px 16px;font:600 12px/1 system-ui,-apple-system,sans-serif;letter-spacing:.6px;z-index:99999;box-shadow:0 3px 10px rgba(0,0,0,.2);text-transform:uppercase;display:flex;align-items:center;gap:8px';v.innerHTML='🧪 Prototype <span style="background:#f59e0b;color:#1a1a1a;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:4px">v1.3.0</span><span style="background:#10b981;color:#fff;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:4px;text-transform:none;letter-spacing:0">✅ Validé 2026-05-27</span>';document.body.appendChild(v);})();</script>
 </body>
 </html>

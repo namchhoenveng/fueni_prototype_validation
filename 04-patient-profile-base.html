@@ -69,7 +69,7 @@
       <form>
         <div class="row g-2 mb-3">
           <div class="col-md-6">
-            <label class="form-label fw-semibold small" data-i18n="profile.field.country_label">Pays de résidence *</label>
+            <label class="form-label fw-semibold small" data-i18n="profile.field.country_label">Pays *</label>
             <select class="form-select" id="countrySelect" onchange="updateCityList()">
               <option value="" selected disabled data-i18n="profile.field.country_choose">Choisir...</option>
               <option value="SN">🇸🇳 Sénégal</option>
@@ -82,7 +82,7 @@
               <option value="CM">🇨🇲 Cameroun</option>
               <option value="CD">🇨🇩 RDC</option>
             </select>
-            <div class="field-hint mt-1"><i class="fa fa-info-circle me-1"></i><span data-i18n="profile.field.country_hint">Pré-rempli selon votre indicatif téléphonique</span></div>
+            <div class="field-hint mt-1"><i class="fa fa-info-circle me-1"></i><span data-i18n="profile.field.country_hint">Pré-rempli selon votre indicatif (sélectionnez manuellement si vous avez choisi « Autre »).</span></div>
           </div>
           <div class="col-md-6">
             <label class="form-label fw-semibold small" data-i18n="profile.field.city_label">Ville *</label>
@@ -225,6 +225,6 @@
     });
   </script>
 <!-- Prototype version badge -->
-<script>(function(){if(window.__pv)return;window.__pv=1;var v=document.createElement('div');v.style.cssText='position:fixed;top:0;left:50%;transform:translateX(-50%);background:#155e75;color:#fff;padding:6px 20px;border-radius:0 0 16px 16px;font:600 12px/1 system-ui,-apple-system,sans-serif;letter-spacing:.6px;z-index:99999;box-shadow:0 3px 10px rgba(0,0,0,.2);text-transform:uppercase;display:flex;align-items:center;gap:8px';v.innerHTML='🧪 Prototype <span style="background:#f59e0b;color:#1a1a1a;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:4px">v1.3.0</span>';document.body.appendChild(v);})();</script>
+<script>(function(){if(window.__pv)return;window.__pv=1;var v=document.createElement('div');v.style.cssText='position:fixed;top:0;left:50%;transform:translateX(-50%);background:#155e75;color:#fff;padding:6px 20px;border-radius:0 0 16px 16px;font:600 12px/1 system-ui,-apple-system,sans-serif;letter-spacing:.6px;z-index:99999;box-shadow:0 3px 10px rgba(0,0,0,.2);text-transform:uppercase;display:flex;align-items:center;gap:8px';v.innerHTML='🧪 Prototype <span style="background:#f59e0b;color:#1a1a1a;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:4px">v1.3.0</span><span style="background:#10b981;color:#fff;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:4px;text-transform:none;letter-spacing:0">✅ Validé 2026-05-27</span>';document.body.appendChild(v);})();</script>
 </body>
 </html>
