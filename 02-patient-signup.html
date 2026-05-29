@@ -25,8 +25,23 @@
     .pwd-rule.ok { color: #27ae60; }
     .pwd-strength { height: 4px; border-radius: 4px; background: #e9ecef; overflow: hidden; margin-top: 6px; }
     .pwd-strength-fill { height: 100%; border-radius: 4px; transition: width 0.3s, background 0.3s; width: 0%; }
-    .phone-group { display: flex; gap: 6px; }
-    .phone-group .form-select { flex: 0 0 110px; }
+    .iti { position: relative; display: flex; gap: 6px; }
+    .iti-trigger { flex: 0 0 104px; display: flex; align-items: center; gap: 6px; cursor: pointer; text-align: left; }
+    .iti-trigger #ccFlag { font-size: 1.05rem; }
+    .iti-menu { position: absolute; z-index: 1000; top: calc(100% + 4px); left: 0; width: 320px; max-width: 92vw; background: #fff; border: 1px solid #dfe6e9; border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,0.14); overflow: hidden; }
+    .iti-search-wrap { padding: 8px; border-bottom: 1px solid #eef2f4; }
+    .iti-search-wrap input { width: 100%; border: 1px solid #dfe6e9; border-radius: 8px; padding: 0.45rem 0.7rem; font-size: 0.9rem; outline: none; }
+    .iti-search-wrap input:focus { border-color: #16a085; }
+    .iti-list { max-height: 264px; overflow-y: auto; }
+    .iti-sec { position: sticky; top: 0; z-index: 1; padding: 8px 12px; font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.7px; display: flex; align-items: center; gap: 6px; }
+    .iti-sec-mvp { color: #0e6f5c; background: #d8f3ec; border-top: 1px solid #b8e6da; border-bottom: 1px solid #b8e6da; }
+    .iti-sec-mvp::before { content: "✓"; font-weight: 900; }
+    .iti-sec-all { color: #475569; background: #eef2f6; border-top: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0; }
+    .iti-sec-all::before { content: "🌍"; }
+    .iti-opt { display: flex; align-items: center; gap: 10px; padding: 0.5rem 0.9rem; cursor: pointer; font-size: 0.9rem; }
+    .iti-opt:hover, .iti-opt.active { background: #e8f6f3; }
+    .iti-opt .dial { margin-left: auto; color: #95a5a6; font-size: 0.82rem; }
+    .iti-empty { padding: 0.6rem 0.9rem; color: #95a5a6; font-size: 0.85rem; }
     .divider { display: flex; align-items: center; gap: 12px; color: #bdc3c7; font-size: 0.8rem; margin: 1.2rem 0; }
     .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: #e9ecef; }
     .info-box { background: #e8f8f5; border: 1px solid #a3e4d7; border-radius: 8px; padding: 10px 14px; font-size: 0.82rem; color: #117a65; margin-bottom: 1.2rem; }
@@ -99,27 +114,22 @@
 
         <div class="mb-3">
           <label class="form-label fw-semibold small" data-i18n="signup.field.phone_label">Téléphone *</label>
-          <div class="phone-group">
-            <select class="form-select" id="countryCode" onchange="onCountryCodeChange()">
-              <option value="" selected disabled data-i18n="signup.field.phone_choose">Choisir...</option>
-              <option value="+221">🇸🇳 +221</option>
-              <option value="+225">🇨🇮 +225</option>
-              <option value="+223">🇲🇱 +223</option>
-              <option value="+229">🇧🇯 +229</option>
-              <option value="+228">🇹🇬 +228</option>
-              <option value="+226">🇧🇫 +226</option>
-              <option value="+227">🇳🇪 +227</option>
-              <option value="+237">🇨🇲 +237</option>
-              <option value="+243">🇨🇩 +243</option>
-              <option value="OTHER" data-i18n="signup.field.phone_other">🌍 Autre</option>
-            </select>
-            <input type="tel" class="form-control" id="phoneField" data-i18n-placeholder="signup.field.phone_ph" placeholder="Ex : 77 123 45 67" inputmode="numeric" pattern="[0-9 ]*" oninput="checkPhone()" onblur="checkPhone(true)">
+          <div class="iti">
+            <button type="button" class="form-select iti-trigger" id="ccTrigger" onclick="toggleCcMenu(event)" aria-haspopup="listbox">
+              <span id="ccFlag">🇸🇳</span><span id="ccDial">+221</span>
+            </button>
+            <input type="tel" class="form-control" id="phoneField" data-i18n-placeholder="signup.field.phone_ph" placeholder="Ex : 77 123 45 67" inputmode="tel" pattern="[0-9 ]*" oninput="checkPhone()" onblur="checkPhone(true)">
+            <div class="iti-menu d-none" id="ccMenu">
+              <div class="iti-search-wrap">
+                <input type="text" id="ccSearch" autocomplete="off" data-i18n-placeholder="signup.field.cc_search" placeholder="Rechercher un pays…" oninput="renderCcList()" onkeydown="onCcSearchKey(event)">
+              </div>
+              <div class="iti-list" id="ccList"></div>
+            </div>
           </div>
-          <div class="mt-2 d-none" id="customCcWrap">
-            <input type="text" class="form-control form-control-sm" id="customCc" data-i18n-placeholder="signup.field.phone_other_ph" placeholder="Indicatif (ex. +33)" pattern="\+\d{1,3}" oninput="checkPhone()">
-            <div class="field-hint mt-1" style="color:#b45309;"><i class="fa fa-circle-info me-1"></i><span data-i18n="signup.field.phone_other_warn">La réception du SMS peut prendre quelques minutes pour les numéros hors zone de service.</span></div>
-          </div>
-          <div class="field-hint d-none text-danger" id="phoneHint"><i class="fa fa-circle-exclamation me-1"></i><span data-i18n="signup.field.phone_hint">Numéro invalide pour l'indicatif sélectionné.</span></div>
+          <input type="hidden" id="ccIso" value="SN">
+          <input type="hidden" id="ccValue" value="+221">
+          <div class="field-hint d-none mt-1" id="phoneWarn" style="color:#b45309;"><i class="fa fa-circle-info me-1"></i><span data-i18n="signup.field.phone_other_warn">La réception du SMS peut prendre quelques minutes pour les numéros hors zone de service.</span></div>
+          <div class="field-hint d-none text-danger mt-1" id="phoneHint"><i class="fa fa-circle-exclamation me-1"></i><span data-i18n="signup.field.phone_hint">Numéro invalide pour l'indicatif sélectionné.</span></div>
         </div>
 
         <div class="mb-3">
@@ -208,55 +218,168 @@
       hint.classList.toggle('d-none', !invalid);
     }
 
-    // Longueurs locales attendues (sans indicatif) par pays — 9 pays MVP
-    const PHONE_LEN = {
-      '+221': 9,   // 🇸🇳 Sénégal
-      '+225': 10,  // 🇨🇮 Côte d'Ivoire
-      '+223': 8,   // 🇲🇱 Mali
-      '+229': 8,   // 🇧🇯 Bénin (transition 8→10 en cours, on tolère 8 ou 10)
-      '+228': 8,   // 🇹🇬 Togo
-      '+226': 8,   // 🇧🇫 Burkina Faso
-      '+227': 8,   // 🇳🇪 Niger
-      '+237': 9,   // 🇨🇲 Cameroun
-      '+243': 9    // 🇨🇩 RDC
-    };
+    // Référentiel pays — 9 pays MVP (mvp:true, longueur locale exacte) + échantillon « reste du monde ».
+    // En production : liste complète + validation via libphonenumber.
+    const COUNTRIES = [
+      { iso: 'SN', fr: 'Sénégal', en: 'Senegal', dial: '+221', flag: '🇸🇳', len: 9, mvp: true },
+      { iso: 'CI', fr: "Côte d'Ivoire", en: "Côte d'Ivoire", dial: '+225', flag: '🇨🇮', len: 10, mvp: true },
+      { iso: 'ML', fr: 'Mali', en: 'Mali', dial: '+223', flag: '🇲🇱', len: 8, mvp: true },
+      { iso: 'BJ', fr: 'Bénin', en: 'Benin', dial: '+229', flag: '🇧🇯', len: 8, mvp: true },
+      { iso: 'TG', fr: 'Togo', en: 'Togo', dial: '+228', flag: '🇹🇬', len: 8, mvp: true },
+      { iso: 'BF', fr: 'Burkina Faso', en: 'Burkina Faso', dial: '+226', flag: '🇧🇫', len: 8, mvp: true },
+      { iso: 'NE', fr: 'Niger', en: 'Niger', dial: '+227', flag: '🇳🇪', len: 8, mvp: true },
+      { iso: 'CM', fr: 'Cameroun', en: 'Cameroon', dial: '+237', flag: '🇨🇲', len: 9, mvp: true },
+      { iso: 'CD', fr: 'RD Congo', en: 'DR Congo', dial: '+243', flag: '🇨🇩', len: 9, mvp: true },
+      // Reste du monde (échantillon)
+      { iso: 'FR', fr: 'France', en: 'France', dial: '+33', flag: '🇫🇷' },
+      { iso: 'BE', fr: 'Belgique', en: 'Belgium', dial: '+32', flag: '🇧🇪' },
+      { iso: 'CH', fr: 'Suisse', en: 'Switzerland', dial: '+41', flag: '🇨🇭' },
+      { iso: 'LU', fr: 'Luxembourg', en: 'Luxembourg', dial: '+352', flag: '🇱🇺' },
+      { iso: 'CA', fr: 'Canada', en: 'Canada', dial: '+1', flag: '🇨🇦' },
+      { iso: 'US', fr: 'États-Unis', en: 'United States', dial: '+1', flag: '🇺🇸' },
+      { iso: 'GB', fr: 'Royaume-Uni', en: 'United Kingdom', dial: '+44', flag: '🇬🇧' },
+      { iso: 'DE', fr: 'Allemagne', en: 'Germany', dial: '+49', flag: '🇩🇪' },
+      { iso: 'ES', fr: 'Espagne', en: 'Spain', dial: '+34', flag: '🇪🇸' },
+      { iso: 'IT', fr: 'Italie', en: 'Italy', dial: '+39', flag: '🇮🇹' },
+      { iso: 'PT', fr: 'Portugal', en: 'Portugal', dial: '+351', flag: '🇵🇹' },
+      { iso: 'NL', fr: 'Pays-Bas', en: 'Netherlands', dial: '+31', flag: '🇳🇱' },
+      { iso: 'MA', fr: 'Maroc', en: 'Morocco', dial: '+212', flag: '🇲🇦' },
+      { iso: 'DZ', fr: 'Algérie', en: 'Algeria', dial: '+213', flag: '🇩🇿' },
+      { iso: 'TN', fr: 'Tunisie', en: 'Tunisia', dial: '+216', flag: '🇹🇳' },
+      { iso: 'NG', fr: 'Nigeria', en: 'Nigeria', dial: '+234', flag: '🇳🇬' },
+      { iso: 'GH', fr: 'Ghana', en: 'Ghana', dial: '+233', flag: '🇬🇭' },
+      { iso: 'GN', fr: 'Guinée', en: 'Guinea', dial: '+224', flag: '🇬🇳' },
+      { iso: 'GA', fr: 'Gabon', en: 'Gabon', dial: '+241', flag: '🇬🇦' },
+      { iso: 'CG', fr: 'Congo-Brazzaville', en: 'Congo-Brazzaville', dial: '+242', flag: '🇨🇬' },
+      { iso: 'TD', fr: 'Tchad', en: 'Chad', dial: '+235', flag: '🇹🇩' },
+      { iso: 'MR', fr: 'Mauritanie', en: 'Mauritania', dial: '+222', flag: '🇲🇷' },
+      { iso: 'ZA', fr: 'Afrique du Sud', en: 'South Africa', dial: '+27', flag: '🇿🇦' },
+      { iso: 'CN', fr: 'Chine', en: 'China', dial: '+86', flag: '🇨🇳' },
+      { iso: 'IN', fr: 'Inde', en: 'India', dial: '+91', flag: '🇮🇳' },
+      { iso: 'AE', fr: 'Émirats arabes unis', en: 'United Arab Emirates', dial: '+971', flag: '🇦🇪' },
+      { iso: 'SA', fr: 'Arabie saoudite', en: 'Saudi Arabia', dial: '+966', flag: '🇸🇦' },
+      { iso: 'TR', fr: 'Turquie', en: 'Türkiye', dial: '+90', flag: '🇹🇷' },
+      { iso: 'LB', fr: 'Liban', en: 'Lebanon', dial: '+961', flag: '🇱🇧' },
+      { iso: 'BR', fr: 'Brésil', en: 'Brazil', dial: '+55', flag: '🇧🇷' }
+    ];
 
-    function onCountryCodeChange() {
-      const cc = document.getElementById('countryCode').value;
-      const wrap = document.getElementById('customCcWrap');
-      const customCc = document.getElementById('customCc');
-      const isOther = cc === 'OTHER';
-      wrap.classList.toggle('d-none', !isOther);
-      if (!isOther && customCc) customCc.value = '';
+    let ccActiveIdx = -1;
+
+    function normalizeCc(s) {
+      return (s || '').toString().normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
+    }
+    function getCountry(iso) { return COUNTRIES.find(c => c.iso === iso); }
+    function ccLabel(c) {
+      const en = (document.documentElement.lang || 'fr').toLowerCase().startsWith('en');
+      return (en && c.en) ? c.en : c.fr;
+    }
+
+    function applyCountry(c) {
+      document.getElementById('ccFlag').textContent = c.flag;
+      document.getElementById('ccDial').textContent = c.dial;
+      document.getElementById('ccIso').value = c.iso;
+      document.getElementById('ccValue').value = c.dial;
+      // Avertissement SMS uniquement hors zone de service (pays non MVP)
+      document.getElementById('phoneWarn').classList.toggle('d-none', !!c.mvp);
+    }
+
+    // Sélection sans déplacer le focus (utilisée au préremplissage)
+    function setCountry(iso) {
+      const c = getCountry(iso);
+      if (!c) return;
+      applyCountry(c);
       checkPhone();
     }
 
-    function getEffectiveCountryCode() {
-      const cc = document.getElementById('countryCode').value;
-      if (cc !== 'OTHER') return cc;
-      const customRaw = (document.getElementById('customCc')?.value || '').trim();
-      return /^\+\d{1,3}$/.test(customRaw) ? customRaw : '';
+    // Sélection à partir de la liste (ferme le menu + focus sur le numéro)
+    function chooseCountry(iso) {
+      setCountry(iso);
+      closeCcMenu();
+      document.getElementById('phoneField').focus();
     }
+
+    function toggleCcMenu(e) {
+      e.stopPropagation();
+      const menu = document.getElementById('ccMenu');
+      const willOpen = menu.classList.contains('d-none');
+      menu.classList.toggle('d-none', !willOpen);
+      if (willOpen) {
+        const s = document.getElementById('ccSearch');
+        s.value = '';
+        renderCcList();
+        setTimeout(() => s.focus(), 0);
+      }
+    }
+    function closeCcMenu() {
+      document.getElementById('ccMenu').classList.add('d-none');
+      ccActiveIdx = -1;
+    }
+
+    function renderCcList() {
+      const q = normalizeCc(document.getElementById('ccSearch').value);
+      const list = document.getElementById('ccList');
+      list.innerHTML = '';
+      const match = c => !q || normalizeCc(ccLabel(c)).includes(q) || c.dial.replace('+', '').includes(q.replace('+', ''));
+      const mvp = COUNTRIES.filter(c => c.mvp && match(c));
+      const others = COUNTRIES.filter(c => !c.mvp && match(c));
+      const addSection = (key, fallback, variant) => {
+        const s = document.createElement('div');
+        s.className = 'iti-sec ' + variant;
+        s.textContent = (window.NazI18n ? NazI18n.t(key) : '') || fallback;
+        list.appendChild(s);
+      };
+      const addOpt = c => {
+        const o = document.createElement('div');
+        o.className = 'iti-opt';
+        const fl = document.createElement('span'); fl.textContent = c.flag;
+        const nm = document.createElement('span'); nm.textContent = ccLabel(c);
+        const dl = document.createElement('span'); dl.className = 'dial'; dl.textContent = c.dial;
+        o.appendChild(fl); o.appendChild(nm); o.appendChild(dl);
+        o.onclick = () => chooseCountry(c.iso);
+        list.appendChild(o);
+      };
+      if (mvp.length) { addSection('signup.cc.section_mvp', 'Pays couverts', 'iti-sec-mvp'); mvp.forEach(addOpt); }
+      if (others.length) { addSection('signup.cc.section_all', 'Tous les pays', 'iti-sec-all'); others.forEach(addOpt); }
+      if (!mvp.length && !others.length) {
+        const em = document.createElement('div');
+        em.className = 'iti-empty';
+        em.textContent = (window.NazI18n ? NazI18n.t('signup.cc.no_match') : '') || 'Aucun pays trouvé.';
+        list.appendChild(em);
+      }
+      ccActiveIdx = -1;
+    }
+
+    function onCcSearchKey(e) {
+      const opts = Array.from(document.querySelectorAll('#ccList .iti-opt'));
+      if (!opts.length) return;
+      if (e.key === 'ArrowDown') { e.preventDefault(); ccActiveIdx = Math.min(ccActiveIdx + 1, opts.length - 1); }
+      else if (e.key === 'ArrowUp') { e.preventDefault(); ccActiveIdx = Math.max(ccActiveIdx - 1, 0); }
+      else if (e.key === 'Enter') { if (ccActiveIdx >= 0) { e.preventDefault(); opts[ccActiveIdx].click(); } return; }
+      else if (e.key === 'Escape') { closeCcMenu(); return; }
+      else return;
+      opts.forEach((o, i) => o.classList.toggle('active', i === ccActiveIdx));
+      opts[ccActiveIdx].scrollIntoView({ block: 'nearest' });
+    }
+
+    // Fermer le menu au clic en dehors du composant
+    document.addEventListener('click', e => { if (!e.target.closest('.iti')) closeCcMenu(); });
 
     function checkPhone(force) {
       const f = document.getElementById('phoneField');
-      const cc = document.getElementById('countryCode').value;
       const hint = document.getElementById('phoneHint');
-      // Strip tout caractère non-numérique (sauf espaces décoratifs autorisés à l'affichage)
+      const c = getCountry(document.getElementById('ccIso').value);
       const cleaned = f.value.replace(/[^\d ]/g, '');
       if (cleaned !== f.value) f.value = cleaned;
-      const digits = cleaned.replace(/\s/g, '');
+      const digits = cleaned.replace(/\D/g, '');
       const shouldValidate = force === true || digits.length >= 4;
       let invalid = false;
-      if (cc === 'OTHER') {
-        // Autre : on valide que l'indicatif manuel est au bon format + numéro ≥ 6 chiffres
-        const eff = getEffectiveCountryCode();
-        invalid = shouldValidate && digits.length > 0 && (!eff || digits.length < 6 || digits.length > 15);
-      } else if (cc) {
-        const expected = PHONE_LEN[cc] || 8;
-        // Bénin tolère 8 ou 10 chiffres
-        const okBenin = cc === '+229' && (digits.length === 8 || digits.length === 10);
-        invalid = shouldValidate && digits.length > 0 && !okBenin && digits.length !== expected;
+      if (c && c.len) {
+        // Pays MVP : longueur locale exacte (Bénin tolère 8 ou 10)
+        const okBenin = c.iso === 'BJ' && (digits.length === 8 || digits.length === 10);
+        invalid = shouldValidate && digits.length > 0 && !okBenin && digits.length !== c.len;
+      } else if (c) {
+        // Hors zone (libphonenumber en prod) : longueur générique 6–14 chiffres
+        invalid = shouldValidate && digits.length > 0 && (digits.length < 6 || digits.length > 14);
       }
       hint.classList.toggle('d-none', !invalid);
     }
@@ -279,7 +402,8 @@
       const dobVal = document.getElementById('dobField').value;
       const sex = document.getElementById('sexField').value;
       const email = document.getElementById('emailField').value.trim();
-      const cc = document.getElementById('countryCode').value;
+      const iso = document.getElementById('ccIso').value;
+      const cc = document.getElementById('ccValue').value;
       const phoneVal = document.getElementById('phoneField').value;
       const pwd = document.getElementById('pwdField').value;
       const cgu = document.getElementById('cgu').checked;
@@ -298,15 +422,14 @@
       // Validations e-mail / téléphone
       const rxEmail = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
       const digits = phoneVal.replace(/\D/g, '');
+      const cObj = getCountry(iso);
       let phoneOk = false;
-      let effectiveCc = cc;
-      if (cc === 'OTHER') {
-        effectiveCc = getEffectiveCountryCode();
-        phoneOk = !!effectiveCc && digits.length >= 6 && digits.length <= 15;
-      } else if (cc) {
-        const expectedLen = PHONE_LEN[cc] || 8;
-        const okBenin = cc === '+229' && (digits.length === 8 || digits.length === 10);
-        phoneOk = digits && (okBenin || digits.length === expectedLen);
+      if (cObj && cObj.len) {
+        const okBenin = cObj.iso === 'BJ' && (digits.length === 8 || digits.length === 10);
+        phoneOk = !!digits && (okBenin || digits.length === cObj.len);
+      } else if (cObj) {
+        // Hors zone : longueur générique 6–14 (libphonenumber en prod)
+        phoneOk = digits.length >= 6 && digits.length <= 14;
       }
 
       // Politique mot de passe
@@ -332,19 +455,19 @@
         return;
       }
 
-      // Tout est OK → sauvegarde des données pour les étapes suivantes
-      const ccSelect = document.getElementById('countryCode').value;
+      // Tout est OK → sauvegarde des données pour les étapes suivantes (données structurées)
       const formData = {
         firstName: document.getElementById('firstName').value.trim(),
         lastName: document.getElementById('lastName').value.trim(),
         dob: document.getElementById('dobField').value,
         sex: document.getElementById('sexField').value,
         email: document.getElementById('emailField').value.trim(),
-        // countryCode = la valeur effective (indicatif numérique ex. +33), pour la masquage / affichage
-        countryCode: ccSelect === 'OTHER' ? getEffectiveCountryCode() : ccSelect,
-        // countryCodeSelector = la valeur du select (OTHER ou un des 9), pour le repré-remplissage et la logique d'héritage côté §4.3
-        countryCodeSelector: ccSelect,
-        phone: document.getElementById('phoneField').value,
+        // countryCode = indicatif (+221 … +33) ; regionIso = ISO pays (pré-remplissage §4.3 + héritage)
+        countryCode: cc,
+        regionIso: iso,
+        phone: document.getElementById('phoneField').value,   // numéro national
+        phoneE164: cc + digits,                                // E.164 complet (indicatif + national)
+        inServiceArea: !!(cObj && cObj.mvp),
         pwd: document.getElementById('pwdField').value,
         cgu: document.getElementById('cgu').checked,
         health: document.getElementById('health-consent').checked
@@ -364,14 +487,12 @@
         if (d.dob) document.getElementById('dobField').value = d.dob;
         if (d.sex) document.getElementById('sexField').value = d.sex;
         if (d.email) document.getElementById('emailField').value = d.email;
-        if (d.countryCodeSelector) {
-          document.getElementById('countryCode').value = d.countryCodeSelector;
-          if (d.countryCodeSelector === 'OTHER' && d.countryCode) {
-            document.getElementById('customCc').value = d.countryCode;
-          }
-          onCountryCodeChange();
+        if (d.regionIso) {
+          setCountry(d.regionIso);
         } else if (d.countryCode) {
-          document.getElementById('countryCode').value = d.countryCode;
+          // Rétrocompat : retrouver le pays par indicatif
+          const c = COUNTRIES.find(x => x.dial === d.countryCode);
+          if (c) setCountry(c.iso);
         }
         if (d.phone) document.getElementById('phoneField').value = d.phone;
         if (d.pwd) {

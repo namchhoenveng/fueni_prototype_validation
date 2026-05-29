@@ -351,6 +351,14 @@
     // Masquage dynamique du numéro à partir des données saisies à l'étape 2 (Inscription)
     function maskPhoneDisplay(countryCode, rawPhone) {
       const digits = (rawPhone || '').replace(/\D/g, '');
+      // « Autre » : numéro international complet (indicatif inclus dans rawPhone, countryCode vide)
+      if (!countryCode && /\+/.test(rawPhone || '')) {
+        if (digits.length < 4) return '+•• ••• ••';
+        const lead = '+' + digits.slice(0, 2);
+        const tail = digits.slice(-2);
+        const mid = '*'.repeat(Math.max(0, digits.length - 4));
+        return `${lead} ${mid} ${tail}`;
+      }
       if (digits.length < 2) return `${countryCode} •••••••••`;
       const last2 = digits.slice(-2);
       let pattern;
@@ -369,8 +377,8 @@
         if (!raw) return;
         const d = JSON.parse(raw);
         const el = document.getElementById('maskedPhone');
-        if (el && d.countryCode && d.phone) {
-          el.textContent = maskPhoneDisplay(d.countryCode, d.phone);
+        if (el && d.phone) {
+          el.textContent = maskPhoneDisplay(d.countryCode || '', d.phone);
         }
       } catch (e) { /* ignore */ }
     }
