@@ -42,6 +42,14 @@
       const v = t(el.getAttribute('data-i18n-html'));
       if (v) el.innerHTML = v;
     });
+
+    // Astérisque des champs obligatoires en rouge (convention UX) — exécuté après application des libellés
+    document.querySelectorAll('label').forEach(lbl => {
+      if (/\*\s*$/.test(lbl.textContent) && !lbl.querySelector('.req-star')) {
+        lbl.innerHTML = lbl.innerHTML.replace(/\*(\s*)$/, '<span class="req-star" style="color:#dc3545">*</span>$1');
+      }
+    });
+
     document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
       const v = t(el.getAttribute('data-i18n-placeholder'));
       if (v) el.setAttribute('placeholder', v);
@@ -261,6 +269,7 @@
       'signup.field.dob_label': 'Date de naissance *',
       'signup.field.dob_info': 'Vous devez avoir 18 ans ou plus',
       'signup.field.dob_hint': 'Vous devez avoir 18 ans ou plus pour vous inscrire.',
+      'signup.field.dob_hint_range': 'Veuillez vérifier la date de naissance saisie.',
       'signup.field.sex_label': 'Sexe à la naissance *',
       'signup.field.sex_choose': 'Choisir...',
       'signup.field.sex_male': 'Masculin',
@@ -284,7 +293,7 @@
       'signup.field.pwd_r_num': 'Un chiffre',
       'signup.field.pwd_r_spe': 'Un caractère spécial (ex : ! ? @ # $ % & * …)',
       'signup.cgu_html': 'J\'accepte les <a href="#" class="text-decoration-none" style="color:#16a085;">Conditions Générales</a> et la <a href="#" class="text-decoration-none" style="color:#16a085;">Politique de Confidentialité</a> *',
-      'signup.health_html': 'Je consens au traitement de mes <strong>données de santé</strong> par FUENI dans le cadre du service *',
+      'signup.health_html': 'J\'accepte que FUENI traite mes données personnelles et médicales dans le respect de sa politique de confidentialité et du RGPD. *',
       'signup.submit': 'Créer mon compte',
       'signup.divider_or': 'ou',
       'signup.have_account_html': 'Déjà un compte ? <a href="#" class="text-decoration-none fw-semibold" style="color:#16a085;">Connectez-vous</a>',
@@ -323,9 +332,9 @@
       'profile.title': 'Complétez votre profil',
       'profile.subtitle': 'Dernière étape (30 secondes).',
       'profile.error.required': 'Veuillez compléter tous les champs obligatoires marqués d\'un astérisque (*).',
-      'profile.field.country_label': 'Pays *',
+      'profile.field.country_label': 'Pays de service *',
       'profile.field.country_choose': 'Choisir...',
-      'profile.field.country_hint': 'Pays où vous souhaitez consulter (l\'un de nos 9 pays couverts).',
+      'profile.field.country_hint': 'Pays où vous recherchez praticiens et services de santé (l\'un de nos 9 pays couverts).',
       'profile.field.city_label': 'Ville *',
       'profile.field.city_choose': 'Choisir...',
       'profile.field.city_other_ph': 'Précisez votre ville',
@@ -548,6 +557,7 @@
       'signup.field.dob_label': 'Date of birth *',
       'signup.field.dob_info': 'You must be 18 or older',
       'signup.field.dob_hint': 'You must be 18 or older to sign up.',
+      'signup.field.dob_hint_range': 'Please check the date of birth you entered.',
       'signup.field.sex_label': 'Sex at birth *',
       'signup.field.sex_choose': 'Choose...',
       'signup.field.sex_male': 'Male',
@@ -571,7 +581,7 @@
       'signup.field.pwd_r_num': 'One digit',
       'signup.field.pwd_r_spe': 'One special character (e.g. ! ? @ # $ % & * …)',
       'signup.cgu_html': 'I accept the <a href="#" class="text-decoration-none" style="color:#16a085;">Terms of Use</a> and the <a href="#" class="text-decoration-none" style="color:#16a085;">Privacy Policy</a> *',
-      'signup.health_html': 'I consent to the processing of my <strong>health data</strong> by FUENI as part of the service *',
+      'signup.health_html': 'I accept that FUENI processes my personal and medical data in accordance with its privacy policy and the GDPR. *',
       'signup.submit': 'Create my account',
       'signup.divider_or': 'or',
       'signup.have_account_html': 'Already have an account? <a href="#" class="text-decoration-none fw-semibold" style="color:#16a085;">Log in</a>',
@@ -610,9 +620,9 @@
       'profile.title': 'Complete your profile',
       'profile.subtitle': 'Last step (30 seconds).',
       'profile.error.required': 'Please complete all required fields marked with an asterisk (*).',
-      'profile.field.country_label': 'Country *',
+      'profile.field.country_label': 'Service country *',
       'profile.field.country_choose': 'Choose...',
-      'profile.field.country_hint': 'The country where you wish to book appointments (one of our 9 covered countries).',
+      'profile.field.country_hint': 'The country where you look for practitioners and health services (one of our 9 covered countries).',
       'profile.field.city_label': 'City *',
       'profile.field.city_choose': 'Choose...',
       'profile.field.city_other_ph': 'Enter your city',

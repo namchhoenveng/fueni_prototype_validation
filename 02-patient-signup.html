@@ -18,6 +18,10 @@
     .role-chip { display: inline-flex; align-items: center; gap: 8px; padding: 6px 14px; border-radius: 20px; font-size: 0.82rem; font-weight: 600; margin-bottom: 1.2rem; background: #d1f2eb; color: #117a65; }
     .form-control, .form-select { border-radius: 8px; padding: 0.6rem 0.9rem; }
     .form-control:focus, .form-select:focus { border-color: #16a085; box-shadow: 0 0 0 0.25rem rgba(22,160,133,0.18); }
+    .form-check-input { width: 1.25em; height: 1.25em; margin-top: 0.15em; border: 2px solid #94a3b8; cursor: pointer; }
+    .form-check-input:checked { background-color: #16a085; border-color: #16a085; }
+    .form-check-input:focus { border-color: #16a085; box-shadow: 0 0 0 0.2rem rgba(22,160,133,0.25); }
+    .form-check-label { cursor: pointer; }
     .btn-patient { background: #16a085; border-color: #16a085; color: white; padding: 12px; border-radius: 8px; font-weight: 600; font-size: 1rem; transition: background 0.2s; }
     .btn-patient:hover { background: #138d75; border-color: #138d75; color: white; }
     .field-hint { font-size: 0.75rem; color: #95a5a6; margin-top: 4px; }
@@ -81,11 +85,11 @@
         <div class="row g-2 mb-3">
           <div class="col-md-6">
             <label class="form-label fw-semibold small" data-i18n="signup.field.firstname_label">Prénom *</label>
-            <input type="text" class="form-control" id="firstName" data-i18n-placeholder="signup.field.firstname_ph" placeholder="Ex : Aïssatou">
+            <input type="text" class="form-control" id="firstName" maxlength="80" data-i18n-placeholder="signup.field.firstname_ph" placeholder="Ex : Aïssatou">
           </div>
           <div class="col-md-6">
             <label class="form-label fw-semibold small" data-i18n="signup.field.lastname_label">Nom *</label>
-            <input type="text" class="form-control" id="lastName" data-i18n-placeholder="signup.field.lastname_ph" placeholder="Ex : Diop">
+            <input type="text" class="form-control" id="lastName" maxlength="80" data-i18n-placeholder="signup.field.lastname_ph" placeholder="Ex : Diop">
           </div>
         </div>
 
@@ -161,7 +165,7 @@
         <div class="mb-4 form-check">
           <input class="form-check-input" type="checkbox" id="health-consent">
           <label class="form-check-label small" for="health-consent" data-i18n-html="signup.health_html">
-            Je consens au traitement de mes <strong>données de santé</strong> par FUENI dans le cadre du service *
+            J'accepte que FUENI traite mes données personnelles et médicales dans le respect de sa politique de confidentialité et du RGPD. *
           </label>
         </div>
 
@@ -409,14 +413,18 @@
       const cgu = document.getElementById('cgu').checked;
       const health = document.getElementById('health-consent').checked;
 
-      // Calcul âge
+      // Calcul âge + bornes (≥ 18, ≤ 120 ans, date dans le passé)
       let age = -1;
+      let dobValid = false;
       if (dobVal) {
         const birth = new Date(dobVal);
         const today = new Date();
-        age = today.getFullYear() - birth.getFullYear();
-        const m = today.getMonth() - birth.getMonth();
-        if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
+        if (!isNaN(birth) && birth <= today) {
+          age = today.getFullYear() - birth.getFullYear();
+          const m = today.getMonth() - birth.getMonth();
+          if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
+          dobValid = age >= 18 && age <= 120;
+        }
       }
 
       // Validations e-mail / téléphone
@@ -439,7 +447,7 @@
       const allOk =
         firstName &&
         lastName &&
-        dobVal && age >= 18 &&
+        dobValid &&
         sex &&
         email && rxEmail.test(email) &&
         cc && phoneOk &&
@@ -478,6 +486,15 @@
 
     // Préremplissage si l'utilisateur revient depuis l'étape OTP (« Modifier mon numéro »)
     window.addEventListener('DOMContentLoaded', () => {
+      // Bornes de la date de naissance : entre aujourd'hui − 120 ans et aujourd'hui − 18 ans
+      const dobEl = document.getElementById('dobField');
+      if (dobEl) {
+        const now = new Date();
+        const pad = n => String(n).padStart(2, '0');
+        const iso = dt => `${dt.getFullYear()}-${pad(dt.getMonth() + 1)}-${pad(dt.getDate())}`;
+        dobEl.max = iso(new Date(now.getFullYear() - 18, now.getMonth(), now.getDate()));
+        dobEl.min = iso(new Date(now.getFullYear() - 120, now.getMonth(), now.getDate()));
+      }
       const raw = sessionStorage.getItem('fueni_signup_data');
       if (!raw) return;
       try {
@@ -516,6 +533,7 @@
       const dob = document.getElementById('dobField').value;
       const hint = document.getElementById('ageHint');
       const info = document.getElementById('ageInfo');
+      const hintSpan = hint.querySelector('span');
       if (!dob) {
         hint.classList.add('d-none');
         info.classList.remove('d-none');
@@ -523,12 +541,25 @@
       }
       const birthDate = new Date(dob);
       const today = new Date();
-      let age = today.getFullYear() - birthDate.getFullYear();
-      const m = today.getMonth() - birthDate.getMonth();
-      if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) age--;
-      const tooYoung = age < 18;
-      hint.classList.toggle('d-none', !tooYoung);
-      info.classList.toggle('d-none', tooYoung);
+      let invalidRange = false, tooYoung = false;
+      if (isNaN(birthDate) || birthDate > today) {
+        invalidRange = true; // date future ou invalide
+      } else {
+        let age = today.getFullYear() - birthDate.getFullYear();
+        const m = today.getMonth() - birthDate.getMonth();
+        if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) age--;
+        if (age > 120) invalidRange = true;      // > 120 ans → date invalide
+        else if (age < 18) tooYoung = true;       // < 18 ans
+      }
+      const showErr = invalidRange || tooYoung;
+      // Message adapté : « date invalide » (futur / > 120) ou « < 18 ans »
+      const key = invalidRange ? 'signup.field.dob_hint_range' : 'signup.field.dob_hint';
+      if (hintSpan) {
+        hintSpan.setAttribute('data-i18n', key);
+        if (window.NazI18n) hintSpan.textContent = NazI18n.t(key);
+      }
+      hint.classList.toggle('d-none', !showErr);
+      info.classList.toggle('d-none', showErr);
     }
   </script>
 <!-- Prototype version badge -->
