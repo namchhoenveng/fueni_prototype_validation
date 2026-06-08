@@ -69,7 +69,7 @@
   <!-- Sidebar -->
   <div class="sidebar">
     <div class="sidebar-brand">
-      <span style="opacity:0.85;">F</span>UENI
+      <img src="assets/fueni-lockup-white.svg" alt="FUENI" style="height:30px;width:auto;display:block;margin-bottom:6px">
       <small data-i18n="dash.sidebar.area">Espace Patient</small>
     </div>
 
@@ -90,9 +90,7 @@
     <a href="#" class="nav-link-side"><i class="fa fa-folder"></i><span data-i18n="dash.sidebar.my_docs">Mes documents</span></a>
 
     <div class="nav-section" data-i18n="dash.sidebar.section_account">Mon compte</div>
-    <a class="nav-link-side"><i class="fa fa-user"></i><span data-i18n="dash.sidebar.my_profile">Mon profil</span></a>
-    <a class="nav-link-side"><i class="fa fa-bell"></i><span data-i18n="dash.sidebar.notifications">Notifications</span></a>
-    <a class="nav-link-side"><i class="fa fa-shield-halved"></i><span data-i18n="dash.sidebar.rights">Mes droits et données</span></a>
+    <a href="06-patient-profile.html" class="nav-link-side"><i class="fa fa-user"></i><span data-i18n="dash.sidebar.my_profile">Mon profil</span></a>
 
     <div class="nav-section" data-i18n="dash.sidebar.section_help">Aide</div>
     <a class="nav-link-side"><i class="fa fa-circle-question"></i><span data-i18n="dash.sidebar.faq">FAQ</span></a>
@@ -200,7 +198,7 @@
       </div>
 
       <!-- Discreet profile completion cue -->
-      <a href="#" class="profile-completion-cue">
+      <a href="06-patient-profile.html" class="profile-completion-cue">
         <i class="fa fa-circle-info"></i>
         <span class="cue-text" data-i18n-html="dash.completion.text_html">Profil complété à <strong>60 %</strong></span>
         <span class="cue-link" data-i18n="dash.completion.link">Compléter mon profil →</span>
@@ -266,6 +264,6 @@
     document.addEventListener('fueni:langchange', applyUserDisplay);
   </script>
 <!-- Prototype version badge -->
-<script>(function(){if(window.__pv)return;window.__pv=1;var v=document.createElement('div');v.style.cssText='position:fixed;top:0;left:50%;transform:translateX(-50%);background:#155e75;color:#fff;padding:6px 20px;border-radius:0 0 16px 16px;font:600 12px/1 system-ui,-apple-system,sans-serif;letter-spacing:.6px;z-index:99999;box-shadow:0 3px 10px rgba(0,0,0,.2);text-transform:uppercase;display:flex;align-items:center;gap:8px';v.innerHTML='🧪 Prototype <span style="background:#f59e0b;color:#1a1a1a;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:4px">v1.3.0</span><span style="background:#10b981;color:#fff;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:4px;text-transform:none;letter-spacing:0">✅ Validé 2026-05-27</span>';document.body.appendChild(v);})();</script>
+<script>(function(){if(window.__pv)return;window.__pv=1;var v=document.createElement('div');v.style.cssText='position:fixed;top:0;left:50%;transform:translateX(-50%);background:#155e75;color:#fff;padding:6px 20px;border-radius:0 0 16px 16px;font:600 12px/1 system-ui,-apple-system,sans-serif;letter-spacing:.6px;z-index:99999;box-shadow:0 3px 10px rgba(0,0,0,.2);text-transform:uppercase;display:flex;align-items:center;gap:8px';v.innerHTML='🧪 Prototype <span style="background:#f59e0b;color:#1a1a1a;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:4px">v1.4.0</span><span style="background:#facc15;color:#1a1a1a;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:4px;text-transform:none;letter-spacing:0">⏳ À valider</span>';document.body.appendChild(v);})();</script>
 </body>
 </html>

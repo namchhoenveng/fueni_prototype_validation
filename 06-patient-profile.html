@@ -1,0 +1,964 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FUENI — Mon profil</title>
+  <script src="naz-i18n.js" defer></script>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="naz-common.css">
+  <style>
+    body { background: #f0f4f8; }
+
+    /* Sidebar (aligné dashboard) */
+    .sidebar { background: #16a085; min-height: 100vh; padding: 0; width: 240px; position: fixed; top: 0; left: 0; z-index: 100; }
+    .sidebar-brand { padding: 20px 20px 10px; font-size: 1.3rem; font-weight: 700; color: white; }
+    .sidebar-brand small { display: block; font-size: 0.65rem; font-weight: 500; opacity: 0.75; letter-spacing: 0.5px; text-transform: uppercase; margin-top: 2px; }
+    .sidebar-user { padding: 14px 20px 20px; border-bottom: 1px solid rgba(255,255,255,0.15); }
+    .sidebar-user .avatar { width: 40px; height: 40px; border-radius: 50%; background: #fff; color: #16a085; display: flex; align-items: center; justify-content: center; font-weight: 700; }
+    .nav-link-side { color: rgba(255,255,255,0.85) !important; padding: 10px 20px; display: flex; align-items: center; gap: 10px; font-size: 0.9rem; cursor: pointer; text-decoration: none; transition: background 0.15s; }
+    .nav-link-side:hover { background: rgba(255,255,255,0.1); color: white !important; }
+    .nav-link-side.active { background: rgba(255,255,255,0.2); border-left: 3px solid white; color: white !important; }
+    .nav-section { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: rgba(255,255,255,0.45); padding: 16px 20px 6px; }
+    .nav-link-side i { width: 18px; text-align: center; }
+    .main { margin-left: 240px; }
+
+    .proto-bar { background: #fff3cd; border: 1px solid #ffc107; border-top: none; padding: 6px 14px; font-size: 0.82rem; position: fixed; top: 0; right: 28px; z-index: 300; border-radius: 0 0 8px 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+    .content-area { padding: 48px 28px 40px; max-width: 920px; }
+
+    .page-head h4 { font-weight: 800; color: #2c3e50; margin-bottom: 2px; }
+    .page-head p { color: #7f8c8d; font-size: 0.9rem; }
+
+    .completion-card { background: white; border-radius: 12px; padding: 16px 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); margin-bottom: 18px; }
+    .completion-bar { height: 8px; border-radius: 6px; background: #ecf0f1; overflow: hidden; margin-top: 8px; }
+    .completion-fill { height: 100%; background: linear-gradient(90deg,#16a085,#48c9b0); border-radius: 6px; }
+
+    .email-banner { background: #fff8e1; border: 1px solid #ffd54f; border-radius: 10px; padding: 12px 18px; display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
+    .email-banner i { color: #f57c00; font-size: 1.3rem; }
+    .email-banner .banner-text { flex: 1; font-size: 0.9rem; color: #6d4c00; }
+    .email-banner .btn-verify { background: #f57c00; border-color: #f57c00; color: white; font-weight: 600; padding: 6px 14px; border-radius: 6px; white-space: nowrap; }
+
+    .legend { display: flex; flex-wrap: wrap; gap: 16px; font-size: 0.78rem; color: #7f8c8d; margin-bottom: 18px; padding: 0 4px; }
+    .legend span { display: inline-flex; align-items: center; gap: 5px; }
+
+    .prof-section { background: white; border-radius: 12px; padding: 20px 22px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); margin-bottom: 18px; }
+    .prof-section-head { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+    .prof-section-head h6 { font-weight: 700; color: #2c3e50; margin: 0; display: flex; align-items: center; gap: 8px; }
+    .prof-section-head .spacer { flex: 1; }
+
+    .sens-badge { font-size: 0.68rem; font-weight: 600; padding: 2px 8px; border-radius: 10px; }
+    .sens-direct { background: #d1f2eb; color: #117a65; }
+    .sens-code { background: #fdebd0; color: #9c640c; }
+    .sens-support { background: #eceff1; color: #607d8b; }
+
+    .field-row { display: flex; align-items: flex-start; gap: 12px; padding: 12px 0; border-bottom: 1px solid #f1f4f6; }
+    .field-row:last-child { border-bottom: none; }
+    .field-label { width: 38%; min-width: 150px; color: #7f8c8d; font-size: 0.88rem; padding-top: 7px; }
+    .field-value { flex: 1; font-weight: 600; color: #2c3e50; }
+    .field-value .muted { color: #b0b8bf; font-weight: 500; font-style: italic; }
+    .field-value .view { display: inline-block; padding-top: 7px; }
+    .field-value .edit { max-width: 360px; }
+
+    .chip { font-size: 0.72rem; font-weight: 600; padding: 2px 9px; border-radius: 10px; margin-left: 8px; }
+    .chip-ok { background: #d1f2eb; color: #117a65; }
+    .chip-no { background: #fdecea; color: #c0392b; }
+
+    .btn-edit { background: transparent; border: 1px solid #16a085; color: #16a085; font-size: 0.82rem; font-weight: 600; padding: 5px 14px; border-radius: 8px; }
+    .btn-edit:hover { background: #16a085; color: #fff; }
+    .btn-save { background: #16a085; border: 0; color: #fff; font-size: 0.82rem; font-weight: 600; padding: 6px 14px; border-radius: 8px; }
+    .btn-cancel { background: transparent; border: 0; color: #7f8c8d; font-size: 0.82rem; padding: 6px 8px; }
+    .btn-link-verify { background: transparent; border: 0; color: #f57c00; font-weight: 600; font-size: 0.82rem; padding: 0; margin-left: 6px; }
+
+    .form-control, .form-select { border-radius: 8px; padding: 0.45rem 0.7rem; font-size: 0.9rem; font-weight: 500; }
+    .tgl-row { display: flex; align-items: center; gap: 12px; padding: 10px 0; }
+    .tgl { position: relative; display: inline-block; width: 44px; height: 24px; flex-shrink: 0; margin: 0; }
+    .tgl input { opacity: 0; width: 0; height: 0; position: absolute; }
+    .tgl .slider { position: absolute; inset: 0; background: #cbd5e1; border-radius: 24px; transition: background .2s; cursor: pointer; }
+    .tgl .slider::before { content: ''; position: absolute; height: 18px; width: 18px; left: 3px; top: 3px; background: #fff; border-radius: 50%; transition: transform .2s; box-shadow: 0 1px 3px rgba(0,0,0,0.25); }
+    .tgl input:checked + .slider { background: #16a085; }
+    .tgl input:checked + .slider::before { transform: translateX(20px); }
+    .tgl-row label.txt { cursor: pointer; margin: 0; }
+
+    .ms { position: relative; max-width: 460px; }
+    .ms-control { position: relative; min-height: 40px; border: 1px solid #ced4da; border-radius: 8px; padding: 5px 30px 5px 8px; display: flex; flex-wrap: wrap; gap: 5px; align-items: center; cursor: pointer; background: #fff; }
+    .ms-control::after { content: '▾'; position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: #94a3b8; pointer-events: none; }
+    .ms-placeholder { color: #94a3b8; font-size: 0.88rem; padding: 2px; }
+    .ms-value { color: #2c3e50; font-weight: 600; font-size: 0.9rem; padding: 2px; }
+    .ms-control.disabled { background: #f1f4f6; cursor: not-allowed; opacity: 0.7; }
+    .ms-empty { padding: 8px 10px; color: #95a5a6; font-size: 0.85rem; }
+    .ms-tag { display: inline-flex; align-items: center; gap: 6px; background: #d1f2eb; color: #117a65; border-radius: 14px; padding: 3px 10px; font-size: 0.82rem; font-weight: 600; }
+    .ms-tag .x { cursor: pointer; opacity: 0.65; font-weight: 700; }
+    .ms-tag .x:hover { opacity: 1; }
+    .ms-menu { position: absolute; top: calc(100% + 4px); left: 0; right: 0; background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,0.12); z-index: 50; padding: 8px; }
+    .ms-search { width: 100%; border: 1px solid #e2e8f0; border-radius: 7px; padding: 7px 10px; font-size: 0.88rem; margin-bottom: 6px; }
+    .ms-list { max-height: 210px; overflow-y: auto; }
+    .ms-opt { display: flex; align-items: center; justify-content: space-between; padding: 8px 10px; border-radius: 7px; cursor: pointer; font-size: 0.9rem; color: #2c3e50; }
+    .ms-opt:hover { background: #f0f4f8; }
+    .ms-opt.sel { color: #117a65; font-weight: 600; }
+    .ms-opt.sel::after { content: '✓'; color: #16a085; }
+    .ms-other { display: flex; gap: 6px; border-top: 1px solid #eef2f4; margin-top: 6px; padding-top: 8px; }
+    .ms-other-input { flex: 1; min-width: 0; border: 1px solid #e2e8f0; border-radius: 7px; padding: 6px 9px; font-size: 0.85rem; }
+    .ms-other-btn { border: 1px solid #16a085; background: #fff; color: #16a085; border-radius: 7px; padding: 4px 12px; font-size: 0.82rem; font-weight: 600; cursor: pointer; white-space: nowrap; }
+    .ms-other-btn:hover { background: #16a085; color: #fff; }
+
+    .iti { position: relative; display: flex; gap: 6px; }
+    .iti-trigger { flex: 0 0 104px; display: flex; align-items: center; gap: 6px; cursor: pointer; text-align: left; }
+    .iti-trigger #ccFlag { font-size: 1.05rem; }
+    .iti-menu { position: absolute; z-index: 1000; top: calc(100% + 4px); left: 0; width: 320px; max-width: 92vw; background: #fff; border: 1px solid #dfe6e9; border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,0.14); overflow: hidden; }
+    .iti-search-wrap { padding: 8px; border-bottom: 1px solid #eef2f4; }
+    .iti-search-wrap input { width: 100%; border: 1px solid #dfe6e9; border-radius: 8px; padding: 0.45rem 0.7rem; font-size: 0.9rem; outline: none; }
+    .iti-search-wrap input:focus { border-color: #16a085; }
+    .iti-list { max-height: 264px; overflow-y: auto; }
+    .iti-sec { position: sticky; top: 0; z-index: 1; padding: 8px 12px; font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.7px; display: flex; align-items: center; gap: 6px; }
+    .iti-sec-mvp { color: #0e6f5c; background: #d8f3ec; border-top: 1px solid #b8e6da; border-bottom: 1px solid #b8e6da; }
+    .iti-sec-mvp::before { content: "✓"; font-weight: 900; }
+    .iti-sec-all { color: #475569; background: #eef2f6; border-top: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0; }
+    .iti-sec-all::before { content: "🌍"; }
+    .iti-opt { display: flex; align-items: center; gap: 10px; padding: 0.5rem 0.9rem; cursor: pointer; font-size: 0.9rem; }
+    .iti-opt:hover, .iti-opt.active { background: #e8f6f3; }
+    .iti-opt .dial { margin-left: auto; color: #95a5a6; font-size: 0.82rem; }
+    .iti-empty { padding: 0.6rem 0.9rem; color: #95a5a6; font-size: 0.85rem; }
+
+    .danger-zone { border: 1px solid #f5c6cb; background: #fdf3f4; border-radius: 12px; padding: 16px 20px; }
+    .danger-zone h6 { color: #c0392b; }
+    .btn-danger-soft { background: #fff; border: 1px solid #e74c3c; color: #e74c3c; font-weight: 600; border-radius: 8px; padding: 7px 16px; }
+    .btn-danger-soft:hover { background: #e74c3c; color: #fff; }
+
+    .toast-ok { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: #117a65; color: #fff; padding: 10px 20px; border-radius: 10px; box-shadow: 0 6px 20px rgba(0,0,0,0.2); font-weight: 600; font-size: 0.9rem; z-index: 1200; opacity: 0; transition: opacity .25s, bottom .25s; pointer-events: none; }
+    .toast-ok.show { opacity: 1; bottom: 36px; }
+
+    /* Modal overlay */
+    .ov { position: fixed; inset: 0; background: rgba(15,36,68,0.55); display: none; align-items: center; justify-content: center; z-index: 1100; padding: 16px; }
+    .ov.show { display: flex; }
+    .ov-card { background: #fff; border-radius: 16px; max-width: 420px; width: 100%; padding: 26px; box-shadow: 0 12px 40px rgba(0,0,0,0.25); }
+    .ov-card h5 { font-weight: 800; color: #2c3e50; }
+    .otp-row { display: flex; gap: 8px; justify-content: center; margin: 18px 0 10px; }
+    .otp-input { width: 44px; height: 54px; text-align: center; font-size: 1.4rem; font-weight: 700; border-radius: 8px; border: 2px solid #dee2e6; }
+    .otp-input:focus { border-color: #16a085; outline: none; box-shadow: 0 0 0 0.2rem rgba(22,160,133,0.18); }
+
+    @media (max-width: 860px) {
+      .sidebar { position: static; width: 100%; min-height: auto; }
+      .main { margin-left: 0; }
+      .field-row { flex-direction: column; gap: 4px; }
+      .field-label { width: 100%; padding-top: 0; }
+    }
+  </style>
+</head>
+<body data-i18n-pagetitle="prof.page_title">
+
+  <div class="proto-bar d-flex align-items-center gap-3">
+    <span><i class="fa fa-eye me-1"></i> <span data-i18n="prof.proto_bar">Espace Patient · Mon profil</span> · <a href="01-home.html" class="text-decoration-none" data-i18n="prof.proto_home">← Accueil</a></span>
+  </div>
+
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="sidebar-brand">
+      <img src="assets/fueni-lockup-white.svg" alt="FUENI" style="height:30px;width:auto;display:block;margin-bottom:6px">
+      <small data-i18n="dash.sidebar.area">Espace Patient</small>
+    </div>
+    <div class="sidebar-user d-flex align-items-center gap-2">
+      <div class="avatar">AD</div>
+      <div>
+        <div class="text-white fw-semibold small">Aïssatou Diop</div>
+        <div style="color:rgba(255,255,255,0.65); font-size:0.72rem;">
+          <i class="fa fa-circle-check me-1"></i><span data-i18n="dash.sidebar.verified">Compte vérifié</span>
+        </div>
+      </div>
+    </div>
+    <div class="nav-section" data-i18n="dash.sidebar.section_my_space">Mon espace</div>
+    <a href="05-patient-dashboard.html" class="nav-link-side"><i class="fa fa-home"></i><span data-i18n="dash.sidebar.dashboard">Tableau de bord</span></a>
+    <a href="#" class="nav-link-side"><i class="fa fa-calendar-check"></i><span data-i18n="dash.sidebar.my_appts">Mes RDV</span></a>
+    <a href="#" class="nav-link-side"><i class="fa fa-plus-circle"></i><span data-i18n="dash.sidebar.book">Prendre RDV</span></a>
+    <a href="#" class="nav-link-side"><i class="fa fa-folder"></i><span data-i18n="dash.sidebar.my_docs">Mes documents</span></a>
+    <div class="nav-section" data-i18n="dash.sidebar.section_account">Mon compte</div>
+    <a class="nav-link-side active"><i class="fa fa-user"></i><span data-i18n="dash.sidebar.my_profile">Mon profil</span></a>
+    <div class="nav-section" data-i18n="dash.sidebar.section_help">Aide</div>
+    <a class="nav-link-side"><i class="fa fa-circle-question"></i><span data-i18n="dash.sidebar.faq">FAQ</span></a>
+    <a class="nav-link-side"><i class="fa fa-headset"></i><span data-i18n="dash.sidebar.support">Contacter le support</span></a>
+    <a href="10-login.html" class="nav-link-side"><i class="fa fa-right-from-bracket"></i><span data-i18n="dash.sidebar.logout">Se déconnecter</span></a>
+  </div>
+
+  <!-- Main -->
+  <div class="main">
+    <div class="content-area">
+
+      <div class="page-head mb-3">
+        <h4 data-i18n="prof.title">Mon profil</h4>
+        <p data-i18n="prof.subtitle">Consultez et mettez à jour vos informations personnelles.</p>
+      </div>
+
+      <!-- Profil complété -->
+      <div class="completion-card">
+        <div class="d-flex justify-content-between align-items-center">
+          <span class="fw-semibold small" style="color:#2c3e50;"><i class="fa fa-circle-user me-1" style="color:#16a085;"></i><span data-i18n="prof.completion.label">Profil complété à</span> <span id="completionPct">80</span> %</span>
+          <span class="small" style="color:#7f8c8d;" data-i18n="prof.completion.hint">Ajoutez votre adresse et un contact d'urgence pour atteindre 100 %.</span>
+        </div>
+        <div class="completion-bar"><div class="completion-fill" id="completionFill" style="width:80%;"></div></div>
+      </div>
+
+      <!-- Bannière e-mail non vérifié -->
+      <div class="email-banner" id="emailBanner">
+        <i class="fa fa-envelope-circle-check"></i>
+        <div class="banner-text" data-i18n-html="prof.email_banner_html"><strong>Votre adresse e-mail n'est pas encore vérifiée.</strong> Vérifiez-la pour recevoir vos confirmations de rendez-vous et vos documents.</div>
+        <button class="btn btn-verify" onclick="startEmailVerify()" data-i18n="prof.email_banner.verify">Vérifier maintenant</button>
+      </div>
+
+      <!-- Légende -->
+      <div class="legend">
+        <span><span class="sens-badge sens-direct" data-i18n="prof.legend.direct">Modifiable directement</span></span>
+        <span><span class="sens-badge sens-code" data-i18n="prof.legend.code">Confirmation par code (OTP)</span></span>
+        <span><span class="sens-badge sens-support" data-i18n="prof.legend.support">Via le support</span></span>
+      </div>
+
+      <!-- 1. Identité (lecture seule) -->
+      <div class="prof-section">
+        <div class="prof-section-head">
+          <h6><i class="fa fa-id-card" style="color:#16a085;"></i><span data-i18n="prof.identity.title">Identité</span> <span class="sens-badge sens-support" data-i18n="prof.legend.support">Via le support</span></h6>
+        </div>
+        <p class="small mb-2" style="color:#95a5a6;" data-i18n="prof.identity.note">Ces informations d'identité légale ne sont pas modifiables en ligne. Contactez le support pour toute correction.</p>
+        <div class="field-row"><div class="field-label" data-i18n="prof.identity.firstname">Prénom</div><div class="field-value"><span class="view">Aïssatou</span></div></div>
+        <div class="field-row"><div class="field-label" data-i18n="prof.identity.lastname">Nom</div><div class="field-value"><span class="view">Diop</span></div></div>
+        <div class="field-row"><div class="field-label" data-i18n="prof.identity.dob">Date de naissance</div><div class="field-value"><span class="view">02/05/1990</span></div></div>
+        <div class="field-row"><div class="field-label" data-i18n="prof.identity.sex">Sexe à la naissance</div><div class="field-value"><span class="view" data-i18n="prof.identity.sex_female">Féminin</span></div></div>
+      </div>
+
+      <!-- 2. Coordonnées & connexion (OTP) -->
+      <div class="prof-section" id="sec-coord">
+        <div class="prof-section-head">
+          <h6><i class="fa fa-at" style="color:#16a085;"></i><span data-i18n="prof.coord.title">Coordonnées & connexion</span> <span class="sens-badge sens-code" data-i18n="prof.legend.code">Confirmation par code (OTP)</span></h6>
+          <span class="spacer"></span>
+          <button class="btn-edit" id="coord-editbtn" onclick="editSection('coord')" data-i18n="prof.btn.edit">Modifier</button>
+          <span id="coord-actions" class="d-none">
+            <button class="btn-save" onclick="saveSection('coord', true)" data-i18n="prof.btn.save">Enregistrer</button>
+            <button class="btn-cancel" onclick="cancelSection('coord')" data-i18n="prof.btn.cancel">Annuler</button>
+          </span>
+        </div>
+        <div class="field-row">
+          <div class="field-label" data-i18n="prof.coord.email">Adresse e-mail</div>
+          <div class="field-value">
+            <span class="view" id="coord-email-view">aissatou.diop@example.com</span>
+            <span class="chip chip-no" id="emailChip" data-i18n="prof.coord.unverified">Non vérifié</span>
+            <button class="btn-link-verify" id="emailVerifyBtn" onclick="startEmailVerify()" data-i18n="prof.coord.verify_now">Vérifier</button>
+            <input class="edit form-control d-none" id="coord-email-input" value="aissatou.diop@example.com">
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field-label" data-i18n="prof.coord.phone">Téléphone</div>
+          <div class="field-value">
+            <span class="view" id="coord-phone-view">+221 77 123 45 67</span>
+            <span class="view chip chip-ok" data-i18n="prof.coord.verified">Vérifié</span>
+            <input class="edit form-control d-none" id="coord-phone-input" value="+221 77 123 45 67">
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field-label" data-i18n="prof.coord.password">Mot de passe</div>
+          <div class="field-value">
+            <span class="view" id="coord-pwd-view">••••••••••••</span>
+            <input class="edit form-control d-none" id="coord-pwd-input" type="password" placeholder="Nouveau mot de passe">
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. Localisation & langue -->
+      <div class="prof-section" id="sec-loc">
+        <div class="prof-section-head">
+          <h6><i class="fa fa-location-dot" style="color:#16a085;"></i><span data-i18n="prof.loc.title">Localisation & langue</span> <span class="sens-badge sens-direct" data-i18n="prof.legend.direct">Modifiable directement</span></h6>
+          <span class="spacer"></span>
+          <button class="btn-edit" id="loc-editbtn" onclick="editSection('loc')" data-i18n="prof.btn.edit">Modifier</button>
+          <span id="loc-actions" class="d-none">
+            <button class="btn-save" onclick="saveLoc()" data-i18n="prof.btn.save">Enregistrer</button>
+            <button class="btn-cancel" onclick="cancelSection('loc')" data-i18n="prof.btn.cancel">Annuler</button>
+          </span>
+        </div>
+        <div class="field-row">
+          <div class="field-label"><span data-i18n="prof.loc.country">Pays de service</span></div>
+          <div class="field-value">
+            <span class="view" id="loc-country-view">🇸🇳 Sénégal</span>
+            <select class="edit form-select d-none" id="loc-country-input" onchange="onLocCountryChange()">
+              <option value="🇸🇳 Sénégal" selected>🇸🇳 Sénégal</option>
+              <option value="🇨🇮 Côte d'Ivoire">🇨🇮 Côte d'Ivoire</option>
+              <option value="🇲🇱 Mali">🇲🇱 Mali</option>
+              <option value="🇧🇯 Bénin">🇧🇯 Bénin</option>
+              <option value="🇹🇬 Togo">🇹🇬 Togo</option>
+              <option value="🇧🇫 Burkina Faso">🇧🇫 Burkina Faso</option>
+              <option value="🇳🇪 Niger">🇳🇪 Niger</option>
+              <option value="🇨🇲 Cameroun">🇨🇲 Cameroun</option>
+              <option value="🇨🇩 RDC">🇨🇩 RDC</option>
+            </select>
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field-label" data-i18n="prof.loc.region">Région / Province / Département</div>
+          <div class="field-value">
+            <span class="view" id="loc-region-view">Dakar</span>
+            <div class="edit d-none" id="loc-region-edit">
+              <div class="ms" id="regionMs">
+                <div class="ms-control" id="regionControl" onclick="openLocCombo(event,'region')">
+                  <span class="ms-placeholder" id="regionPlaceholder" data-i18n="prof.loc.region_ph">Sélectionner…</span>
+                </div>
+                <div class="ms-menu d-none" id="regionMenu" onclick="event.stopPropagation()">
+                  <input class="ms-search" id="regionSearch" data-i18n-placeholder="prof.loc.region_search" placeholder="Rechercher…" oninput="renderLocComboList('region')">
+                  <div class="ms-list" id="regionList"></div>
+                  <div class="ms-other">
+                    <input class="ms-other-input" id="regionOther" data-i18n-placeholder="prof.loc.region_other_ph" placeholder="Autre (préciser)" onkeydown="if(event.key==='Enter'){event.preventDefault();addLocComboOther('region');}">
+                    <button type="button" class="ms-other-btn" onclick="addLocComboOther('region')" data-i18n="prof.loc.other_add">Ajouter</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field-label" data-i18n="prof.loc.city">Ville / Commune / Localité</div>
+          <div class="field-value">
+            <span class="view" id="loc-city-view">Dakar</span>
+            <div class="edit d-none" id="loc-city-edit">
+              <div class="ms" id="cityMs">
+                <div class="ms-control" id="cityControl" onclick="openLocCombo(event,'city')">
+                  <span class="ms-placeholder" id="cityPlaceholder" data-i18n="prof.loc.city_ph">Sélectionner…</span>
+                </div>
+                <div class="ms-menu d-none" id="cityMenu" onclick="event.stopPropagation()">
+                  <input class="ms-search" id="citySearch" data-i18n-placeholder="prof.loc.city_search" placeholder="Rechercher…" oninput="renderLocComboList('city')">
+                  <div class="ms-list" id="cityList"></div>
+                  <div class="ms-other">
+                    <input class="ms-other-input" id="cityOther" data-i18n-placeholder="prof.loc.city_other_ph" placeholder="Autre (préciser)" onkeydown="if(event.key==='Enter'){event.preventDefault();addLocComboOther('city');}">
+                    <button type="button" class="ms-other-btn" onclick="addLocComboOther('city')" data-i18n="prof.loc.other_add">Ajouter</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field-label" data-i18n="prof.loc.lang">Langue de communication</div>
+          <div class="field-value">
+            <span class="view" id="loc-lang-view" data-i18n="prof.loc.lang_fr">Français</span>
+            <select class="edit form-select d-none" id="loc-lang-input">
+              <option value="Français">Français</option>
+              <option value="English">English</option>
+            </select>
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field-label"><span data-i18n="prof.loc.spoken">Langues parlées</span> <span class="small" style="color:#b0b8bf;" data-i18n="prof.optional">(optionnel)</span></div>
+          <div class="field-value">
+            <span class="view" id="loc-langs-view">Français</span>
+            <div class="edit d-none" id="loc-langs-edit">
+              <div class="ms" id="langMs">
+                <div class="ms-control" id="langControl" onclick="openLangMenu(event)">
+                  <span class="ms-placeholder" id="langPlaceholder" data-i18n="prof.loc.spoken_ph">Ajouter une langue…</span>
+                </div>
+                <div class="ms-menu d-none" id="langMenu" onclick="event.stopPropagation()">
+                  <input class="ms-search" id="langSearch" data-i18n-placeholder="prof.loc.spoken_search" placeholder="Rechercher une langue…" oninput="renderLangList()">
+                  <div class="ms-list" id="langList"></div>
+                  <div class="ms-other">
+                    <input class="ms-other-input" id="langOther" data-i18n-placeholder="prof.loc.spoken_other_ph" placeholder="Autre langue (préciser)…" onkeydown="if(event.key==='Enter'){event.preventDefault();addOtherLang();}">
+                    <button class="ms-other-btn" onclick="addOtherLang()" data-i18n="prof.loc.spoken_other_add">Ajouter</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="small mt-1" style="color:#95a5a6;" data-i18n="prof.loc.spoken_hint">Sélectionnez toutes les langues que vous parlez. Utilisé pour la recherche et la mise en relation avec un praticien (fonctionnalité à venir).</div>
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field-label" data-i18n="prof.loc.address">Adresse <span class="small" style="color:#b0b8bf;" data-i18n="prof.optional">(optionnel)</span></div>
+          <div class="field-value">
+            <span class="view muted" id="loc-address-view" data-i18n="prof.not_provided">Non renseignée</span>
+            <input class="edit form-control d-none" id="loc-address-input" placeholder="Quartier, rue, point de repère">
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. Contact d'urgence -->
+      <div class="prof-section" id="sec-emerg">
+        <div class="prof-section-head">
+          <h6><i class="fa fa-kit-medical" style="color:#16a085;"></i><span data-i18n="prof.emerg.title">Contact d'urgence</span> <span class="sens-badge sens-direct" data-i18n="prof.legend.direct">Modifiable directement</span> <span class="small" style="color:#b0b8bf; font-weight:500;" data-i18n="prof.optional">(optionnel)</span></h6>
+          <span class="spacer"></span>
+          <button class="btn-edit" id="emerg-editbtn" onclick="editSection('emerg')" data-i18n="prof.btn.edit">Modifier</button>
+          <span id="emerg-actions" class="d-none">
+            <button class="btn-save" onclick="saveSection('emerg', false)" data-i18n="prof.btn.save">Enregistrer</button>
+            <button class="btn-cancel" onclick="cancelSection('emerg')" data-i18n="prof.btn.cancel">Annuler</button>
+          </span>
+        </div>
+        <div class="field-row">
+          <div class="field-label" data-i18n="prof.emerg.name">Nom</div>
+          <div class="field-value"><span class="view muted" id="emerg-name-view" data-i18n="prof.not_provided">Non renseigné</span><input class="edit form-control d-none" id="emerg-name-input" placeholder="Ex : Mamadou Diop"></div>
+        </div>
+        <div class="field-row">
+          <div class="field-label" data-i18n="prof.emerg.relation">Lien de parenté</div>
+          <div class="field-value">
+            <span class="view muted" id="emerg-rel-view" data-i18n="prof.not_provided">Non renseigné</span>
+            <select class="edit form-select d-none" id="emerg-rel-input" onchange="toggleRelOther()">
+              <option value="" data-i18n="prof.emerg.rel_choose">Choisir…</option>
+              <option value="Conjoint(e)">Conjoint(e)</option>
+              <option value="Parent">Parent</option>
+              <option value="Enfant">Enfant</option>
+              <option value="Frère/Sœur">Frère/Sœur</option>
+              <option value="Grand-parent">Grand-parent</option>
+              <option value="Ami(e)">Ami(e)</option>
+              <option value="Tuteur/Tutrice légal(e)">Tuteur/Tutrice légal(e)</option>
+              <option value="__other__" data-i18n="prof.emerg.rel_other">Autre (préciser)</option>
+            </select>
+            <input class="edit form-control d-none mt-2" id="emerg-rel-other" data-i18n-placeholder="prof.emerg.rel_other_ph" placeholder="Préciser le lien">
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field-label" data-i18n="prof.emerg.phone">Téléphone d'urgence</div>
+          <div class="field-value">
+            <span class="view muted" id="emerg-phone-view" data-i18n="prof.not_provided">Non renseigné</span>
+            <div class="edit d-none" id="emerg-phone-edit">
+              <div class="iti">
+                <button type="button" class="form-select iti-trigger" id="ccTrigger" onclick="toggleCcMenu(event)" aria-haspopup="listbox">
+                  <span id="ccFlag">🇸🇳</span><span id="ccDial">+221</span>
+                </button>
+                <input type="tel" class="form-control" id="phoneField" placeholder="Ex : 77 123 45 67" inputmode="tel" pattern="[0-9 ]*">
+                <div class="iti-menu d-none" id="ccMenu">
+                  <div class="iti-search-wrap">
+                    <input type="text" id="ccSearch" autocomplete="off" data-i18n-placeholder="signup.field.cc_search" placeholder="Rechercher un pays…" oninput="renderCcList()" onkeydown="onCcSearchKey(event)">
+                  </div>
+                  <div class="iti-list" id="ccList"></div>
+                </div>
+              </div>
+              <input type="hidden" id="ccIso" value="SN">
+              <input type="hidden" id="ccValue" value="+221">
+              <div class="field-hint d-none text-danger mt-1" id="phoneHint"><i class="fa fa-circle-exclamation me-1"></i><span data-i18n="signup.field.phone_hint">Numéro invalide pour l'indicatif sélectionné.</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 5. Préférences de notification -->
+      <div class="prof-section">
+        <div class="prof-section-head">
+          <h6><i class="fa fa-bell" style="color:#16a085;"></i><span data-i18n="prof.notif.title">Préférences de notification</span> <span class="sens-badge sens-direct" data-i18n="prof.legend.direct">Modifiable directement</span></h6>
+        </div>
+        <p class="small mb-1" style="color:#95a5a6;" data-i18n="prof.notif.note">Concerne les rappels de rendez-vous. Les notifications essentielles (sécurité, confirmations) restent toujours actives.</p>
+        <div class="tgl-row">
+          <label class="tgl"><input type="checkbox" id="notifSms" checked onchange="toast()"><span class="slider"></span></label>
+          <label for="notifSms" class="txt" data-i18n-html="prof.notif.sms">Rappels de rendez-vous par <strong>SMS</strong></label>
+        </div>
+        <div class="tgl-row">
+          <label class="tgl"><input type="checkbox" id="notifEmail" checked onchange="toast()"><span class="slider"></span></label>
+          <label for="notifEmail" class="txt" data-i18n-html="prof.notif.email">Rappels de rendez-vous par <strong>e-mail</strong></label>
+        </div>
+      </div>
+
+      <!-- 6. Mon compte & données (RGPD) -->
+      <div class="prof-section">
+        <div class="prof-section-head">
+          <h6><i class="fa fa-shield-halved" style="color:#16a085;"></i><span data-i18n="prof.rgpd.title">Mon compte & mes données</span></h6>
+        </div>
+        <div class="d-flex flex-wrap gap-2 align-items-center justify-content-between">
+          <div class="small" style="color:#7f8c8d; max-width:520px;" data-i18n="prof.rgpd.note">Vous pouvez exporter une copie de vos données personnelles à tout moment (portabilité RGPD).</div>
+          <button class="btn btn-light fw-semibold" style="border:1px solid #dfe6e9;" onclick="toast()" data-i18n="prof.rgpd.export"><i class="fa fa-download me-1"></i>Exporter mes données</button>
+        </div>
+        <hr class="my-3" style="border-color:#eef2f4;">
+        <div class="d-flex flex-wrap gap-2 align-items-center justify-content-between">
+          <div class="small" style="color:#7f8c8d; max-width:520px;" data-i18n-html="prof.rgpd.delete_note">Pour supprimer votre compte, contactez notre support. <span style="color:#b0b8bf;">(La suppression en libre-service sera disponible ultérieurement.)</span></div>
+          <a class="btn btn-light fw-semibold" style="border:1px solid #dfe6e9;" href="#" data-i18n="prof.rgpd.contact_support"><i class="fa fa-headset me-1"></i>Contacter le support</a>
+        </div>
+        <hr class="my-3" style="border-color:#eef2f4;">
+        <div class="small"><i class="fa fa-file-shield me-1" style="color:#16a085;"></i><a href="#" style="color:#155e75;text-decoration:none" data-i18n="prof.rgpd.privacy">Politique de confidentialité</a> · <a href="#" style="color:#155e75;text-decoration:none" data-i18n="prof.rgpd.terms">Conditions générales (CGU)</a></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- OTP modal -->
+  <div class="ov" id="otpModal">
+    <div class="ov-card text-center">
+      <h5 data-i18n="prof.otp.title">Confirmez par code</h5>
+      <p class="text-muted small mb-1" id="otpDesc" data-i18n="prof.otp.desc">Un code à 6 chiffres a été envoyé pour confirmer cette modification.</p>
+      <p class="small mb-0" style="color:#94a3b8;" data-i18n="prof.otp.demo">Code de démonstration : 123456</p>
+      <div class="otp-row">
+        <input class="otp-input" inputmode="numeric" maxlength="1"><input class="otp-input" inputmode="numeric" maxlength="1"><input class="otp-input" inputmode="numeric" maxlength="1"><input class="otp-input" inputmode="numeric" maxlength="1"><input class="otp-input" inputmode="numeric" maxlength="1"><input class="otp-input" inputmode="numeric" maxlength="1">
+      </div>
+      <div class="text-danger small d-none mb-2" id="otpErr" data-i18n="prof.otp.err">Code incorrect. Réessayez.</div>
+      <div class="d-flex gap-2 justify-content-center mt-2">
+        <button class="btn-save" onclick="confirmOtp()" data-i18n="prof.otp.confirm">Confirmer</button>
+        <button class="btn-cancel" onclick="closeOtp()" data-i18n="prof.btn.cancel">Annuler</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Confirm modal (changement Pays de service) -->
+  <div class="ov" id="confirmModal">
+    <div class="ov-card">
+      <h5 data-i18n="prof.confirm.title">Changer de pays de service ?</h5>
+      <p class="small text-muted" data-i18n="prof.confirm.body">Changer de pays de service mettra à jour les praticiens et la devise affichés sur la plateforme. Vos rendez-vous existants ne sont pas affectés.</p>
+      <div class="d-flex gap-2 justify-content-end mt-3">
+        <button class="btn-cancel" onclick="closeConfirm()" data-i18n="prof.btn.cancel">Annuler</button>
+        <button class="btn-save" onclick="okConfirm()" data-i18n="prof.confirm.ok">Confirmer le changement</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast-ok" id="toast" data-i18n="prof.toast">Modifications enregistrées ✓</div>
+
+  <script>
+    // ---- Inline section edit ----
+    function setMode(sec, editing) {
+      const card = document.getElementById('sec-' + sec);
+      card.querySelectorAll('.view').forEach(e => e.classList.toggle('d-none', editing));
+      card.querySelectorAll('.edit').forEach(e => e.classList.toggle('d-none', !editing));
+      document.getElementById(sec + '-editbtn').classList.toggle('d-none', editing);
+      document.getElementById(sec + '-actions').classList.toggle('d-none', !editing);
+      // hide the email verify affordances while editing email
+      if (sec === 'coord') {
+        const c = document.getElementById('emailChip'), v = document.getElementById('emailVerifyBtn');
+        if (c && !c.classList.contains('chip-ok')) c.classList.toggle('d-none', editing);
+        if (v) v.classList.toggle('d-none', editing);
+      }
+    }
+    function editSection(sec) { if (sec === 'loc') { syncLangFromView(); initLocCombos(); } setMode(sec, true); if (sec === 'emerg') toggleRelOther(); }
+    function cancelSection(sec) {
+      // reset inputs to their view values
+      const card = document.getElementById('sec-' + sec);
+      card.querySelectorAll('.field-row').forEach(row => {
+        const view = row.querySelector('.view'), input = row.querySelector('.edit');
+        if (view && input && input.tagName !== 'SELECT' && typeof input.value === 'string') input.value = view.textContent.trim() === '' ? '' : view.textContent;
+      });
+      if (sec === 'loc') resyncLangs();
+      setMode(sec, false);
+    }
+    function applySection(sec) {
+      const card = document.getElementById('sec-' + sec);
+      card.querySelectorAll('.field-row').forEach(row => {
+        const view = row.querySelector('.view'), input = row.querySelector('.edit');
+        if (!view || !input) return;
+        if (input.id.includes('pwd')) { view.textContent = '••••••••••••'; return; }
+        if (typeof input.value !== 'string') return; // skip non-text controls (e.g. spoken-languages chips)
+        const val = input.value.trim();
+        if (val) { view.textContent = val; view.classList.remove('muted'); }
+      });
+      if (sec === 'loc') { applyLocCombos(); applyLangs(); }
+      if (sec === 'emerg') applyEmergRel();
+      if (sec === 'emerg') applyEmergPhone();
+      setMode(sec, false);
+      toast();
+    }
+    function toggleRelOther() {
+      const sel = document.getElementById('emerg-rel-input');
+      document.getElementById('emerg-rel-other').classList.toggle('d-none', sel.value !== '__other__');
+    }
+    function applyEmergRel() {
+      const sel = document.getElementById('emerg-rel-input');
+      const view = document.getElementById('emerg-rel-view');
+      const val = sel.value === '__other__' ? document.getElementById('emerg-rel-other').value.trim() : (sel.value || '');
+      if (val) { view.textContent = val; view.classList.remove('muted'); }
+      else { view.textContent = nrText(); view.classList.add('muted'); }
+    }
+    // ---- Spoken languages multi-select (searchable dropdown) ----
+    const LANGS = ['Français','Anglais','Arabe','Portugais','Bambara','Bamiléké','Baoulé','Dioula','Douala','Éwé','Ewondo/Beti','Fon','Gulmancéma','Haoussa','Kabiyè','Kikongo','Lingala','Mandinka/Malinké','Mooré','Pidgin camerounais','Pulaar/Peul','Sénoufo','Sérère','Songhaï','Soninké','Swahili','Tamasheq','Tshiluba','Wolof','Yoruba','Zarma/Djerma'];
+    let langSelected = new Set(['Français']);
+    function nrText() { return window.NazI18n ? NazI18n.t('prof.not_provided') : 'Non renseigné'; }
+    function syncLangFromView() {
+      const txt = document.getElementById('loc-langs-view').textContent.trim();
+      langSelected = new Set((txt && txt !== nrText()) ? txt.split(',').map(s => s.trim()).filter(Boolean) : []);
+      renderLangTags();
+    }
+    function openLangMenu(e) {
+      if (e) e.stopPropagation();
+      const m = document.getElementById('langMenu');
+      m.classList.toggle('d-none');
+      if (!m.classList.contains('d-none')) { const s = document.getElementById('langSearch'); s.value = ''; renderLangList(); s.focus(); }
+    }
+    function closeLangMenu() { const m = document.getElementById('langMenu'); if (m) m.classList.add('d-none'); }
+    function renderLangTags() {
+      const ctrl = document.getElementById('langControl'); if (!ctrl) return;
+      ctrl.querySelectorAll('.ms-tag').forEach(t => t.remove());
+      const ph = document.getElementById('langPlaceholder');
+      ph.style.display = langSelected.size ? 'none' : '';
+      [...langSelected].forEach(l => {
+        const tag = document.createElement('span'); tag.className = 'ms-tag';
+        tag.innerHTML = l + ' <span class="x">×</span>';
+        tag.querySelector('.x').onclick = ev => { ev.stopPropagation(); langSelected.delete(l); renderLangTags(); renderLangList(); };
+        ctrl.insertBefore(tag, ph);
+      });
+    }
+    function renderLangList() {
+      const list = document.getElementById('langList'); if (!list) return;
+      const q = (document.getElementById('langSearch').value || '').toLowerCase();
+      list.innerHTML = '';
+      LANGS.filter(l => l.toLowerCase().includes(q)).forEach(l => {
+        const o = document.createElement('div'); o.className = 'ms-opt' + (langSelected.has(l) ? ' sel' : ''); o.textContent = l;
+        o.onclick = () => { langSelected.has(l) ? langSelected.delete(l) : langSelected.add(l); renderLangTags(); renderLangList(); };
+        list.appendChild(o);
+      });
+    }
+    function addOtherLang() {
+      const inp = document.getElementById('langOther');
+      const v = (inp.value || '').trim();
+      if (!v) return;
+      langSelected.add(v);
+      inp.value = '';
+      renderLangTags(); renderLangList();
+    }
+    function applyLangs() {
+      const view = document.getElementById('loc-langs-view');
+      view.textContent = langSelected.size ? [...langSelected].join(', ') : nrText();
+      view.classList.toggle('muted', langSelected.size === 0);
+      closeLangMenu();
+    }
+    function resyncLangs() { closeLangMenu(); closeLocCombo('region'); closeLocCombo('city'); }
+
+    // ---- Localisation: comboboxes recherchables Région → Ville ----
+    // Données administratives 2 niveaux (Région ADM1 → Ville ADM2/3) par pays.
+    // PLACEHOLDER — à remplacer par import HDX/COD-AB
+    const ADM_DATA = {
+      'Sénégal': { 'Dakar':['Dakar','Pikine','Guédiawaye','Rufisque'], 'Thiès':['Thiès','Mbour','Tivaouane'], 'Saint-Louis':['Saint-Louis','Dagana','Podor'], 'Diourbel':['Diourbel','Touba','Mbacké'], 'Ziguinchor':['Ziguinchor','Bignona'] },
+      "Côte d'Ivoire": { 'Abidjan':['Abidjan','Cocody','Yopougon','Abobo'], 'Yamoussoukro':['Yamoussoukro'], 'Gbêkê':['Bouaké'], 'Bas-Sassandra':['San-Pédro','Sassandra'], 'Haut-Sassandra':['Daloa'] },
+      'Mali': { 'Bamako':['Bamako'], 'Kayes':['Kayes'], 'Koulikoro':['Koulikoro','Kati'], 'Sikasso':['Sikasso','Koutiala'], 'Ségou':['Ségou','Niono'], 'Mopti':['Mopti','Sévaré'] },
+      'Bénin': { 'Littoral':['Cotonou'], 'Atlantique':['Abomey-Calavi','Ouidah'], 'Ouémé':['Porto-Novo'], 'Borgou':['Parakou'], 'Zou':['Abomey','Bohicon'] },
+      'Togo': { 'Maritime':['Lomé','Tsévié'], 'Plateaux':['Atakpamé','Kpalimé'], 'Centrale':['Sokodé'], 'Kara':['Kara'], 'Savanes':['Dapaong'] },
+      'Burkina Faso': { 'Centre':['Ouagadougou'], 'Hauts-Bassins':['Bobo-Dioulasso'], 'Centre-Ouest':['Koudougou'], 'Nord':['Ouahigouya'], 'Centre-Est':['Tenkodogo'] },
+      'Niger': { 'Niamey':['Niamey'], 'Maradi':['Maradi'], 'Zinder':['Zinder'], 'Tahoua':['Tahoua'], 'Agadez':['Agadez'], 'Dosso':['Dosso'] },
+      'Cameroun': { 'Centre':['Yaoundé'], 'Littoral':['Douala'], 'Ouest':['Bafoussam'], 'Nord-Ouest':['Bamenda'], 'Sud-Ouest':['Buéa','Limbé'], 'Adamaoua':['Ngaoundéré'] },
+      'RDC': { 'Kinshasa':['Kinshasa'], 'Haut-Katanga':['Lubumbashi','Likasi'], 'Nord-Kivu':['Goma','Butembo'], 'Sud-Kivu':['Bukavu'], 'Kongo Central':['Matadi','Boma'], 'Kasaï-Oriental':['Mbujimayi'] }
+    };
+
+    const locCombo = {
+      region: { value: '', options: [] },
+      city: { value: '', options: [] }
+    };
+    function locComboT(key, fallback) { return (window.NazI18n ? NazI18n.t(key) : '') || fallback; }
+    // Le <select> Pays utilise des valeurs préfixées d'un drapeau (« 🇸🇳 Sénégal ») —
+    // on retrouve la clé ADM_DATA par correspondance de sous-chaîne (sans toucher aux valeurs d'options).
+    function countryKeyFromValue(val) {
+      if (!val) return '';
+      return Object.keys(ADM_DATA).find(k => val.indexOf(k) !== -1) || '';
+    }
+    function renderLocComboControl(which) {
+      const ctrl = document.getElementById(which + 'Control');
+      const ph = document.getElementById(which + 'Placeholder');
+      const enabled = (which === 'region')
+        ? !!countryKeyFromValue(document.getElementById('loc-country-input').value)
+        : !!locCombo.region.value;
+      ctrl.classList.toggle('disabled', !enabled);
+      const existing = ctrl.querySelector('.ms-value');
+      if (existing) existing.remove();
+      if (locCombo[which].value) {
+        ph.style.display = 'none';
+        const span = document.createElement('span');
+        span.className = 'ms-value';
+        span.textContent = locCombo[which].value;
+        ctrl.insertBefore(span, ph);
+      } else {
+        ph.style.display = '';
+      }
+    }
+    function renderLocComboList(which) {
+      const list = document.getElementById(which + 'List');
+      if (!list) return;
+      const q = (document.getElementById(which + 'Search').value || '').toLowerCase();
+      list.innerHTML = '';
+      const opts = locCombo[which].options.filter(o => o.toLowerCase().includes(q));
+      if (!opts.length) {
+        const em = document.createElement('div'); em.className = 'ms-empty';
+        em.textContent = locCombo[which].options.length
+          ? locComboT('signup.cc.no_match', 'Aucun résultat.')
+          : locComboT('prof.loc.combo_use_other', 'Aucune option — saisissez la vôtre dans « Autre » ci-dessous.');
+        list.appendChild(em); return;
+      }
+      opts.forEach(o => {
+        const el = document.createElement('div');
+        el.className = 'ms-opt' + (locCombo[which].value === o ? ' sel' : '');
+        el.textContent = o;
+        el.onclick = () => pickLocCombo(which, o);
+        list.appendChild(el);
+      });
+    }
+    function openLocCombo(e, which) {
+      if (e) e.stopPropagation();
+      const ctrl = document.getElementById(which + 'Control');
+      if (ctrl.classList.contains('disabled')) return;
+      const menu = document.getElementById(which + 'Menu');
+      const willOpen = menu.classList.contains('d-none');
+      ['region', 'city'].forEach(w => { if (w !== which) document.getElementById(w + 'Menu').classList.add('d-none'); });
+      menu.classList.toggle('d-none', !willOpen);
+      if (willOpen) { const s = document.getElementById(which + 'Search'); s.value = ''; renderLocComboList(which); setTimeout(() => s.focus(), 0); }
+    }
+    function closeLocCombo(which) { const m = document.getElementById(which + 'Menu'); if (m) m.classList.add('d-none'); }
+    function pickLocCombo(which, val) {
+      locCombo[which].value = val;
+      renderLocComboControl(which);
+      closeLocCombo(which);
+      if (which === 'region') onLocRegionChange();
+    }
+    function addLocComboOther(which) {
+      const inp = document.getElementById(which + 'Other');
+      const v = (inp.value || '').trim();
+      if (!v) return;
+      inp.value = '';
+      pickLocCombo(which, v);
+    }
+    function onLocRegionChange() {
+      const country = countryKeyFromValue(document.getElementById('loc-country-input').value);
+      const data = (country && ADM_DATA[country]) || {};
+      locCombo.city.options = (locCombo.region.value && data[locCombo.region.value]) ? data[locCombo.region.value].slice() : [];
+      locCombo.city.value = '';
+      renderLocComboControl('city');
+      closeLocCombo('city');
+    }
+    // Sur changement du Pays de service en édition : réinitialise Région (puis Ville)
+    function onLocCountryChange() {
+      const country = countryKeyFromValue(document.getElementById('loc-country-input').value);
+      const data = (country && ADM_DATA[country]) || {};
+      locCombo.region.options = Object.keys(data);
+      locCombo.region.value = '';
+      renderLocComboControl('region');
+      closeLocCombo('region');
+      onLocRegionChange();
+    }
+    // À l'entrée en édition : initialise les comboboxes depuis les vues actuelles + peuple les options
+    function initLocCombos() {
+      const country = countryKeyFromValue(document.getElementById('loc-country-input').value);
+      const data = (country && ADM_DATA[country]) || {};
+      const regionTxt = document.getElementById('loc-region-view').textContent.trim();
+      const cityTxt = document.getElementById('loc-city-view').textContent.trim();
+      locCombo.region.options = Object.keys(data);
+      locCombo.region.value = regionTxt && regionTxt !== nrText() ? regionTxt : '';
+      // options Ville d'après la région courante (ou liste vide si région libre/inconnue)
+      locCombo.city.options = (locCombo.region.value && data[locCombo.region.value]) ? data[locCombo.region.value].slice() : [];
+      locCombo.city.value = cityTxt && cityTxt !== nrText() ? cityTxt : '';
+      renderLocComboControl('region');
+      renderLocComboControl('city');
+      closeLocCombo('region');
+      closeLocCombo('city');
+    }
+    // Apply personnalisé : recopie les valeurs des comboboxes dans les vues lecture seule
+    function applyLocCombos() {
+      const rv = document.getElementById('loc-region-view');
+      const cv = document.getElementById('loc-city-view');
+      if (locCombo.region.value) { rv.textContent = locCombo.region.value; rv.classList.remove('muted'); }
+      if (locCombo.city.value) { cv.textContent = locCombo.city.value; cv.classList.remove('muted'); }
+      closeLocCombo('region'); closeLocCombo('city');
+    }
+    document.addEventListener('click', e => {
+      ['region', 'city'].forEach(w => { const f = document.getElementById(w + 'Ms'); if (f && !f.contains(e.target)) closeLocCombo(w); });
+    });
+    document.addEventListener('click', e => { const ms = document.getElementById('langMs'); if (ms && !ms.contains(e.target)) closeLangMenu(); });
+    // Generic save: requireOtp => open OTP then apply
+    let pendingApply = null;
+    function saveSection(sec, requireOtp) {
+      if (requireOtp) { pendingApply = () => applySection(sec); openOtp('prof.otp.desc'); }
+      else applySection(sec);
+    }
+    // Localisation: OTP only if Pays de service changed
+    function saveLoc() {
+      const sel = document.getElementById('loc-country-input');
+      const changed = sel.value !== document.getElementById('loc-country-view').textContent.trim();
+      if (changed) { pendingApply = () => applySection('loc'); openConfirm(); }
+      else applySection('loc');
+    }
+    function openConfirm() { document.getElementById('confirmModal').classList.add('show'); }
+    function closeConfirm() { document.getElementById('confirmModal').classList.remove('show'); pendingApply = null; }
+    function okConfirm() { document.getElementById('confirmModal').classList.remove('show'); if (pendingApply) { pendingApply(); pendingApply = null; } }
+
+    // ---- Email verification ----
+    function startEmailVerify() { pendingApply = markEmailVerified; openOtp('prof.otp.desc_email'); }
+    function markEmailVerified() {
+      const chip = document.getElementById('emailChip');
+      chip.textContent = (window.NazI18n ? NazI18n.t('prof.coord.verified') : 'Vérifié');
+      chip.classList.remove('chip-no', 'd-none'); chip.classList.add('chip-ok');
+      document.getElementById('emailVerifyBtn').classList.add('d-none');
+      document.getElementById('emailBanner').style.display = 'none';
+      bumpCompletion(90);
+      toast();
+    }
+
+    // ---- OTP modal ----
+    function openOtp(descKey) {
+      const d = document.getElementById('otpDesc');
+      if (window.NazI18n && descKey) d.textContent = NazI18n.t(descKey);
+      document.getElementById('otpErr').classList.add('d-none');
+      document.querySelectorAll('#otpModal .otp-input').forEach(i => i.value = '');
+      document.getElementById('otpModal').classList.add('show');
+      const f = document.querySelector('#otpModal .otp-input'); if (f) f.focus();
+    }
+    function closeOtp() { document.getElementById('otpModal').classList.remove('show'); pendingApply = null; }
+    function confirmOtp() {
+      const code = Array.from(document.querySelectorAll('#otpModal .otp-input')).map(i => i.value).join('');
+      if (code === '123456') {
+        document.getElementById('otpModal').classList.remove('show');
+        if (pendingApply) { pendingApply(); pendingApply = null; }
+      } else {
+        document.getElementById('otpErr').classList.remove('d-none');
+      }
+    }
+    // OTP autotab
+    document.querySelectorAll('#otpModal .otp-input').forEach((inp, i, arr) => {
+      inp.addEventListener('input', e => { e.target.value = e.target.value.replace(/\D/g, ''); if (e.target.value && i < arr.length - 1) arr[i + 1].focus(); });
+      inp.addEventListener('keydown', e => { if (e.key === 'Backspace' && !e.target.value && i > 0) arr[i - 1].focus(); });
+    });
+
+    // ---- Helpers ----
+    function bumpCompletion(pct) {
+      document.getElementById('completionPct').textContent = pct;
+      document.getElementById('completionFill').style.width = pct + '%';
+    }
+    let toastTimer = null;
+    function toast(key) {
+      const t = document.getElementById('toast');
+      if (window.NazI18n) t.textContent = NazI18n.t(key || 'prof.toast');
+      t.classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => t.classList.remove('show'), 2000);
+    }
+
+    // ---- Emergency phone: searchable country-code selector (ported from 02-patient-signup) ----
+    // Référentiel pays — 9 pays MVP (mvp:true) + échantillon « reste du monde ».
+    const COUNTRIES = [
+      { iso: 'SN', fr: 'Sénégal', en: 'Senegal', dial: '+221', flag: '🇸🇳', len: 9, mvp: true },
+      { iso: 'CI', fr: "Côte d'Ivoire", en: "Côte d'Ivoire", dial: '+225', flag: '🇨🇮', len: 10, mvp: true },
+      { iso: 'ML', fr: 'Mali', en: 'Mali', dial: '+223', flag: '🇲🇱', len: 8, mvp: true },
+      { iso: 'BJ', fr: 'Bénin', en: 'Benin', dial: '+229', flag: '🇧🇯', len: 8, mvp: true },
+      { iso: 'TG', fr: 'Togo', en: 'Togo', dial: '+228', flag: '🇹🇬', len: 8, mvp: true },
+      { iso: 'BF', fr: 'Burkina Faso', en: 'Burkina Faso', dial: '+226', flag: '🇧🇫', len: 8, mvp: true },
+      { iso: 'NE', fr: 'Niger', en: 'Niger', dial: '+227', flag: '🇳🇪', len: 8, mvp: true },
+      { iso: 'CM', fr: 'Cameroun', en: 'Cameroon', dial: '+237', flag: '🇨🇲', len: 9, mvp: true },
+      { iso: 'CD', fr: 'RD Congo', en: 'DR Congo', dial: '+243', flag: '🇨🇩', len: 9, mvp: true },
+      // Reste du monde (échantillon)
+      { iso: 'FR', fr: 'France', en: 'France', dial: '+33', flag: '🇫🇷' },
+      { iso: 'BE', fr: 'Belgique', en: 'Belgium', dial: '+32', flag: '🇧🇪' },
+      { iso: 'CH', fr: 'Suisse', en: 'Switzerland', dial: '+41', flag: '🇨🇭' },
+      { iso: 'LU', fr: 'Luxembourg', en: 'Luxembourg', dial: '+352', flag: '🇱🇺' },
+      { iso: 'CA', fr: 'Canada', en: 'Canada', dial: '+1', flag: '🇨🇦' },
+      { iso: 'US', fr: 'États-Unis', en: 'United States', dial: '+1', flag: '🇺🇸' },
+      { iso: 'GB', fr: 'Royaume-Uni', en: 'United Kingdom', dial: '+44', flag: '🇬🇧' },
+      { iso: 'DE', fr: 'Allemagne', en: 'Germany', dial: '+49', flag: '🇩🇪' },
+      { iso: 'ES', fr: 'Espagne', en: 'Spain', dial: '+34', flag: '🇪🇸' },
+      { iso: 'IT', fr: 'Italie', en: 'Italy', dial: '+39', flag: '🇮🇹' },
+      { iso: 'PT', fr: 'Portugal', en: 'Portugal', dial: '+351', flag: '🇵🇹' },
+      { iso: 'NL', fr: 'Pays-Bas', en: 'Netherlands', dial: '+31', flag: '🇳🇱' },
+      { iso: 'MA', fr: 'Maroc', en: 'Morocco', dial: '+212', flag: '🇲🇦' },
+      { iso: 'DZ', fr: 'Algérie', en: 'Algeria', dial: '+213', flag: '🇩🇿' },
+      { iso: 'TN', fr: 'Tunisie', en: 'Tunisia', dial: '+216', flag: '🇹🇳' },
+      { iso: 'NG', fr: 'Nigeria', en: 'Nigeria', dial: '+234', flag: '🇳🇬' },
+      { iso: 'GH', fr: 'Ghana', en: 'Ghana', dial: '+233', flag: '🇬🇭' },
+      { iso: 'GN', fr: 'Guinée', en: 'Guinea', dial: '+224', flag: '🇬🇳' },
+      { iso: 'GA', fr: 'Gabon', en: 'Gabon', dial: '+241', flag: '🇬🇦' },
+      { iso: 'CG', fr: 'Congo-Brazzaville', en: 'Congo-Brazzaville', dial: '+242', flag: '🇨🇬' },
+      { iso: 'TD', fr: 'Tchad', en: 'Chad', dial: '+235', flag: '🇹🇩' },
+      { iso: 'MR', fr: 'Mauritanie', en: 'Mauritania', dial: '+222', flag: '🇲🇷' },
+      { iso: 'ZA', fr: 'Afrique du Sud', en: 'South Africa', dial: '+27', flag: '🇿🇦' },
+      { iso: 'CN', fr: 'Chine', en: 'China', dial: '+86', flag: '🇨🇳' },
+      { iso: 'IN', fr: 'Inde', en: 'India', dial: '+91', flag: '🇮🇳' },
+      { iso: 'AE', fr: 'Émirats arabes unis', en: 'United Arab Emirates', dial: '+971', flag: '🇦🇪' },
+      { iso: 'SA', fr: 'Arabie saoudite', en: 'Saudi Arabia', dial: '+966', flag: '🇸🇦' },
+      { iso: 'TR', fr: 'Turquie', en: 'Türkiye', dial: '+90', flag: '🇹🇷' },
+      { iso: 'LB', fr: 'Liban', en: 'Lebanon', dial: '+961', flag: '🇱🇧' },
+      { iso: 'BR', fr: 'Brésil', en: 'Brazil', dial: '+55', flag: '🇧🇷' }
+    ];
+
+    let ccActiveIdx = -1;
+
+    function normalizeCc(s) {
+      return (s || '').toString().normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
+    }
+    function getCountry(iso) { return COUNTRIES.find(c => c.iso === iso); }
+    function ccLabel(c) {
+      const en = (document.documentElement.lang || 'fr').toLowerCase().startsWith('en');
+      return (en && c.en) ? c.en : c.fr;
+    }
+
+    function applyCountry(c) {
+      document.getElementById('ccFlag').textContent = c.flag;
+      document.getElementById('ccDial').textContent = c.dial;
+      document.getElementById('ccIso').value = c.iso;
+      document.getElementById('ccValue').value = c.dial;
+    }
+    function setCountry(iso) {
+      const c = getCountry(iso);
+      if (!c) return;
+      applyCountry(c);
+    }
+    function chooseCountry(iso) {
+      setCountry(iso);
+      closeCcMenu();
+      document.getElementById('phoneField').focus();
+    }
+
+    function toggleCcMenu(e) {
+      e.stopPropagation();
+      const menu = document.getElementById('ccMenu');
+      const willOpen = menu.classList.contains('d-none');
+      menu.classList.toggle('d-none', !willOpen);
+      if (willOpen) {
+        const s = document.getElementById('ccSearch');
+        s.value = '';
+        renderCcList();
+        setTimeout(() => s.focus(), 0);
+      }
+    }
+    function closeCcMenu() {
+      document.getElementById('ccMenu').classList.add('d-none');
+      ccActiveIdx = -1;
+    }
+
+    function renderCcList() {
+      const q = normalizeCc(document.getElementById('ccSearch').value);
+      const list = document.getElementById('ccList');
+      list.innerHTML = '';
+      const match = c => !q || normalizeCc(ccLabel(c)).includes(q) || c.dial.replace('+', '').includes(q.replace('+', ''));
+      const mvp = COUNTRIES.filter(c => c.mvp && match(c));
+      const others = COUNTRIES.filter(c => !c.mvp && match(c));
+      const addSection = (key, fallback, variant) => {
+        const s = document.createElement('div');
+        s.className = 'iti-sec ' + variant;
+        s.textContent = (window.NazI18n ? NazI18n.t(key) : '') || fallback;
+        list.appendChild(s);
+      };
+      const addOpt = c => {
+        const o = document.createElement('div');
+        o.className = 'iti-opt';
+        const fl = document.createElement('span'); fl.textContent = c.flag;
+        const nm = document.createElement('span'); nm.textContent = ccLabel(c);
+        const dl = document.createElement('span'); dl.className = 'dial'; dl.textContent = c.dial;
+        o.appendChild(fl); o.appendChild(nm); o.appendChild(dl);
+        o.onclick = () => chooseCountry(c.iso);
+        list.appendChild(o);
+      };
+      if (mvp.length) { addSection('signup.cc.section_mvp', 'Pays couverts', 'iti-sec-mvp'); mvp.forEach(addOpt); }
+      if (others.length) { addSection('signup.cc.section_all', 'Tous les pays', 'iti-sec-all'); others.forEach(addOpt); }
+      if (!mvp.length && !others.length) {
+        const em = document.createElement('div');
+        em.className = 'iti-empty';
+        em.textContent = (window.NazI18n ? NazI18n.t('signup.cc.no_match') : '') || 'Aucun pays trouvé.';
+        list.appendChild(em);
+      }
+      ccActiveIdx = -1;
+    }
+
+    function onCcSearchKey(e) {
+      const opts = Array.from(document.querySelectorAll('#ccList .iti-opt'));
+      if (!opts.length) return;
+      if (e.key === 'ArrowDown') { e.preventDefault(); ccActiveIdx = Math.min(ccActiveIdx + 1, opts.length - 1); }
+      else if (e.key === 'ArrowUp') { e.preventDefault(); ccActiveIdx = Math.max(ccActiveIdx - 1, 0); }
+      else if (e.key === 'Enter') { if (ccActiveIdx >= 0) { e.preventDefault(); opts[ccActiveIdx].click(); } return; }
+      else if (e.key === 'Escape') { closeCcMenu(); return; }
+      else return;
+      opts.forEach((o, i) => o.classList.toggle('active', i === ccActiveIdx));
+      opts[ccActiveIdx].scrollIntoView({ block: 'nearest' });
+    }
+
+    // Fermer le menu au clic en dehors du composant
+    document.addEventListener('click', e => { if (!e.target.closest('.iti')) closeCcMenu(); });
+
+    // Initialisation du sélecteur (pays par défaut + premier rendu de la liste)
+    setCountry('SN');
+    renderCcList();
+
+    // Recopie l'indicatif + le numéro national dans la vue lecture seule
+    function applyEmergPhone() {
+      const view = document.getElementById('emerg-phone-view');
+      const dial = document.getElementById('ccDial').textContent;
+      const num = document.getElementById('phoneField').value.trim();
+      if (num) { view.textContent = dial + ' ' + num; view.classList.remove('muted'); }
+      else { view.textContent = nrText(); view.classList.add('muted'); }
+    }
+  </script>
+</body>
+</html>

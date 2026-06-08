@@ -11,10 +11,13 @@
   <style>
     body { background: #f0f4f8; font-family: 'Segoe UI', sans-serif; min-height: 100vh; }
     .proto-bar { position: sticky; top: 0; z-index: 100; }
-    .brand-area { background: linear-gradient(135deg, #16a085, #48c9b0); color: white; padding: 2.5rem 0 2rem; text-align: center; }
-    .brand-logo { font-size: 2rem; font-weight: 800; letter-spacing: -1px; }
-    .brand-logo span { color: #fff; opacity: 0.85; }
-    .signup-card { background: white; border-radius: 16px; box-shadow: 0 4px 24px rgba(0,0,0,0.10); padding: 2rem; max-width: 480px; margin: -1.5rem auto 2rem; position: relative; }
+    .brand-area { background: #ffffff; border-bottom: 1px solid #e6edf3; padding: 0.7rem 0; }
+    .brand-bar { max-width: 980px; margin: 0 auto; padding: 0 1.25rem; display: flex; align-items: center; justify-content: space-between; }
+    .brand-logo img { height: 40px; width: auto; display: block; }
+    .btn-home { display: inline-flex; align-items: center; gap: 6px; color: #5b6b7b; text-decoration: none; font-weight: 600; font-size: 0.88rem; padding: 7px 12px; border-radius: 8px; transition: background .15s, color .15s; }
+    .btn-home:hover { background: #f0f4f8; color: #0F2444; }
+    .signup-card { background: white; border-radius: 16px; box-shadow: 0 4px 24px rgba(0,0,0,0.10); padding: 1.5rem 2rem; max-width: 720px; margin: 1.5rem auto 2rem; position: relative; }
+    .pwd-rules-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 16px; }
     .role-chip { display: inline-flex; align-items: center; gap: 8px; padding: 6px 14px; border-radius: 20px; font-size: 0.82rem; font-weight: 600; margin-bottom: 1.2rem; background: #d1f2eb; color: #117a65; }
     .form-control, .form-select { border-radius: 8px; padding: 0.6rem 0.9rem; }
     .form-control:focus, .form-select:focus { border-color: #16a085; box-shadow: 0 0 0 0.25rem rgba(22,160,133,0.18); }
@@ -61,11 +64,13 @@
 
   <!-- Brand header -->
   <div class="brand-area">
-    <div class="brand-logo"><a href="01-home.html" style="color:inherit;text-decoration:none" aria-label="FUENI — Accueil"><span>F</span>UENI</a></div>
-    <div class="mt-1 opacity-75 small" data-i18n="signup.brand.tagline">Espace Patient — Votre santé entre vos mains</div>
+    <div class="brand-bar">
+      <a href="01-home.html" class="brand-logo" aria-label="FUENI — Accueil"><img src="assets/fueni-lockup-horizontal.svg" alt="FUENI"></a>
+      <a href="01-home.html" class="btn-home"><i class="fa fa-house"></i><span data-i18n="common.home">Accueil</span></a>
+    </div>
   </div>
 
-  <div class="container py-3" style="max-width:540px;">
+  <div class="container py-3" style="max-width:760px;">
     <div class="signup-card">
 
       <!-- Role indicator -->
@@ -110,15 +115,15 @@
           </div>
         </div>
 
-        <div class="mb-3">
-          <label class="form-label fw-semibold small" data-i18n="signup.field.email_label">Adresse e-mail *</label>
-          <input type="email" class="form-control" id="emailField" data-i18n-placeholder="signup.field.email_ph" placeholder="Ex : aissatou.diop@example.com" autocomplete="off" oninput="checkEmail()" onblur="checkEmail(true)">
-          <div class="field-hint d-none text-danger" id="emailHint"><i class="fa fa-circle-exclamation me-1"></i><span data-i18n="signup.field.email_hint">Adresse e-mail invalide.</span></div>
-        </div>
-
-        <div class="mb-3">
-          <label class="form-label fw-semibold small" data-i18n="signup.field.phone_label">Téléphone *</label>
-          <div class="iti">
+        <div class="row g-2 mb-3">
+          <div class="col-md-6">
+            <label class="form-label fw-semibold small" data-i18n="signup.field.email_label">Adresse e-mail *</label>
+            <input type="email" class="form-control" id="emailField" data-i18n-placeholder="signup.field.email_ph" placeholder="Ex : aissatou.diop@example.com" autocomplete="off" oninput="checkEmail()" onblur="checkEmail(true)">
+            <div class="field-hint d-none text-danger" id="emailHint"><i class="fa fa-circle-exclamation me-1"></i><span data-i18n="signup.field.email_hint">Adresse e-mail invalide.</span></div>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-semibold small" data-i18n="signup.field.phone_label">Téléphone *</label>
+            <div class="iti">
             <button type="button" class="form-select iti-trigger" id="ccTrigger" onclick="toggleCcMenu(event)" aria-haspopup="listbox">
               <span id="ccFlag">🇸🇳</span><span id="ccDial">+221</span>
             </button>
@@ -134,6 +139,7 @@
           <input type="hidden" id="ccValue" value="+221">
           <div class="field-hint d-none mt-1" id="phoneWarn" style="color:#b45309;"><i class="fa fa-circle-info me-1"></i><span data-i18n="signup.field.phone_other_warn">La réception du SMS peut prendre quelques minutes pour les numéros hors zone de service.</span></div>
           <div class="field-hint d-none text-danger mt-1" id="phoneHint"><i class="fa fa-circle-exclamation me-1"></i><span data-i18n="signup.field.phone_hint">Numéro invalide pour l'indicatif sélectionné.</span></div>
+          </div>
         </div>
 
         <div class="mb-3">
@@ -145,7 +151,7 @@
             </button>
           </div>
           <div class="pwd-strength"><div class="pwd-strength-fill" id="pwdBar"></div></div>
-          <div class="mt-2">
+          <div class="mt-2 pwd-rules-grid">
             <div class="pwd-rule" id="r-len"><i class="fa fa-circle-check"></i><span data-i18n="signup.field.pwd_r_len">Au moins 8 caractères</span></div>
             <div class="pwd-rule" id="r-upper"><i class="fa fa-circle-check"></i><span data-i18n="signup.field.pwd_r_upper">Une majuscule</span></div>
             <div class="pwd-rule" id="r-lower"><i class="fa fa-circle-check"></i><span data-i18n="signup.field.pwd_r_lower">Une minuscule</span></div>
@@ -172,6 +178,7 @@
         <button type="button" onclick="validateForm()" class="btn btn-patient w-100">
           <i class="fa fa-arrow-right me-2"></i><span data-i18n="signup.submit">Créer mon compte</span>
         </button>
+        <a href="01-home.html" class="btn btn-link w-100 text-muted small mt-1" data-i18n="common.prev_step">← Étape précédente</a>
 
         <div class="divider" data-i18n="signup.divider_or">ou</div>
 
@@ -476,15 +483,16 @@
         phone: document.getElementById('phoneField').value,   // numéro national
         phoneE164: cc + digits,                                // E.164 complet (indicatif + national)
         inServiceArea: !!(cObj && cObj.mvp),
-        pwd: document.getElementById('pwdField').value,
         cgu: document.getElementById('cgu').checked,
         health: document.getElementById('health-consent').checked
       };
-      sessionStorage.setItem('fueni_signup_data', JSON.stringify(formData));
-      window.location = '03-patient-otp.html';
+      // Brouillon conservé côté navigateur (localStorage) — SANS le mot de passe.
+      // Le compte n'est créé qu'après la vérification OTP (dernière étape).
+      localStorage.setItem('fueni_signup_data', JSON.stringify(formData));
+      window.location = '04-patient-profile-base.html';
     }
 
-    // Préremplissage si l'utilisateur revient depuis l'étape OTP (« Modifier mon numéro »)
+    // Préremplissage du brouillon (reprise d'inscription) — toutes les infos sauf le mot de passe
     window.addEventListener('DOMContentLoaded', () => {
       // Bornes de la date de naissance : entre aujourd'hui − 120 ans et aujourd'hui − 18 ans
       const dobEl = document.getElementById('dobField');
@@ -495,7 +503,7 @@
         dobEl.max = iso(new Date(now.getFullYear() - 18, now.getMonth(), now.getDate()));
         dobEl.min = iso(new Date(now.getFullYear() - 120, now.getMonth(), now.getDate()));
       }
-      const raw = sessionStorage.getItem('fueni_signup_data');
+      const raw = localStorage.getItem('fueni_signup_data');
       if (!raw) return;
       try {
         const d = JSON.parse(raw);
@@ -512,10 +520,7 @@
           if (c) setCountry(c.iso);
         }
         if (d.phone) document.getElementById('phoneField').value = d.phone;
-        if (d.pwd) {
-          document.getElementById('pwdField').value = d.pwd;
-          checkPwd();
-        }
+        // Le mot de passe n'est jamais conservé → l'utilisateur le ressaisit
         if (d.cgu) document.getElementById('cgu').checked = true;
         if (d.health) document.getElementById('health-consent').checked = true;
       } catch (e) { /* ignore */ }
@@ -563,6 +568,6 @@
     }
   </script>
 <!-- Prototype version badge -->
-<script>(function(){if(window.__pv)return;window.__pv=1;var v=document.createElement('div');v.style.cssText='position:fixed;top:0;left:50%;transform:translateX(-50%);background:#155e75;color:#fff;padding:6px 20px;border-radius:0 0 16px 16px;font:600 12px/1 system-ui,-apple-system,sans-serif;letter-spacing:.6px;z-index:99999;box-shadow:0 3px 10px rgba(0,0,0,.2);text-transform:uppercase;display:flex;align-items:center;gap:8px';v.innerHTML='🧪 Prototype <span style="background:#f59e0b;color:#1a1a1a;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:4px">v1.3.0</span><span style="background:#10b981;color:#fff;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:4px;text-transform:none;letter-spacing:0">✅ Validé 2026-05-27</span>';document.body.appendChild(v);})();</script>
+<script>(function(){if(window.__pv)return;window.__pv=1;var v=document.createElement('div');v.style.cssText='position:fixed;top:0;left:50%;transform:translateX(-50%);background:#155e75;color:#fff;padding:6px 20px;border-radius:0 0 16px 16px;font:600 12px/1 system-ui,-apple-system,sans-serif;letter-spacing:.6px;z-index:99999;box-shadow:0 3px 10px rgba(0,0,0,.2);text-transform:uppercase;display:flex;align-items:center;gap:8px';v.innerHTML='🧪 Prototype <span style="background:#f59e0b;color:#1a1a1a;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:4px">v1.4.0</span><span style="background:#facc15;color:#1a1a1a;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:4px;text-transform:none;letter-spacing:0">⏳ À valider</span>';document.body.appendChild(v);})();</script>
 </body>
 </html>

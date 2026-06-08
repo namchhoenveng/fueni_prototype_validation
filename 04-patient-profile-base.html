@@ -11,9 +11,12 @@
   <style>
     body { background: #f0f4f8; font-family: 'Segoe UI', sans-serif; min-height: 100vh; }
     .proto-bar { position: sticky; top: 0; z-index: 100; }
-    .brand-area { background: linear-gradient(135deg, #16a085, #48c9b0); color: white; padding: 2rem 0 1.5rem; text-align: center; }
-    .brand-logo { font-size: 1.8rem; font-weight: 800; }
-    .step-card { background: white; border-radius: 16px; box-shadow: 0 4px 24px rgba(0,0,0,0.08); padding: 2rem; max-width: 560px; margin: -1.5rem auto 2rem; }
+    .brand-area { background: #ffffff; border-bottom: 1px solid #e6edf3; padding: 0.7rem 0; }
+    .brand-bar { max-width: 980px; margin: 0 auto; padding: 0 1.25rem; display: flex; align-items: center; justify-content: space-between; }
+    .brand-logo img { height: 40px; width: auto; display: block; }
+    .btn-home { display: inline-flex; align-items: center; gap: 6px; color: #5b6b7b; text-decoration: none; font-weight: 600; font-size: 0.88rem; padding: 7px 12px; border-radius: 8px; transition: background .15s, color .15s; }
+    .btn-home:hover { background: #f0f4f8; color: #0F2444; }
+    .step-card { background: white; border-radius: 16px; box-shadow: 0 4px 24px rgba(0,0,0,0.08); padding: 2rem; max-width: 560px; margin: 1.5rem auto 2rem; }
     .progress-steps .step.active .step-circle { background: #16a085; color: white; }
     .progress-steps .step.done .step-circle { background: #16a085; color: white; }
     .progress-steps .step.done::after { background: #16a085; }
@@ -23,6 +26,28 @@
     .form-control, .form-select { border-radius: 8px; padding: 0.6rem 0.9rem; }
     .form-control:focus, .form-select:focus { border-color: #16a085; box-shadow: 0 0 0 0.25rem rgba(22,160,133,0.18); }
     .field-hint { font-size: 0.75rem; color: #95a5a6; margin-top: 4px; }
+
+    /* Combobox recherchable single-select + Autre (calqué sur .ms de 06-patient-profile) */
+    .ms { position: relative; }
+    .ms-control { position: relative; min-height: 42px; border: 1px solid #ced4da; border-radius: 8px; padding: 0.6rem 30px 0.6rem 0.9rem; display: flex; flex-wrap: wrap; gap: 5px; align-items: center; cursor: pointer; background: #fff; font-size: 0.95rem; }
+    .ms-control::after { content: '▾'; position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: #94a3b8; pointer-events: none; }
+    .ms-control.disabled { background: #f1f4f6; cursor: not-allowed; opacity: 0.7; }
+    .ms-value { color: #2c3e50; font-weight: 500; }
+    .ms-placeholder { color: #94a3b8; }
+    .ms-menu { position: absolute; top: calc(100% + 4px); left: 0; right: 0; background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,0.12); z-index: 50; padding: 8px; }
+    .ms-search { width: 100%; border: 1px solid #e2e8f0; border-radius: 7px; padding: 7px 10px; font-size: 0.88rem; margin-bottom: 6px; }
+    .ms-search:focus { border-color: #16a085; outline: none; }
+    .ms-list { max-height: 210px; overflow-y: auto; }
+    .ms-opt { display: flex; align-items: center; justify-content: space-between; padding: 8px 10px; border-radius: 7px; cursor: pointer; font-size: 0.9rem; color: #2c3e50; }
+    .ms-opt:hover { background: #f0f4f8; }
+    .ms-opt.sel { color: #117a65; font-weight: 600; }
+    .ms-opt.sel::after { content: '✓'; color: #16a085; }
+    .ms-empty { padding: 8px 10px; color: #95a5a6; font-size: 0.85rem; }
+    .ms-other { display: flex; gap: 6px; border-top: 1px solid #eef2f4; margin-top: 6px; padding-top: 8px; }
+    .ms-other-input { flex: 1; min-width: 0; border: 1px solid #e2e8f0; border-radius: 7px; padding: 6px 9px; font-size: 0.85rem; }
+    .ms-other-input:focus { border-color: #16a085; outline: none; }
+    .ms-other-btn { border: 1px solid #16a085; background: #fff; color: #16a085; border-radius: 7px; padding: 4px 12px; font-size: 0.82rem; font-weight: 600; cursor: pointer; white-space: nowrap; }
+    .ms-other-btn:hover { background: #16a085; color: #fff; }
   </style>
 </head>
 <body data-i18n-pagetitle="profile.page_title">
@@ -33,8 +58,10 @@
   </div>
 
   <div class="brand-area">
-    <div class="brand-logo"><a href="01-home.html" style="color:inherit;text-decoration:none" aria-label="FUENI — Accueil"><span style="opacity:0.85;">F</span>UENI</a></div>
-    <div class="mt-1 opacity-75 small" data-i18n="profile.brand.tagline">Dernière étape pour finaliser votre inscription</div>
+    <div class="brand-bar">
+      <a href="01-home.html" class="brand-logo" aria-label="FUENI — Accueil"><img src="assets/fueni-lockup-horizontal.svg" alt="FUENI"></a>
+      <a href="01-home.html" class="btn-home"><i class="fa fa-house"></i><span data-i18n="common.home">Accueil</span></a>
+    </div>
   </div>
 
   <div class="container py-3" style="max-width:620px;">
@@ -44,53 +71,73 @@
         <div class="step-circle"><i class="fa fa-check"></i></div>
         <div class="step-label" data-i18n="otp.steps.signup">Inscription</div>
       </div>
-      <div class="step done" id="step2-marker">
-        <div class="step-circle"><i class="fa fa-check"></i></div>
-        <div class="step-label" data-i18n="otp.steps.sms">Vérification SMS</div>
-      </div>
-      <div class="step active" id="step3-marker">
-        <div class="step-circle">3</div>
+      <div class="step active" id="step2-marker">
+        <div class="step-circle">2</div>
         <div class="step-label" data-i18n="otp.steps.profile">Profil de base</div>
       </div>
-      <div class="step inactive">
-        <div class="step-circle">4</div>
-        <div class="step-label" data-i18n="otp.steps.welcome">Bienvenue</div>
+      <div class="step inactive" id="step3-marker">
+        <div class="step-circle">3</div>
+        <div class="step-label" data-i18n="otp.steps.sms">Vérification SMS</div>
       </div>
     </div>
 
     <div class="step-card">
       <h5 class="fw-bold mb-1" data-i18n="profile.title">Complétez votre profil</h5>
-      <p class="text-muted small mb-3" data-i18n="profile.subtitle">Dernière étape (30 secondes).</p>
+      <p class="text-muted small mb-3" data-i18n="profile.subtitle">Encore quelques informations (30 secondes).</p>
 
       <div class="d-none alert alert-danger small mb-3" id="step2Error" role="alert">
         <i class="fa fa-circle-exclamation me-2"></i><span data-i18n="profile.error.required">Veuillez compléter tous les champs obligatoires marqués d'un astérisque (*).</span>
       </div>
 
       <form>
+        <div class="mb-3">
+          <label class="form-label fw-semibold small" data-i18n="profile.field.country_label">Pays de service *</label>
+          <select class="form-select" id="countrySelect" onchange="updateCityList()">
+            <option value="" selected disabled data-i18n="profile.field.country_choose">Choisir...</option>
+            <option value="SN">🇸🇳 Sénégal</option>
+            <option value="CI">🇨🇮 Côte d'Ivoire</option>
+            <option value="ML">🇲🇱 Mali</option>
+            <option value="BJ">🇧🇯 Bénin</option>
+            <option value="TG">🇹🇬 Togo</option>
+            <option value="BF">🇧🇫 Burkina Faso</option>
+            <option value="NE">🇳🇪 Niger</option>
+            <option value="CM">🇨🇲 Cameroun</option>
+            <option value="CD">🇨🇩 RDC</option>
+          </select>
+          <div class="field-hint mt-1"><i class="fa fa-location-dot me-1"></i><span data-i18n="profile.field.country_hint">Pays où vous recherchez praticiens et services de santé (l'un de nos 9 pays couverts).</span></div>
+        </div>
+
         <div class="row g-2 mb-3">
           <div class="col-md-6">
-            <label class="form-label fw-semibold small" data-i18n="profile.field.country_label">Pays de service *</label>
-            <select class="form-select" id="countrySelect" onchange="updateCityList()">
-              <option value="" selected disabled data-i18n="profile.field.country_choose">Choisir...</option>
-              <option value="SN">🇸🇳 Sénégal</option>
-              <option value="CI">🇨🇮 Côte d'Ivoire</option>
-              <option value="ML">🇲🇱 Mali</option>
-              <option value="BJ">🇧🇯 Bénin</option>
-              <option value="TG">🇹🇬 Togo</option>
-              <option value="BF">🇧🇫 Burkina Faso</option>
-              <option value="NE">🇳🇪 Niger</option>
-              <option value="CM">🇨🇲 Cameroun</option>
-              <option value="CD">🇨🇩 RDC</option>
-            </select>
-            <div class="field-hint mt-1"><i class="fa fa-location-dot me-1"></i><span data-i18n="profile.field.country_hint">Pays où vous recherchez praticiens et services de santé (l'un de nos 9 pays couverts).</span></div>
+            <label class="form-label fw-semibold small" data-i18n="profile.field.region_label">Région / Province / Département *</label>
+            <div class="ms" id="regionField">
+              <div class="ms-control disabled" id="regionControl" onclick="openCombo(event,'region')">
+                <span class="ms-placeholder" id="regionPlaceholder" data-i18n="profile.field.region_ph">Sélectionner…</span>
+              </div>
+              <div class="ms-menu d-none" id="regionMenu" onclick="event.stopPropagation()">
+                <input class="ms-search" id="regionSearch" data-i18n-placeholder="profile.field.region_search" placeholder="Rechercher…" oninput="renderComboList('region')">
+                <div class="ms-list" id="regionList"></div>
+                <div class="ms-other">
+                  <input class="ms-other-input" id="regionOther" data-i18n-placeholder="profile.field.region_other_ph" placeholder="Autre (préciser)" onkeydown="if(event.key==='Enter'){event.preventDefault();addComboOther('region');}">
+                  <button type="button" class="ms-other-btn" onclick="addComboOther('region')" data-i18n="profile.field.other_add">Ajouter</button>
+                </div>
+              </div>
+            </div>
           </div>
           <div class="col-md-6">
-            <label class="form-label fw-semibold small" data-i18n="profile.field.city_label">Ville *</label>
-            <select class="form-select" id="citySelect">
-              <option value="" selected disabled data-i18n="profile.field.city_choose">Choisir...</option>
-            </select>
-            <div class="d-none mt-1" id="otherCityWrap">
-              <input type="text" class="form-control" id="otherCityInput" data-i18n-placeholder="profile.field.city_other_ph" placeholder="Précisez votre ville">
+            <label class="form-label fw-semibold small" data-i18n="profile.field.city_label">Ville / Commune / Localité *</label>
+            <div class="ms" id="cityField">
+              <div class="ms-control disabled" id="cityControl" onclick="openCombo(event,'city')">
+                <span class="ms-placeholder" id="cityPlaceholder" data-i18n="profile.field.city_ph">Sélectionner…</span>
+              </div>
+              <div class="ms-menu d-none" id="cityMenu" onclick="event.stopPropagation()">
+                <input class="ms-search" id="citySearch" data-i18n-placeholder="profile.field.city_search" placeholder="Rechercher…" oninput="renderComboList('city')">
+                <div class="ms-list" id="cityList"></div>
+                <div class="ms-other">
+                  <input class="ms-other-input" id="cityOther" data-i18n-placeholder="profile.field.city_other_ph" placeholder="Autre (préciser)" onkeydown="if(event.key==='Enter'){event.preventDefault();addComboOther('city');}">
+                  <button type="button" class="ms-other-btn" onclick="addComboOther('city')" data-i18n="profile.field.other_add">Ajouter</button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -110,8 +157,9 @@
         </div>
 
         <button type="button" class="btn btn-patient w-100" onclick="validateStep2()" data-i18n-html="profile.submit_html">
-          Finaliser et accéder à mon espace <i class="fa fa-check ms-2"></i>
+          Continuer <i class="fa fa-arrow-right ms-2"></i>
         </button>
+        <a href="02-patient-signup.html" class="btn btn-link w-100 text-muted small mt-1" data-i18n="common.prev_step">← Étape précédente</a>
       </form>
     </div>
 
@@ -125,70 +173,148 @@
       '+226': 'BF', '+227': 'NE', '+237': 'CM', '+243': 'CD'
     };
 
-    // Villes principales par pays MVP (top villes + capitales)
-    const CITIES = {
-      SN: ['Dakar', 'Thiès', 'Saint-Louis', 'Kaolack', 'Ziguinchor', 'Touba', 'Mbour', 'Diourbel', 'Rufisque', 'Tambacounda'],
-      CI: ['Abidjan', 'Yamoussoukro', 'Bouaké', 'Daloa', 'San-Pédro', 'Korhogo', 'Man', 'Gagnoa', 'Divo', 'Anyama'],
-      ML: ['Bamako', 'Sikasso', 'Mopti', 'Ségou', 'Kayes', 'Koutiala', 'Gao', 'Tombouctou', 'Kita', 'Bougouni'],
-      BJ: ['Cotonou', 'Porto-Novo', 'Parakou', 'Abomey-Calavi', 'Djougou', 'Bohicon', 'Kandi', 'Lokossa', 'Ouidah', 'Abomey'],
-      TG: ['Lomé', 'Sokodé', 'Kara', 'Kpalimé', 'Atakpamé', 'Tsévié', 'Dapaong', 'Aného', 'Bassar', 'Mango'],
-      BF: ['Ouagadougou', 'Bobo-Dioulasso', 'Koudougou', 'Ouahigouya', 'Banfora', 'Dédougou', 'Kaya', 'Tenkodogo', 'Fada N\'Gourma', 'Houndé'],
-      NE: ['Niamey', 'Zinder', 'Maradi', 'Agadez', 'Tahoua', 'Dosso', 'Tillabéri', 'Diffa', 'Arlit', 'Birni N\'Konni'],
-      CM: ['Douala', 'Yaoundé', 'Bafoussam', 'Bamenda', 'Garoua', 'Maroua', 'Ngaoundéré', 'Buéa', 'Kribi', 'Limbé', 'Edéa', 'Dschang'],
-      CD: ['Kinshasa', 'Lubumbashi', 'Mbuji-Mayi', 'Kananga', 'Kisangani', 'Bukavu', 'Goma', 'Likasi', 'Kolwezi', 'Matadi', 'Tshikapa', 'Mbandaka']
+    // Données administratives 2 niveaux (Région ADM1 → Ville ADM2/3) par pays.
+    // PLACEHOLDER — à remplacer par import HDX/COD-AB
+    const ADM_DATA = {
+      'Sénégal': { 'Dakar':['Dakar','Pikine','Guédiawaye','Rufisque'], 'Thiès':['Thiès','Mbour','Tivaouane'], 'Saint-Louis':['Saint-Louis','Dagana','Podor'], 'Diourbel':['Diourbel','Touba','Mbacké'], 'Ziguinchor':['Ziguinchor','Bignona'] },
+      "Côte d'Ivoire": { 'Abidjan':['Abidjan','Cocody','Yopougon','Abobo'], 'Yamoussoukro':['Yamoussoukro'], 'Gbêkê':['Bouaké'], 'Bas-Sassandra':['San-Pédro','Sassandra'], 'Haut-Sassandra':['Daloa'] },
+      'Mali': { 'Bamako':['Bamako'], 'Kayes':['Kayes'], 'Koulikoro':['Koulikoro','Kati'], 'Sikasso':['Sikasso','Koutiala'], 'Ségou':['Ségou','Niono'], 'Mopti':['Mopti','Sévaré'] },
+      'Bénin': { 'Littoral':['Cotonou'], 'Atlantique':['Abomey-Calavi','Ouidah'], 'Ouémé':['Porto-Novo'], 'Borgou':['Parakou'], 'Zou':['Abomey','Bohicon'] },
+      'Togo': { 'Maritime':['Lomé','Tsévié'], 'Plateaux':['Atakpamé','Kpalimé'], 'Centrale':['Sokodé'], 'Kara':['Kara'], 'Savanes':['Dapaong'] },
+      'Burkina Faso': { 'Centre':['Ouagadougou'], 'Hauts-Bassins':['Bobo-Dioulasso'], 'Centre-Ouest':['Koudougou'], 'Nord':['Ouahigouya'], 'Centre-Est':['Tenkodogo'] },
+      'Niger': { 'Niamey':['Niamey'], 'Maradi':['Maradi'], 'Zinder':['Zinder'], 'Tahoua':['Tahoua'], 'Agadez':['Agadez'], 'Dosso':['Dosso'] },
+      'Cameroun': { 'Centre':['Yaoundé'], 'Littoral':['Douala'], 'Ouest':['Bafoussam'], 'Nord-Ouest':['Bamenda'], 'Sud-Ouest':['Buéa','Limbé'], 'Adamaoua':['Ngaoundéré'] },
+      'RDC': { 'Kinshasa':['Kinshasa'], 'Haut-Katanga':['Lubumbashi','Likasi'], 'Nord-Kivu':['Goma','Butembo'], 'Sud-Kivu':['Bukavu'], 'Kongo Central':['Matadi','Boma'], 'Kasaï-Oriental':['Mbujimayi'] }
+    };
+    // Code ISO du <select> → clé pays dans ADM_DATA
+    const ISO_TO_COUNTRY = {
+      SN: 'Sénégal', CI: "Côte d'Ivoire", ML: 'Mali', BJ: 'Bénin', TG: 'Togo',
+      BF: 'Burkina Faso', NE: 'Niger', CM: 'Cameroun', CD: 'RDC'
     };
 
-    function updateCityList() {
-      const country = document.getElementById('countrySelect').value;
-      const citySelect = document.getElementById('citySelect');
-      const otherWrap = document.getElementById('otherCityWrap');
-      const otherInput = document.getElementById('otherCityInput');
+    // État des deux comboboxes (Région, Ville)
+    const combo = {
+      region: { value: '', options: [] },
+      city: { value: '', options: [] }
+    };
 
-      const chooseTxt = (window.NazI18n ? NazI18n.t('profile.field.city_choose') : '') || 'Choisir...';
-      citySelect.innerHTML = '';
-      const ph = document.createElement('option');
-      ph.value = '';
-      ph.selected = true;
-      ph.disabled = true;
-      ph.setAttribute('data-i18n', 'profile.field.city_choose');
-      ph.textContent = chooseTxt;
-      citySelect.appendChild(ph);
-      otherWrap.classList.add('d-none');
-      if (otherInput) otherInput.value = '';
+    function comboT(key, fallback) { return (window.NazI18n ? NazI18n.t(key) : '') || fallback; }
 
-      const list = CITIES[country] || [];
-      list.forEach(c => {
-        const opt = document.createElement('option');
-        opt.value = c;
-        opt.textContent = c;
-        citySelect.appendChild(opt);
-      });
-      // Option "Autre" en fin de liste — taggée pour re-traduction
-      const otherOpt = document.createElement('option');
-      otherOpt.value = '__other__';
-      otherOpt.setAttribute('data-i18n', 'profile.city.other');
-      otherOpt.textContent = (window.NazI18n ? NazI18n.t('profile.city.other') : '') || 'Autre (préciser)';
-      citySelect.appendChild(otherOpt);
-
-      citySelect.onchange = () => {
-        otherWrap.classList.toggle('d-none', citySelect.value !== '__other__');
-        if (citySelect.value === '__other__' && otherInput) otherInput.focus();
-      };
+    // Met à jour l'affichage du contrôle (valeur ou placeholder) + état activé/désactivé
+    function renderComboControl(which) {
+      const ctrl = document.getElementById(which + 'Control');
+      const ph = document.getElementById(which + 'Placeholder');
+      const enabled = (which === 'region')
+        ? !!document.getElementById('countrySelect').value
+        : !!combo.region.value;
+      ctrl.classList.toggle('disabled', !enabled);
+      // Retire l'éventuelle valeur affichée
+      const existing = ctrl.querySelector('.ms-value');
+      if (existing) existing.remove();
+      if (combo[which].value) {
+        ph.style.display = 'none';
+        const span = document.createElement('span');
+        span.className = 'ms-value';
+        span.textContent = combo[which].value;
+        ctrl.insertBefore(span, ph);
+      } else {
+        ph.style.display = '';
+      }
     }
 
-    // Note: dynamically-injected <option> elements carry data-i18n attributes,
-    // so naz-i18n's own applyLang() pass (which runs before fueni:langchange
-    // is dispatched) re-translates them automatically — no extra work needed here.
+    function renderComboList(which) {
+      const list = document.getElementById(which + 'List');
+      if (!list) return;
+      const q = (document.getElementById(which + 'Search').value || '').toLowerCase();
+      list.innerHTML = '';
+      const opts = combo[which].options.filter(o => o.toLowerCase().includes(q));
+      if (!opts.length) {
+        const em = document.createElement('div');
+        em.className = 'ms-empty';
+        em.textContent = combo[which].options.length
+          ? comboT('signup.cc.no_match', 'Aucun résultat.')
+          : comboT('profile.field.combo_use_other', 'Aucune option — saisissez la vôtre dans « Autre » ci-dessous.');
+        list.appendChild(em);
+        return;
+      }
+      opts.forEach(o => {
+        const el = document.createElement('div');
+        el.className = 'ms-opt' + (combo[which].value === o ? ' sel' : '');
+        el.textContent = o;
+        el.onclick = () => pickCombo(which, o);
+        list.appendChild(el);
+      });
+    }
+
+    function openCombo(e, which) {
+      if (e) e.stopPropagation();
+      const ctrl = document.getElementById(which + 'Control');
+      if (ctrl.classList.contains('disabled')) return;
+      const menu = document.getElementById(which + 'Menu');
+      const willOpen = menu.classList.contains('d-none');
+      // ferme l'autre menu
+      ['region', 'city'].forEach(w => { if (w !== which) document.getElementById(w + 'Menu').classList.add('d-none'); });
+      menu.classList.toggle('d-none', !willOpen);
+      if (willOpen) {
+        const s = document.getElementById(which + 'Search');
+        s.value = '';
+        renderComboList(which);
+        setTimeout(() => s.focus(), 0);
+      }
+    }
+    function closeCombo(which) { const m = document.getElementById(which + 'Menu'); if (m) m.classList.add('d-none'); }
+
+    function pickCombo(which, val) {
+      combo[which].value = val;
+      renderComboControl(which);
+      closeCombo(which);
+      if (which === 'region') onRegionChange();
+    }
+    function addComboOther(which) {
+      const inp = document.getElementById(which + 'Other');
+      const v = (inp.value || '').trim();
+      if (!v) return;
+      inp.value = '';
+      pickCombo(which, v);
+    }
+
+    // Renseigne les options Région à partir du pays choisi, réinitialise la Ville
+    function updateRegionList() {
+      const iso = document.getElementById('countrySelect').value;
+      const country = ISO_TO_COUNTRY[iso];
+      const data = (country && ADM_DATA[country]) || {};
+      combo.region.options = Object.keys(data);
+      combo.region.value = '';
+      renderComboControl('region');
+      closeCombo('region');
+      onRegionChange();
+    }
+    // Renseigne les options Ville à partir de la région choisie, réinitialise la valeur
+    function onRegionChange() {
+      const iso = document.getElementById('countrySelect').value;
+      const country = ISO_TO_COUNTRY[iso];
+      const data = (country && ADM_DATA[country]) || {};
+      combo.city.options = (combo.region.value && data[combo.region.value]) ? data[combo.region.value].slice() : [];
+      combo.city.value = '';
+      renderComboControl('city');
+      closeCombo('city');
+    }
+    // Conserve le nom appelé par countrySelect onchange
+    function updateCityList() { updateRegionList(); }
+
+    // Fermeture des menus au clic en dehors
+    document.addEventListener('click', e => {
+      ['region', 'city'].forEach(w => { const f = document.getElementById(w + 'Field'); if (f && !f.contains(e.target)) closeCombo(w); });
+    });
 
     function validateStep2() {
       const errBox = document.getElementById('step2Error');
       const country = document.getElementById('countrySelect').value;
-      const city = document.getElementById('citySelect').value;
-      const otherCity = document.getElementById('otherCityInput')?.value.trim() || '';
+      const region = combo.region.value.trim();
+      const city = combo.city.value.trim();
       const lang = document.getElementById('langSelect').value;
 
-      const cityOk = city && (city !== '__other__' || otherCity.length > 0);
-      const allOk = country && cityOk && lang;
+      const allOk = country && region && city && lang;
 
       if (!allOk) {
         errBox.classList.remove('d-none');
@@ -198,22 +324,23 @@
 
       errBox.classList.add('d-none');
       try {
-        const raw = sessionStorage.getItem('fueni_signup_data');
+        const raw = localStorage.getItem('fueni_signup_data');
         const d = raw ? JSON.parse(raw) : {};
         d.country = country;
-        d.city = city === '__other__' ? otherCity : city;
+        d.region = region;
+        d.city = city;
         d.lang = lang;
         d.address = document.getElementById('addressInput').value.trim();
-        sessionStorage.setItem('fueni_signup_data', JSON.stringify(d));
+        localStorage.setItem('fueni_signup_data', JSON.stringify(d));
       } catch (e) { /* ignore */ }
 
-      window.location = '05-patient-dashboard.html';
+      window.location = '03-patient-otp.html';
     }
 
     // Au chargement : pré-sélection pays selon indicatif tél de l'inscription
     document.addEventListener('DOMContentLoaded', () => {
       try {
-        const raw = sessionStorage.getItem('fueni_signup_data');
+        const raw = localStorage.getItem('fueni_signup_data');
         if (raw) {
           const d = JSON.parse(raw);
           const country = PHONE_CC_TO_COUNTRY[d.countryCode];
@@ -222,10 +349,10 @@
           }
         }
       } catch (e) { /* ignore */ }
-      updateCityList();
+      updateRegionList();
     });
   </script>
 <!-- Prototype version badge -->
-<script>(function(){if(window.__pv)return;window.__pv=1;var v=document.createElement('div');v.style.cssText='position:fixed;top:0;left:50%;transform:translateX(-50%);background:#155e75;color:#fff;padding:6px 20px;border-radius:0 0 16px 16px;font:600 12px/1 system-ui,-apple-system,sans-serif;letter-spacing:.6px;z-index:99999;box-shadow:0 3px 10px rgba(0,0,0,.2);text-transform:uppercase;display:flex;align-items:center;gap:8px';v.innerHTML='🧪 Prototype <span style="background:#f59e0b;color:#1a1a1a;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:4px">v1.3.0</span><span style="background:#10b981;color:#fff;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:4px;text-transform:none;letter-spacing:0">✅ Validé 2026-05-27</span>';document.body.appendChild(v);})();</script>
+<script>(function(){if(window.__pv)return;window.__pv=1;var v=document.createElement('div');v.style.cssText='position:fixed;top:0;left:50%;transform:translateX(-50%);background:#155e75;color:#fff;padding:6px 20px;border-radius:0 0 16px 16px;font:600 12px/1 system-ui,-apple-system,sans-serif;letter-spacing:.6px;z-index:99999;box-shadow:0 3px 10px rgba(0,0,0,.2);text-transform:uppercase;display:flex;align-items:center;gap:8px';v.innerHTML='🧪 Prototype <span style="background:#f59e0b;color:#1a1a1a;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:4px">v1.4.0</span><span style="background:#facc15;color:#1a1a1a;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:4px;text-transform:none;letter-spacing:0">⏳ À valider</span>';document.body.appendChild(v);})();</script>
 </body>
 </html>
