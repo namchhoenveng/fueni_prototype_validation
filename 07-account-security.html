@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>FUENI — Mon profil</title>
+  <title>FUENI — Connexion & sécurité</title>
   <script src="naz-i18n.js" defer></script>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
@@ -166,10 +166,10 @@
     }
   </style>
 </head>
-<body data-i18n-pagetitle="prof.page_title" data-i18n-toggle>
+<body data-i18n-pagetitle="sec.page_title" data-i18n-toggle>
 
   <div class="proto-bar d-flex align-items-center gap-3">
-    <span><i class="fa fa-eye me-1"></i> <span data-i18n="prof.proto_bar">Espace Patient · Mon profil</span> · <a href="01-home.html" class="text-decoration-none" data-i18n="prof.proto_home">← Accueil</a></span>
+    <span><i class="fa fa-eye me-1"></i> <span data-i18n="sec.proto_bar">Espace Patient · Connexion & sécurité</span> · <a href="01-home.html" class="text-decoration-none" data-i18n="prof.proto_home">← Accueil</a></span>
   </div>
 
   <!-- Sidebar -->
@@ -193,8 +193,8 @@
     <a href="#" class="nav-link-side"><i class="fa fa-plus-circle"></i><span data-i18n="dash.sidebar.book">Prendre RDV</span></a>
     <a href="#" class="nav-link-side"><i class="fa fa-folder"></i><span data-i18n="dash.sidebar.my_docs">Mes documents</span></a>
     <div class="nav-section" data-i18n="dash.sidebar.section_account">Mon compte</div>
-    <a class="nav-link-side active"><i class="fa fa-user"></i><span data-i18n="dash.sidebar.my_profile">Mon profil</span></a>
-    <a href="07-account-security.html" class="nav-link-side"><i class="fa fa-shield-halved"></i><span data-i18n="dash.sidebar.security">Connexion & sécurité</span></a>
+    <a href="06-patient-profile.html" class="nav-link-side"><i class="fa fa-user"></i><span data-i18n="dash.sidebar.my_profile">Mon profil</span></a>
+    <a class="nav-link-side active"><i class="fa fa-shield-halved"></i><span data-i18n="dash.sidebar.security">Connexion & sécurité</span></a>
     <div class="nav-section" data-i18n="dash.sidebar.section_help">Aide</div>
     <a class="nav-link-side"><i class="fa fa-circle-question"></i><span data-i18n="dash.sidebar.faq">FAQ</span></a>
     <a class="nav-link-side"><i class="fa fa-headset"></i><span data-i18n="dash.sidebar.support">Contacter le support</span></a>
@@ -206,224 +206,126 @@
     <div class="content-area">
 
       <div class="page-head mb-3">
-        <h4 data-i18n="prof.title">Mon profil</h4>
-        <p data-i18n="prof.subtitle">Consultez et mettez à jour vos informations personnelles.</p>
+        <h4 data-i18n="sec.title">Connexion & sécurité</h4>
+        <p data-i18n="sec.subtitle">Gérez vos identifiants de connexion, votre mot de passe et vos données.</p>
       </div>
 
-      <!-- Profil complété -->
-      <div class="completion-card">
-        <div class="d-flex justify-content-between align-items-center">
-          <span class="fw-semibold small" style="color:#2c3e50;"><i class="fa fa-circle-user me-1" style="color:#16a085;"></i><span data-i18n="prof.completion.label">Profil complété à</span> <span id="completionPct">80</span> %</span>
-          <span class="small" style="color:#7f8c8d;" data-i18n="prof.completion.hint">Ajoutez votre adresse et un contact d'urgence pour atteindre 100 %.</span>
-        </div>
-        <div class="completion-bar"><div class="completion-fill" id="completionFill" style="width:80%;"></div></div>
+      <!-- Bannière e-mail non vérifié -->
+      <div class="email-banner" id="emailBanner">
+        <i class="fa fa-envelope-circle-check"></i>
+        <div class="banner-text" data-i18n-html="prof.email_banner_html"><strong>Votre adresse e-mail n'est pas encore vérifiée.</strong> Vérifiez-la pour recevoir vos confirmations de rendez-vous et vos documents.</div>
+        <button class="btn btn-verify" onclick="startEmailVerify()" data-i18n="prof.email_banner.verify">Vérifier maintenant</button>
       </div>
 
 
-      <!-- 1. Identité (lecture seule) -->
-      <div class="prof-section">
+      <!-- 2. Coordonnées & connexion (OTP) -->
+      <div class="prof-section" id="sec-coord">
         <div class="prof-section-head">
-          <h6><i class="fa fa-id-card" style="color:#16a085;"></i><span data-i18n="prof.identity.title">Identité</span> <span class="sens-badge sens-support" data-i18n="prof.legend.support">Via le support</span></h6>
-        </div>
-        <p class="small mb-2" style="color:#95a5a6;" data-i18n="prof.identity.note">Ces informations d'identité légale ne sont pas modifiables en ligne. Contactez le support pour toute correction.</p>
-        <div class="field-row"><div class="field-label" data-i18n="prof.identity.firstname">Prénom</div><div class="field-value"><span class="view">Aïssatou</span></div></div>
-        <div class="field-row"><div class="field-label" data-i18n="prof.identity.lastname">Nom</div><div class="field-value"><span class="view">Diop</span></div></div>
-        <div class="field-row"><div class="field-label" data-i18n="prof.identity.dob">Date de naissance</div><div class="field-value"><span class="view">02/05/1990</span></div></div>
-        <div class="field-row"><div class="field-label" data-i18n="prof.identity.sex">Sexe à la naissance</div><div class="field-value"><span class="view" data-i18n="prof.identity.sex_female">Féminin</span></div></div>
-      </div>
-
-      <!-- 3. Localisation & langue -->
-      <div class="prof-section" id="sec-loc">
-        <div class="prof-section-head">
-          <h6><i class="fa fa-location-dot" style="color:#16a085;"></i><span data-i18n="prof.loc.title">Localisation & langue</span> <span class="sens-badge sens-direct" data-i18n="prof.legend.direct">Modifiable directement</span></h6>
+          <h6><i class="fa fa-at" style="color:#16a085;"></i><span data-i18n="prof.coord.title">Coordonnées & connexion</span></h6>
           <span class="spacer"></span>
-          <button class="btn-edit" id="loc-editbtn" onclick="editSection('loc')" data-i18n="prof.btn.edit">Modifier</button>
-          <span id="loc-actions" class="d-none">
-            <button class="btn-save" onclick="saveLoc()" data-i18n="prof.btn.save">Enregistrer</button>
-            <button class="btn-cancel" onclick="cancelSection('loc')" data-i18n="prof.btn.cancel">Annuler</button>
+          <button class="btn-edit" id="coord-editbtn" onclick="editSection('coord')" data-i18n="prof.btn.edit">Modifier</button>
+          <span id="coord-actions" class="d-none">
+            <button class="btn-save" onclick="saveCoord()" data-i18n="prof.btn.save">Enregistrer</button>
+            <button class="btn-cancel" onclick="cancelSection('coord')" data-i18n="prof.btn.cancel">Annuler</button>
           </span>
         </div>
         <div class="field-row">
-          <div class="field-label"><span data-i18n="prof.loc.country">Pays de service</span></div>
+          <div class="field-label" data-i18n="prof.coord.email">Adresse e-mail</div>
           <div class="field-value">
-            <span class="view" id="loc-country-view">🇸🇳 Sénégal</span>
-            <select class="edit form-select d-none" id="loc-country-input" onchange="onLocCountryChange()">
-              <option value="🇸🇳 Sénégal" selected>🇸🇳 Sénégal</option>
-              <option value="🇨🇮 Côte d'Ivoire">🇨🇮 Côte d'Ivoire</option>
-              <option value="🇲🇱 Mali">🇲🇱 Mali</option>
-              <option value="🇧🇯 Bénin">🇧🇯 Bénin</option>
-              <option value="🇹🇬 Togo">🇹🇬 Togo</option>
-              <option value="🇧🇫 Burkina Faso">🇧🇫 Burkina Faso</option>
-              <option value="🇳🇪 Niger">🇳🇪 Niger</option>
-              <option value="🇨🇲 Cameroun">🇨🇲 Cameroun</option>
-              <option value="🇨🇩 RDC">🇨🇩 RDC</option>
-            </select>
-          </div>
-        </div>
-        <div class="field-row" id="locCascadeRow" style="display:none;">
-          <div class="field-label"></div>
-          <div class="field-value">
-            <div class="field-help" id="locCascadeHelp"><i class="fa fa-circle-info me-1" id="locCascadeIcon"></i><span id="locCascadeMsg" data-i18n="prof.loc.cascade_help">Sélectionnez votre région et votre ville pour ce pays.</span></div>
+            <span class="view" id="coord-email-view">aissatou.diop@example.com</span>
+            <span class="chip chip-no" id="emailChip" data-i18n="prof.coord.unverified">Non vérifié</span>
+            <button class="btn-link-verify" id="emailVerifyBtn" onclick="startEmailVerify()" data-i18n="prof.coord.verify_now">Vérifier</button>
+            <input class="edit form-control d-none" id="coord-email-input" value="aissatou.diop@example.com" autocomplete="email" oninput="checkProfEmail()" onblur="checkProfEmail(true)">
+            <div class="edit field-hint text-danger mt-1 d-none" id="coordEmailErr"><i class="fa fa-circle-exclamation me-1"></i><span data-i18n="prof.coord.email_err_format">Adresse e-mail invalide.</span></div>
+            <div class="edit field-help mt-1 d-none" id="coordEmailHelp"><i class="fa fa-circle-info me-1"></i><span data-i18n-html="prof.coord.email_help">Un code de confirmation sera envoyé à la <strong>nouvelle</strong> adresse pour la vérifier.</span></div>
           </div>
         </div>
         <div class="field-row">
-          <div class="field-label" data-i18n="prof.loc.region">Région / Province / Département</div>
+          <div class="field-label" data-i18n="prof.coord.phone">Téléphone</div>
           <div class="field-value">
-            <span class="view" id="loc-region-view">Dakar</span>
-            <div class="edit d-none" id="loc-region-edit">
-              <div class="ms" id="regionMs">
-                <div class="ms-control" id="regionControl" onclick="openLocCombo(event,'region')">
-                  <span class="ms-placeholder" id="regionPlaceholder" data-i18n="prof.loc.region_ph">Sélectionner…</span>
-                </div>
-                <div class="ms-menu d-none" id="regionMenu" onclick="event.stopPropagation()">
-                  <input class="ms-search" id="regionSearch" data-i18n-placeholder="prof.loc.region_search" placeholder="Rechercher…" oninput="renderLocComboList('region')">
-                  <div class="ms-list" id="regionList"></div>
-                  <div class="ms-other">
-                    <input class="ms-other-input" id="regionOther" data-i18n-placeholder="prof.loc.region_other_ph" placeholder="Autre (préciser)" onkeydown="if(event.key==='Enter'){event.preventDefault();addLocComboOther('region');}">
-                    <button type="button" class="ms-other-btn" onclick="addLocComboOther('region')" data-i18n="prof.loc.other_add">Ajouter</button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="field-row">
-          <div class="field-label" data-i18n="prof.loc.city">Ville / Commune / Localité</div>
-          <div class="field-value">
-            <span class="view" id="loc-city-view">Dakar</span>
-            <div class="edit d-none" id="loc-city-edit">
-              <div class="ms" id="cityMs">
-                <div class="ms-control" id="cityControl" onclick="openLocCombo(event,'city')">
-                  <span class="ms-placeholder" id="cityPlaceholder" data-i18n="prof.loc.city_ph">Sélectionner…</span>
-                </div>
-                <div class="ms-menu d-none" id="cityMenu" onclick="event.stopPropagation()">
-                  <input class="ms-search" id="citySearch" data-i18n-placeholder="prof.loc.city_search" placeholder="Rechercher…" oninput="renderLocComboList('city')">
-                  <div class="ms-list" id="cityList"></div>
-                  <div class="ms-other">
-                    <input class="ms-other-input" id="cityOther" data-i18n-placeholder="prof.loc.city_other_ph" placeholder="Autre (préciser)" onkeydown="if(event.key==='Enter'){event.preventDefault();addLocComboOther('city');}">
-                    <button type="button" class="ms-other-btn" onclick="addLocComboOther('city')" data-i18n="prof.loc.other_add">Ajouter</button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="field-row">
-          <div class="field-label" data-i18n="prof.loc.lang">Langue de communication</div>
-          <div class="field-value">
-            <span class="view" id="loc-lang-view" data-i18n="prof.loc.lang_fr">Français</span>
-            <select class="edit form-select d-none" id="loc-lang-input">
-              <option value="Français">Français</option>
-              <option value="English">English</option>
-            </select>
-          </div>
-        </div>
-        <div class="field-row">
-          <div class="field-label"><span data-i18n="prof.loc.spoken">Langues parlées</span> <span class="small" style="color:#b0b8bf;" data-i18n="prof.optional">(optionnel)</span></div>
-          <div class="field-value">
-            <span class="view" id="loc-langs-view">Français</span>
-            <div class="edit d-none" id="loc-langs-edit">
-              <div class="ms" id="langMs">
-                <div class="ms-control" id="langControl" onclick="openLangMenu(event)">
-                  <span class="ms-placeholder" id="langPlaceholder" data-i18n="prof.loc.spoken_ph">Ajouter une langue…</span>
-                </div>
-                <div class="ms-menu d-none" id="langMenu" onclick="event.stopPropagation()">
-                  <input class="ms-search" id="langSearch" data-i18n-placeholder="prof.loc.spoken_search" placeholder="Rechercher une langue…" oninput="renderLangList()">
-                  <div class="ms-list" id="langList"></div>
-                  <div class="ms-other">
-                    <input class="ms-other-input" id="langOther" data-i18n-placeholder="prof.loc.spoken_other_ph" placeholder="Autre langue (préciser)…" onkeydown="if(event.key==='Enter'){event.preventDefault();addOtherLang();}">
-                    <button class="ms-other-btn" onclick="addOtherLang()" data-i18n="prof.loc.spoken_other_add">Ajouter</button>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="small mt-1" style="color:#95a5a6;" data-i18n="prof.loc.spoken_hint">Sélectionnez toutes les langues que vous parlez.</div>
-          </div>
-        </div>
-        <div class="field-row">
-          <div class="field-label" data-i18n="prof.loc.address">Adresse <span class="small" style="color:#b0b8bf;" data-i18n="prof.optional">(optionnel)</span></div>
-          <div class="field-value">
-            <span class="view muted" id="loc-address-view" data-i18n="prof.not_provided">Non renseignée</span>
-            <input class="edit form-control d-none" id="loc-address-input" placeholder="Quartier, rue, point de repère">
-          </div>
-        </div>
-      </div>
-
-      <!-- 4. Contact d'urgence -->
-      <div class="prof-section" id="sec-emerg">
-        <div class="prof-section-head">
-          <h6><i class="fa fa-kit-medical" style="color:#16a085;"></i><span data-i18n="prof.emerg.title">Contact d'urgence</span> <span class="sens-badge sens-direct" data-i18n="prof.legend.direct">Modifiable directement</span> <span class="small" style="color:#b0b8bf; font-weight:500;" data-i18n="prof.optional">(optionnel)</span></h6>
-          <span class="spacer"></span>
-          <button class="btn-edit" id="emerg-editbtn" onclick="editSection('emerg')" data-i18n="prof.btn.edit">Modifier</button>
-          <span id="emerg-actions" class="d-none">
-            <button class="btn-save" onclick="saveSection('emerg', false)" data-i18n="prof.btn.save">Enregistrer</button>
-            <button class="btn-cancel" onclick="cancelSection('emerg')" data-i18n="prof.btn.cancel">Annuler</button>
-          </span>
-        </div>
-        <div class="field-row">
-          <div class="field-label" data-i18n="prof.emerg.name">Nom</div>
-          <div class="field-value"><span class="view muted" id="emerg-name-view" data-i18n="prof.not_provided">Non renseigné</span><input class="edit form-control d-none" id="emerg-name-input" placeholder="Ex : Mamadou Diop"></div>
-        </div>
-        <div class="field-row">
-          <div class="field-label" data-i18n="prof.emerg.relation">Lien de parenté</div>
-          <div class="field-value">
-            <span class="view muted" id="emerg-rel-view" data-i18n="prof.not_provided">Non renseigné</span>
-            <select class="edit form-select d-none" id="emerg-rel-input" onchange="toggleRelOther()">
-              <option value="" data-i18n="prof.emerg.rel_choose">Choisir…</option>
-              <option value="Conjoint(e)">Conjoint(e)</option>
-              <option value="Parent">Parent</option>
-              <option value="Enfant">Enfant</option>
-              <option value="Frère/Sœur">Frère/Sœur</option>
-              <option value="Grand-parent">Grand-parent</option>
-              <option value="Ami(e)">Ami(e)</option>
-              <option value="Tuteur/Tutrice légal(e)">Tuteur/Tutrice légal(e)</option>
-              <option value="__other__" data-i18n="prof.emerg.rel_other">Autre (préciser)</option>
-            </select>
-            <input class="edit form-control d-none mt-2" id="emerg-rel-other" data-i18n-placeholder="prof.emerg.rel_other_ph" placeholder="Préciser le lien">
-          </div>
-        </div>
-        <div class="field-row">
-          <div class="field-label" data-i18n="prof.emerg.phone">Téléphone d'urgence</div>
-          <div class="field-value">
-            <span class="view muted" id="emerg-phone-view" data-i18n="prof.not_provided">Non renseigné</span>
-            <div class="edit d-none" id="emerg-phone-edit">
+            <span class="view" id="coord-phone-view">+221 77 123 45 67</span>
+            <span class="view chip chip-ok" data-i18n="prof.coord.verified">Vérifié</span>
+            <div class="edit d-none" id="coord-phone-edit">
               <div class="iti">
-                <button type="button" class="form-select iti-trigger" id="ccTrigger" onclick="toggleCcMenu(event,'emerg')" aria-haspopup="listbox">
-                  <span id="ccFlag">🇸🇳</span><span id="ccDial">+221</span>
+                <button type="button" class="form-select iti-trigger" id="cpTrigger" onclick="toggleCcMenu(event,'coord')" aria-haspopup="listbox">
+                  <span id="cpFlag">🇸🇳</span><span id="cpDial">+221</span>
                 </button>
-                <input type="tel" class="form-control" id="phoneField" placeholder="Ex : 77 123 45 67" inputmode="tel" pattern="[0-9 ]*">
-                <div class="iti-menu d-none" id="ccMenu">
+                <input type="tel" class="form-control" id="cpField" placeholder="Ex : 77 123 45 67" inputmode="tel" pattern="[0-9 ]*">
+                <div class="iti-menu d-none" id="cpMenu">
                   <div class="iti-search-wrap">
-                    <input type="text" id="ccSearch" autocomplete="off" data-i18n-placeholder="signup.field.cc_search" placeholder="Rechercher un pays…" oninput="renderCcList('emerg')" onkeydown="onCcSearchKey(event,'emerg')">
+                    <input type="text" id="cpSearch" autocomplete="off" data-i18n-placeholder="signup.field.cc_search" placeholder="Rechercher un pays…" oninput="renderCcList('coord')" onkeydown="onCcSearchKey(event,'coord')">
                   </div>
-                  <div class="iti-list" id="ccList"></div>
+                  <div class="iti-list" id="cpList"></div>
                 </div>
               </div>
-              <input type="hidden" id="ccIso" value="SN">
-              <input type="hidden" id="ccValue" value="+221">
-              <div class="field-hint d-none text-danger mt-1" id="phoneHint"><i class="fa fa-circle-exclamation me-1"></i><span data-i18n="signup.field.phone_hint">Numéro invalide pour l'indicatif sélectionné.</span></div>
+              <input type="hidden" id="cpIso" value="SN">
+              <div class="field-hint d-none text-danger mt-1" id="cpHint"><i class="fa fa-circle-exclamation me-1"></i><span data-i18n="signup.field.phone_hint">Numéro invalide pour l'indicatif sélectionné.</span></div>
+              <div class="field-help mt-1" id="coordPhoneHelp"><i class="fa fa-circle-info me-1"></i><span data-i18n-html="prof.coord.phone_help">Un code SMS sera envoyé au <strong>nouveau</strong> numéro pour le vérifier.</span></div>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- 5. Préférences de notification -->
+      <!-- 2b. Mot de passe (vérification par mot de passe actuel) -->
+      <div class="prof-section" id="sec-pwd">
+        <div class="prof-section-head">
+          <h6><i class="fa fa-lock" style="color:#16a085;"></i><span data-i18n="prof.pwd.title">Mot de passe</span></h6>
+          <span class="spacer"></span>
+          <button class="btn-edit" id="pwd-editbtn" onclick="editSection('pwd')" data-i18n="prof.pwd.change">Changer</button>
+          <span id="pwd-actions" class="d-none">
+            <button class="btn-save" onclick="savePwd()" data-i18n="prof.btn.save">Enregistrer</button>
+            <button class="btn-cancel" onclick="cancelSection('pwd')" data-i18n="prof.btn.cancel">Annuler</button>
+          </span>
+        </div>
+        <div class="field-row">
+          <div class="field-label" data-i18n="prof.coord.password">Mot de passe</div>
+          <div class="field-value">
+            <span class="view" id="pwd-view">••••••••••••</span>
+            <div class="edit d-none" id="pwd-edit" style="max-width:460px;">
+              <label class="form-label small fw-semibold mb-1" for="pwdCurrent" data-i18n="prof.pwd.current">Mot de passe actuel</label>
+              <div class="pwd-wrap mb-1">
+                <input type="password" class="form-control" id="pwdCurrent" autocomplete="current-password" oninput="clearPwdErr()">
+                <button type="button" class="pwd-eye" onclick="togglePwdField('pwdCurrent', this)" data-i18n-aria="prof.pwd.toggle_aria" aria-label="Afficher le mot de passe"><i class="fa fa-eye"></i></button>
+              </div>
+              <div class="field-hint text-danger mb-2 d-none" id="pwdCurrentErr"><i class="fa fa-circle-exclamation me-1"></i><span data-i18n="prof.pwd.current_err">Mot de passe actuel incorrect.</span></div>
+
+              <label class="form-label small fw-semibold mb-1 mt-2" for="pwdNew" data-i18n="prof.pwd.new">Nouveau mot de passe</label>
+              <div class="pwd-wrap">
+                <input type="password" class="form-control" id="pwdNew" autocomplete="new-password" oninput="checkProfPwd()">
+                <button type="button" class="pwd-eye" onclick="togglePwdField('pwdNew', this)" data-i18n-aria="prof.pwd.toggle_aria" aria-label="Afficher le mot de passe"><i class="fa fa-eye"></i></button>
+              </div>
+              <div class="pwd-strength"><div class="pwd-strength-fill" id="pwdBar"></div></div>
+              <div class="pwd-rules-grid">
+                <div class="pwd-rule" id="pr-len"><i class="fa fa-circle-check"></i><span data-i18n="signup.field.pwd_r_len">Au moins 8 caractères</span></div>
+                <div class="pwd-rule" id="pr-upper"><i class="fa fa-circle-check"></i><span data-i18n="signup.field.pwd_r_upper">Une majuscule</span></div>
+                <div class="pwd-rule" id="pr-lower"><i class="fa fa-circle-check"></i><span data-i18n="signup.field.pwd_r_lower">Une minuscule</span></div>
+                <div class="pwd-rule" id="pr-num"><i class="fa fa-circle-check"></i><span data-i18n="signup.field.pwd_r_num">Un chiffre</span></div>
+                <div class="pwd-rule" id="pr-spe"><i class="fa fa-circle-check"></i><span data-i18n="signup.field.pwd_r_spe">Un caractère spécial (ex : ! ? @ # $ % & * …)</span></div>
+              </div>
+              <div class="field-hint text-danger mt-2 d-none" id="pwdNewErr"><i class="fa fa-circle-exclamation me-1"></i><span data-i18n="prof.pwd.new_err">Le nouveau mot de passe ne respecte pas les critères.</span></div>
+              <div class="field-help mt-2"><i class="fa fa-circle-info me-1"></i><span data-i18n="prof.pwd.help">Pour changer votre mot de passe, saisissez d’abord votre mot de passe actuel.</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+      <!-- 6. Mon compte & données (RGPD) -->
       <div class="prof-section">
         <div class="prof-section-head">
-          <h6><i class="fa fa-bell" style="color:#16a085;"></i><span data-i18n="prof.notif.title">Préférences de notification</span> <span class="sens-badge sens-direct" data-i18n="prof.legend.direct">Modifiable directement</span></h6>
+          <h6><i class="fa fa-shield-halved" style="color:#16a085;"></i><span data-i18n="prof.rgpd.title">Mon compte & mes données</span></h6>
         </div>
-        <p class="small mb-1" style="color:#95a5a6;" data-i18n="prof.notif.note">Concerne les rappels de rendez-vous. Les notifications essentielles (sécurité, confirmations) restent toujours actives.</p>
-        <div class="tgl-row">
-          <label class="tgl"><input type="checkbox" id="notifSms" checked onchange="onNotifChange()"><span class="slider"></span></label>
-          <label for="notifSms" class="txt" data-i18n-html="prof.notif.sms">Rappels de rendez-vous par <strong>SMS</strong></label>
+        <div class="d-flex flex-wrap gap-2 align-items-center justify-content-between">
+          <div class="small" style="color:#7f8c8d; max-width:520px;" data-i18n="prof.rgpd.note">Vous pouvez exporter une copie de vos données personnelles à tout moment (portabilité RGPD).</div>
+          <button class="btn btn-light fw-semibold" style="border:1px solid #dfe6e9;" onclick="toast()" data-i18n="prof.rgpd.export"><i class="fa fa-download me-1"></i>Exporter mes données</button>
         </div>
-        <div class="tgl-row">
-          <label class="tgl"><input type="checkbox" id="notifEmail" checked onchange="onNotifChange()"><span class="slider"></span></label>
-          <label for="notifEmail" class="txt" data-i18n-html="prof.notif.email">Rappels de rendez-vous par <strong>e-mail</strong></label>
+        <hr class="my-3" style="border-color:#eef2f4;">
+        <div class="d-flex flex-wrap gap-2 align-items-center justify-content-between">
+          <div class="small" style="color:#7f8c8d; max-width:520px;" data-i18n-html="prof.rgpd.delete_note">Pour supprimer votre compte, contactez notre support. <span style="color:#b0b8bf;">(La suppression en libre-service sera disponible ultérieurement.)</span></div>
+          <a class="btn btn-light fw-semibold" style="border:1px solid #dfe6e9;" href="#" data-i18n="prof.rgpd.contact_support"><i class="fa fa-headset me-1"></i>Contacter le support</a>
         </div>
-        <div class="d-none mt-2" id="notifBothOffWarn" style="background:#fff8e1;border:1px solid #ffd54f;border-radius:8px;padding:8px 12px;font-size:0.82rem;color:#8a6d00;">
-          <i class="fa fa-triangle-exclamation me-1" style="color:#f57c00;"></i><span data-i18n="prof.notif.both_off">Vous ne recevrez plus aucun rappel de rendez-vous — vous risquez d'oublier vos consultations.</span>
-        </div>
+        <hr class="my-3" style="border-color:#eef2f4;">
+        <div class="small"><i class="fa fa-file-shield me-1" style="color:#16a085;"></i><a href="#" style="color:#155e75;text-decoration:none" data-i18n="prof.rgpd.privacy">Politique de confidentialité</a> · <a href="#" style="color:#155e75;text-decoration:none" data-i18n="prof.rgpd.terms">Conditions générales (CGU)</a></div>
       </div>
 
     </div>
@@ -455,7 +357,7 @@
   <div class="ov" id="confirmModal">
     <div class="ov-card">
       <h5 data-i18n="prof.confirm.title">Changer de pays de service ?</h5>
-      <p class="small text-muted" data-i18n="prof.confirm.body">Changer de pays de service mettra à jour les praticiens et la devise affichés sur la plateforme, et réinitialisera votre région et votre ville (à re-sélectionner). Vos rendez-vous existants ne sont pas affectés.</p>
+      <p class="small text-muted" data-i18n="prof.confirm.body">Changer de pays de service mettra à jour les praticiens et la devise affichés sur la plateforme. Vos rendez-vous existants ne sont pas affectés.</p>
       <div class="d-flex gap-2 justify-content-end mt-3">
         <button class="btn-cancel" onclick="closeConfirm()" data-i18n="prof.btn.cancel">Annuler</button>
         <button class="btn-save" onclick="okConfirm()" data-i18n="prof.confirm.ok">Confirmer le changement</button>
@@ -478,10 +380,6 @@
         const c = document.getElementById('emailChip'), v = document.getElementById('emailVerifyBtn');
         if (c && !c.classList.contains('chip-ok')) c.classList.toggle('d-none', editing);
         if (v) v.classList.toggle('d-none', editing);
-      }
-      if (sec === 'loc') {
-        if (editing) updateLocCascadeHelp();
-        else { const r = document.getElementById('locCascadeRow'); if (r) r.style.display = 'none'; }
       }
     }
     function editSection(sec) { if (sec === 'loc') { syncLangFromView(); initLocCombos(); } if (sec === 'coord') { initCoordPhone(); initCoordEmail(); } if (sec === 'pwd') initPwdEdit(); setMode(sec, true); if (sec === 'emerg') toggleRelOther(); }
@@ -510,14 +408,6 @@
       if (sec === 'emerg') applyEmergPhone();
       if (sec === 'coord') applyCoordPhone();
       setMode(sec, false);
-      toast();
-    }
-    // Préférences de notification : enregistre + avertit si les DEUX rappels sont coupés (autonomie respectée, simple alerte)
-    function onNotifChange() {
-      const sms = document.getElementById('notifSms').checked;
-      const email = document.getElementById('notifEmail').checked;
-      const warn = document.getElementById('notifBothOffWarn');
-      if (warn) warn.classList.toggle('d-none', sms || email);
       toast();
     }
     function toggleRelOther() {
@@ -667,25 +557,6 @@
       renderLocComboControl(which);
       closeLocCombo(which);
       if (which === 'region') onLocRegionChange();
-      updateLocCascadeHelp();
-    }
-    // Bandeau d'aide « re-sélectionnez région + ville » : visible en édition tant que l'une des deux manque.
-    function locEditing() { const a = document.getElementById('loc-actions'); return a && !a.classList.contains('d-none'); }
-    function updateLocCascadeHelp(opts) {
-      const row = document.getElementById('locCascadeRow');
-      if (!row) return;
-      const incomplete = !locCombo.region.value || !locCombo.city.value;
-      row.style.display = (locEditing() && incomplete) ? '' : 'none';
-      const err = !!(opts && opts.error);
-      const key = err ? 'prof.loc.cascade_err' : 'prof.loc.cascade_help';
-      const msg = document.getElementById('locCascadeMsg');
-      const icon = document.getElementById('locCascadeIcon');
-      const help = document.getElementById('locCascadeHelp');
-      msg.setAttribute('data-i18n', key);
-      msg.textContent = (window.NazI18n ? NazI18n.t(key) : '') || (err ? 'Veuillez sélectionner votre région et votre ville avant d’enregistrer.' : 'Sélectionnez votre région et votre ville pour ce pays.');
-      help.classList.toggle('text-danger', err);
-      icon.className = (err ? 'fa fa-circle-exclamation' : 'fa fa-circle-info') + ' me-1';
-      icon.style.color = err ? '#e74c3c' : '';
     }
     function addLocComboOther(which) {
       const inp = document.getElementById(which + 'Other');
@@ -711,7 +582,6 @@
       renderLocComboControl('region');
       closeLocCombo('region');
       onLocRegionChange();
-      updateLocCascadeHelp();
     }
     // À l'entrée en édition : initialise les comboboxes depuis les vues actuelles + peuple les options
     function initLocCombos() {
@@ -733,12 +603,8 @@
     function applyLocCombos() {
       const rv = document.getElementById('loc-region-view');
       const cv = document.getElementById('loc-city-view');
-      // Toujours refléter l'état des combos : si Région/Ville ont été réinitialisées
-      // (ex. changement de Pays de service), la vue doit être vidée — pas conserver l'ancienne valeur.
       if (locCombo.region.value) { rv.textContent = locCombo.region.value; rv.classList.remove('muted'); }
-      else { rv.textContent = nrText(); rv.classList.add('muted'); }
       if (locCombo.city.value) { cv.textContent = locCombo.city.value; cv.classList.remove('muted'); }
-      else { cv.textContent = nrText(); cv.classList.add('muted'); }
       closeLocCombo('region'); closeLocCombo('city');
     }
     document.addEventListener('click', e => {
@@ -846,14 +712,8 @@
       setMode('pwd', false);
       toast('prof.pwd.toast');
     }
-    // Localisation: Région + Ville obligatoires ; dialogue d'impact uniquement si Pays changé
+    // Localisation: OTP only if Pays de service changed
     function saveLoc() {
-      // Région + Ville obligatoires (notamment après un changement de pays qui les réinitialise)
-      if (!locCombo.region.value || !locCombo.city.value) {
-        updateLocCascadeHelp({ error: true });
-        openLocCombo(null, !locCombo.region.value ? 'region' : 'city');
-        return;
-      }
       const sel = document.getElementById('loc-country-input');
       const changed = sel.value !== document.getElementById('loc-country-view').textContent.trim();
       if (changed) { pendingApply = () => applySection('loc'); openConfirm(); }

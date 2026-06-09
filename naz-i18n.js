@@ -70,33 +70,34 @@
     }
   }
 
+  // Sélecteur de langue = liste déroulante (extensible : ajouter une <option> par langue).
+  // Affiché uniquement sur les pages qui l'activent via <body data-i18n-toggle>.
+  // Les autres pages appliquent la langue mémorisée sans afficher le sélecteur.
+  const I18N_LANGS = [ { code: 'fr', label: 'Français' }, { code: 'en', label: 'English' } ];
   function injectToggle() {
     if (document.getElementById('fueni-lang-toggle')) return;
-    // Toggle shown only on pages that opt-in via <body data-i18n-toggle>.
-    // Other pages still apply the stored language preference but hide the toggle.
     if (!document.body || !document.body.hasAttribute('data-i18n-toggle')) return;
     const wrap = document.createElement('div');
     wrap.id = 'fueni-lang-toggle';
-    wrap.setAttribute('role', 'group');
-    wrap.setAttribute('aria-label', 'Language switcher / Sélecteur de langue');
-    wrap.innerHTML = '<button data-lang="fr" type="button" aria-label="Français">FR</button><button data-lang="en" type="button" aria-label="English">EN</button>';
+    const sel = document.createElement('select');
+    sel.id = 'fueni-lang-select';
+    sel.setAttribute('aria-label', 'Langue / Language');
+    sel.innerHTML = I18N_LANGS.map(l => '<option value="' + l.code + '">🌐 ' + l.label + '</option>').join('');
+    sel.value = getLang();
+    sel.addEventListener('change', () => setLang(sel.value));
+    wrap.appendChild(sel);
     document.body.appendChild(wrap);
-    wrap.querySelectorAll('button').forEach(btn => {
-      btn.addEventListener('click', () => setLang(btn.getAttribute('data-lang')));
-    });
 
     if (!document.getElementById('fueni-lang-toggle-style')) {
       const style = document.createElement('style');
       style.id = 'fueni-lang-toggle-style';
-      style.textContent = '#fueni-lang-toggle{position:fixed;top:48px;right:14px;z-index:100000;display:flex;gap:2px;background:rgba(255,255,255,.96);border:1px solid #e2e8f0;border-radius:18px;padding:3px;box-shadow:0 3px 12px rgba(0,0,0,.12);font:600 11px/1 system-ui,-apple-system,sans-serif}#fueni-lang-toggle button{border:0;background:transparent;color:#475569;padding:6px 12px;border-radius:14px;cursor:pointer;transition:all .18s;letter-spacing:.4px}#fueni-lang-toggle button.active{background:#155e75;color:#fff}#fueni-lang-toggle button:hover:not(.active){background:#e2e8f0}@media (max-width:480px){#fueni-lang-toggle{top:auto;bottom:14px;right:14px}}';
+      style.textContent = '#fueni-lang-toggle{position:fixed;top:48px;right:14px;z-index:100000;background:rgba(255,255,255,.96);border:1px solid #e2e8f0;border-radius:18px;box-shadow:0 3px 12px rgba(0,0,0,.12);padding:2px 4px}#fueni-lang-toggle select{border:0;background:transparent;color:#155e75;font:600 12px/1.4 system-ui,-apple-system,sans-serif;padding:6px 8px;cursor:pointer;outline:none}@media (max-width:480px){#fueni-lang-toggle{top:auto;bottom:14px;right:14px}}';
       document.head.appendChild(style);
     }
   }
   function updateToggleUI() {
-    const lang = getLang();
-    document.querySelectorAll('#fueni-lang-toggle button').forEach(btn => {
-      btn.classList.toggle('active', btn.getAttribute('data-lang') === lang);
-    });
+    const sel = document.getElementById('fueni-lang-select');
+    if (sel) sel.value = getLang();
   }
 
   // ════════════════════════════════════════════════════════════════════════════
@@ -111,6 +112,11 @@
       'prof.page_title': 'FUENI — Mon profil',
       'prof.proto_bar': 'Espace Patient · Mon profil',
       'prof.proto_home': '← Accueil',
+      'sec.page_title': 'FUENI — Connexion & sécurité',
+      'sec.proto_bar': 'Espace Patient · Connexion & sécurité',
+      'sec.title': 'Connexion & sécurité',
+      'sec.subtitle': 'Gérez vos identifiants de connexion, votre mot de passe et vos données.',
+      'sec.legend_note': '— e-mail / téléphone par code (OTP), mot de passe par mot de passe actuel.',
       'prof.title': 'Mon profil',
       'prof.subtitle': 'Consultez et mettez à jour vos informations personnelles.',
       'prof.completion.label': 'Profil complété à',
@@ -119,6 +125,7 @@
       'prof.email_banner.verify': 'Vérifier maintenant',
       'prof.legend.direct': 'Modifiable directement',
       'prof.legend.code': 'Confirmation par code (OTP)',
+      'prof.legend.stepup': 'Confirmation renforcée',
       'prof.legend.support': 'Via le support',
       'prof.identity.title': 'Identité',
       'prof.identity.note': "Ces informations d'identité légale ne sont pas modifiables en ligne. Contactez le support pour toute correction.",
@@ -134,10 +141,27 @@
       'prof.coord.verified': 'Vérifié',
       'prof.coord.phone': 'Téléphone',
       'prof.coord.password': 'Mot de passe',
+      'prof.coord.email_verified_toast': 'Adresse e-mail vérifiée ✓',
+      'prof.coord.email_err_format': 'Adresse e-mail invalide.',
+      'prof.coord.email_err_taken': 'Cette adresse est déjà utilisée.',
+      'prof.coord.email_help': 'Un code de confirmation sera envoyé à la <strong>nouvelle</strong> adresse pour la vérifier.',
+      'prof.coord.phone_help': 'Un code SMS sera envoyé au <strong>nouveau</strong> numéro pour le vérifier.',
+      'prof.pwd.title': 'Mot de passe',
+      'prof.pwd.badge': 'Confirmation par mot de passe actuel',
+      'prof.pwd.change': 'Changer',
+      'prof.pwd.current': 'Mot de passe actuel',
+      'prof.pwd.current_err': 'Mot de passe actuel incorrect.',
+      'prof.pwd.new': 'Nouveau mot de passe',
+      'prof.pwd.new_err': 'Le nouveau mot de passe ne respecte pas les critères.',
+      'prof.pwd.help': 'Pour changer votre mot de passe, saisissez d’abord votre mot de passe actuel.',
+      'prof.pwd.toggle_aria': 'Afficher le mot de passe',
+      'prof.pwd.toast': 'Mot de passe modifié ✓ — un e-mail de confirmation vous a été envoyé.',
       'prof.loc.title': 'Localisation & langue',
       'prof.loc.country': 'Pays de service',
       'prof.loc.region': 'Région / Province / Département',
       'prof.loc.region_ph': 'Sélectionner…',
+      'prof.loc.cascade_help': 'Sélectionnez votre région et votre ville pour ce pays.',
+      'prof.loc.cascade_err': 'Veuillez sélectionner votre région et votre ville avant d’enregistrer.',
       'prof.loc.region_search': 'Rechercher…',
       'prof.loc.region_other_ph': 'Autre (préciser)',
       'prof.loc.combo_use_other': 'Aucune option — saisissez la vôtre dans « Autre » ci-dessous.',
@@ -149,7 +173,7 @@
       'prof.loc.lang': 'Langue de communication',
       'prof.loc.lang_fr': 'Français',
       'prof.loc.spoken': 'Langues parlées',
-      'prof.loc.spoken_hint': "Sélectionnez toutes les langues que vous parlez. Utilisé pour la recherche et la mise en relation avec un praticien (fonctionnalité à venir).",
+      'prof.loc.spoken_hint': 'Sélectionnez toutes les langues que vous parlez.',
       'prof.loc.spoken_ph': 'Ajouter une langue…',
       'prof.loc.spoken_search': 'Rechercher une langue…',
       'prof.loc.spoken_other_ph': 'Autre langue (préciser)…',
@@ -166,6 +190,7 @@
       'prof.emerg.phone': "Téléphone d'urgence",
       'prof.notif.title': 'Préférences de notification',
       'prof.notif.note': 'Concerne les rappels de rendez-vous. Les notifications essentielles (sécurité, confirmations) restent toujours actives.',
+      'prof.notif.both_off': "Vous ne recevrez plus aucun rappel de rendez-vous — vous risquez d'oublier vos consultations.",
       'prof.notif.sms': 'Rappels de rendez-vous par <strong>SMS</strong>',
       'prof.notif.email': 'Rappels de rendez-vous par <strong>e-mail</strong>',
       'prof.rgpd.title': 'Mon compte & mes données',
@@ -185,9 +210,13 @@
       'prof.otp.desc_email': "Un code à 6 chiffres a été envoyé pour vérifier votre adresse e-mail.",
       'prof.otp.demo': 'Code de démonstration : 123456',
       'prof.otp.err': 'Code incorrect. Réessayez.',
+      'prof.otp.resend_q': 'Pas reçu ?',
+      'prof.otp.resend': 'Renvoyer le code',
+      'prof.otp.resend_in': 'disponible dans',
+      'prof.otp.resent': 'Nouveau code envoyé ✓',
       'prof.otp.confirm': 'Confirmer',
       'prof.confirm.title': 'Changer de pays de service ?',
-      'prof.confirm.body': "Changer de pays de service mettra à jour les praticiens et la devise affichés sur la plateforme. Vos rendez-vous existants ne sont pas affectés.",
+      'prof.confirm.body': "Changer de pays de service mettra à jour les praticiens et la devise affichés sur la plateforme, et réinitialisera votre région et votre ville (à re-sélectionner). Vos rendez-vous existants ne sont pas affectés.",
       'prof.confirm.ok': 'Confirmer le changement',
       'prof.del.title': 'Supprimer mon compte ?',
       'prof.del.body': 'Votre compte sera désactivé immédiatement et définitivement supprimé après 30 jours. Vous pouvez annuler à tout moment durant ce délai en vous reconnectant. Vos documents médicaux restent conservés par vos praticiens conformément à la réglementation.',
@@ -399,6 +428,7 @@
       'login.signup_link': 'S\'inscrire',
       'login.secure': 'Connexion chiffrée et sécurisée',
       'login.reset_success': 'Mot de passe réinitialisé. Connectez-vous avec votre nouveau mot de passe.',
+      'login.logout_success': 'Vous avez été déconnecté.',
       'login.err.empty': 'Veuillez saisir votre identifiant et votre mot de passe.',
       'login.err.invalid': 'Identifiant ou mot de passe incorrect.',
       'login.demo_hint': '🔑 Démo : sandrine@fueni.com · mot de passe MotDePasse123!',
@@ -417,6 +447,7 @@
       'reset.id.ph': 'E-mail ou téléphone',
       'reset.id.continue': 'Continuer',
       'reset.id.channel_note': 'Le code sera envoyé par SMS (téléphone) ou par e-mail, selon l\'identifiant saisi.',
+      'reset.id.err_format': 'Format non reconnu — saisissez un e-mail ou un numéro de téléphone valide.',
       'reset.ch.intro': 'Où souhaitez-vous recevoir votre code à 6 chiffres ?',
       'reset.ch.sms': 'Par SMS',
       'reset.ch.email': 'Par e-mail',
@@ -424,7 +455,8 @@
       'reset.ch.note': 'Votre téléphone est votre canal vérifié — toujours disponible.',
       'reset.ch.send': 'Envoyer le code',
       'reset.back': 'Retour',
-      'reset.code.intro': 'Saisissez le code à 6 chiffres envoyé à',
+      'reset.code.intro': 'Si un compte est associé à cet identifiant, un code à 6 chiffres a été envoyé à',
+      'reset.code.other_id': 'Essayer un autre identifiant',
       'reset.code.resend_in': 'Renvoyer le code dans',
       'reset.code.resend': 'Renvoyer le code',
       'reset.code.not_received': 'Vous n\'avez pas reçu le code ?',
@@ -472,10 +504,11 @@
       'otp.steps.welcome': 'Bienvenue',
       'otp.title': 'Vérification de votre numéro',
       'otp.subtitle_html': 'Un code à 6 chiffres a été envoyé par SMS au <strong id="maskedPhone">+221 ** *** ** 67</strong>',
+      'otp.validity_note': 'Votre code reste valide 5 minutes.',
       'otp.demo_hint_html': '<i class="fa fa-flask me-1"></i><strong>Démo :</strong> saisissez <code>123456</code> pour valider · n\'importe quel autre code → état d\'erreur',
       'otp.lockout_html': '<i class="fa fa-lock me-2"></i><strong>Trop de tentatives.</strong> Votre code est désactivé. Demandez un nouveau code <span id="lockoutHint">dès que le renvoi est disponible</span>.',
       'otp.expired_html': '<i class="fa fa-clock-rotate-left me-2"></i><strong>Code expiré.</strong> Cliquez sur « Renvoyer le code » pour en recevoir un nouveau.',
-      'otp.resend_html': 'Pas reçu ? <span id="resendLink" class="resend-link disabled">Renvoyer le code</span> <span id="resendTimerWrap">· disponible dans <strong id="resendTimer">00:30</strong></span>',
+      'otp.resend_html': 'Pas reçu ? <span id="resendLink" class="resend-link disabled">Renvoyer le code</span> <span id="resendTimerWrap">· disponible dans <strong id="resendTimer">01:00</strong></span>',
       'otp.verify_btn_html': 'Vérifier <i class="fa fa-arrow-right ms-2"></i>',
       'otp.edit_info': 'Modifier le numéro',
       'otp.tester_summary_html': '<i class="fa fa-vial me-1"></i> Tester les états (raccourcis démo)',
@@ -531,6 +564,7 @@
       'dash.sidebar.my_docs': 'Mes documents',
       'dash.sidebar.section_account': 'Mon compte',
       'dash.sidebar.my_profile': 'Mon profil',
+      'dash.sidebar.security': 'Connexion & sécurité',
       'dash.sidebar.notifications': 'Notifications',
       'dash.sidebar.rights': 'Mes droits et données',
       'dash.sidebar.section_help': 'Aide',
@@ -569,6 +603,11 @@
       'common.home': 'Home',
       'prof.page_title': 'FUENI — My profile',
       'prof.proto_bar': 'Patient area · My profile',
+      'sec.page_title': 'FUENI — Sign-in & security',
+      'sec.proto_bar': 'Patient area · Sign-in & security',
+      'sec.title': 'Sign-in & security',
+      'sec.subtitle': 'Manage your sign-in details, password and data.',
+      'sec.legend_note': '— email / phone by code (OTP), password by current password.',
       'prof.proto_home': '← Home',
       'prof.title': 'My profile',
       'prof.subtitle': 'View and update your personal information.',
@@ -578,6 +617,7 @@
       'prof.email_banner.verify': 'Verify now',
       'prof.legend.direct': 'Editable directly',
       'prof.legend.code': 'Confirmation by code (OTP)',
+      'prof.legend.stepup': 'Step-up confirmation',
       'prof.legend.support': 'Via support',
       'prof.identity.title': 'Identity',
       'prof.identity.note': 'These legal-identity details cannot be edited online. Contact support for any correction.',
@@ -593,10 +633,27 @@
       'prof.coord.verified': 'Verified',
       'prof.coord.phone': 'Phone',
       'prof.coord.password': 'Password',
+      'prof.coord.email_verified_toast': 'Email address verified ✓',
+      'prof.coord.email_err_format': 'Invalid email address.',
+      'prof.coord.email_err_taken': 'This address is already in use.',
+      'prof.coord.email_help': 'A confirmation code will be sent to the <strong>new</strong> address to verify it.',
+      'prof.coord.phone_help': 'An SMS code will be sent to the <strong>new</strong> number to verify it.',
+      'prof.pwd.title': 'Password',
+      'prof.pwd.badge': 'Confirmed with current password',
+      'prof.pwd.change': 'Change',
+      'prof.pwd.current': 'Current password',
+      'prof.pwd.current_err': 'Current password is incorrect.',
+      'prof.pwd.new': 'New password',
+      'prof.pwd.new_err': 'The new password does not meet the requirements.',
+      'prof.pwd.help': 'To change your password, first enter your current password.',
+      'prof.pwd.toggle_aria': 'Show password',
+      'prof.pwd.toast': 'Password changed ✓ — a confirmation email has been sent.',
       'prof.loc.title': 'Location & language',
       'prof.loc.country': 'Service country',
       'prof.loc.region': 'Region / Province / Department',
       'prof.loc.region_ph': 'Select…',
+      'prof.loc.cascade_help': 'Select your region and city for this country.',
+      'prof.loc.cascade_err': 'Please select your region and city before saving.',
       'prof.loc.region_search': 'Search…',
       'prof.loc.region_other_ph': 'Other (specify)',
       'prof.loc.combo_use_other': 'No option — enter yours in “Other” below.',
@@ -608,7 +665,7 @@
       'prof.loc.lang': 'Communication language',
       'prof.loc.lang_fr': 'French',
       'prof.loc.spoken': 'Spoken languages',
-      'prof.loc.spoken_hint': 'Select all the languages you speak. Used for search and matching with a practitioner (upcoming feature).',
+      'prof.loc.spoken_hint': 'Select all the languages you speak.',
       'prof.loc.spoken_ph': 'Add a language…',
       'prof.loc.spoken_search': 'Search a language…',
       'prof.loc.spoken_other_ph': 'Other language (specify)…',
@@ -625,6 +682,7 @@
       'prof.emerg.phone': 'Emergency phone',
       'prof.notif.title': 'Notification preferences',
       'prof.notif.note': 'Applies to appointment reminders. Essential notifications (security, confirmations) always stay on.',
+      'prof.notif.both_off': 'You will no longer receive any appointment reminders — you may forget your appointments.',
       'prof.notif.sms': 'Appointment reminders by <strong>SMS</strong>',
       'prof.notif.email': 'Appointment reminders by <strong>email</strong>',
       'prof.rgpd.title': 'My account & my data',
@@ -644,9 +702,13 @@
       'prof.otp.desc_email': 'A 6-digit code was sent to verify your email address.',
       'prof.otp.demo': 'Demo code: 123456',
       'prof.otp.err': 'Incorrect code. Try again.',
+      'prof.otp.resend_q': 'Didn\'t receive it?',
+      'prof.otp.resend': 'Resend code',
+      'prof.otp.resend_in': 'available in',
+      'prof.otp.resent': 'New code sent ✓',
       'prof.otp.confirm': 'Confirm',
       'prof.confirm.title': 'Change service country?',
-      'prof.confirm.body': 'Changing your service country will update the practitioners and currency shown on the platform. Your existing appointments are not affected.',
+      'prof.confirm.body': 'Changing your service country will update the practitioners and currency shown on the platform, and reset your region and city (to be re-selected). Your existing appointments are not affected.',
       'prof.confirm.ok': 'Confirm change',
       'prof.del.title': 'Delete my account?',
       'prof.del.body': 'Your account will be deactivated immediately and permanently deleted after 30 days. You can cancel at any time during this period by signing back in. Your medical records are retained by your practitioners in accordance with regulations.',
@@ -858,6 +920,7 @@
       'login.signup_link': 'Sign up',
       'login.secure': 'Encrypted and secure connection',
       'login.reset_success': 'Password reset. Sign in with your new password.',
+      'login.logout_success': 'You have been logged out.',
       'login.err.empty': 'Please enter your identifier and password.',
       'login.err.invalid': 'Incorrect identifier or password.',
       'login.demo_hint': '🔑 Demo: sandrine@fueni.com · password MotDePasse123!',
@@ -876,6 +939,7 @@
       'reset.id.ph': 'Email or phone number',
       'reset.id.continue': 'Continue',
       'reset.id.channel_note': 'The code will be sent by SMS (phone) or email, depending on the identifier you enter.',
+      'reset.id.err_format': 'Format not recognised — enter a valid email or phone number.',
       'reset.ch.intro': 'Where would you like to receive your 6-digit code?',
       'reset.ch.sms': 'By SMS',
       'reset.ch.email': 'By email',
@@ -883,7 +947,8 @@
       'reset.ch.note': 'Your phone is your verified channel — always available.',
       'reset.ch.send': 'Send the code',
       'reset.back': 'Back',
-      'reset.code.intro': 'Enter the 6-digit code sent to',
+      'reset.code.intro': 'If an account matches this identifier, a 6-digit code has been sent to',
+      'reset.code.other_id': 'Try another identifier',
       'reset.code.resend_in': 'Resend the code in',
       'reset.code.resend': 'Resend the code',
       'reset.code.not_received': 'Didn\'t receive the code?',
@@ -931,10 +996,11 @@
       'otp.steps.welcome': 'Welcome',
       'otp.title': 'Phone number verification',
       'otp.subtitle_html': 'A 6-digit code has been sent by SMS to <strong id="maskedPhone">+221 ** *** ** 67</strong>',
+      'otp.validity_note': 'Your code stays valid for 5 minutes.',
       'otp.demo_hint_html': '<i class="fa fa-flask me-1"></i><strong>Demo:</strong> enter <code>123456</code> to validate · any other code → error state',
       'otp.lockout_html': '<i class="fa fa-lock me-2"></i><strong>Too many attempts.</strong> This code is now disabled. Request a new code <span id="lockoutHint">as soon as resend is available</span>.',
       'otp.expired_html': '<i class="fa fa-clock-rotate-left me-2"></i><strong>Code expired.</strong> Click "Resend code" to get a new one.',
-      'otp.resend_html': 'Didn\'t receive it? <span id="resendLink" class="resend-link disabled">Resend code</span> <span id="resendTimerWrap">· available in <strong id="resendTimer">00:30</strong></span>',
+      'otp.resend_html': 'Didn\'t receive it? <span id="resendLink" class="resend-link disabled">Resend code</span> <span id="resendTimerWrap">· available in <strong id="resendTimer">01:00</strong></span>',
       'otp.verify_btn_html': 'Verify <i class="fa fa-arrow-right ms-2"></i>',
       'otp.edit_info': 'Edit number',
       'otp.tester_summary_html': '<i class="fa fa-vial me-1"></i> Test states (demo shortcuts)',
@@ -990,6 +1056,7 @@
       'dash.sidebar.my_docs': 'My documents',
       'dash.sidebar.section_account': 'My account',
       'dash.sidebar.my_profile': 'My profile',
+      'dash.sidebar.security': 'Sign-in & security',
       'dash.sidebar.notifications': 'Notifications',
       'dash.sidebar.rights': 'My rights and data',
       'dash.sidebar.section_help': 'Help',

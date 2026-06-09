@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="x-apple-disable-message-reformatting">
+  <title>FUENI</title>
+  <!--[if mso]>
+  <noscript><xml><o:OfficeDocumentSettings><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml></noscript>
+  <![endif]-->
+  <style>
+    /* ── Resets clients ── */
+    body, table, td, a { -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
+    table, td { mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
+    img { -ms-interpolation-mode: bicubic; border: 0; height: auto; line-height: 100%; outline: none; text-decoration: none; display: block; }
+    body { margin: 0 !important; padding: 0 !important; width: 100% !important; }
+    a { color: #2C6CB0; }
+    /* ── Mobile ── */
+    @media screen and (max-width: 620px) {
+      .container { width: 100% !important; border-radius: 0 !important; }
+      .px { padding-left: 22px !important; padding-right: 22px !important; }
+      .stack { display: block !important; width: 100% !important; }
+      .stack + .stack { margin-top: 12px !important; }
+      h1 { font-size: 21px !important; }
+    }
+  </style>
+</head>
+<!--
+  ╔══════════════════════════════════════════════════════════════════════════╗
+  ║  FUENI — MODÈLE D'E-MAIL TRANSACTIONNEL (réutilisable)                      ║
+  ║                                                                            ║
+  ║  Usage : conserver l'ossature (en-tête + pied + styles) et ne remplacer    ║
+  ║  QUE la zone marquée « CONTENU » entre les bannières de commentaire.       ║
+  ║  Variables : {{firstName}}, {{supportEmail}}, {{appLink}}, {{year}}, etc.  ║
+  ║                                                                            ║
+  ║  ⚠ LOGO : remplacer `assets/fueni-lockup-horizontal.svg` par une           ║
+  ║    image PNG hébergée (URL absolue, ex. {{logoUrl}}, ~300 px de large,      ║
+  ║    export @2x) — le SVG n'est PAS rendu par Gmail / Outlook.               ║
+  ║  Couleurs (logo) : navy #0F2444 · bleu #2C6CB0 · bleu clair #4FA8E0 ·       ║
+  ║    corail #FF5A3C · fond #F4F6F8.                                           ║
+  ║  Largeur 600 px · styles INLINE (le <style> ci-dessus est best-effort).    ║
+  ╚══════════════════════════════════════════════════════════════════════════╝
+-->
+<body style="margin:0; padding:0; background-color:#f4f6f8;">
+
+  <!-- Pré-en-tête masqué (aperçu boîte de réception) -->
+  <div style="display:none; max-height:0; overflow:hidden; mso-hide:all; font-size:1px; line-height:1px; color:#f4f6f8; opacity:0;">
+    {{preheader}}&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;
+  </div>
+
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#f4f6f8;">
+    <tr>
+      <td align="center" style="padding:28px 12px;">
+
+        <!--[if mso]><table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0"><tr><td><![endif]-->
+        <table role="presentation" class="container" width="600" cellpadding="0" cellspacing="0" border="0" style="width:600px; max-width:600px; background-color:#ffffff; border-radius:14px; overflow:hidden; box-shadow:0 1px 4px rgba(15,36,68,0.06);">
+
+          <!-- ░░ Barre d'accent (navy + liseré corail) ░░ -->
+          <tr><td style="height:4px; line-height:4px; font-size:0; background-color:#0F2444;">&nbsp;</td></tr>
+          <tr><td style="height:3px; line-height:3px; font-size:0; background-color:#FF5A3C;">&nbsp;</td></tr>
+
+          <!-- ░░ En-tête / logo ░░ -->
+          <tr>
+            <td align="center" style="padding:30px 24px 6px 24px;">
+              <!-- PROD : remplacer par <img src="{{logoUrl}}" width="150" alt="FUENI" ...> (PNG hébergé) -->
+              <img src="assets/fueni-lockup-horizontal.svg" width="150" alt="FUENI" style="display:block; width:150px; max-width:150px; height:auto;">
+            </td>
+          </tr>
+
+          <!-- ════════════════════════════════════════════════════════════════ -->
+          <!-- ░░░░░░░░░░  DÉBUT CONTENU — à remplacer par notification  ░░░░░░░░ -->
+          <!-- ════════════════════════════════════════════════════════════════ -->
+          <tr>
+            <td class="px" style="padding:18px 40px 8px 40px; font-family:'Segoe UI',Arial,Helvetica,sans-serif; color:#334155;">
+
+              <h1 style="margin:0 0 14px 0; font-family:'Segoe UI',Arial,Helvetica,sans-serif; font-weight:800; font-size:23px; line-height:1.25; color:#0F2444;">
+                Bienvenue sur FUENI 🎉
+              </h1>
+
+              <p style="margin:0 0 14px 0; font-size:16px; line-height:1.6; color:#334155;">
+                Bonjour <strong>{{firstName}}</strong>,
+              </p>
+
+              <p style="margin:0 0 16px 0; font-size:16px; line-height:1.6; color:#334155;">
+                Votre compte patient a bien été créé et il est <strong>déjà actif</strong>.
+                Vous pouvez dès maintenant vous connecter et prendre rendez-vous.
+              </p>
+
+              <!-- ▸ Encadré « info / recommandé » (réutilisable) -->
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:6px 0 20px 0;">
+                <tr>
+                  <td style="background-color:#eef4fb; border-left:4px solid #2C6CB0; border-radius:8px; padding:14px 16px; font-size:14px; line-height:1.55; color:#1f3a5f;">
+                    <strong>✉️ Vérifiez votre adresse e-mail</strong><br>
+                    Pour recevoir vos confirmations de rendez-vous par e-mail et renforcer
+                    la sécurité de votre compte. <em>(Facultatif — votre compte fonctionne déjà sans cette étape.)</em>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- ▸ Bouton CTA principal (bulletproof, fallback Outlook VML) -->
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="margin:4px auto 22px auto;">
+                <tr>
+                  <td align="center" bgcolor="#0F2444" style="border-radius:24px;">
+                    <!--[if mso]>
+                    <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="{{appLink}}" style="height:46px;v-text-anchor:middle;width:260px;" arcsize="52%" stroke="f" fillcolor="#0F2444">
+                    <w:anchorlock/><center style="color:#ffffff;font-family:Arial,sans-serif;font-size:15px;font-weight:bold;">Accéder à mon espace</center>
+                    </v:roundrect>
+                    <![endif]-->
+                    <!--[if !mso]><!-- -->
+                    <a href="{{appLink}}" style="display:inline-block; padding:13px 32px; font-family:'Segoe UI',Arial,Helvetica,sans-serif; font-size:15px; font-weight:700; color:#ffffff; text-decoration:none; border-radius:24px; background-color:#0F2444;">
+                      Accéder à mon espace&nbsp;→
+                    </a>
+                    <!--<![endif]-->
+                  </td>
+                </tr>
+              </table>
+
+            </td>
+          </tr>
+          <!-- ════════════════════════════════════════════════════════════════ -->
+          <!-- ░░░░░░░░░░░░░░░░  FIN CONTENU  ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ -->
+          <!-- ════════════════════════════════════════════════════════════════ -->
+
+          <!-- ░░ Séparateur ░░ -->
+          <tr><td class="px" style="padding:0 40px;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td style="border-top:1px solid #e7ecf2; line-height:1px; font-size:0;">&nbsp;</td></tr></table></td></tr>
+
+          <!-- ░░ Aide ░░ -->
+          <tr>
+            <td class="px" style="padding:18px 40px 6px 40px; font-family:'Segoe UI',Arial,Helvetica,sans-serif; font-size:13px; line-height:1.6; color:#64748b;">
+              Besoin d'aide ? Écrivez-nous à <a href="mailto:{{supportEmail}}" style="color:#2C6CB0; text-decoration:none;">{{supportEmail}}</a>.
+            </td>
+          </tr>
+
+          <!-- ░░ Pied de page ░░ -->
+          <tr>
+            <td class="px" style="padding:18px 40px 28px 40px; background-color:#f0f3f7; font-family:'Segoe UI',Arial,Helvetica,sans-serif; font-size:12px; line-height:1.6; color:#7a8aa0;">
+              <p style="margin:0 0 8px 0;">
+                🔒 <strong>FUENI</strong> — Données hébergées chez un Hébergeur de Données de Santé (HDS), conforme au RGPD.
+              </p>
+              <p style="margin:0 0 8px 0;">
+                Vous recevez cet e-mail car un compte est associé à cette adresse sur FUENI.
+                <br>Aucune donnée de santé n'est transmise par e-mail.
+              </p>
+              <p style="margin:0;">
+                <a href="{{privacyUrl}}" style="color:#64748b; text-decoration:underline;">Politique de confidentialité</a> ·
+                <a href="{{termsUrl}}" style="color:#64748b; text-decoration:underline;">Mentions légales</a> ·
+                <a href="{{supportUrl}}" style="color:#64748b; text-decoration:underline;">Aide</a>
+              </p>
+              <p style="margin:12px 0 0 0; color:#9aa8bd;">© FUENI {{year}}</p>
+            </td>
+          </tr>
+
+        </table>
+        <!--[if mso]></td></tr></table><![endif]-->
+
+      </td>
+    </tr>
+  </table>
+
+  <!--
+  ════════════════════════════════════════════════════════════════════════════
+   COMPOSANTS RÉUTILISABLES — copier dans la zone CONTENU selon la notification
+  ════════════════════════════════════════════════════════════════════════════
+
+  ▸ BLOC CODE OTP (e-mails de vérification / réinitialisation) — code à 6 chiffres
+  ----------------------------------------------------------------------------
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="margin:8px auto 18px auto;">
+    <tr><td align="center" bgcolor="#0F2444" style="border-radius:10px; padding:14px 28px; font-family:'Courier New',monospace; font-size:30px; font-weight:700; letter-spacing:10px; color:#ffffff;">
+      {{code}}
+    </td></tr>
+  </table>
+  <p style="margin:0 0 16px 0; text-align:center; font-size:13px; color:#64748b;">Ce code est valable 5 minutes. Ne le partagez avec personne.</p>
+
+  ▸ ENCADRÉ D'ALERTE / SÉCURITÉ (corail) — ex. « mot de passe modifié »
+  ----------------------------------------------------------------------------
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:6px 0 18px 0;">
+    <tr><td style="background-color:#fff1ee; border-left:4px solid #FF5A3C; border-radius:8px; padding:14px 16px; font-size:14px; line-height:1.55; color:#7a2f1e;">
+      ⚠️ Si vous n'êtes PAS à l'origine de cette action, contactez immédiatement notre support : {{supportEmail}}.
+    </td></tr>
+  </table>
+
+  ▸ BOUTON SECONDAIRE (contour) — action moins prioritaire
+  ----------------------------------------------------------------------------
+  <a href="{{url}}" style="display:inline-block; padding:12px 28px; font-family:Arial,sans-serif; font-size:14px; font-weight:700; color:#0F2444; text-decoration:none; border-radius:24px; border:2px solid #0F2444;">{{label}}</a>
+
+  ════════════════════════════════════════════════════════════════════════════
+  -->
+
+</body>
+</html>

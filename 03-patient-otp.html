@@ -80,9 +80,10 @@
         <i class="fa fa-mobile-screen-button sms-illustration"></i>
       </div>
       <h5 class="fw-bold text-center mb-1" data-i18n="otp.title">Vérification de votre numéro</h5>
-      <p class="text-muted small text-center mb-3" data-i18n-html="otp.subtitle_html">
+      <p class="text-muted small text-center mb-1" data-i18n-html="otp.subtitle_html">
         Un code à 6 chiffres a été envoyé par SMS au <strong id="maskedPhone">+221 ** *** ** 67</strong>
       </p>
+      <p class="text-muted small text-center mb-3" data-i18n="otp.validity_note"><i class="fa fa-clock me-1"></i>Votre code reste valide 5 minutes.</p>
 
       <div class="demo-hint mb-3" data-i18n-html="otp.demo_hint_html">
         <i class="fa fa-flask me-1"></i>
@@ -118,7 +119,7 @@
 
       <p class="text-center small text-muted mb-3" data-i18n-html="otp.resend_html">
         Pas reçu ? <span id="resendLink" class="resend-link disabled">Renvoyer le code</span>
-        <span id="resendTimerWrap">· disponible dans <strong id="resendTimer">00:30</strong></span>
+        <span id="resendTimerWrap">· disponible dans <strong id="resendTimer">01:00</strong></span>
       </p>
 
       <button id="verifyBtn" class="btn btn-patient w-100 mb-2" disabled data-i18n-html="otp.verify_btn_html">
@@ -155,7 +156,7 @@
     let attemptsLeft = MAX_ATTEMPTS;
     let isLocked = false;
     let isExpired = false;
-    let resendSeconds = 30;
+    let resendSeconds = 60;
     let resendInterval;
     // Tracks whether the resend link is currently active; used to re-apply state
     // after a language switch (which re-renders the resend paragraph via innerHTML).
@@ -271,7 +272,7 @@
       const link = getResendLink();
       if (!link || link.classList.contains('disabled')) return;
       resetState();
-      resendSeconds = 30;
+      resendSeconds = 60;
       startResendTimer();
       // Brief feedback flash
       const flash = document.createElement('div');

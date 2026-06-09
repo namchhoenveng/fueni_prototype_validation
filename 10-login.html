@@ -80,7 +80,7 @@
   <div class="login-wrap">
     <!-- Brand panel -->
     <div class="brand-panel">
-      <div class="brand-logo"><img src="assets/fueni-lockup-white.svg" alt="FUENI" style="height:34px;width:auto"></div>
+      <div class="brand-logo"><a href="01-home.html" aria-label="FUENI — Accueil"><img src="assets/fueni-lockup-white.svg" alt="FUENI" style="height:34px;width:auto"></a></div>
       <div class="brand-kicker" data-i18n="login.brand.kicker">Plateforme santé digitale</div>
       <div class="brand-title" data-i18n="login.brand.title">Une plateforme. Tous vos soins.</div>
       <div class="brand-desc" data-i18n="login.brand.desc">Prenez rendez-vous, gérez vos documents médicaux et restez en lien avec votre équipe de soins.</div>
@@ -105,6 +105,7 @@
     <!-- Form panel -->
     <div class="form-panel">
       <div class="login-card">
+        <a href="01-home.html" class="text-decoration-none small mb-2 d-inline-block" style="color:#64748b;font-weight:600" data-i18n="common.back_home">← Retour à l'accueil</a>
         <!-- Space tabs -->
         <div class="seg">
           <button type="button" class="active" id="tabPatient" onclick="selectTab('patient')"><span data-i18n="login.tab.patient">Espace patient</span></button>
@@ -115,6 +116,7 @@
         <p class="sub" data-i18n="login.subtitle">Connectez-vous avec votre e-mail ou votre numéro de téléphone.</p>
 
         <div class="alert alert-success py-2 px-3 small d-none" id="resetBanner" role="alert"><i class="fa fa-circle-check me-1"></i><span data-i18n="login.reset_success">Mot de passe réinitialisé. Connectez-vous avec votre nouveau mot de passe.</span></div>
+        <div class="alert alert-info py-2 px-3 small d-none" id="logoutBanner" role="alert"><i class="fa fa-circle-info me-1"></i><span data-i18n="login.logout_success">Vous avez été déconnecté.</span></div>
         <div class="alert alert-danger py-2 px-3 small d-none" id="loginError" role="alert"><i class="fa fa-circle-exclamation me-1"></i><span id="loginErrorMsg"></span></div>
 
         <form onsubmit="return doLogin(event)">
@@ -318,6 +320,10 @@
           if (id) { const f = document.getElementById('identField'); f.value = id; onIdentInput(); }
           sessionStorage.removeItem('fueni_reset_done');
           sessionStorage.removeItem('fueni_reset_ident');
+        }
+        if (sessionStorage.getItem('fueni_logout')) {
+          const lb = document.getElementById('logoutBanner'); if (lb) lb.classList.remove('d-none');
+          sessionStorage.removeItem('fueni_logout');
         }
       } catch (e) { /* ignore */ }
     });

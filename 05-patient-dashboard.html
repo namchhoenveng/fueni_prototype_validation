@@ -28,7 +28,9 @@
     .main { margin-left: 240px; }
 
     /* Proto bar */
-    .proto-bar { background: #fff3cd; border: 1px solid #ffc107; border-top: none; padding: 6px 14px; font-size: 0.82rem; position: fixed; top: 0; right: 28px; z-index: 300; border-radius: 0 0 8px 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+    .proto-bar { background: #fff3cd; border: 1px solid #ffc107; border-top: none; padding: 6px 14px; font-size: 0.82rem; position: fixed; top: 0; right: 200px; z-index: 300; border-radius: 0 0 8px 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+    /* Sélecteur de langue dans le coin haut-droit, à côté de la barre (évite le chevauchement avec le contenu) */
+    #fueni-lang-toggle { top: 8px !important; right: 20px !important; }
 
     /* Content */
     .content-area { padding: 48px 28px 28px; } /* padding-top élargi pour ne pas chevaucher le proto-bar flottant */
@@ -60,7 +62,7 @@
     .email-banner .btn-verify:hover { background: #e65100; color: white; }
   </style>
 </head>
-<body data-i18n-pagetitle="dash.page_title">
+<body data-i18n-pagetitle="dash.page_title" data-i18n-toggle>
 
   <div class="proto-bar d-flex align-items-center gap-3" data-i18n-html="dash.proto_bar_html">
     <span><i class="fa fa-eye me-1"></i> Espace Patient · Tableau de bord · <a href="01-home.html" class="text-decoration-none">← Retour à l'accueil</a></span>
@@ -91,11 +93,12 @@
 
     <div class="nav-section" data-i18n="dash.sidebar.section_account">Mon compte</div>
     <a href="06-patient-profile.html" class="nav-link-side"><i class="fa fa-user"></i><span data-i18n="dash.sidebar.my_profile">Mon profil</span></a>
+    <a href="07-account-security.html" class="nav-link-side"><i class="fa fa-shield-halved"></i><span data-i18n="dash.sidebar.security">Connexion & sécurité</span></a>
 
     <div class="nav-section" data-i18n="dash.sidebar.section_help">Aide</div>
     <a class="nav-link-side"><i class="fa fa-circle-question"></i><span data-i18n="dash.sidebar.faq">FAQ</span></a>
     <a class="nav-link-side"><i class="fa fa-headset"></i><span data-i18n="dash.sidebar.support">Contacter le support</span></a>
-    <a href="#" class="nav-link-side"><i class="fa fa-right-from-bracket"></i><span data-i18n="dash.sidebar.logout">Se déconnecter</span></a>
+    <a href="10-login.html" class="nav-link-side" onclick="try{sessionStorage.setItem('fueni_logout','1')}catch(e){}"><i class="fa fa-right-from-bracket"></i><span data-i18n="dash.sidebar.logout">Se déconnecter</span></a>
   </div>
 
   <!-- Main -->
@@ -108,7 +111,7 @@
         <div class="banner-text" data-i18n-html="dash.email_banner_html">
           <strong>Votre adresse e-mail n'est pas encore vérifiée.</strong> Vérifiez-la pour pouvoir prendre des rendez-vous et recevoir vos documents médicaux.
         </div>
-        <button class="btn btn-verify" data-i18n="dash.email_banner.verify">Vérifier maintenant</button>
+        <button class="btn btn-verify" onclick="location.href='07-account-security.html'" data-i18n="dash.email_banner.verify">Vérifier maintenant</button>
       </div>
 
       <!-- Welcome banner -->
