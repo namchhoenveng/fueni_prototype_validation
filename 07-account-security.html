@@ -321,8 +321,8 @@
         </div>
         <hr class="my-3" style="border-color:#eef2f4;">
         <div class="d-flex flex-wrap gap-2 align-items-center justify-content-between">
-          <div class="small" style="color:#7f8c8d; max-width:520px;" data-i18n-html="prof.rgpd.delete_note">Pour supprimer votre compte, contactez notre support. <span style="color:#b0b8bf;">(La suppression en libre-service sera disponible ultérieurement.)</span></div>
-          <a class="btn btn-light fw-semibold" style="border:1px solid #dfe6e9;" href="#" data-i18n="prof.rgpd.contact_support"><i class="fa fa-headset me-1"></i>Contacter le support</a>
+          <div class="small" style="color:#7f8c8d; max-width:520px;" data-i18n-html="prof.rgpd.delete_note">Pour supprimer votre compte, écrivez à notre support. <span style="color:#b0b8bf;">(La suppression en libre-service sera disponible ultérieurement.)</span></div>
+          <a class="btn btn-light fw-semibold" style="border:1px solid #dfe6e9;" href="mailto:contact.support@fueni.com?subject=Suppression%20de%20mon%20compte%20FUENI"><i class="fa fa-envelope me-1"></i>contact.support@fueni.com</a>
         </div>
         <hr class="my-3" style="border-color:#eef2f4;">
         <div class="small"><i class="fa fa-file-shield me-1" style="color:#16a085;"></i><a href="#" style="color:#155e75;text-decoration:none" data-i18n="prof.rgpd.privacy">Politique de confidentialité</a> · <a href="#" style="color:#155e75;text-decoration:none" data-i18n="prof.rgpd.terms">Conditions générales (CGU)</a></div>
@@ -731,7 +731,6 @@
       chip.classList.remove('chip-no', 'd-none'); chip.classList.add('chip-ok');
       document.getElementById('emailVerifyBtn').classList.add('d-none');
       document.getElementById('emailBanner').style.display = 'none';
-      bumpCompletion(90);
       toast('prof.coord.email_verified_toast');
     }
 

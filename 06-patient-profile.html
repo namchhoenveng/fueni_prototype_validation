@@ -210,13 +210,12 @@
         <p data-i18n="prof.subtitle">Consultez et mettez à jour vos informations personnelles.</p>
       </div>
 
-      <!-- Profil complété -->
-      <div class="completion-card">
-        <div class="d-flex justify-content-between align-items-center">
-          <span class="fw-semibold small" style="color:#2c3e50;"><i class="fa fa-circle-user me-1" style="color:#16a085;"></i><span data-i18n="prof.completion.label">Profil complété à</span> <span id="completionPct">80</span> %</span>
-          <span class="small" style="color:#7f8c8d;" data-i18n="prof.completion.hint">Ajoutez votre adresse et un contact d'urgence pour atteindre 100 %.</span>
+      <!-- Informations complémentaires (facultatif) — masquée automatiquement une fois remplie -->
+      <div class="completion-card" id="complementCard">
+        <div class="d-flex align-items-center gap-2">
+          <i class="fa fa-circle-info" style="color:#16a085;"></i>
+          <span class="small fw-semibold" style="color:#2c3e50;" data-i18n="prof.complement.line">Complétez les informations complémentaires pour enrichir votre profil.</span>
         </div>
-        <div class="completion-bar"><div class="completion-fill" id="completionFill" style="width:80%;"></div></div>
       </div>
 
 
@@ -511,6 +510,18 @@
       if (sec === 'coord') applyCoordPhone();
       setMode(sec, false);
       toast();
+      updateComplementCard();
+    }
+    // Bandeau « Informations complémentaires » : masqué une fois les champs facultatifs renseignés
+    // (adresse + contact d'urgence). Simple booléen — pas de score de complétude (cf. DP12).
+    function complementComplete() {
+      // « rempli » = la vue n'est plus en placeholder (.muted retiré dès qu'une valeur est saisie) — indépendant de l'i18n
+      const filled = id => { const el = document.getElementById(id); return el && !el.classList.contains('muted'); };
+      return filled('loc-address-view') && filled('emerg-name-view') && filled('emerg-phone-view');
+    }
+    function updateComplementCard() {
+      const card = document.getElementById('complementCard');
+      if (card) card.style.display = complementComplete() ? 'none' : '';
     }
     // Préférences de notification : enregistre + avertit si les DEUX rappels sont coupés (autonomie respectée, simple alerte)
     function onNotifChange() {
@@ -871,7 +882,6 @@
       chip.classList.remove('chip-no', 'd-none'); chip.classList.add('chip-ok');
       document.getElementById('emailVerifyBtn').classList.add('d-none');
       document.getElementById('emailBanner').style.display = 'none';
-      bumpCompletion(90);
       toast('prof.coord.email_verified_toast');
     }
 
@@ -1118,6 +1128,9 @@
     renderCcList('emerg');
     setCountry('coord', 'SN');
     renderCcList('coord');
+
+    // État initial du bandeau « Informations complémentaires »
+    updateComplementCard();
 
     // Recopie l'indicatif + le numéro national dans la vue lecture seule (urgence)
     function applyEmergPhone() {
