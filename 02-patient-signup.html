@@ -28,6 +28,12 @@
     .btn-patient { background: #16a085; border-color: #16a085; color: white; padding: 12px; border-radius: 8px; font-weight: 600; font-size: 1rem; transition: background 0.2s; }
     .btn-patient:hover { background: #138d75; border-color: #138d75; color: white; }
     .field-hint { font-size: 0.75rem; color: #95a5a6; margin-top: 4px; }
+    .field-err { font-size: 0.78rem; margin-top: 4px; }
+    .is-err { border-color: #e74c3c !important; box-shadow: 0 0 0 0.15rem rgba(231,76,60,0.15) !important; }
+    .progress-steps .step.active .step-circle { background: #16a085; color: white; }
+    .progress-steps .step.done .step-circle { background: #16a085; color: white; }
+    .progress-steps .step.done::after { background: #16a085; }
+    .progress-steps .step.active .step-label { color: #16a085; font-weight: 600; }
     .pwd-rule { font-size: 0.78rem; display: flex; align-items: center; gap: 6px; color: #aaa; }
     .pwd-rule.ok { color: #27ae60; }
     .pwd-strength { height: 4px; border-radius: 4px; background: #e9ecef; overflow: hidden; margin-top: 6px; }
@@ -71,6 +77,22 @@
   </div>
 
   <div class="container py-3" style="max-width:760px;">
+
+    <div class="progress-steps mb-4">
+      <div class="step active" id="step1-marker">
+        <div class="step-circle">1</div>
+        <div class="step-label" data-i18n="otp.steps.signup">Inscription</div>
+      </div>
+      <div class="step inactive" id="step2-marker">
+        <div class="step-circle">2</div>
+        <div class="step-label" data-i18n="otp.steps.profile">Profil de base</div>
+      </div>
+      <div class="step inactive" id="step3-marker">
+        <div class="step-circle">3</div>
+        <div class="step-label" data-i18n="otp.steps.sms">Vérification SMS</div>
+      </div>
+    </div>
+
     <div class="signup-card">
 
       <!-- Role indicator -->
@@ -83,7 +105,7 @@
       <p class="text-muted small mb-3" data-i18n="signup.subtitle">1 minute — quelques étapes pour finaliser votre inscription</p>
 
       <div class="d-none alert alert-danger small mb-3" id="formError" role="alert">
-        <i class="fa fa-circle-exclamation me-2"></i><span data-i18n="signup.error.required">Veuillez compléter tous les champs obligatoires marqués d'un astérisque (*).</span>
+        <i class="fa fa-circle-exclamation me-2"></i><span id="formErrorMsg" data-i18n="signup.error.email_taken">Un compte existe déjà avec cet e-mail. Connectez-vous.</span>
       </div>
 
       <form id="signupForm" novalidate>
@@ -91,10 +113,12 @@
           <div class="col-md-6">
             <label class="form-label fw-semibold small" data-i18n="signup.field.firstname_label">Prénom *</label>
             <input type="text" class="form-control" id="firstName" maxlength="80" data-i18n-placeholder="signup.field.firstname_ph" placeholder="Ex : Aïssatou">
+            <div class="field-err d-none text-danger" id="err-firstName"><i class="fa fa-circle-exclamation me-1"></i><span data-i18n="signup.field.required">Ce champ est requis.</span></div>
           </div>
           <div class="col-md-6">
             <label class="form-label fw-semibold small" data-i18n="signup.field.lastname_label">Nom *</label>
             <input type="text" class="form-control" id="lastName" maxlength="80" data-i18n-placeholder="signup.field.lastname_ph" placeholder="Ex : Diop">
+            <div class="field-err d-none text-danger" id="err-lastName"><i class="fa fa-circle-exclamation me-1"></i><span data-i18n="signup.field.required">Ce champ est requis.</span></div>
           </div>
         </div>
 
@@ -112,6 +136,7 @@
               <option value="F" data-i18n="signup.field.sex_female">Féminin</option>
               <option value="M" data-i18n="signup.field.sex_male">Masculin</option>
             </select>
+            <div class="field-err d-none text-danger" id="err-sex"><i class="fa fa-circle-exclamation me-1"></i><span data-i18n="signup.field.required">Ce champ est requis.</span></div>
           </div>
         </div>
 
@@ -158,6 +183,7 @@
             <div class="pwd-rule" id="r-num"><i class="fa fa-circle-check"></i><span data-i18n="signup.field.pwd_r_num">Un chiffre</span></div>
             <div class="pwd-rule" id="r-spe"><i class="fa fa-circle-check"></i><span data-i18n="signup.field.pwd_r_spe">Un caractère spécial (ex : ! ? @ # $ % & * …)</span></div>
           </div>
+          <div class="field-err d-none text-danger" id="err-pwd"><i class="fa fa-circle-exclamation me-1"></i><span data-i18n="signup.field.pwd_err">Ce champ est requis.</span></div>
         </div>
 
         <div class="mb-3 form-check">
@@ -166,6 +192,7 @@
             J'accepte les <a href="#" class="text-decoration-none" style="color:#16a085;">Conditions Générales</a> et la
             <a href="#" class="text-decoration-none" style="color:#16a085;">Politique de Confidentialité</a> *
           </label>
+          <div class="field-err d-none text-danger" id="err-cgu"><i class="fa fa-circle-exclamation me-1"></i><span data-i18n="signup.field.consent_err">Vous devez accepter pour continuer.</span></div>
         </div>
 
         <div class="mb-4 form-check">
@@ -173,6 +200,7 @@
           <label class="form-check-label small" for="health-consent" data-i18n-html="signup.health_html">
             J'accepte que FUENI traite mes données personnelles et médicales dans le respect de sa politique de confidentialité et du RGPD. *
           </label>
+          <div class="field-err d-none text-danger" id="err-health"><i class="fa fa-circle-exclamation me-1"></i><span data-i18n="signup.field.consent_err">Vous devez accepter pour continuer.</span></div>
         </div>
 
         <button type="button" onclick="validateForm()" class="btn btn-patient w-100">
@@ -227,6 +255,7 @@
       const shouldValidate = force === true || v.length > 4;
       const invalid = shouldValidate && v.length > 0 && !rx.test(v);
       hint.classList.toggle('d-none', !invalid);
+      if (!invalid) f.classList.remove('is-err'); // efface le rouge dès correction
     }
 
     // Référentiel pays — 9 pays MVP (mvp:true, longueur locale exacte) + échantillon « reste du monde ».
@@ -393,20 +422,34 @@
         invalid = shouldValidate && digits.length > 0 && (digits.length < 6 || digits.length > 14);
       }
       hint.classList.toggle('d-none', !invalid);
+      if (!invalid) document.getElementById('phoneField').classList.remove('is-err');
     }
 
-    function showFormError() {
-      const box = document.getElementById('formError');
-      box.classList.remove('d-none');
-      box.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
-
-    function clearFormError() {
+    // Unicité (mock prototype) — en production : vérification côté serveur
+    // Démo : saisir « sandrine@fueni.com » pour voir le message « compte existe déjà » (bannière + champ en rouge).
+    const TAKEN_EMAILS = ['sandrine@fueni.com'];
+    const TAKEN_PHONES = ['+221770000000']; // E.164
+    function clearAllErrors() {
+      ['firstName', 'lastName', 'dobField', 'sexField', 'emailField', 'phoneField', 'pwdField', 'cgu', 'health-consent']
+        .forEach(id => { const c = document.getElementById(id); if (c) c.classList.remove('is-err'); });
+      ['err-firstName', 'err-lastName', 'err-sex', 'err-pwd', 'err-cgu', 'err-health', 'emailHint', 'phoneHint', 'ageHint']
+        .forEach(id => { const e = document.getElementById(id); if (e) e.classList.add('d-none'); });
       document.getElementById('formError').classList.add('d-none');
+    }
+    function fieldError(ctrlId, errId, msgKey) {
+      const c = document.getElementById(ctrlId); if (c) c.classList.add('is-err');
+      const e = document.getElementById(errId);
+      if (e) { const sp = e.querySelector('span'); if (sp && msgKey) { sp.setAttribute('data-i18n', msgKey); sp.textContent = (window.NazI18n ? NazI18n.t(msgKey) : '') || sp.textContent; } e.classList.remove('d-none'); }
+    }
+    function bannerUniqueness(msgKey, ctrlId) {
+      const c = document.getElementById(ctrlId); if (c) c.classList.add('is-err');
+      const sp = document.getElementById('formErrorMsg');
+      if (sp) { sp.setAttribute('data-i18n', msgKey); sp.textContent = (window.NazI18n ? NazI18n.t(msgKey) : '') || sp.textContent; }
+      const box = document.getElementById('formError'); box.classList.remove('d-none'); box.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
 
     function validateForm() {
-      clearFormError();
+      clearAllErrors();
 
       const firstName = document.getElementById('firstName').value.trim();
       const lastName = document.getElementById('lastName').value.trim();
@@ -450,25 +493,32 @@
       // Politique mot de passe
       const pwdOk = pwd.length >= 8 && /[A-Z]/.test(pwd) && /[a-z]/.test(pwd) && /\d/.test(pwd) && /[^A-Za-z0-9\s]/.test(pwd);
 
-      // Validation globale : un seul message si quoi que ce soit ne passe pas
-      const allOk =
-        firstName &&
-        lastName &&
-        dobValid &&
-        sex &&
-        email && rxEmail.test(email) &&
-        cc && phoneOk &&
-        pwdOk &&
-        cgu && health;
+      // Validation PAR CHAMP : message « requis » sous chaque champ obligatoire vide ; message de format sinon
+      let firstErr = null;
+      const fail = (ctrl, err, key) => { fieldError(ctrl, err, key); if (!firstErr) firstErr = document.getElementById(ctrl); };
+      const digitsP = phoneVal.replace(/\D/g, '');
+      const dobErrKey = (age >= 0 && age < 18) ? 'signup.field.dob_hint' : 'signup.field.dob_hint_range';
 
-      if (!allOk) {
-        // Déclenche aussi les validations inline pour pointer les champs en erreur
-        checkAge();
-        checkEmail(true);
-        checkPhone(true);
-        showFormError();
-        return;
-      }
+      if (!firstName) fail('firstName', 'err-firstName', 'signup.field.required');
+      if (!lastName) fail('lastName', 'err-lastName', 'signup.field.required');
+      if (!dobVal) fail('dobField', 'ageHint', 'signup.field.required');
+      else if (!dobValid) fail('dobField', 'ageHint', dobErrKey);
+      if (!sex) fail('sexField', 'err-sex', 'signup.field.required');
+      if (!email) fail('emailField', 'emailHint', 'signup.field.required');
+      else if (!rxEmail.test(email)) fail('emailField', 'emailHint', 'signup.field.email_hint');
+      if (!digitsP) fail('phoneField', 'phoneHint', 'signup.field.required');
+      else if (!phoneOk) fail('phoneField', 'phoneHint', 'signup.field.phone_hint');
+      if (!pwd) fail('pwdField', 'err-pwd', 'signup.field.pwd_err');
+      else if (!pwdOk) fail('pwdField', 'err-pwd', 'signup.field.pwd_err_weak');
+      if (!cgu) fail('cgu', 'err-cgu', 'signup.field.consent_err');
+      if (!health) fail('health-consent', 'err-health', 'signup.field.consent_err');
+
+      if (firstErr) { firstErr.scrollIntoView({ behavior: 'smooth', block: 'center' }); try { firstErr.focus({ preventScroll: true }); } catch (e) {} return; }
+
+      // Tous les champs valides → contrôle d'UNICITÉ (mock) : bannière globale + champ surligné
+      const e164 = cc + digitsP;
+      if (TAKEN_EMAILS.includes(email.toLowerCase())) { bannerUniqueness('signup.error.email_taken', 'emailField'); return; }
+      if (TAKEN_PHONES.includes(e164)) { bannerUniqueness('signup.error.phone_taken', 'phoneField'); return; }
 
       // Tout est OK → sauvegarde des données pour les étapes suivantes (données structurées)
       const formData = {
@@ -486,9 +536,10 @@
         cgu: document.getElementById('cgu').checked,
         health: document.getElementById('health-consent').checked
       };
-      // Brouillon conservé côté navigateur (localStorage) — SANS le mot de passe.
+      // Brouillon conservé pour la session (sessionStorage) — SANS le mot de passe.
       // Le compte n'est créé qu'après la vérification OTP (dernière étape).
-      localStorage.setItem('fueni_signup_data', JSON.stringify(formData));
+      sessionStorage.setItem('fueni_signup_data', JSON.stringify(formData));
+      regSetReached(2);
       window.location = '04-patient-profile-base.html';
     }
 
@@ -503,7 +554,7 @@
         dobEl.max = iso(new Date(now.getFullYear() - 18, now.getMonth(), now.getDate()));
         dobEl.min = iso(new Date(now.getFullYear() - 120, now.getMonth(), now.getDate()));
       }
-      const raw = localStorage.getItem('fueni_signup_data');
+      const raw = sessionStorage.getItem('fueni_signup_data');
       if (!raw) return;
       try {
         const d = JSON.parse(raw);
@@ -565,7 +616,35 @@
       }
       hint.classList.toggle('d-none', !showErr);
       info.classList.toggle('d-none', showErr);
+      document.getElementById('dobField').classList.toggle('is-err', showErr);
     }
+
+    // Efface l'erreur d'un champ dès qu'on le corrige (champs sans validation live de format)
+    window.addEventListener('DOMContentLoaded', () => {
+      [['firstName', 'err-firstName'], ['lastName', 'err-lastName'], ['sexField', 'err-sex'], ['pwdField', 'err-pwd'], ['cgu', 'err-cgu'], ['health-consent', 'err-health']]
+        .forEach(([cid, eid]) => {
+          const c = document.getElementById(cid); if (!c) return;
+          const ev = (c.type === 'checkbox' || c.tagName === 'SELECT') ? 'change' : 'input';
+          c.addEventListener(ev, () => { c.classList.remove('is-err'); const e = document.getElementById(eid); if (e) e.classList.add('d-none'); });
+        });
+    });
+
+    // ── Navigation par étapes (stepper cliquable + garde anti-saut) ──
+    const REG_STEP = 1;
+    const REG_PAGES = { 1: '02-patient-signup.html', 2: '04-patient-profile-base.html', 3: '03-patient-otp.html' };
+    function regReached() { return Math.max(parseInt(sessionStorage.getItem('fueni_reg_reached') || '0', 10) || 0, REG_STEP); }
+    function regSetReached(n) { sessionStorage.setItem('fueni_reg_reached', String(Math.max(regReached(), n))); }
+    function regGoto(step) { if (step !== REG_STEP && step <= regReached()) window.location = REG_PAGES[step]; }
+    function regInitStepper() {
+      regSetReached(REG_STEP);
+      const reached = regReached();
+      [1, 2, 3].forEach(n => {
+        const m = document.getElementById('step' + n + '-marker');
+        if (!m) return;
+        if (n !== REG_STEP && n <= reached) { m.style.cursor = 'pointer'; m.onclick = () => regGoto(n); }
+      });
+    }
+    window.addEventListener('DOMContentLoaded', regInitStepper);
   </script>
 <!-- Prototype version badge -->
 <script>(function(){if(window.__pv)return;window.__pv=1;var v=document.createElement('div');v.style.cssText='position:fixed;top:0;left:50%;transform:translateX(-50%);background:#155e75;color:#fff;padding:6px 20px;border-radius:0 0 16px 16px;font:600 12px/1 system-ui,-apple-system,sans-serif;letter-spacing:.6px;z-index:99999;box-shadow:0 3px 10px rgba(0,0,0,.2);text-transform:uppercase;display:flex;align-items:center;gap:8px';v.innerHTML='🧪 Prototype <span style="background:#f59e0b;color:#1a1a1a;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:4px">v1.4.0</span><span style="background:#facc15;color:#1a1a1a;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:4px;text-transform:none;letter-spacing:0">⏳ À valider</span>';document.body.appendChild(v);})();</script>

@@ -129,15 +129,6 @@
     .input-valid { border-color: #27ae60 !important; }
     .input-invalid { border-color: #e74c3c !important; }
 
-    /* Password edit block (aligné avec l'inscription) */
-    .pwd-wrap { position: relative; }
-    .pwd-wrap .form-control { padding-right: 2.4rem; }
-    .pwd-eye { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: #7f8c8d; background: none; border: 0; padding: 0; cursor: pointer; }
-    .pwd-strength { height: 4px; border-radius: 4px; background: #e9ecef; overflow: hidden; margin-top: 6px; }
-    .pwd-strength-fill { height: 100%; border-radius: 4px; transition: width 0.3s, background 0.3s; width: 0%; }
-    .pwd-rules-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 16px; margin-top: 8px; }
-    .pwd-rule { font-size: 0.78rem; display: flex; align-items: center; gap: 6px; color: #aaa; }
-    .pwd-rule.ok { color: #27ae60; }
 
     .danger-zone { border: 1px solid #f5c6cb; background: #fdf3f4; border-radius: 12px; padding: 16px 20px; }
     .danger-zone h6 { color: #c0392b; }
@@ -308,7 +299,7 @@
           </div>
         </div>
         <div class="field-row">
-          <div class="field-label" data-i18n="prof.loc.lang">Langue de communication</div>
+          <div class="field-label" data-i18n="prof.loc.lang">Langue du compte</div>
           <div class="field-value">
             <span class="view" id="loc-lang-view" data-i18n="prof.loc.lang_fr">Français</span>
             <select class="edit form-select d-none" id="loc-lang-input">
@@ -483,7 +474,7 @@
         else { const r = document.getElementById('locCascadeRow'); if (r) r.style.display = 'none'; }
       }
     }
-    function editSection(sec) { if (sec === 'loc') { syncLangFromView(); initLocCombos(); } if (sec === 'coord') { initCoordPhone(); initCoordEmail(); } if (sec === 'pwd') initPwdEdit(); setMode(sec, true); if (sec === 'emerg') toggleRelOther(); }
+    function editSection(sec) { if (sec === 'loc') { syncLangFromView(); initLocCombos(); } setMode(sec, true); if (sec === 'emerg') toggleRelOther(); }
     function cancelSection(sec) {
       // reset inputs to their view values
       const card = document.getElementById('sec-' + sec);
@@ -809,54 +800,7 @@
       } else applySection('coord');
     }
 
-    // ---- Mot de passe : vérification par mot de passe actuel (pas d'OTP) ----
-    const MOCK_CURRENT_PWD = 'Nazounki2026!'; // prototype : mot de passe « actuel » simulé
-    function initPwdEdit() {
-      ['pwdCurrent', 'pwdNew'].forEach(id => { const e = document.getElementById(id); if (e) { e.value = ''; e.type = 'password'; } });
-      document.querySelectorAll('#pwd-edit .pwd-eye i').forEach(i => i.className = 'fa fa-eye');
-      ['pwdCurrentErr', 'pwdNewErr'].forEach(id => document.getElementById(id).classList.add('d-none'));
-      ['pr-len', 'pr-upper', 'pr-lower', 'pr-num', 'pr-spe'].forEach(id => document.getElementById(id).classList.remove('ok'));
-      const bar = document.getElementById('pwdBar'); bar.style.width = '0%'; bar.style.background = '#e9ecef';
-    }
-    function profPwdRules(v) {
-      return { 'pr-len': v.length >= 8, 'pr-upper': /[A-Z]/.test(v), 'pr-lower': /[a-z]/.test(v), 'pr-num': /\d/.test(v), 'pr-spe': /[^A-Za-z0-9\s]/.test(v) };
-    }
-    function checkProfPwd() {
-      const v = document.getElementById('pwdNew').value;
-      const rules = profPwdRules(v);
-      let score = 0;
-      for (const id in rules) { document.getElementById(id).classList.toggle('ok', rules[id]); if (rules[id]) score++; }
-      const bar = document.getElementById('pwdBar');
-      bar.style.width = (score * 20) + '%';
-      bar.style.background = score < 3 ? '#e74c3c' : score < 5 ? '#f39c12' : '#27ae60';
-      if (v) document.getElementById('pwdNewErr').classList.add('d-none');
-    }
-    function clearPwdErr() { document.getElementById('pwdCurrentErr').classList.add('d-none'); }
-    function togglePwdField(id, btn) {
-      const f = document.getElementById(id), icon = btn.querySelector('i');
-      const hidden = f.type === 'password';
-      f.type = hidden ? 'text' : 'password';
-      icon.className = hidden ? 'fa fa-eye-slash' : 'fa fa-eye';
-    }
-    function savePwd() {
-      const cur = document.getElementById('pwdCurrent').value;
-      const neu = document.getElementById('pwdNew').value;
-      const curErr = document.getElementById('pwdCurrentErr');
-      const newErr = document.getElementById('pwdNewErr');
-      let ok = true;
-      // 1) mot de passe actuel requis et correct
-      if (!cur || cur !== MOCK_CURRENT_PWD) { curErr.classList.remove('d-none'); document.getElementById('pwdCurrent').focus(); ok = false; }
-      else curErr.classList.add('d-none');
-      // 2) nouveau mot de passe conforme
-      const rules = profPwdRules(neu);
-      const allOk = Object.values(rules).every(Boolean);
-      if (!allOk) { newErr.classList.remove('d-none'); if (ok) document.getElementById('pwdNew').focus(); ok = false; }
-      else newErr.classList.add('d-none');
-      if (!ok) return;
-      // succès — pas d'OTP : la preuve est le mot de passe actuel
-      setMode('pwd', false);
-      toast('prof.pwd.toast');
-    }
+    // Mot de passe : géré dans « Connexion & sécurité » (07-account-security.html) — pas sur cet écran.
     // Localisation: Région + Ville obligatoires ; dialogue d'impact uniquement si Pays changé
     function saveLoc() {
       // Région + Ville obligatoires (notamment après un changement de pays qui les réinitialise)

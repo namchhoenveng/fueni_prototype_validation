@@ -105,11 +105,8 @@
     <!-- Form panel -->
     <div class="form-panel">
       <div class="login-card">
-        <a href="01-home.html" class="text-decoration-none small mb-2 d-inline-block" style="color:#64748b;font-weight:600" data-i18n="common.back_home">← Retour à l'accueil</a>
-        <!-- Space tabs -->
-        <div class="seg">
-          <button type="button" class="active" id="tabPatient" onclick="selectTab('patient')"><span data-i18n="login.tab.patient">Espace patient</span></button>
-          <button type="button" id="tabPro" disabled><span data-i18n="login.tab.pro">Espace professionnel</span><span class="soon" data-i18n="login.tab.soon">Bientôt</span></button>
+        <div class="text-end mb-2">
+          <a href="01-home.html" class="text-decoration-none small" style="color:#64748b;font-weight:600" aria-label="Accueil"><i class="fa fa-house me-1"></i><span data-i18n="common.home">Accueil</span></a>
         </div>
 
         <h1 data-i18n="login.title">Bon retour</h1>
@@ -120,13 +117,18 @@
         <div class="alert alert-danger py-2 px-3 small d-none" id="loginError" role="alert"><i class="fa fa-circle-exclamation me-1"></i><span id="loginErrorMsg"></span></div>
 
         <form onsubmit="return doLogin(event)">
+          <!-- Bascule explicite E-mail / Téléphone (sous le message « Bon retour », au-dessus du champ Identifiant — cf. SF-LOGIN §4.3/DL8) -->
+          <div class="seg" role="tablist" aria-label="Type d'identifiant">
+            <button type="button" class="active" id="modeEmail" role="tab" aria-selected="true" onclick="setIdentMode('email', true)" data-i18n="login.mode.email">E-mail</button>
+            <button type="button" id="modePhone" role="tab" aria-selected="false" onclick="setIdentMode('phone', true)" data-i18n="login.mode.phone">Téléphone</button>
+          </div>
           <div class="mb-3">
             <label class="form-label" data-i18n="login.field.identifier">Identifiant</label>
             <div class="ident-combo">
               <button type="button" class="form-select iti-trigger d-none" id="ccTrigger" onclick="toggleCcMenu(event)" aria-haspopup="listbox">
                 <span id="ccFlag">🇸🇳</span><span id="ccDial">+221</span>
               </button>
-              <input type="text" class="form-control" id="identField" autocomplete="username" value="sandrine@fueni.com" data-i18n-placeholder="login.field.identifier_ph" placeholder="E-mail ou téléphone" oninput="onIdentInput()">
+              <input type="text" class="form-control" id="identField" autocomplete="username" inputmode="email" value="sandrine@fueni.com" placeholder="Adresse e-mail">
               <input type="hidden" id="ccIso" value="SN">
               <div class="iti-menu d-none" id="ccMenu">
                 <div class="iti-search-wrap">
@@ -162,6 +164,11 @@
           <a href="02-patient-signup.html" data-i18n="login.signup_link">S'inscrire</a>
         </div>
         <div class="secure-line"><i class="fa fa-lock me-1"></i><span data-i18n="login.secure">Connexion chiffrée et sécurisée</span></div>
+        <!-- Accès Espace professionnel (lien en bas — l'espace pro relève d'une SF/flux Keycloak dédiés ; « Bientôt » tant qu'il n'est pas livré) -->
+        <div class="text-center" style="margin-top:1rem;padding-top:0.9rem;border-top:1px solid #e2e8f0;font-size:0.84rem;color:#64748b">
+          <span data-i18n="login.pro_prompt">Vous êtes un professionnel de santé ?</span>
+          <a href="#" style="color:#155e75;font-weight:700;text-decoration:none" data-i18n="login.pro_link">Espace professionnel</a>
+        </div>
         <div class="secure-line" style="margin-top:6px" data-i18n="login.demo_hint">🔑 Démo : sandrine@fueni.com · mot de passe MotDePasse123!</div>
       </div>
     </div>
@@ -212,12 +219,23 @@
     function getCountry(iso) { return COUNTRIES.find(c => c.iso === iso); }
     function ccLabel(c) { const en = (document.documentElement.lang || 'fr').toLowerCase().startsWith('en'); return (en && c.en) ? c.en : c.fr; }
 
-    // Détecte si l'identifiant saisi est un téléphone (chiffres, sans « @ » ni lettres)
-    function onIdentInput() {
-      const v = document.getElementById('identField').value;
-      const isPhone = !v.includes('@') && /[0-9]/.test(v) && !/[a-zA-Z]/.test(v);
+    // Bascule explicite E-mail / Téléphone — pas de détection automatique (cf. SF-LOGIN §4.3 / DL8)
+    let identMode = 'email';
+    function setIdentMode(mode, clearField) {
+      const changed = mode !== identMode;
+      identMode = mode;
+      const isPhone = mode === 'phone';
+      const t = k => (window.NazI18n ? NazI18n.t(k) : '');
+      document.getElementById('modeEmail').classList.toggle('active', !isPhone);
+      document.getElementById('modePhone').classList.toggle('active', isPhone);
+      document.getElementById('modeEmail').setAttribute('aria-selected', String(!isPhone));
+      document.getElementById('modePhone').setAttribute('aria-selected', String(isPhone));
       document.getElementById('ccTrigger').classList.toggle('d-none', !isPhone);
       document.getElementById('identHint').classList.toggle('d-none', !isPhone);
+      const f = document.getElementById('identField');
+      f.setAttribute('inputmode', isPhone ? 'tel' : 'email');
+      f.placeholder = isPhone ? (t('login.field.phone_ph') || 'Numéro de téléphone') : (t('login.field.email_ph') || 'Adresse e-mail');
+      if (clearField && changed) { f.value = ''; f.focus(); }
       if (!isPhone) closeCcMenu();
     }
 
@@ -281,7 +299,7 @@
       f.type = hidden ? 'text' : 'password';
       eye.innerHTML = hidden ? '<i class="fa fa-eye-slash"></i>' : '<i class="fa fa-eye"></i>';
     }
-    function selectTab(which) { /* MVP : seul l'espace patient est actif */ }
+    // (Espace pro = lien en bas de page ; sa connexion relève d'une SF/flux Keycloak dédiés — SF-DOCTOR-LOGIN)
 
     // Compte de démonstration (prototype) pour valider la connexion
     const DEMO_LOGIN = { ids: ['sandrine@fueni.com', '+221771234567', '771234567'], pwd: 'MotDePasse123!' };
@@ -313,11 +331,12 @@
 
     // Retour de réinitialisation : bannière de succès + pré-remplissage de l'identifiant
     document.addEventListener('DOMContentLoaded', () => {
+      setIdentMode('email');
       try {
         if (sessionStorage.getItem('fueni_reset_done')) {
           const b = document.getElementById('resetBanner'); if (b) b.classList.remove('d-none');
           const id = sessionStorage.getItem('fueni_reset_ident') || '';
-          if (id) { const f = document.getElementById('identField'); f.value = id; onIdentInput(); }
+          if (id) { const f = document.getElementById('identField'); f.value = id; setIdentMode(id.includes('@') ? 'email' : 'phone'); }
           sessionStorage.removeItem('fueni_reset_done');
           sessionStorage.removeItem('fueni_reset_ident');
         }
@@ -327,6 +346,9 @@
         }
       } catch (e) { /* ignore */ }
     });
+
+    // Ré-applique le placeholder du champ identifiant à chaque changement de langue
+    document.addEventListener('fueni:langchange', () => setIdentMode(identMode));
   </script>
 <!-- Prototype version badge -->
 <script>(function(){if(window.__pv)return;window.__pv=1;var v=document.createElement('div');v.style.cssText='position:fixed;top:0;left:50%;transform:translateX(-50%);background:#155e75;color:#fff;padding:6px 20px;border-radius:0 0 16px 16px;font:600 12px/1 system-ui,-apple-system,sans-serif;letter-spacing:.6px;z-index:99999;box-shadow:0 3px 10px rgba(0,0,0,.2);text-transform:uppercase;display:flex;align-items:center;gap:8px';v.innerHTML='🧪 Prototype <span style="background:#f59e0b;color:#1a1a1a;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:4px">v1.4.0</span><span style="background:#facc15;color:#1a1a1a;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:4px;text-transform:none;letter-spacing:0">⏳ À valider</span>';document.body.appendChild(v);})();</script>

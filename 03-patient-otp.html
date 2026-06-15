@@ -108,6 +108,12 @@
         <strong>Code expiré.</strong> Cliquez sur « Renvoyer le code » pour en recevoir un nouveau.
       </div>
 
+      <!-- Resend limit reached (max 5 / heure) -->
+      <div id="resendLimitMsg" class="alert alert-warning py-2 px-3 small mb-3 d-none" data-i18n-html="otp.resend_limit_html">
+        <i class="fa fa-ban me-2"></i>
+        <strong>Trop de demandes de code.</strong> Vous avez atteint le maximum de renvois (5). Réessayez dans une heure ou contactez le support.
+      </div>
+
       <div class="otp-group mb-3">
         <input type="text" class="otp-input" maxlength="1" inputmode="numeric" value="">
         <input type="text" class="otp-input" maxlength="1" inputmode="numeric" value="">
@@ -126,7 +132,6 @@
         Vérifier <i class="fa fa-arrow-right ms-2"></i>
       </button>
       <a href="04-patient-profile-base.html" class="btn btn-link w-100 text-muted small" data-i18n="common.prev_step">← Étape précédente</a>
-      <a href="02-patient-signup.html" class="btn btn-link w-100 text-muted small" data-i18n="otp.edit_info">Modifier le numéro</a>
 
       <details class="state-tester">
         <summary data-i18n-html="otp.tester_summary_html"><i class="fa fa-vial me-1"></i> Tester les états (raccourcis démo)</summary>
@@ -140,7 +145,10 @@
           <button type="button" class="btn btn-outline-secondary btn-state" onclick="testExpired()" data-i18n="otp.tester.expired">
             Code expiré
           </button>
-          <button type="button" class="btn btn-outline-secondary btn-state" onclick="resetState()" data-i18n-html="otp.tester.reset_html">
+          <button type="button" class="btn btn-outline-secondary btn-state" onclick="testResendLimit()" data-i18n="otp.tester.resend_limit">
+            Plafond renvois (5)
+          </button>
+          <button type="button" class="btn btn-outline-secondary btn-state" onclick="fullReset()" data-i18n-html="otp.tester.reset_html">
             <i class="fa fa-rotate-right me-1"></i>Réinitialiser
           </button>
         </div>
@@ -153,7 +161,9 @@
   <script>
     const CORRECT_CODE = '123456';
     const MAX_ATTEMPTS = 3;
+    const MAX_RESENDS = 5; // max 5 renvois / heure / numéro (cf. SF §4.2.1)
     let attemptsLeft = MAX_ATTEMPTS;
+    let resendCount = 0;
     let isLocked = false;
     let isExpired = false;
     let resendSeconds = 60;
@@ -192,6 +202,17 @@
       expiredMsg.classList.add('d-none');
     }
 
+    // Réinitialisation complète (démo) : remet aussi le compteur de renvois (5/h) à zéro
+    function fullReset() {
+      resendCount = 0;
+      const m = document.getElementById('resendLimitMsg'); if (m) m.classList.add('d-none');
+      resetState();
+      resendSeconds = 60;
+      startResendTimer();
+    }
+    // Démo : simule l'atteinte du plafond de 5 renvois
+    function testResendLimit() { resendCount = MAX_RESENDS; showResendLimit(); }
+
     function markInputsError() {
       inputs.forEach(i => i.classList.add('error'));
       setTimeout(() => inputs.forEach(i => i.classList.remove('error')), 1200);
@@ -212,7 +233,7 @@
       const code = Array.from(inputs).map(i => i.value).join('');
       if (code === CORRECT_CODE) {
         // Téléphone vérifié → le compte est créé (nouveau modèle) → on nettoie le brouillon
-        try { localStorage.removeItem('fueni_signup_data'); } catch (e) { /* ignore */ }
+        try { sessionStorage.removeItem('fueni_signup_data'); } catch (e) { /* ignore */ }
         window.location = '05-patient-dashboard.html';
         return;
       }
@@ -259,18 +280,27 @@
         if (el) el.textContent = `${mm}:${ss}`;
         if (resendSeconds <= 0) {
           clearInterval(resendInterval);
+          const w = getResendTimerWrap();
+          if (w) w.style.display = 'none';
+          if (resendCount >= MAX_RESENDS) { showResendLimit(); return; } // plafond atteint : on ne réactive pas
           resendActive = true;
           const l = getResendLink();
-          const w = getResendTimerWrap();
           if (l) l.classList.remove('disabled');
-          if (w) w.style.display = 'none';
         }
       }, 1000);
+    }
+
+    function showResendLimit() {
+      const link = getResendLink(); if (link) link.classList.add('disabled');
+      const wrap = getResendTimerWrap(); if (wrap) wrap.style.display = 'none';
+      const m = document.getElementById('resendLimitMsg'); if (m) m.classList.remove('d-none');
     }
 
     function resendCode() {
       const link = getResendLink();
       if (!link || link.classList.contains('disabled')) return;
+      if (resendCount >= MAX_RESENDS) { showResendLimit(); return; }
+      resendCount++;
       resetState();
       resendSeconds = 60;
       startResendTimer();
@@ -377,7 +407,7 @@
 
     function applyMaskedPhone() {
       try {
-        const raw = localStorage.getItem('fueni_signup_data');
+        const raw = sessionStorage.getItem('fueni_signup_data');
         if (!raw) return;
         const d = JSON.parse(raw);
         const el = document.getElementById('maskedPhone');
@@ -388,6 +418,22 @@
     }
 
     document.addEventListener('DOMContentLoaded', applyMaskedPhone);
+
+    // ── Navigation par étapes (stepper cliquable + garde anti-saut) ──
+    const REG_STEP = 3;
+    const REG_PAGES = { 1: '02-patient-signup.html', 2: '04-patient-profile-base.html', 3: '03-patient-otp.html' };
+    function regReached() { return Math.max(parseInt(sessionStorage.getItem('fueni_reg_reached') || '0', 10) || 0, REG_STEP); }
+    function regGoto(step) { if (step !== REG_STEP && step <= regReached()) window.location = REG_PAGES[step]; }
+    function regInitStepper() {
+      sessionStorage.setItem('fueni_reg_reached', String(regReached()));
+      const reached = regReached();
+      [1, 2, 3].forEach(n => {
+        const m = document.getElementById('step' + n + '-marker');
+        if (!m) return;
+        if (n !== REG_STEP && n <= reached) { m.style.cursor = 'pointer'; m.onclick = () => regGoto(n); }
+      });
+    }
+    document.addEventListener('DOMContentLoaded', regInitStepper);
   </script>
 <!-- Prototype version badge -->
 <script>(function(){if(window.__pv)return;window.__pv=1;var v=document.createElement('div');v.style.cssText='position:fixed;top:0;left:50%;transform:translateX(-50%);background:#155e75;color:#fff;padding:6px 20px;border-radius:0 0 16px 16px;font:600 12px/1 system-ui,-apple-system,sans-serif;letter-spacing:.6px;z-index:99999;box-shadow:0 3px 10px rgba(0,0,0,.2);text-transform:uppercase;display:flex;align-items:center;gap:8px';v.innerHTML='🧪 Prototype <span style="background:#f59e0b;color:#1a1a1a;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:4px">v1.4.0</span><span style="background:#facc15;color:#1a1a1a;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:4px;text-transform:none;letter-spacing:0">⏳ À valider</span>';document.body.appendChild(v);})();</script>

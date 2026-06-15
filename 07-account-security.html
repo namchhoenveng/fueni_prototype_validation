@@ -71,6 +71,7 @@
     .btn-save { background: #16a085; border: 0; color: #fff; font-size: 0.82rem; font-weight: 600; padding: 6px 14px; border-radius: 8px; }
     .btn-cancel { background: transparent; border: 0; color: #7f8c8d; font-size: 0.82rem; padding: 6px 8px; }
     .btn-link-verify { background: transparent; border: 0; color: #f57c00; font-weight: 600; font-size: 0.82rem; padding: 0; margin-left: 6px; }
+    .field-actions { flex: 0 0 auto; display: flex; gap: 6px; align-items: flex-start; padding-top: 3px; }
 
     .form-control, .form-select { border-radius: 8px; padding: 0.45rem 0.7rem; font-size: 0.9rem; font-weight: 500; }
     .tgl-row { display: flex; align-items: center; gap: 12px; padding: 10px 0; }
@@ -218,29 +219,34 @@
       </div>
 
 
-      <!-- 2. Coordonnées & connexion (OTP) -->
+      <!-- 2. Coordonnées & connexion — édition PAR CHAMP (e-mail / téléphone séparément, une modif à la fois) -->
       <div class="prof-section" id="sec-coord">
         <div class="prof-section-head">
           <h6><i class="fa fa-at" style="color:#16a085;"></i><span data-i18n="prof.coord.title">Coordonnées & connexion</span></h6>
-          <span class="spacer"></span>
-          <button class="btn-edit" id="coord-editbtn" onclick="editSection('coord')" data-i18n="prof.btn.edit">Modifier</button>
-          <span id="coord-actions" class="d-none">
-            <button class="btn-save" onclick="saveCoord()" data-i18n="prof.btn.save">Enregistrer</button>
-            <button class="btn-cancel" onclick="cancelSection('coord')" data-i18n="prof.btn.cancel">Annuler</button>
-          </span>
         </div>
-        <div class="field-row">
+
+        <!-- E-mail -->
+        <div class="field-row" id="row-email">
           <div class="field-label" data-i18n="prof.coord.email">Adresse e-mail</div>
           <div class="field-value">
             <span class="view" id="coord-email-view">aissatou.diop@example.com</span>
-            <span class="chip chip-no" id="emailChip" data-i18n="prof.coord.unverified">Non vérifié</span>
-            <button class="btn-link-verify" id="emailVerifyBtn" onclick="startEmailVerify()" data-i18n="prof.coord.verify_now">Vérifier</button>
+            <span class="view chip chip-no" id="emailChip" data-i18n="prof.coord.unverified">Non vérifié</span>
+            <button class="view btn-link-verify" id="emailVerifyBtn" onclick="startEmailVerify()" data-i18n="prof.coord.verify_now">Vérifier</button>
             <input class="edit form-control d-none" id="coord-email-input" value="aissatou.diop@example.com" autocomplete="email" oninput="checkProfEmail()" onblur="checkProfEmail(true)">
-            <div class="edit field-hint text-danger mt-1 d-none" id="coordEmailErr"><i class="fa fa-circle-exclamation me-1"></i><span data-i18n="prof.coord.email_err_format">Adresse e-mail invalide.</span></div>
+            <div class="field-hint text-danger mt-1 d-none" id="coordEmailErr"><i class="fa fa-circle-exclamation me-1"></i><span data-i18n="prof.coord.email_err_format">Adresse e-mail invalide.</span></div>
             <div class="edit field-help mt-1 d-none" id="coordEmailHelp"><i class="fa fa-circle-info me-1"></i><span data-i18n-html="prof.coord.email_help">Un code de confirmation sera envoyé à la <strong>nouvelle</strong> adresse pour la vérifier.</span></div>
           </div>
+          <div class="field-actions">
+            <button class="btn-edit" id="email-editbtn" onclick="editField('email')" data-i18n="prof.btn.edit">Modifier</button>
+            <span id="email-actions" class="d-none">
+              <button class="btn-save" onclick="saveEmail()" data-i18n="prof.btn.save">Enregistrer</button>
+              <button class="btn-cancel" onclick="cancelField('email')" data-i18n="prof.btn.cancel">Annuler</button>
+            </span>
+          </div>
         </div>
-        <div class="field-row">
+
+        <!-- Téléphone -->
+        <div class="field-row" id="row-phone">
           <div class="field-label" data-i18n="prof.coord.phone">Téléphone</div>
           <div class="field-value">
             <span class="view" id="coord-phone-view">+221 77 123 45 67</span>
@@ -263,7 +269,16 @@
               <div class="field-help mt-1" id="coordPhoneHelp"><i class="fa fa-circle-info me-1"></i><span data-i18n-html="prof.coord.phone_help">Un code SMS sera envoyé au <strong>nouveau</strong> numéro pour le vérifier.</span></div>
             </div>
           </div>
+          <div class="field-actions">
+            <button class="btn-edit" id="phone-editbtn" onclick="editField('phone')" data-i18n="prof.btn.edit">Modifier</button>
+            <span id="phone-actions" class="d-none">
+              <button class="btn-save" onclick="savePhone()" data-i18n="prof.btn.save">Enregistrer</button>
+              <button class="btn-cancel" onclick="cancelField('phone')" data-i18n="prof.btn.cancel">Annuler</button>
+            </span>
+          </div>
         </div>
+
+        <div class="field-help mt-2 d-none" id="coordSecNote"><i class="fa fa-shield-halved me-1"></i><span data-i18n="prof.coord.secnote">Pour votre sécurité : la modification de l'e-mail ou du téléphone demande votre mot de passe actuel, envoie un code au nouveau contact, et notifie votre contact actuel.</span></div>
       </div>
 
       <!-- 2b. Mot de passe (vérification par mot de passe actuel) -->
@@ -288,6 +303,7 @@
                 <button type="button" class="pwd-eye" onclick="togglePwdField('pwdCurrent', this)" data-i18n-aria="prof.pwd.toggle_aria" aria-label="Afficher le mot de passe"><i class="fa fa-eye"></i></button>
               </div>
               <div class="field-hint text-danger mb-2 d-none" id="pwdCurrentErr"><i class="fa fa-circle-exclamation me-1"></i><span data-i18n="prof.pwd.current_err">Mot de passe actuel incorrect.</span></div>
+              <div class="field-hint text-danger mb-2 d-none pwd-throttle" id="pwdThrottle"><i class="fa fa-lock me-1"></i><span data-i18n-html="prof.pwd.locked_html">Trop de tentatives. Réessayez dans quelques minutes ou <a href="11-password-reset.html" style="color:#155e75;font-weight:600;text-decoration:none">réinitialisez votre mot de passe</a>.</span></div>
 
               <label class="form-label small fw-semibold mb-1 mt-2" for="pwdNew" data-i18n="prof.pwd.new">Nouveau mot de passe</label>
               <div class="pwd-wrap">
@@ -316,13 +332,13 @@
           <h6><i class="fa fa-shield-halved" style="color:#16a085;"></i><span data-i18n="prof.rgpd.title">Mon compte & mes données</span></h6>
         </div>
         <div class="d-flex flex-wrap gap-2 align-items-center justify-content-between">
-          <div class="small" style="color:#7f8c8d; max-width:520px;" data-i18n="prof.rgpd.note">Vous pouvez exporter une copie de vos données personnelles à tout moment (portabilité RGPD).</div>
-          <button class="btn btn-light fw-semibold" style="border:1px solid #dfe6e9;" onclick="toast()" data-i18n="prof.rgpd.export"><i class="fa fa-download me-1"></i>Exporter mes données</button>
+          <div class="small" style="color:#7f8c8d; max-width:520px;" data-i18n-html="prof.rgpd.note">Vous pouvez exporter une copie de vos données personnelles (format <strong>JSON</strong>, portabilité RGPD) à tout moment. Cet export <strong>n'efface pas</strong> votre compte.</div>
+          <button class="btn btn-light fw-semibold" style="border:1px solid #dfe6e9;" onclick="exportData()" data-i18n="prof.rgpd.export"><i class="fa fa-download me-1"></i>Exporter mes données</button>
         </div>
         <hr class="my-3" style="border-color:#eef2f4;">
         <div class="d-flex flex-wrap gap-2 align-items-center justify-content-between">
           <div class="small" style="color:#7f8c8d; max-width:520px;" data-i18n-html="prof.rgpd.delete_note">Pour supprimer votre compte, écrivez à notre support. <span style="color:#b0b8bf;">(La suppression en libre-service sera disponible ultérieurement.)</span></div>
-          <a class="btn btn-light fw-semibold" style="border:1px solid #dfe6e9;" href="mailto:contact.support@fueni.com?subject=Suppression%20de%20mon%20compte%20FUENI"><i class="fa fa-envelope me-1"></i>contact.support@fueni.com</a>
+          <a class="btn btn-light fw-semibold" style="border:1px solid #dfe6e9;" href="mailto:support@fueni.com?subject=Suppression%20de%20mon%20compte%20FUENI"><i class="fa fa-envelope me-1"></i>support@fueni.com</a>
         </div>
         <hr class="my-3" style="border-color:#eef2f4;">
         <div class="small"><i class="fa fa-file-shield me-1" style="color:#16a085;"></i><a href="#" style="color:#155e75;text-decoration:none" data-i18n="prof.rgpd.privacy">Politique de confidentialité</a> · <a href="#" style="color:#155e75;text-decoration:none" data-i18n="prof.rgpd.terms">Conditions générales (CGU)</a></div>
@@ -349,6 +365,25 @@
       <div class="d-flex gap-2 justify-content-center mt-2">
         <button class="btn-save" onclick="confirmOtp()" data-i18n="prof.otp.confirm">Confirmer</button>
         <button class="btn-cancel" onclick="closeOtp()" data-i18n="prof.btn.cancel">Annuler</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step-up : ré-authentification (mot de passe actuel) avant un changement d'e-mail/téléphone — cf. SF-ACCOUNT-PROFILE §6.2 -->
+  <div class="ov" id="reauthModal">
+    <div class="ov-card">
+      <h5 data-i18n="prof.reauth.title">Confirmez votre identité</h5>
+      <p class="text-muted small mb-1" data-i18n="prof.reauth.desc">Pour des raisons de sécurité, confirmez votre identité avec votre mot de passe actuel.</p>
+      <p class="small mb-0" style="color:#94a3b8;" data-i18n="prof.reauth.demo">Mot de passe de démo : MotDePasse123!</p>
+      <div class="pwd-wrap mt-2">
+        <input type="password" class="form-control" id="reauthPwd" autocomplete="current-password" placeholder="Mot de passe actuel">
+        <button type="button" class="pwd-eye" onclick="togglePwdField('reauthPwd', this)" aria-label="Afficher le mot de passe"><i class="fa fa-eye"></i></button>
+      </div>
+      <div class="field-hint text-danger mt-1 d-none" id="reauthErr"><i class="fa fa-circle-exclamation me-1"></i><span data-i18n="prof.reauth.err">Mot de passe incorrect.</span></div>
+      <div class="field-hint text-danger mt-1 d-none pwd-throttle" id="reauthThrottle"><i class="fa fa-lock me-1"></i><span data-i18n-html="prof.pwd.locked_html">Trop de tentatives. Réessayez dans quelques minutes ou <a href="11-password-reset.html" style="color:#155e75;font-weight:600;text-decoration:none">réinitialisez votre mot de passe</a>.</span></div>
+      <div class="d-flex gap-2 justify-content-end mt-3">
+        <button class="btn-cancel" onclick="closeReauth()" data-i18n="prof.btn.cancel">Annuler</button>
+        <button class="btn-save" onclick="confirmReauth()" data-i18n="prof.reauth.confirm">Continuer</button>
       </div>
     </div>
   </div>
@@ -644,32 +679,143 @@
       err.classList.add('d-none'); inp.classList.remove('input-invalid'); inp.classList.add('input-valid');
       return isProfEmail(v) && !TAKEN_EMAILS.includes(v.toLowerCase());
     }
-    function saveCoord() {
-      // 1) Validation e-mail
+    // ---- Édition PAR CHAMP (e-mail / téléphone séparément — une seule modification à la fois) ----
+    let coordEditing = null;
+    function toggleField(which, editing) {
+      const row = document.getElementById('row-' + which);
+      row.querySelectorAll('.view').forEach(e => e.classList.toggle('d-none', editing));
+      row.querySelectorAll('.edit').forEach(e => e.classList.toggle('d-none', !editing));
+      document.getElementById(which + '-editbtn').classList.toggle('d-none', editing);
+      document.getElementById(which + '-actions').classList.toggle('d-none', !editing);
+    }
+    function editField(which) {
+      if (coordEditing) return; // déjà en cours d'édition d'un champ
+      coordEditing = which;
+      toggleField(which, true);
+      // init APRÈS le toggle (qui dé-masque tous les .edit) pour re-masquer l'erreur e-mail
+      if (which === 'email') initCoordEmail();
+      if (which === 'phone') initCoordPhone();
+      // une seule modif à la fois : on masque le « Modifier » de l'autre champ
+      document.getElementById((which === 'email' ? 'phone' : 'email') + '-editbtn').classList.add('d-none');
+      document.getElementById('coordSecNote').classList.remove('d-none');
+    }
+    function exitField(which) {
+      coordEditing = null;
+      toggleField(which, false);
+      document.getElementById((which === 'email' ? 'phone' : 'email') + '-editbtn').classList.remove('d-none');
+      document.getElementById('coordSecNote').classList.add('d-none');
+    }
+    function cancelField(which) {
+      if (which === 'email') {
+        const inp = document.getElementById('coord-email-input');
+        inp.value = document.getElementById('coord-email-view').textContent.trim();
+        document.getElementById('coordEmailErr').classList.add('d-none');
+        inp.classList.remove('input-invalid', 'input-valid');
+      }
+      exitField(which);
+    }
+    // Procédure standard de changement d'identifiant (cf. SF-ACCOUNT-PROFILE §6.2) :
+    //   1) ré-auth mot de passe (step-up) → 2) OTP sur le NOUVEAU canal → 3) alerte sur l'ANCIEN canal
+    function saveEmail() {
       const emailInp = document.getElementById('coord-email-input');
       if (!checkProfEmail(true)) { emailInp.focus(); return; }
-      // 2) Validation téléphone (longueur attendue selon l'indicatif)
+      // Comparaison normalisée (casse + espaces) : retaper la même adresse = aucun changement
+      const changed = emailInp.value.trim().toLowerCase() !== document.getElementById('coord-email-view').textContent.trim().toLowerCase();
+      if (!changed) { exitField('email'); return; }
+      pendingApply = () => {
+        document.getElementById('coord-email-view').textContent = emailInp.value.trim();
+        exitField('email');
+        markEmailVerified();
+        toast('prof.coord.changed_email_alert');
+      };
+      openReauth(() => openOtp('prof.otp.desc_new_email'));
+    }
+    function savePhone() {
       const c = getCountry((document.getElementById('cpIso').value || '').trim());
       const digits = (document.getElementById('cpField').value || '').replace(/\D/g, '');
       const phoneHint = document.getElementById('cpHint');
       if (digits && c && c.len && digits.length !== c.len) { phoneHint.classList.remove('d-none'); document.getElementById('cpField').focus(); return; }
       phoneHint.classList.add('d-none');
-      // 3) OTP seulement si l'e-mail ou le téléphone a réellement changé
-      const emailChanged = emailInp.value.trim() !== document.getElementById('coord-email-view').textContent.trim();
       const newPhone = (document.getElementById('cpDial').textContent + ' ' + document.getElementById('cpField').value.trim()).trim();
-      const phoneChanged = digits && newPhone !== document.getElementById('coord-phone-view').textContent.trim();
-      if (emailChanged || phoneChanged) {
-        pendingApply = () => { applySection('coord'); if (emailChanged) markEmailVerified(); };
-        openOtp('prof.otp.desc');
-      } else applySection('coord');
+      // Comparaison sur les chiffres (indicatif + numéro) : un simple reformatage ne compte pas comme un changement
+      const changed = digits && newPhone.replace(/\D/g, '') !== document.getElementById('coord-phone-view').textContent.replace(/\D/g, '');
+      if (!changed) { exitField('phone'); return; }
+      pendingApply = () => {
+        applyCoordPhone();
+        exitField('phone');
+        toast('prof.coord.changed_phone_alert');
+      };
+      openReauth(() => openOtp('prof.otp.desc_new_phone'));
+    }
+
+    // ---- Step-up : ré-authentification par mot de passe avant un changement d'e-mail/téléphone ----
+    let afterReauth = null;
+    function openReauth(next) {
+      afterReauth = next;
+      const p = document.getElementById('reauthPwd'); p.value = ''; p.type = 'password';
+      document.getElementById('reauthErr').classList.add('d-none');
+      document.getElementById('reauthThrottle').classList.toggle('d-none', !pwdLocked);
+      document.querySelectorAll('#reauthModal .pwd-eye i').forEach(i => i.className = 'fa fa-eye');
+      document.getElementById('reauthModal').classList.add('show');
+      setTimeout(() => p.focus(), 50);
+    }
+    function closeReauth() { document.getElementById('reauthModal').classList.remove('show'); afterReauth = null; pendingApply = null; }
+    function confirmReauth() {
+      if (pwdLocked) { document.getElementById('reauthThrottle').classList.remove('d-none'); return; }
+      const v = document.getElementById('reauthPwd').value;
+      if (v !== MOCK_CURRENT_PWD) {
+        if (pwdRegisterFail('reauthThrottle')) { document.getElementById('reauthErr').classList.add('d-none'); }
+        else { document.getElementById('reauthErr').classList.remove('d-none'); }
+        return;
+      }
+      pwdClearThrottle();
+      document.getElementById('reauthModal').classList.remove('show');
+      const next = afterReauth; afterReauth = null;
+      if (next) next();
+    }
+
+    // ---- Export RGPD (portabilité) : step-up ré-auth → génération JSON → téléchargement ----
+    // Prototype : génère un JSON côté navigateur. En prod : génération serveur, lien sécurisé à durée
+    // limitée (24-72 h), throttle ~1/jour, fichier transitoire purgé ; export ≠ suppression. Cf. SF §6.6.
+    function exportData() { openReauth(doExport); }
+    function doExport() {
+      const g = id => { const e = document.getElementById(id); return e ? e.textContent.trim() : ''; };
+      const data = {
+        _meta: { plateforme: 'FUENI', type: 'Export RGPD — portabilité des données', genere_le: new Date().toISOString() },
+        profil: { prenom: 'Aïssatou', nom: 'Diop', email: g('coord-email-view'), telephone: g('coord-phone-view') },
+        note: "Copie de vos données personnelles. Cet export n'entraîne pas la suppression de votre compte."
+      };
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href = url; a.download = 'fueni_export_donnees.json';
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      toast('prof.rgpd.export_done');
     }
 
     // ---- Mot de passe : vérification par mot de passe actuel (pas d'OTP) ----
-    const MOCK_CURRENT_PWD = 'Nazounki2026!'; // prototype : mot de passe « actuel » simulé
+    const MOCK_CURRENT_PWD = 'MotDePasse123!'; // prototype : mot de passe « actuel » simulé (= mot de passe de connexion)
+    // Throttle des tentatives de mot de passe actuel (ré-auth) — même secret que le login, même logique (§8.1) :
+    // verrouillage TEMPORAIRE auto-expirant après N échecs ; échappatoire = « Mot de passe oublié ? » (reset OTP). Jamais permanent.
+    const MAX_PWD_ATTEMPTS = 5;
+    let pwdFails = 0, pwdLocked = false, pwdUnlockTimer = null;
+    function pwdRegisterFail(throttleId) {
+      pwdFails++;
+      if (pwdFails >= MAX_PWD_ATTEMPTS) {
+        pwdLocked = true;
+        const t = document.getElementById(throttleId); if (t) t.classList.remove('d-none');
+        clearTimeout(pwdUnlockTimer);
+        pwdUnlockTimer = setTimeout(pwdClearThrottle, 30000); // déverrouillage auto (démo)
+        return true;
+      }
+      return false;
+    }
+    function pwdClearThrottle() { pwdFails = 0; pwdLocked = false; clearTimeout(pwdUnlockTimer); document.querySelectorAll('.pwd-throttle').forEach(e => e.classList.add('d-none')); }
     function initPwdEdit() {
       ['pwdCurrent', 'pwdNew'].forEach(id => { const e = document.getElementById(id); if (e) { e.value = ''; e.type = 'password'; } });
       document.querySelectorAll('#pwd-edit .pwd-eye i').forEach(i => i.className = 'fa fa-eye');
       ['pwdCurrentErr', 'pwdNewErr'].forEach(id => document.getElementById(id).classList.add('d-none'));
+      document.getElementById('pwdThrottle').classList.toggle('d-none', !pwdLocked);
       ['pr-len', 'pr-upper', 'pr-lower', 'pr-num', 'pr-spe'].forEach(id => document.getElementById(id).classList.remove('ok'));
       const bar = document.getElementById('pwdBar'); bar.style.width = '0%'; bar.style.background = '#e9ecef';
     }
@@ -698,10 +844,14 @@
       const neu = document.getElementById('pwdNew').value;
       const curErr = document.getElementById('pwdCurrentErr');
       const newErr = document.getElementById('pwdNewErr');
+      if (pwdLocked) { document.getElementById('pwdThrottle').classList.remove('d-none'); return; }
       let ok = true;
-      // 1) mot de passe actuel requis et correct
-      if (!cur || cur !== MOCK_CURRENT_PWD) { curErr.classList.remove('d-none'); document.getElementById('pwdCurrent').focus(); ok = false; }
-      else curErr.classList.add('d-none');
+      // 1) mot de passe actuel requis et correct (throttle après trop d'échecs — cf. SF-LOGIN §8.1)
+      if (!cur || cur !== MOCK_CURRENT_PWD) {
+        if (pwdRegisterFail('pwdThrottle')) { curErr.classList.add('d-none'); }
+        else { curErr.classList.remove('d-none'); document.getElementById('pwdCurrent').focus(); }
+        ok = false;
+      } else curErr.classList.add('d-none');
       // 2) nouveau mot de passe conforme
       const rules = profPwdRules(neu);
       const allOk = Object.values(rules).every(Boolean);
@@ -709,6 +859,7 @@
       else newErr.classList.add('d-none');
       if (!ok) return;
       // succès — pas d'OTP : la preuve est le mot de passe actuel
+      pwdClearThrottle();
       setMode('pwd', false);
       toast('prof.pwd.toast');
     }

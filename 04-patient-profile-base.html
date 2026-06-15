@@ -26,6 +26,8 @@
     .form-control, .form-select { border-radius: 8px; padding: 0.6rem 0.9rem; }
     .form-control:focus, .form-select:focus { border-color: #16a085; box-shadow: 0 0 0 0.25rem rgba(22,160,133,0.18); }
     .field-hint { font-size: 0.75rem; color: #95a5a6; margin-top: 4px; }
+    .field-err { font-size: 0.78rem; margin-top: 4px; }
+    .is-err, .ms-control.is-err { border-color: #e74c3c !important; box-shadow: 0 0 0 0.15rem rgba(231,76,60,0.15) !important; }
 
     /* Combobox recherchable single-select + Autre (calqué sur .ms de 06-patient-profile) */
     .ms { position: relative; }
@@ -85,10 +87,6 @@
       <h5 class="fw-bold mb-1" data-i18n="profile.title">Complétez votre profil</h5>
       <p class="text-muted small mb-3" data-i18n="profile.subtitle">Encore quelques informations (30 secondes).</p>
 
-      <div class="d-none alert alert-danger small mb-3" id="step2Error" role="alert">
-        <i class="fa fa-circle-exclamation me-2"></i><span data-i18n="profile.error.required">Veuillez compléter tous les champs obligatoires marqués d'un astérisque (*).</span>
-      </div>
-
       <form>
         <div class="mb-3">
           <label class="form-label fw-semibold small" data-i18n="profile.field.country_label">Pays de service *</label>
@@ -105,6 +103,7 @@
             <option value="CD">🇨🇩 RDC</option>
           </select>
           <div class="field-hint mt-1"><i class="fa fa-location-dot me-1"></i><span data-i18n="profile.field.country_hint">Pays où vous recherchez praticiens et services de santé (l'un de nos 9 pays couverts).</span></div>
+          <div class="field-err d-none text-danger" id="err-country"><i class="fa fa-circle-exclamation me-1"></i><span data-i18n="profile.field.required">Ce champ est requis.</span></div>
         </div>
 
         <div class="row g-2 mb-3">
@@ -123,6 +122,7 @@
                 </div>
               </div>
             </div>
+            <div class="field-err d-none text-danger" id="err-region"><i class="fa fa-circle-exclamation me-1"></i><span data-i18n="profile.field.required">Ce champ est requis.</span></div>
           </div>
           <div class="col-md-6">
             <label class="form-label fw-semibold small" data-i18n="profile.field.city_label">Ville / Commune / Localité *</label>
@@ -139,11 +139,12 @@
                 </div>
               </div>
             </div>
+            <div class="field-err d-none text-danger" id="err-city"><i class="fa fa-circle-exclamation me-1"></i><span data-i18n="profile.field.required">Ce champ est requis.</span></div>
           </div>
         </div>
 
         <div class="mb-3">
-          <label class="form-label fw-semibold small" data-i18n="profile.field.lang_label">Langue de communication *</label>
+          <label class="form-label fw-semibold small" data-i18n="profile.field.lang_label">Langue du compte *</label>
           <select class="form-select" id="langSelect">
             <option value="fr" selected data-i18n="profile.field.lang_fr">Français</option>
             <option value="en" data-i18n="profile.field.lang_en">English</option>
@@ -268,6 +269,8 @@
       combo[which].value = val;
       renderComboControl(which);
       closeCombo(which);
+      const ctrl = document.getElementById(which + 'Control'); if (ctrl) ctrl.classList.remove('is-err');
+      const e = document.getElementById('err-' + which); if (e) e.classList.add('d-none');
       if (which === 'region') onRegionChange();
     }
     function addComboOther(which) {
@@ -300,47 +303,60 @@
       closeCombo('city');
     }
     // Conserve le nom appelé par countrySelect onchange
-    function updateCityList() { updateRegionList(); }
+    function updateCityList() {
+      const c = document.getElementById('countrySelect'); if (c) c.classList.remove('is-err');
+      const e = document.getElementById('err-country'); if (e) e.classList.add('d-none');
+      updateRegionList();
+    }
 
     // Fermeture des menus au clic en dehors
     document.addEventListener('click', e => {
       ['region', 'city'].forEach(w => { const f = document.getElementById(w + 'Field'); if (f && !f.contains(e.target)) closeCombo(w); });
     });
 
+    function clearStep2Errors() {
+      ['countrySelect', 'regionControl', 'cityControl'].forEach(id => { const c = document.getElementById(id); if (c) c.classList.remove('is-err'); });
+      ['err-country', 'err-region', 'err-city'].forEach(id => { const e = document.getElementById(id); if (e) e.classList.add('d-none'); });
+    }
     function validateStep2() {
-      const errBox = document.getElementById('step2Error');
+      clearStep2Errors();
       const country = document.getElementById('countrySelect').value;
       const region = combo.region.value.trim();
       const city = combo.city.value.trim();
       const lang = document.getElementById('langSelect').value;
 
-      const allOk = country && region && city && lang;
+      // Validation PAR CHAMP : message « requis » sous chaque champ obligatoire vide
+      let firstErr = null;
+      const fail = (ctrlId, errId) => {
+        const c = document.getElementById(ctrlId); if (c) c.classList.add('is-err');
+        const e = document.getElementById(errId); if (e) e.classList.remove('d-none');
+        if (!firstErr) firstErr = c;
+      };
+      if (!country) fail('countrySelect', 'err-country');
+      if (!region) fail('regionControl', 'err-region');
+      if (!city) fail('cityControl', 'err-city');
 
-      if (!allOk) {
-        errBox.classList.remove('d-none');
-        errBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        return;
-      }
+      if (firstErr) { firstErr.scrollIntoView({ behavior: 'smooth', block: 'center' }); try { firstErr.focus({ preventScroll: true }); } catch (e) {} return; }
 
-      errBox.classList.add('d-none');
       try {
-        const raw = localStorage.getItem('fueni_signup_data');
+        const raw = sessionStorage.getItem('fueni_signup_data');
         const d = raw ? JSON.parse(raw) : {};
         d.country = country;
         d.region = region;
         d.city = city;
         d.lang = lang;
         d.address = document.getElementById('addressInput').value.trim();
-        localStorage.setItem('fueni_signup_data', JSON.stringify(d));
+        sessionStorage.setItem('fueni_signup_data', JSON.stringify(d));
       } catch (e) { /* ignore */ }
 
+      regSetReached(3);
       window.location = '03-patient-otp.html';
     }
 
     // Au chargement : pré-sélection pays selon indicatif tél de l'inscription
     document.addEventListener('DOMContentLoaded', () => {
       try {
-        const raw = localStorage.getItem('fueni_signup_data');
+        const raw = sessionStorage.getItem('fueni_signup_data');
         if (raw) {
           const d = JSON.parse(raw);
           const country = PHONE_CC_TO_COUNTRY[d.countryCode];
@@ -350,7 +366,24 @@
         }
       } catch (e) { /* ignore */ }
       updateRegionList();
+      regInitStepper();
     });
+
+    // ── Navigation par étapes (stepper cliquable + garde anti-saut) ──
+    const REG_STEP = 2;
+    const REG_PAGES = { 1: '02-patient-signup.html', 2: '04-patient-profile-base.html', 3: '03-patient-otp.html' };
+    function regReached() { return Math.max(parseInt(sessionStorage.getItem('fueni_reg_reached') || '0', 10) || 0, REG_STEP); }
+    function regSetReached(n) { sessionStorage.setItem('fueni_reg_reached', String(Math.max(regReached(), n))); }
+    function regGoto(step) { if (step !== REG_STEP && step <= regReached()) window.location = REG_PAGES[step]; }
+    function regInitStepper() {
+      regSetReached(REG_STEP);
+      const reached = regReached();
+      [1, 2, 3].forEach(n => {
+        const m = document.getElementById('step' + n + '-marker');
+        if (!m) return;
+        if (n !== REG_STEP && n <= reached) { m.style.cursor = 'pointer'; m.onclick = () => regGoto(n); }
+      });
+    }
   </script>
 <!-- Prototype version badge -->
 <script>(function(){if(window.__pv)return;window.__pv=1;var v=document.createElement('div');v.style.cssText='position:fixed;top:0;left:50%;transform:translateX(-50%);background:#155e75;color:#fff;padding:6px 20px;border-radius:0 0 16px 16px;font:600 12px/1 system-ui,-apple-system,sans-serif;letter-spacing:.6px;z-index:99999;box-shadow:0 3px 10px rgba(0,0,0,.2);text-transform:uppercase;display:flex;align-items:center;gap:8px';v.innerHTML='🧪 Prototype <span style="background:#f59e0b;color:#1a1a1a;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:4px">v1.4.0</span><span style="background:#facc15;color:#1a1a1a;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:4px;text-transform:none;letter-spacing:0">⏳ À valider</span>';document.body.appendChild(v);})();</script>
