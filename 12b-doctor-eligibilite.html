@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FUENI — Éligibilité médecin</title>
+  <script src="naz-i18n.js" defer></script>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="naz-common.css">
+  <style>
+    body { background: #f0f4f8; font-family: 'Segoe UI', sans-serif; min-height: 100vh; }
+    .proto-bar { position: sticky; top: 0; z-index: 100; }
+    .brand-area { background: #ffffff; border-bottom: 1px solid #e6edf3; padding: 0.7rem 0; }
+    .brand-bar { max-width: 980px; margin: 0 auto; padding: 0 1.25rem; display: flex; align-items: center; justify-content: space-between; }
+    .brand-logo img { height: 40px; width: auto; display: block; }
+    .btn-home { display: inline-flex; align-items: center; gap: 6px; color: #5b6b7b; text-decoration: none; font-weight: 600; font-size: 0.88rem; padding: 7px 12px; border-radius: 8px; transition: background .15s, color .15s; }
+    .btn-home:hover { background: #f0f4f8; color: #0F2444; }
+    .elig-card { background: white; border-radius: 16px; box-shadow: 0 4px 24px rgba(0,0,0,0.10); padding: 1.6rem 2rem; max-width: 720px; margin: 1.5rem auto 2rem; }
+    .role-chip { display: inline-flex; align-items: center; gap: 8px; padding: 6px 14px; border-radius: 20px; font-size: 0.82rem; font-weight: 600; margin-bottom: 1.2rem; background: #d6eaf2; color: #155e75; }
+    .form-select { border-radius: 8px; padding: 0.6rem 0.9rem; }
+    .form-select:focus { border-color: #155e75; box-shadow: 0 0 0 0.25rem rgba(21,94,117,0.18); }
+    .section-title { font-size: 0.95rem; font-weight: 700; color: #155e75; margin: 1.4rem 0 0.6rem; display: flex; align-items: center; gap: 6px; }
+    .tab-type { border: 2px solid #e9ecef; border-radius: 10px; padding: 12px 8px; text-align: center; height: 90px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; }
+    .tab-type.selected { border-color: #155e75; background: #eaf3f6; }
+    .tab-type.disabled { opacity: 0.55; background: #f6f7f9; cursor: not-allowed; }
+    .tab-type .icon { font-size: 1.4rem; }
+    .tab-type .soon { font-size: 0.6rem; background: #dee2e6; color: #6c757d; padding: 1px 7px; border-radius: 10px; text-transform: uppercase; letter-spacing: 0.4px; }
+    .field-hint { font-size: 0.75rem; color: #95a5a6; margin-top: 4px; }
+    .ref-card { border: 1px solid #cfe0e8; border-radius: 12px; background: #f6fafc; padding: 18px 20px; }
+    .ref-card .doc-li { display: flex; align-items: flex-start; gap: 8px; padding: 4px 0; font-size: 0.9rem; }
+    .ref-card .doc-li i { margin-top: 3px; }
+    .ref-regulateur { background: #eaf3f6; border-radius: 8px; padding: 10px 14px; font-size: 0.9rem; }
+    .btn-doctor { background: #155e75; border-color: #155e75; color: white; padding: 12px; border-radius: 8px; font-weight: 600; font-size: 1rem; transition: background 0.2s; }
+    .btn-doctor:hover { background: #114c5f; border-color: #114c5f; color: white; }
+    .btn-doctor:disabled { background: #9bb6c0; border-color: #9bb6c0; }
+    .progress-steps .step.active .step-circle, .progress-steps .step.done .step-circle { background: #155e75; color: white; }
+    .progress-steps .step.done::after { background: #155e75; }
+    .progress-steps .step.active .step-label { color: #155e75; font-weight: 600; }
+  </style>
+</head>
+<body data-i18n-pagetitle="doc.elig.page_title" data-i18n-toggle>
+
+  <!-- Proto bar -->
+  <div class="proto-bar d-flex align-items-center gap-3 flex-wrap">
+    <span><i class="fa fa-eye text-warning me-1"></i><strong data-i18n="doc.elig.proto_bar">Écran 12b — Éligibilité Médecin</strong></span>
+    <a href="01-home.html" class="text-decoration-none text-muted ms-auto small" data-i18n="common.back_home">← Retour à l'accueil</a>
+  </div>
+
+  <!-- Brand header -->
+  <div class="brand-area">
+    <div class="brand-bar">
+      <a href="01-home.html" class="brand-logo" aria-label="FUENI — Accueil"><img src="assets/fueni-lockup-horizontal.svg" alt="FUENI"></a>
+      <a href="01-home.html" class="btn-home"><i class="fa fa-house"></i><span data-i18n="common.home">Accueil</span></a>
+    </div>
+  </div>
+
+  <div class="container py-3" style="max-width:760px;">
+
+    <!-- Étapes (5) -->
+    <div class="progress-steps mb-4">
+      <div class="step active">
+        <div class="step-circle">1</div>
+        <div class="step-label" data-i18n="doc.steps.elig">Éligibilité</div>
+      </div>
+      <div class="step inactive">
+        <div class="step-circle">2</div>
+        <div class="step-label" data-i18n="doc.steps.reg">Inscription</div>
+      </div>
+      <div class="step inactive">
+        <div class="step-circle">3</div>
+        <div class="step-label" data-i18n="doc.steps.plan">Choix du plan</div>
+      </div>
+      <div class="step inactive">
+        <div class="step-circle">4</div>
+        <div class="step-label" data-i18n="doc.steps.pay">Paiement</div>
+      </div>
+      <div class="step inactive">
+        <div class="step-circle">5</div>
+        <div class="step-label" data-i18n="doc.steps.kyc">Justificatifs</div>
+      </div>
+      <div class="step inactive">
+        <div class="step-circle">6</div>
+        <div class="step-label" data-i18n="doc.steps.access">Accès</div>
+      </div>
+    </div>
+
+    <div class="elig-card">
+
+      <h5 class="fw-bold mb-1" data-i18n="doc.elig.title">Vérifions votre éligibilité</h5>
+      <p class="text-muted small mb-3" data-i18n-html="doc.elig.intro_html">
+        FUENI est ouvert aux <strong>médecins</strong> exerçant à titre individuel dans l'un des
+        <strong>9 pays</strong> couverts. Cette première étape détermine les justificatifs qui vous
+        seront demandés lors de la vérification.
+      </p>
+
+      <!-- Profession -->
+      <div class="section-title"><i class="fa fa-user-md"></i><span data-i18n="doc.elig.profession">Profession</span></div>
+      <div class="row g-2">
+        <div class="col-4">
+          <div class="tab-type selected">
+            <span class="icon">🩺</span>
+            <span class="fw-semibold" style="font-size:0.9rem;" data-i18n="doc.elig.prof_doctor">Médecin(e)</span>
+          </div>
+        </div>
+        <div class="col-4">
+          <div class="tab-type disabled">
+            <span class="icon">💊</span>
+            <span style="font-size:0.85rem;" data-i18n="doc.elig.prof_pharma">Pharmacien(ne)</span>
+            <span class="soon" data-i18n="doc.elig.soon">Bientôt</span>
+          </div>
+        </div>
+        <div class="col-4">
+          <div class="tab-type disabled">
+            <span class="icon">🩹</span>
+            <span style="font-size:0.85rem;" data-i18n="doc.elig.prof_nurse">Infirmier(ère)</span>
+            <span class="soon" data-i18n="doc.elig.soon">Bientôt</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pays d'exercice -->
+      <div class="section-title"><i class="fa fa-globe-africa"></i><span data-i18n="doc.elig.country_section">Pays d'exercice</span></div>
+      <label class="form-label fw-semibold small" data-i18n="doc.elig.country_label">Dans quel pays exercez-vous ? *</label>
+      <select class="form-select form-select-lg" id="paysSelect" onchange="onPays()">
+        <option value="" data-i18n="doc.elig.country_choose">— Sélectionner votre pays —</option>
+        <option value="Bénin" data-i18n="doc.elig.c_benin">Bénin</option>
+        <option value="Burkina Faso" data-i18n="doc.elig.c_burkina">Burkina Faso</option>
+        <option value="Cameroun" data-i18n="doc.elig.c_cameroun">Cameroun</option>
+        <option value="Côte d'Ivoire" data-i18n="doc.elig.c_civ">Côte d'Ivoire</option>
+        <option value="Mali" data-i18n="doc.elig.c_mali">Mali</option>
+        <option value="Niger" data-i18n="doc.elig.c_niger">Niger</option>
+        <option value="RDC" data-i18n="doc.elig.c_rdc">RDC</option>
+        <option value="Sénégal" data-i18n="doc.elig.c_senegal">Sénégal</option>
+        <option value="Togo" data-i18n="doc.elig.c_togo">Togo</option>
+        <option value="autre" data-i18n="doc.elig.country_other">Mon pays n'est pas dans la liste</option>
+      </select>
+
+      <!-- Aperçu du référentiel KYC (pays éligible) -->
+      <div id="kyc-preview" class="ref-card mt-4 d-none">
+        <div class="fw-semibold mb-2" style="color:#155e75;">
+          <i class="fa fa-clipboard-check me-1"></i><span data-i18n="doc.elig.ref_title">Justificatifs à préparer</span> — <span id="ref-pays"></span>
+        </div>
+        <div class="ref-regulateur mb-3">
+          <i class="fa fa-landmark me-1" style="color:#155e75;"></i>
+          <span data-i18n="doc.elig.ref_regulateur">Régulateur de référence :</span> <strong id="ref-ordre"></strong>
+        </div>
+        <div class="doc-li"><i class="fa fa-check-circle text-success"></i><span data-i18n="doc.elig.doc_id">Pièce d'identité (CNI, passeport ou carte professionnelle)</span></div>
+        <div class="doc-li"><i class="fa fa-check-circle text-success"></i><span data-i18n="doc.elig.doc_diploma">Diplôme médical</span></div>
+        <div class="doc-li"><i class="fa fa-check-circle text-success"></i><span data-i18n="doc.elig.doc_ordre">Attestation d'inscription à l'Ordre</span></div>
+        <div class="doc-li"><i class="fa fa-check-circle text-success"></i><span data-i18n="doc.elig.doc_rib">RIB local ou justificatif de compte bancaire / Mobile Money</span></div>
+        <div class="doc-li"><i class="fa fa-check-circle text-success"></i><span data-i18n="doc.elig.doc_domicile">Justificatif de domicile du cabinet</span></div>
+        <div class="doc-li"><i class="fa fa-circle-question text-warning"></i><span data-i18n-html="doc.elig.doc_rcpro_html">Attestation RC Pro <span class="text-muted">(optionnelle dans votre pays — recommandée)</span></span></div>
+        <div class="small text-muted mt-2">
+          <i class="fa fa-circle-info me-1"></i><span data-i18n="doc.elig.no_docs_now">Aucun document n'est demandé maintenant. Vous les téléverserez après la création de votre compte.</span>
+        </div>
+      </div>
+
+      <!-- Pays hors périmètre MVP -->
+      <div id="not-eligible" class="alert alert-warning mt-4 d-none">
+        <div class="fw-semibold mb-1"><i class="fa fa-clock me-1"></i><span data-i18n="doc.elig.blocked_title">Bientôt disponible dans votre pays</span></div>
+        <p class="small mb-2" data-i18n="doc.elig.blocked_body">
+          FUENI démarre sur 9 pays (Bénin, Burkina Faso, Cameroun, Côte d'Ivoire, Mali, Niger, RDC, Sénégal, Togo)
+          et s'étendra progressivement. Laissez-nous votre e-mail pour être prévenu de l'ouverture chez vous.
+        </p>
+        <div class="input-group input-group-sm" style="max-width:360px;">
+          <input type="email" class="form-control" data-i18n-placeholder="doc.elig.notify_ph" placeholder="votre@email.com">
+          <button class="btn btn-outline-secondary" type="button" data-i18n="doc.elig.notify_btn" onclick="this.textContent='✓'; this.disabled=true;">Me prévenir</button>
+        </div>
+      </div>
+
+      <div class="d-grid mt-4">
+        <button class="btn btn-doctor w-100" id="continueBtn" onclick="goNext()" disabled>
+          <span data-i18n="doc.elig.continue">Continuer — Choisir mon plan</span> <i class="fa fa-arrow-right ms-2"></i>
+        </button>
+      </div>
+      <a href="01-home.html" class="btn btn-link w-100 text-muted small mt-1" data-i18n="common.prev_step">← Étape précédente</a>
+      <p class="text-center text-muted small mt-3 mb-0" data-i18n="doc.elig.footer">
+        Inscription gratuite · Votre qualité de professionnel de santé sera vérifiée manuellement par l'équipe FUENI.
+      </p>
+    </div>
+
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="naz-common.js"></script>
+  <script>
+    // ── Référentiel KYC par pays (9 pays MVP) ─────────────────────────────────
+    // Source : SF-DOCTOR-REGISTRATION §4.2. Liste de documents identique sur les
+    // 9 pays ; seul le régulateur (Ordre) varie. RC Pro = optionnelle partout en MVP.
+    // Les noms d'Ordre sont des noms propres (non traduits).
+    const KYC_REF = {
+      'Bénin':         { ordre: "Ordre national des médecins du Bénin" },
+      'Burkina Faso':  { ordre: "Ordre national des médecins du Burkina Faso" },
+      'Cameroun':      { ordre: "Ordre National des Médecins du Cameroun (ONMC)" },
+      "Côte d'Ivoire": { ordre: "Ordre des Médecins de Côte d'Ivoire (OMCI)" },
+      'Mali':          { ordre: "Ordre national des médecins du Mali" },
+      'Niger':         { ordre: "Ordre national des médecins du Niger" },
+      'RDC':           { ordre: "Conseil National de l'Ordre des Médecins (RDC)" },
+      'Sénégal':       { ordre: "Ordre des Médecins du Sénégal" },
+      'Togo':          { ordre: "Ordre national des médecins du Togo" }
+    };
+
+    function onPays() {
+      const sel = document.getElementById('paysSelect');
+      const pays = sel.value;
+      const preview = document.getElementById('kyc-preview');
+      const blocked = document.getElementById('not-eligible');
+      const cta = document.getElementById('continueBtn');
+
+      if (pays && KYC_REF[pays]) {
+        // Libellé localisé du pays = texte de l'option sélectionnée
+        document.getElementById('ref-pays').textContent = sel.options[sel.selectedIndex].textContent;
+        document.getElementById('ref-ordre').textContent = KYC_REF[pays].ordre;
+        preview.classList.remove('d-none');
+        blocked.classList.add('d-none');
+        cta.disabled = false;
+      } else if (pays === 'autre') {
+        preview.classList.add('d-none');
+        blocked.classList.remove('d-none');
+        cta.disabled = true;
+      } else {
+        preview.classList.add('d-none');
+        blocked.classList.add('d-none');
+        cta.disabled = true;
+      }
+    }
+
+    function goNext() {
+      const pays = document.getElementById('paysSelect').value;
+      if (!KYC_REF[pays]) return;
+      // On transmet le pays choisi au reste du parcours (pré-rempli à l'inscription)
+      localStorage.setItem('naz_doctor_country', pays);
+      localStorage.setItem('naz_zone', 'africa'); // les 9 pays MVP sont en zone Afrique
+      window.location.href = '13-doctor-inscription.html';
+    }
+
+    // Pré-sélection si l'utilisateur revient sur l'étape + refresh à chaque changement de langue
+    function initElig() {
+      const saved = localStorage.getItem('naz_doctor_country');
+      const sel = document.getElementById('paysSelect');
+      if (saved && KYC_REF[saved]) {
+        for (let o of sel.options) { if (o.value === saved) { o.selected = true; break; } }
+      }
+      onPays();
+    }
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initElig);
+    } else { initElig(); }
+    // Re-localiser les libellés dynamiques (pays affiché) au changement de langue
+    document.addEventListener('fueni:langchange', onPays);
+  </script>
+<script>/* Stepper cliquable : retour aux étapes déjà franchies */(function(){var u=['12b-doctor-eligibilite.html','13-doctor-inscription.html','14-doctor-plans.html','15-doctor-paiement.html','15b-doctor-kyc.html','16-doctor-confirmation.html'];document.querySelectorAll('.progress-steps .step').forEach(function(s,i){if(s.classList.contains('done')&&u[i]){s.style.cursor='pointer';s.title='Revenir à cette étape';s.addEventListener('click',function(){location.href=u[i];});}});})();</script>
+<!-- Prototype version badge -->
+<script>(function(){if(window.__pv)return;window.__pv=1;var v=document.createElement('div');v.style.cssText='position:fixed;top:0;left:50%;transform:translateX(-50%);background:#155e75;color:#fff;padding:6px 20px;border-radius:0 0 16px 16px;font:600 12px/1 system-ui,-apple-system,sans-serif;letter-spacing:.6px;z-index:99999;box-shadow:0 3px 10px rgba(0,0,0,.2);text-transform:uppercase;display:flex;align-items:center;gap:8px';v.innerHTML='🧪 Prototype <span style="background:#f59e0b;color:#1a1a1a;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:4px">v1.4.0</span><span style="background:#facc15;color:#1a1a1a;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:4px;text-transform:none;letter-spacing:0">⏳ À valider</span>';document.body.appendChild(v);})();</script>
+</body>
+</html>

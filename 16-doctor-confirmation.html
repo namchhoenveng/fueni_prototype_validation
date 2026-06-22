@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FUENI — Inscription confirmée</title>
+  <script src="naz-i18n.js" defer></script>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="naz-common.css">
+  <style>
+    body { background: #f0f4f8; font-family: 'Segoe UI', sans-serif; min-height: 100vh; }
+    .proto-bar { position: sticky; top: 0; z-index: 100; }
+    .brand-area { background: #ffffff; border-bottom: 1px solid #e6edf3; padding: 0.7rem 0; }
+    .brand-bar { max-width: 980px; margin: 0 auto; padding: 0 1.25rem; display: flex; align-items: center; justify-content: space-between; }
+    .brand-logo img { height: 40px; width: auto; display: block; }
+    .btn-home { display: inline-flex; align-items: center; gap: 6px; color: #5b6b7b; text-decoration: none; font-weight: 600; font-size: 0.88rem; padding: 7px 12px; border-radius: 8px; }
+    .btn-home:hover { background: #f0f4f8; color: #0F2444; }
+    .card { border: none; border-radius: 16px; box-shadow: 0 4px 24px rgba(0,0,0,0.09); }
+    .check-circle { width: 84px; height: 84px; border-radius: 50%; background: linear-gradient(135deg, #27ae60, #2ecc71); display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem; box-shadow: 0 4px 20px rgba(39,174,96,0.35); animation: popIn 0.5s cubic-bezier(0.17,0.89,0.32,1.28) both; }
+    @keyframes popIn { from { transform: scale(0); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    .step-item { display: flex; align-items: flex-start; gap: 14px; padding: 12px 0; border-bottom: 1px solid #f0f0f0; }
+    .step-item:last-child { border-bottom: none; }
+    .step-dot { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; flex-shrink: 0; }
+    .step-dot.done { background: #d5f5e3; color: #27ae60; }
+    .step-dot.active { background: #fef9e7; color: #f39c12; }
+    .step-dot.next { background: #eaf3f6; color: #155e75; }
+    .plan-recap { background: linear-gradient(135deg, #114c5f, #155e75); color: white; border-radius: 12px; padding: 18px 22px; }
+    .btn-dashboard { background: #155e75; border-color: #155e75; color: white; font-size: 1rem; padding: 13px; border-radius: 8px; }
+    .btn-dashboard:hover { background: #114c5f; border-color: #114c5f; color: white; }
+    .progress-steps .step.active .step-circle, .progress-steps .step.done .step-circle { background: #155e75; color: white; }
+    .progress-steps .step.done::after { background: #155e75; }
+    .progress-steps .step.active .step-label { color: #155e75; font-weight: 600; }
+  </style>
+</head>
+<body data-i18n-pagetitle="doc.conf.page_title" data-i18n-toggle>
+
+  <div class="proto-bar d-flex align-items-center gap-3 flex-wrap">
+    <span><i class="fa fa-eye text-warning me-1"></i><strong data-i18n="doc.conf.proto_bar">Écran 16 — Confirmation Inscription Médecin</strong></span>
+    <a href="01-home.html" class="text-decoration-none text-muted ms-auto small" data-i18n="common.back_home">← Retour à l'accueil</a>
+  </div>
+
+  <div class="brand-area">
+    <div class="brand-bar">
+      <a href="01-home.html" class="brand-logo" aria-label="FUENI — Accueil"><img src="assets/fueni-lockup-horizontal.svg" alt="FUENI"></a>
+      <a href="01-home.html" class="btn-home"><i class="fa fa-house"></i><span data-i18n="common.home">Accueil</span></a>
+    </div>
+  </div>
+
+  <div class="container py-4" style="max-width:600px;">
+
+    <div class="progress-steps mb-4" style="max-width:600px; margin:0 auto 2rem;">
+      <div class="step done"><div class="step-circle"><i class="fa fa-check" style="font-size:0.7rem;"></i></div><div class="step-label" data-i18n="doc.steps.elig">Éligibilité</div></div>
+      <div class="step done"><div class="step-circle"><i class="fa fa-check" style="font-size:0.7rem;"></i></div><div class="step-label" data-i18n="doc.steps.reg">Inscription</div></div>
+      <div class="step done"><div class="step-circle"><i class="fa fa-check" style="font-size:0.7rem;"></i></div><div class="step-label" data-i18n="doc.steps.plan">Choix du plan</div></div>
+      <div class="step done"><div class="step-circle"><i class="fa fa-check" style="font-size:0.7rem;"></i></div><div class="step-label" data-i18n="doc.steps.pay">Paiement</div></div>
+      <div class="step done"><div class="step-circle"><i class="fa fa-check" style="font-size:0.7rem;"></i></div><div class="step-label" data-i18n="doc.steps.kyc">Justificatifs</div></div>
+      <div class="step active"><div class="step-circle">6</div><div class="step-label" data-i18n="doc.steps.access">Accès</div></div>
+    </div>
+
+    <div class="card p-4 p-md-5 text-center mb-4">
+
+      <div class="check-circle"><i class="fa fa-check fa-2x text-white"></i></div>
+
+      <h3 class="fw-bold mb-2" data-i18n="doc.conf.title">Votre compte est créé !</h3>
+      <p class="text-muted mb-4" id="confWelcome" data-i18n="doc.conf.welcome">Bienvenue sur FUENI.</p>
+
+      <div class="text-start mb-4">
+        <div class="step-item">
+          <div class="step-dot done"><i class="fa fa-check"></i></div>
+          <div class="fw-semibold small" data-i18n="doc.conf.step1_title">Compte créé</div>
+        </div>
+        <div class="step-item">
+          <div class="step-dot active"><i class="fa fa-clock"></i></div>
+          <div class="fw-semibold small" data-i18n="doc.conf.step2_title">Vérification en cours · 24–48 h</div>
+        </div>
+        <div class="step-item">
+          <div class="step-dot next"><i class="fa fa-unlock-alt"></i></div>
+          <div class="fw-semibold small" data-i18n="doc.conf.step3_title">Accès complet après validation</div>
+        </div>
+      </div>
+
+      <div class="d-grid">
+        <a href="17-doctor-dashboard.html" class="btn btn-dashboard fw-semibold">
+          <i class="fa fa-home me-2"></i><span data-i18n="doc.conf.cta">Accéder à mon espace</span>
+        </a>
+      </div>
+
+      <p class="text-muted small mt-3 mb-0" data-i18n="doc.conf.email_sent">Un e-mail de confirmation vous a été envoyé.</p>
+    </div>
+
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="naz-common.js"></script>
+  <script>
+    const t = (k, fb) => (window.NazI18n ? NazI18n.t(k) : '') || fb;
+    const getLang = () => (window.NazI18n ? NazI18n.getLang() : 'fr');
+
+    function trialEndDate() {
+      const d = new Date(); d.setDate(d.getDate() + 15);
+      try { return new Intl.DateTimeFormat(getLang() === 'en' ? 'en-GB' : 'fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }).format(d); }
+      catch (e) { return d.toLocaleDateString(); }
+    }
+
+    function render() {
+      const isFree = (localStorage.getItem('naz_plan') || 'solo') === 'gratuit';
+      document.getElementById('confWelcome').textContent = isFree
+        ? t('doc.conf.welcome', 'Bienvenue sur FUENI.')
+        : t('doc.conf.welcome_trial', 'Bienvenue sur FUENI. Votre essai gratuit de 15 jours commence aujourd\'hui.');
+    }
+
+    render();
+    document.addEventListener('fueni:langchange', render);
+  </script>
+<script>/* Stepper cliquable : retour aux étapes déjà franchies */(function(){var u=['12b-doctor-eligibilite.html','13-doctor-inscription.html','14-doctor-plans.html','15-doctor-paiement.html','15b-doctor-kyc.html','16-doctor-confirmation.html'];document.querySelectorAll('.progress-steps .step').forEach(function(s,i){if(s.classList.contains('done')&&u[i]){s.style.cursor='pointer';s.title='Revenir à cette étape';s.addEventListener('click',function(){location.href=u[i];});}});})();</script>
+<!-- Prototype version badge -->
+<script>(function(){if(window.__pv)return;window.__pv=1;var v=document.createElement('div');v.style.cssText='position:fixed;top:0;left:50%;transform:translateX(-50%);background:#155e75;color:#fff;padding:6px 20px;border-radius:0 0 16px 16px;font:600 12px/1 system-ui,-apple-system,sans-serif;letter-spacing:.6px;z-index:99999;box-shadow:0 3px 10px rgba(0,0,0,.2);text-transform:uppercase;display:flex;align-items:center;gap:8px';v.innerHTML='🧪 Prototype <span style="background:#f59e0b;color:#1a1a1a;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:4px">v1.4.0</span><span style="background:#facc15;color:#1a1a1a;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:4px;text-transform:none;letter-spacing:0">⏳ À valider</span>';document.body.appendChild(v);})();</script>
+</body>
+</html>

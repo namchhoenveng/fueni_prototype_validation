@@ -53,16 +53,19 @@ i[class*="fa-"], i[class*=" fa-"], i[class^="fa-"], i.fa {
 /* ── Bootstrap component overrides — modern aesthetic ──────────────────── */
 .form-control, .form-select {
   border-radius: 10px !important;
-  border: 1.5px solid #e2e8f0;
+  border: 1.5px solid #9fb0c0;
   padding: 11px 14px;
   font-size: 0.94rem;
   transition: all 0.15s !important;
 }
+.form-control:hover, .form-select:hover { border-color: #7d92a6; }
 .form-control:focus, .form-select:focus {
   border-color: var(--fueni-cyan-accent) !important;
   box-shadow: 0 0 0 3px rgba(6,182,212,0.12) !important;
   outline: none;
 }
+.form-check-input { border: 1.5px solid #9fb0c0; }
+.form-check-input:focus { border-color: var(--fueni-cyan-accent); box-shadow: 0 0 0 3px rgba(6,182,212,0.12); }
 
 .btn {
   border-radius: 10px !important;

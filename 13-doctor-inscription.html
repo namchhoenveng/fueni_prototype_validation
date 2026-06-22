@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FUENI — Inscription médecin</title>
+  <script src="naz-i18n.js" defer></script>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="naz-common.css">
+  <style>
+    body { background: #f0f4f8; font-family: 'Segoe UI', sans-serif; min-height: 100vh; }
+    .proto-bar { position: sticky; top: 0; z-index: 100; }
+    .brand-area { background: #ffffff; border-bottom: 1px solid #e6edf3; padding: 0.7rem 0; }
+    .brand-bar { max-width: 980px; margin: 0 auto; padding: 0 1.25rem; display: flex; align-items: center; justify-content: space-between; }
+    .brand-logo img { height: 40px; width: auto; display: block; }
+    .btn-home { display: inline-flex; align-items: center; gap: 6px; color: #5b6b7b; text-decoration: none; font-weight: 600; font-size: 0.88rem; padding: 7px 12px; border-radius: 8px; transition: background .15s, color .15s; }
+    .btn-home:hover { background: #f0f4f8; color: #0F2444; }
+    .signup-card { background: white; border-radius: 16px; box-shadow: 0 4px 24px rgba(0,0,0,0.10); padding: 1.6rem 2rem; max-width: 720px; margin: 1.5rem auto 2rem; }
+    .role-chip { display: inline-flex; align-items: center; gap: 8px; padding: 6px 14px; border-radius: 20px; font-size: 0.82rem; font-weight: 600; margin-bottom: 1.2rem; background: #d6eaf2; color: #155e75; }
+    .form-control, .form-select { border-radius: 8px; padding: 0.6rem 0.9rem; }
+    .form-control:focus, .form-select:focus { border-color: #155e75; box-shadow: 0 0 0 0.25rem rgba(21,94,117,0.18); }
+    .form-check-input { width: 1.25em; height: 1.25em; margin-top: 0.15em; border: 2px solid #94a3b8; cursor: pointer; }
+    .form-check-input:checked { background-color: #155e75; border-color: #155e75; }
+    .section-title { font-size: 0.95rem; font-weight: 700; color: #155e75; margin: 1.5rem 0 0.7rem; display: flex; align-items: center; gap: 6px; border-top: 1px solid #eef2f4; padding-top: 1.2rem; }
+    .section-title:first-of-type { border-top: none; padding-top: 0; margin-top: 0.5rem; }
+    .field-hint { font-size: 0.75rem; color: #95a5a6; margin-top: 4px; }
+    .field-err { font-size: 0.78rem; margin-top: 4px; }
+    .is-err { border-color: #e74c3c !important; box-shadow: 0 0 0 0.15rem rgba(231,76,60,0.15) !important; }
+    .pwd-rules-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 16px; }
+    .pwd-rule { font-size: 0.78rem; display: flex; align-items: center; gap: 6px; color: #aaa; }
+    .pwd-rule.ok { color: #27ae60; }
+    .pwd-strength { height: 4px; border-radius: 4px; background: #e9ecef; overflow: hidden; margin-top: 6px; }
+    .pwd-strength-fill { height: 100%; border-radius: 4px; transition: width 0.3s, background 0.3s; width: 0%; }
+    .upload-zone { border: 2px dashed #bdc3c7; border-radius: 8px; padding: 24px; text-align: center; cursor: pointer; background: #fafafa; }
+    .upload-zone:hover { border-color: #155e75; background: #eaf3f6; }
+    .btn-doctor { background: #155e75; border-color: #155e75; color: white; padding: 12px; border-radius: 8px; font-weight: 600; font-size: 1rem; }
+    .btn-doctor:hover { background: #114c5f; border-color: #114c5f; color: white; }
+    .progress-steps .step.active .step-circle, .progress-steps .step.done .step-circle { background: #155e75; color: white; }
+    .progress-steps .step.done::after { background: #155e75; }
+    .progress-steps .step.active .step-label { color: #155e75; font-weight: 600; }
+    /* Sélecteur d'indicatif international (identique au flux patient) */
+    .iti { position: relative; display: flex; gap: 6px; }
+    .iti-trigger { flex: 0 0 104px; display: flex; align-items: center; gap: 6px; cursor: pointer; text-align: left; }
+    .iti-trigger #ccFlag { font-size: 1.05rem; }
+    .iti-menu { position: absolute; z-index: 1000; top: calc(100% + 4px); left: 0; width: 320px; max-width: 92vw; background: #fff; border: 1px solid #dfe6e9; border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,0.14); overflow: hidden; }
+    .iti-search-wrap { padding: 8px; border-bottom: 1px solid #eef2f4; }
+    .iti-search-wrap input { width: 100%; border: 1px solid #dfe6e9; border-radius: 8px; padding: 0.45rem 0.7rem; font-size: 0.9rem; outline: none; }
+    .iti-search-wrap input:focus { border-color: #155e75; }
+    .iti-list { max-height: 264px; overflow-y: auto; }
+    .iti-sec { position: sticky; top: 0; z-index: 1; padding: 8px 12px; font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.7px; display: flex; align-items: center; gap: 6px; }
+    .iti-sec-mvp { color: #0e6f5c; background: #d8f3ec; border-top: 1px solid #b8e6da; border-bottom: 1px solid #b8e6da; }
+    .iti-sec-mvp::before { content: "✓"; font-weight: 900; }
+    .iti-sec-all { color: #475569; background: #eef2f6; border-top: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0; }
+    .iti-sec-all::before { content: "🌍"; }
+    .iti-opt { display: flex; align-items: center; gap: 10px; padding: 0.5rem 0.9rem; cursor: pointer; font-size: 0.9rem; }
+    .iti-opt:hover, .iti-opt.active { background: #eaf3f6; }
+    .iti-opt .dial { margin-left: auto; color: #95a5a6; font-size: 0.82rem; }
+    .iti-empty { padding: 0.6rem 0.9rem; color: #95a5a6; font-size: 0.85rem; }
+  </style>
+</head>
+<body data-i18n-pagetitle="doc.reg.page_title" data-i18n-toggle>
+
+  <div class="proto-bar d-flex align-items-center gap-3 flex-wrap">
+    <span><i class="fa fa-eye text-warning me-1"></i><strong data-i18n="doc.reg.proto_bar">Écran 13 — Inscription Médecin</strong></span>
+    <a href="01-home.html" class="text-decoration-none text-muted ms-auto small" data-i18n="common.back_home">← Retour à l'accueil</a>
+  </div>
+
+  <div class="brand-area">
+    <div class="brand-bar">
+      <a href="01-home.html" class="brand-logo" aria-label="FUENI — Accueil"><img src="assets/fueni-lockup-horizontal.svg" alt="FUENI"></a>
+      <a href="01-home.html" class="btn-home"><i class="fa fa-house"></i><span data-i18n="common.home">Accueil</span></a>
+    </div>
+  </div>
+
+  <div class="container py-3" style="max-width:760px;">
+
+    <div class="progress-steps mb-4" style="max-width:600px; margin:0 auto;">
+      <div class="step done"><div class="step-circle"><i class="fa fa-check" style="font-size:0.7rem;"></i></div><div class="step-label" data-i18n="doc.steps.elig">Éligibilité</div></div>
+      <div class="step active"><div class="step-circle">2</div><div class="step-label" data-i18n="doc.steps.reg">Inscription</div></div>
+      <div class="step inactive"><div class="step-circle">3</div><div class="step-label" data-i18n="doc.steps.plan">Choix du plan</div></div>
+      <div class="step inactive"><div class="step-circle">4</div><div class="step-label" data-i18n="doc.steps.pay">Paiement</div></div>
+      <div class="step inactive"><div class="step-circle">5</div><div class="step-label" data-i18n="doc.steps.kyc">Justificatifs</div></div>
+      <div class="step inactive"><div class="step-circle">6</div><div class="step-label" data-i18n="doc.steps.access">Accès</div></div>
+    </div>
+
+    <div class="signup-card">
+
+      <form id="regForm" novalidate>
+        <div class="row g-2 mb-2">
+          <div class="col-md-6">
+            <label class="form-label fw-semibold small" data-i18n="doc.reg.f_firstname">Prénom *</label>
+            <input type="text" class="form-control" id="firstName" maxlength="80" data-i18n-placeholder="doc.reg.f_firstname_ph" placeholder="Ex : Aboubacar">
+            <div class="field-err d-none text-danger" id="err-firstName"><i class="fa fa-circle-exclamation me-1"></i><span data-i18n="doc.reg.required">Ce champ est requis.</span></div>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-semibold small" data-i18n="doc.reg.f_lastname">Nom *</label>
+            <input type="text" class="form-control" id="lastName" maxlength="80" data-i18n-placeholder="doc.reg.f_lastname_ph" placeholder="Ex : Diallo">
+            <div class="field-err d-none text-danger" id="err-lastName"><i class="fa fa-circle-exclamation me-1"></i><span data-i18n="doc.reg.required">Ce champ est requis.</span></div>
+          </div>
+        </div>
+        <div class="row g-2 mb-2">
+          <div class="col-md-6">
+            <label class="form-label fw-semibold small" data-i18n="doc.reg.f_dob">Date de naissance *</label>
+            <input type="date" class="form-control" id="dobField" oninput="checkAge()">
+            <div class="small text-muted mt-1" id="dobInfo"><i class="fa fa-info-circle me-1"></i><span data-i18n="signup.field.dob_info">Vous devez avoir 18 ans ou plus</span></div>
+            <div class="small text-danger mt-1 d-none" id="dobHint"><i class="fa fa-circle-exclamation me-1"></i><span data-i18n="signup.field.dob_hint">Vous devez avoir 18 ans ou plus pour vous inscrire.</span></div>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-semibold small" data-i18n="doc.reg.f_sex">Sexe *</label>
+            <select class="form-select" id="sexField">
+              <option value="" data-i18n="doc.reg.sex_choose">Choisir…</option>
+              <option value="F" data-i18n="doc.reg.sex_f">Féminin</option>
+              <option value="M" data-i18n="doc.reg.sex_m">Masculin</option>
+            </select>
+            <div class="field-err d-none text-danger" id="err-sex"><i class="fa fa-circle-exclamation me-1"></i><span data-i18n="doc.reg.required">Ce champ est requis.</span></div>
+          </div>
+        </div>
+        <div class="row g-2 mb-2">
+          <div class="col-md-6">
+            <label class="form-label fw-semibold small" data-i18n="doc.reg.f_spec">Spécialité médicale *</label>
+            <select class="form-select" id="specialiteSelect" onchange="toggleSpecAutre()">
+              <option value="" data-i18n="doc.reg.spec_choose">— Sélectionner —</option>
+              <option data-i18n="doc.reg.spec_general">Médecine générale</option>
+              <option data-i18n="doc.reg.spec_anesth">Anesthésie-Réanimation</option>
+              <option data-i18n="doc.reg.spec_cardio">Cardiologie</option>
+              <option data-i18n="doc.reg.spec_chir">Chirurgie générale</option>
+              <option data-i18n="doc.reg.spec_dermato">Dermatologie</option>
+              <option data-i18n="doc.reg.spec_diabeto">Diabétologie</option>
+              <option data-i18n="doc.reg.spec_endocrino">Endocrinologie</option>
+              <option data-i18n="doc.reg.spec_gastro">Gastro-entérologie</option>
+              <option data-i18n="doc.reg.spec_gyneco">Gynéco-obstétrique</option>
+              <option data-i18n="doc.reg.spec_urgence">Médecine d'urgence</option>
+              <option data-i18n="doc.reg.spec_interne">Médecine interne</option>
+              <option data-i18n="doc.reg.spec_nephro">Néphrologie</option>
+              <option data-i18n="doc.reg.spec_neuro">Neurologie</option>
+              <option data-i18n="doc.reg.spec_ophtalmo">Ophtalmologie</option>
+              <option data-i18n="doc.reg.spec_orl">ORL</option>
+              <option data-i18n="doc.reg.spec_pediatrie">Pédiatrie</option>
+              <option data-i18n="doc.reg.spec_pneumo">Pneumologie</option>
+              <option data-i18n="doc.reg.spec_psy">Psychiatrie</option>
+              <option data-i18n="doc.reg.spec_rhumato">Rhumatologie</option>
+              <option data-i18n="doc.reg.spec_uro">Urologie</option>
+              <option value="autre" data-i18n="doc.reg.spec_autre">Autre</option>
+            </select>
+            <input type="text" class="form-control mt-2 d-none" id="specialiteAutre" data-i18n-placeholder="doc.reg.spec_autre_ph" placeholder="Précisez votre spécialité">
+            <div class="field-err d-none text-danger mt-1" id="err-specAutre"><i class="fa fa-circle-exclamation me-1"></i><span data-i18n="doc.reg.required">Ce champ est requis.</span></div>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-semibold small" data-i18n="doc.reg.f_ordre">Numéro d'ordre médical *</label>
+            <input type="text" class="form-control" id="ordreInput" data-i18n-placeholder="doc.reg.f_ordre_ph" placeholder="Ex : ONMS-2024-XXXXX">
+            <div class="field-hint"><i class="fa fa-circle-info me-1"></i><span data-i18n="doc.reg.f_ordre_hint">Délivré par votre Ordre national des médecins.</span></div>
+            <div class="field-err d-none text-danger" id="err-ordre"><i class="fa fa-circle-exclamation me-1"></i><span data-i18n="doc.reg.required">Ce champ est requis.</span></div>
+          </div>
+        </div>
+        <div class="row g-2 mb-2">
+          <div class="col-md-6">
+            <label class="form-label fw-semibold small" data-i18n="doc.reg.f_email">Adresse e-mail professionnelle *</label>
+            <input type="email" class="form-control" id="emailField" data-i18n-placeholder="doc.reg.f_email_ph" placeholder="Ex : a.diallo@cabinet.com">
+            <div class="field-err d-none text-danger" id="err-email"><i class="fa fa-circle-exclamation me-1"></i><span data-i18n="doc.reg.email_err">Adresse e-mail invalide.</span></div>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-semibold small" data-i18n="doc.reg.f_phone">Téléphone *</label>
+            <div class="iti">
+              <button type="button" class="form-select iti-trigger" id="ccTrigger" onclick="toggleCcMenu(event)" aria-haspopup="listbox">
+                <span id="ccFlag">🇸🇳</span><span id="ccDial">+221</span>
+              </button>
+              <input type="tel" class="form-control" id="phoneField" data-i18n-placeholder="doc.reg.f_phone_ph" placeholder="Ex : 77 123 45 67" inputmode="tel" pattern="[0-9 ]*" oninput="checkPhone()" onblur="checkPhone(true)">
+              <div class="iti-menu d-none" id="ccMenu">
+                <div class="iti-search-wrap">
+                  <input type="text" id="ccSearch" autocomplete="off" data-i18n-placeholder="signup.field.cc_search" placeholder="Rechercher un pays…" oninput="renderCcList()" onkeydown="onCcSearchKey(event)">
+                </div>
+                <div class="iti-list" id="ccList"></div>
+              </div>
+            </div>
+            <input type="hidden" id="ccIso" value="SN">
+            <input type="hidden" id="ccValue" value="+221">
+            <div class="field-hint d-none mt-1" id="phoneWarn" style="color:#b45309;"><i class="fa fa-circle-info me-1"></i><span data-i18n="signup.field.phone_other_warn">La réception du SMS peut prendre quelques minutes pour les numéros hors zone de service.</span></div>
+            <div class="field-hint d-none text-danger mt-1" id="phoneHint"><i class="fa fa-circle-exclamation me-1"></i><span data-i18n="signup.field.phone_hint">Numéro invalide pour l'indicatif sélectionné.</span></div>
+          </div>
+        </div>
+        <div class="mb-2">
+          <label class="form-label fw-semibold small" data-i18n="doc.reg.f_pwd">Mot de passe *</label>
+          <input type="password" class="form-control" id="pwdField" oninput="checkPwd()" autocomplete="new-password">
+        </div>
+        <div class="pwd-strength mb-2"><div class="pwd-strength-fill" id="pwdBar"></div></div>
+        <div class="pwd-rules-grid mb-2">
+          <div class="pwd-rule" id="r-len"><i class="fa fa-circle-check"></i><span data-i18n="doc.reg.pwd_r_len">Au moins 8 caractères</span></div>
+          <div class="pwd-rule" id="r-upper"><i class="fa fa-circle-check"></i><span data-i18n="doc.reg.pwd_r_upper">Une majuscule</span></div>
+          <div class="pwd-rule" id="r-lower"><i class="fa fa-circle-check"></i><span data-i18n="doc.reg.pwd_r_lower">Une minuscule</span></div>
+          <div class="pwd-rule" id="r-num"><i class="fa fa-circle-check"></i><span data-i18n="doc.reg.pwd_r_num">Un chiffre</span></div>
+          <div class="pwd-rule" id="r-spe"><i class="fa fa-circle-check"></i><span data-i18n="doc.reg.pwd_r_spe">Un caractère spécial</span></div>
+        </div>
+        <div class="field-err d-none text-danger" id="err-pwd"><i class="fa fa-circle-exclamation me-1"></i><span data-i18n="doc.reg.pwd_err">Le mot de passe ne respecte pas les règles.</span></div>
+
+        <div class="form-check mb-2 mt-4">
+          <input class="form-check-input" type="checkbox" id="cgu">
+          <label class="form-check-label small" for="cgu" data-i18n-html="doc.reg.cgu_html">
+            J'accepte les <a href="#" class="text-decoration-none" style="color:#155e75;">Conditions Générales d'Utilisation</a> et la <a href="#" class="text-decoration-none" style="color:#155e75;">Politique de confidentialité</a> *
+          </label>
+          <div class="field-err d-none text-danger" id="err-cgu"><i class="fa fa-circle-exclamation me-1"></i><span data-i18n="doc.reg.consent_err">Vous devez accepter pour continuer.</span></div>
+        </div>
+        <div class="form-check mb-3">
+          <input class="form-check-input" type="checkbox" id="rgpd">
+          <label class="form-check-label small" for="rgpd" data-i18n-html="doc.reg.rgpd_html">
+            J'accepte que FUENI traite mes données personnelles et professionnelles dans le respect du RGPD. *
+          </label>
+          <div class="field-err d-none text-danger" id="err-rgpd"><i class="fa fa-circle-exclamation me-1"></i><span data-i18n="doc.reg.consent_err">Vous devez accepter pour continuer.</span></div>
+        </div>
+
+        <button type="button" onclick="validateReg()" class="btn btn-doctor w-100">
+          <span data-i18n="doc.reg.submit">Continuer — Paiement</span> <i class="fa fa-arrow-right ms-2"></i>
+        </button>
+        <a href="12b-doctor-eligibilite.html" class="btn btn-link w-100 text-muted small mt-1" data-i18n="common.prev_step">← Étape précédente</a>
+        <p class="text-center text-muted small mt-2 mb-0" data-i18n="doc.reg.footer">Votre dossier sera examiné par l'équipe FUENI sous 24 à 48 h.</p>
+      </form>
+
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="naz-common.js"></script>
+  <script>
+    const t = (k, fb) => (window.NazI18n ? NazI18n.t(k) : '') || fb;
+
+    function toggleSpecAutre() {
+      const isAutre = document.getElementById('specialiteSelect').value === 'autre';
+      document.getElementById('specialiteAutre').classList.toggle('d-none', !isAutre);
+      if (!isAutre) document.getElementById('err-specAutre').classList.add('d-none');
+    }
+
+    function checkPwd() {
+      const v = document.getElementById('pwdField').value;
+      const rules = {
+        'r-len': v.length >= 8,
+        'r-upper': /[A-Z]/.test(v),
+        'r-lower': /[a-z]/.test(v),
+        'r-num': /\d/.test(v),
+        'r-spe': /[^A-Za-z0-9\s]/.test(v)
+      };
+      let score = 0;
+      for (const id in rules) {
+        document.getElementById(id).classList.toggle('ok', rules[id]);
+        if (rules[id]) score++;
+      }
+      const bar = document.getElementById('pwdBar');
+      bar.style.width = (score * 20) + '%';
+      bar.style.background = score < 3 ? '#e74c3c' : score < 5 ? '#f39c12' : '#27ae60';
+    }
+
+    function showErr(id, on) { const e = document.getElementById(id); if (e) e.classList.toggle('d-none', !on); }
+    function markErr(id, on) { const c = document.getElementById(id); if (c) c.classList.toggle('is-err', on); }
+
+    function checkAge() {
+      const dob = document.getElementById('dobField').value;
+      const hint = document.getElementById('dobHint'), info = document.getElementById('dobInfo'), span = hint.querySelector('span');
+      if (!dob) { hint.classList.add('d-none'); info.classList.remove('d-none'); document.getElementById('dobField').classList.remove('is-err'); return; }
+      const b = new Date(dob), now = new Date();
+      let invalidRange = false, tooYoung = false;
+      if (isNaN(b.getTime()) || b > now) invalidRange = true;
+      else { let a = now.getFullYear() - b.getFullYear(); const m = now.getMonth() - b.getMonth(); if (m < 0 || (m === 0 && now.getDate() < b.getDate())) a--; if (a > 120) invalidRange = true; else if (a < 18) tooYoung = true; }
+      const showBad = invalidRange || tooYoung;
+      const key = invalidRange ? 'signup.field.dob_hint_range' : 'signup.field.dob_hint';
+      if (span) { span.setAttribute('data-i18n', key); const tx = (window.NazI18n ? NazI18n.t(key) : ''); if (tx) span.textContent = tx; }
+      hint.classList.toggle('d-none', !showBad);
+      info.classList.toggle('d-none', showBad);
+      document.getElementById('dobField').classList.toggle('is-err', showBad);
+    }
+
+    function validateReg() {
+      const firstName = document.getElementById('firstName').value.trim();
+      const lastName  = document.getElementById('lastName').value.trim();
+      const email     = document.getElementById('emailField').value.trim();
+      const ordre     = document.getElementById('ordreInput').value.trim();
+      const pwd       = document.getElementById('pwdField').value;
+      const cgu       = document.getElementById('cgu').checked;
+      const rgpd      = document.getElementById('rgpd').checked;
+      const rxEmail   = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+      const pwdOk     = pwd.length >= 8 && /[A-Z]/.test(pwd) && /[a-z]/.test(pwd) && /\d/.test(pwd) && /[^A-Za-z0-9\s]/.test(pwd);
+
+      let firstBad = null;
+      const fail = (ctrl, err) => { markErr(ctrl, true); showErr(err, true); if (!firstBad) firstBad = document.getElementById(ctrl); };
+      // Téléphone : même validation par pays que le flux patient
+      const digitsP = document.getElementById('phoneField').value.replace(/\D/g, '');
+      const cObj = getCountry(document.getElementById('ccIso').value);
+      let phoneOk = false;
+      if (cObj && cObj.len) { const okBJ = cObj.iso === 'BJ' && (digitsP.length === 8 || digitsP.length === 10); phoneOk = !!digitsP && (okBJ || digitsP.length === cObj.len); }
+      else if (cObj) { phoneOk = digitsP.length >= 6 && digitsP.length <= 14; }
+      // reset
+      ['firstName','lastName','dobField','sexField','emailField','phoneField','ordreInput','pwdField','specialiteAutre'].forEach(id => markErr(id, false));
+      ['err-firstName','err-lastName','err-sex','err-email','phoneHint','err-ordre','err-pwd','err-cgu','err-rgpd','err-specAutre'].forEach(id => showErr(id, false));
+      document.getElementById('dobHint').classList.add('d-none'); document.getElementById('dobInfo').classList.remove('d-none');
+
+      if (!firstName) fail('firstName', 'err-firstName');
+      if (!lastName)  fail('lastName', 'err-lastName');
+      const dobVal = document.getElementById('dobField').value;
+      document.getElementById('dobHint').classList.add('d-none');
+      let dobKey = null;
+      if (!dobVal) dobKey = 'signup.field.dob_hint';
+      else { const b = new Date(dobVal), now = new Date(); if (isNaN(b.getTime()) || b > now) dobKey = 'signup.field.dob_hint_range'; else { let a = now.getFullYear() - b.getFullYear(); const m = now.getMonth() - b.getMonth(); if (m < 0 || (m === 0 && now.getDate() < b.getDate())) a--; if (a > 120) dobKey = 'signup.field.dob_hint_range'; else if (a < 18) dobKey = 'signup.field.dob_hint'; } }
+      if (dobKey) { const sp = document.getElementById('dobHint').querySelector('span'); sp.setAttribute('data-i18n', dobKey); const tx = (window.NazI18n ? NazI18n.t(dobKey) : ''); if (tx) sp.textContent = tx; document.getElementById('dobInfo').classList.add('d-none'); document.getElementById('dobHint').classList.remove('d-none'); markErr('dobField', true); if (!firstBad) firstBad = document.getElementById('dobField'); }
+      if (!document.getElementById('sexField').value) fail('sexField', 'err-sex');
+      if (!email || !rxEmail.test(email)) fail('emailField', 'err-email');
+      if (!digitsP || !phoneOk) fail('phoneField', 'phoneHint');
+      if (!ordre)     fail('ordreInput', 'err-ordre');
+      if (document.getElementById('specialiteSelect').value === 'autre' && !document.getElementById('specialiteAutre').value.trim()) fail('specialiteAutre', 'err-specAutre');
+      if (!pwdOk) fail('pwdField', 'err-pwd');
+      if (!cgu)  showErr('err-cgu', true);
+      if (!rgpd) showErr('err-rgpd', true);
+
+      if (firstBad) { firstBad.scrollIntoView({ behavior: 'smooth', block: 'center' }); return; }
+      if (!cgu || !rgpd) { document.getElementById(cgu ? 'err-rgpd' : 'err-cgu').scrollIntoView({ behavior: 'smooth', block: 'center' }); return; }
+
+      // Sauvegarde du formulaire + e-mail conservé pour l'écran de vérification OTP (masquage)
+      saveDoctorForm();
+      sessionStorage.setItem('fueni_doctor_email', email);
+      window.location.href = '13b-doctor-otp.html';
+    }
+
+    // Le pays d'exercice est déjà capturé à l'étape Éligibilité (conservé dans naz_doctor_country).
+
+    // ── Sélecteur d'indicatif international (identique au flux patient) ──────────
+    const COUNTRIES = [
+      { iso: 'SN', fr: 'Sénégal', en: 'Senegal', dial: '+221', flag: '🇸🇳', len: 9, mvp: true },
+      { iso: 'CI', fr: "Côte d'Ivoire", en: "Côte d'Ivoire", dial: '+225', flag: '🇨🇮', len: 10, mvp: true },
+      { iso: 'ML', fr: 'Mali', en: 'Mali', dial: '+223', flag: '🇲🇱', len: 8, mvp: true },
+      { iso: 'BJ', fr: 'Bénin', en: 'Benin', dial: '+229', flag: '🇧🇯', len: 8, mvp: true },
+      { iso: 'TG', fr: 'Togo', en: 'Togo', dial: '+228', flag: '🇹🇬', len: 8, mvp: true },
+      { iso: 'BF', fr: 'Burkina Faso', en: 'Burkina Faso', dial: '+226', flag: '🇧🇫', len: 8, mvp: true },
+      { iso: 'NE', fr: 'Niger', en: 'Niger', dial: '+227', flag: '🇳🇪', len: 8, mvp: true },
+      { iso: 'CM', fr: 'Cameroun', en: 'Cameroon', dial: '+237', flag: '🇨🇲', len: 9, mvp: true },
+      { iso: 'CD', fr: 'RD Congo', en: 'DR Congo', dial: '+243', flag: '🇨🇩', len: 9, mvp: true }
+    ];
+    let ccActiveIdx = -1;
+    function normalizeCc(s) { return (s || '').toString().normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim(); }
+    function getCountry(iso) { return COUNTRIES.find(c => c.iso === iso); }
+    function ccLabel(c) { const en = (document.documentElement.lang || 'fr').toLowerCase().startsWith('en'); return (en && c.en) ? c.en : c.fr; }
+    function applyCountry(c) {
+      document.getElementById('ccFlag').textContent = c.flag;
+      document.getElementById('ccDial').textContent = c.dial;
+      document.getElementById('ccIso').value = c.iso;
+      document.getElementById('ccValue').value = c.dial;
+      document.getElementById('phoneWarn').classList.toggle('d-none', !!c.mvp);
+    }
+    function setCountry(iso) { const c = getCountry(iso); if (!c) return; applyCountry(c); checkPhone(); }
+    function chooseCountry(iso) { setCountry(iso); closeCcMenu(); document.getElementById('phoneField').focus(); saveDoctorForm(); }
+    function toggleCcMenu(e) {
+      e.stopPropagation();
+      const menu = document.getElementById('ccMenu');
+      const willOpen = menu.classList.contains('d-none');
+      menu.classList.toggle('d-none', !willOpen);
+      if (willOpen) { const s = document.getElementById('ccSearch'); s.value = ''; renderCcList(); setTimeout(() => s.focus(), 0); }
+    }
+    function closeCcMenu() { document.getElementById('ccMenu').classList.add('d-none'); ccActiveIdx = -1; }
+    function renderCcList() {
+      const q = normalizeCc(document.getElementById('ccSearch').value);
+      const list = document.getElementById('ccList'); list.innerHTML = '';
+      const match = c => !q || normalizeCc(ccLabel(c)).includes(q) || c.dial.replace('+', '').includes(q.replace('+', ''));
+      const mvp = COUNTRIES.filter(c => c.mvp && match(c));
+      const others = COUNTRIES.filter(c => !c.mvp && match(c));
+      const addSection = (key, fallback, variant) => { const s = document.createElement('div'); s.className = 'iti-sec ' + variant; s.textContent = (window.NazI18n ? NazI18n.t(key) : '') || fallback; list.appendChild(s); };
+      const addOpt = c => { const o = document.createElement('div'); o.className = 'iti-opt'; const fl = document.createElement('span'); fl.textContent = c.flag; const nm = document.createElement('span'); nm.textContent = ccLabel(c); const dl = document.createElement('span'); dl.className = 'dial'; dl.textContent = c.dial; o.appendChild(fl); o.appendChild(nm); o.appendChild(dl); o.onclick = () => chooseCountry(c.iso); list.appendChild(o); };
+      if (mvp.length) { addSection('signup.cc.section_mvp', 'Pays couverts', 'iti-sec-mvp'); mvp.forEach(addOpt); }
+      if (others.length) { addSection('signup.cc.section_all', 'Tous les pays', 'iti-sec-all'); others.forEach(addOpt); }
+      if (!mvp.length && !others.length) { const em = document.createElement('div'); em.className = 'iti-empty'; em.textContent = (window.NazI18n ? NazI18n.t('signup.cc.no_match') : '') || 'Aucun pays trouvé.'; list.appendChild(em); }
+      ccActiveIdx = -1;
+    }
+    function onCcSearchKey(e) {
+      const opts = Array.from(document.querySelectorAll('#ccList .iti-opt'));
+      if (!opts.length) return;
+      if (e.key === 'ArrowDown') { e.preventDefault(); ccActiveIdx = Math.min(ccActiveIdx + 1, opts.length - 1); }
+      else if (e.key === 'ArrowUp') { e.preventDefault(); ccActiveIdx = Math.max(ccActiveIdx - 1, 0); }
+      else if (e.key === 'Enter') { if (ccActiveIdx >= 0) { e.preventDefault(); opts[ccActiveIdx].click(); } return; }
+      else if (e.key === 'Escape') { closeCcMenu(); return; }
+      else return;
+      opts.forEach((o, i) => o.classList.toggle('active', i === ccActiveIdx));
+      opts[ccActiveIdx].scrollIntoView({ block: 'nearest' });
+    }
+    document.addEventListener('click', e => { if (!e.target.closest('.iti')) closeCcMenu(); });
+    function checkPhone(force) {
+      const f = document.getElementById('phoneField');
+      const hint = document.getElementById('phoneHint');
+      const c = getCountry(document.getElementById('ccIso').value);
+      const cleaned = f.value.replace(/[^\d ]/g, '');
+      if (cleaned !== f.value) f.value = cleaned;
+      const digits = cleaned.replace(/\D/g, '');
+      const shouldValidate = force === true || digits.length >= 4;
+      let invalid = false;
+      if (c && c.len) { const okBJ = c.iso === 'BJ' && (digits.length === 8 || digits.length === 10); invalid = shouldValidate && digits.length > 0 && !okBJ && digits.length !== c.len; }
+      else if (c) { invalid = shouldValidate && digits.length > 0 && (digits.length < 6 || digits.length > 14); }
+      hint.classList.toggle('d-none', !invalid);
+      if (!invalid) f.classList.remove('is-err');
+    }
+    // Indicatif par défaut = pays d'exercice choisi à l'étape Éligibilité
+    const ELIG_ISO = { 'Bénin': 'BJ', 'Burkina Faso': 'BF', 'Cameroun': 'CM', "Côte d'Ivoire": 'CI', 'Mali': 'ML', 'Niger': 'NE', 'RDC': 'CD', 'Sénégal': 'SN', 'Togo': 'TG' };
+    function initPhone() { setCountry(ELIG_ISO[localStorage.getItem('naz_doctor_country')] || 'SN'); }
+
+    // ── Persistance du formulaire (sessionStorage) — comme le flux patient ──────
+    // Le mot de passe n'est jamais conservé ; l'utilisateur le ressaisit au retour.
+    function saveDoctorForm() {
+      const g = id => (document.getElementById(id) || {}).value || '';
+      sessionStorage.setItem('fueni_doctor_data', JSON.stringify({
+        firstName: g('firstName'), lastName: g('lastName'), dob: g('dobField'), sex: g('sexField'), email: g('emailField'),
+        ccIso: g('ccIso'), phone: g('phoneField'),
+        specIndex: document.getElementById('specialiteSelect').selectedIndex,
+        specialiteAutre: g('specialiteAutre'), ordre: g('ordreInput'),
+        cgu: document.getElementById('cgu').checked, rgpd: document.getElementById('rgpd').checked
+      }));
+    }
+    function prefillDoctorForm() {
+      let d = null; try { d = JSON.parse(sessionStorage.getItem('fueni_doctor_data') || 'null'); } catch (e) {}
+      if (!d) return;
+      const set = (id, v) => { const el = document.getElementById(id); if (el && v != null && v !== '') el.value = v; };
+      set('firstName', d.firstName); set('lastName', d.lastName); set('dobField', d.dob); set('sexField', d.sex); set('emailField', d.email);
+      set('ordreInput', d.ordre); set('phoneField', d.phone);
+      if (d.ccIso) setCountry(d.ccIso);
+      if (typeof d.specIndex === 'number' && d.specIndex > 0) { document.getElementById('specialiteSelect').selectedIndex = d.specIndex; toggleSpecAutre(); }
+      set('specialiteAutre', d.specialiteAutre);
+      if (d.cgu) document.getElementById('cgu').checked = true;
+      if (d.rgpd) document.getElementById('rgpd').checked = true;
+    }
+    function initForm() {
+      initPhone(); prefillDoctorForm();
+      const dobEl = document.getElementById('dobField');
+      const now = new Date(), pad = n => String(n).padStart(2, '0'), iso = dt => `${dt.getFullYear()}-${pad(dt.getMonth() + 1)}-${pad(dt.getDate())}`;
+      dobEl.max = iso(new Date(now.getFullYear() - 18, now.getMonth(), now.getDate()));
+      dobEl.min = iso(new Date(now.getFullYear() - 120, now.getMonth(), now.getDate()));
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initForm); else initForm();
+    document.getElementById('regForm').addEventListener('input', saveDoctorForm);
+    document.getElementById('regForm').addEventListener('change', saveDoctorForm);
+
+    document.addEventListener('fueni:langchange', () => { const m = document.getElementById('ccMenu'); if (m && !m.classList.contains('d-none')) renderCcList(); });
+  </script>
+<script>/* Stepper cliquable : retour aux étapes déjà franchies */(function(){var u=['12b-doctor-eligibilite.html','13-doctor-inscription.html','14-doctor-plans.html','15-doctor-paiement.html','15b-doctor-kyc.html','16-doctor-confirmation.html'];document.querySelectorAll('.progress-steps .step').forEach(function(s,i){if(s.classList.contains('done')&&u[i]){s.style.cursor='pointer';s.title='Revenir à cette étape';s.addEventListener('click',function(){location.href=u[i];});}});})();</script>
+<!-- Prototype version badge -->
+<script>(function(){if(window.__pv)return;window.__pv=1;var v=document.createElement('div');v.style.cssText='position:fixed;top:0;left:50%;transform:translateX(-50%);background:#155e75;color:#fff;padding:6px 20px;border-radius:0 0 16px 16px;font:600 12px/1 system-ui,-apple-system,sans-serif;letter-spacing:.6px;z-index:99999;box-shadow:0 3px 10px rgba(0,0,0,.2);text-transform:uppercase;display:flex;align-items:center;gap:8px';v.innerHTML='🧪 Prototype <span style="background:#f59e0b;color:#1a1a1a;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:4px">v1.4.0</span><span style="background:#facc15;color:#1a1a1a;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:4px;text-transform:none;letter-spacing:0">⏳ À valider</span>';document.body.appendChild(v);})();</script>
+</body>
+</html>

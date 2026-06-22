@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FUENI — Paiement</title>
+  <script src="naz-i18n.js" defer></script>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="naz-common.css">
+  <style>
+    body { background: #f0f4f8; font-family: 'Segoe UI', sans-serif; min-height: 100vh; }
+    .proto-bar { position: sticky; top: 0; z-index: 100; }
+    .brand-area { background: #ffffff; border-bottom: 1px solid #e6edf3; padding: 0.7rem 0; }
+    .brand-bar { max-width: 980px; margin: 0 auto; padding: 0 1.25rem; display: flex; align-items: center; justify-content: space-between; }
+    .brand-logo img { height: 40px; width: auto; display: block; }
+    .btn-home { display: inline-flex; align-items: center; gap: 6px; color: #5b6b7b; text-decoration: none; font-weight: 600; font-size: 0.88rem; padding: 7px 12px; border-radius: 8px; }
+    .btn-home:hover { background: #f0f4f8; color: #0F2444; }
+    .card { border: none; border-radius: 14px; box-shadow: 0 2px 16px rgba(0,0,0,0.08); }
+    .payment-method-btn { border: 2px solid #e9ecef; border-radius: 10px; padding: 14px 18px; cursor: pointer; transition: all 0.2s; background: white; display: flex; align-items: center; gap: 12px; width: 100%; margin-bottom: 8px; }
+    .payment-method-btn:hover, .payment-method-btn.active { border-color: #155e75; background: #eaf3f6; }
+    .payment-method-btn .icon { width: 36px; text-align: center; font-size: 1.2rem; }
+    .plan-summary { background: linear-gradient(135deg, #114c5f, #155e75); color: white; border-radius: 14px; padding: 24px; }
+    .conversion-line { font-size: 0.8rem; opacity: 0.85; }
+    .btn-pay { background: #27ae60; border-color: #27ae60; color: white; font-size: 1.05rem; padding: 14px; border-radius: 8px; font-weight: 700; }
+    .btn-pay:hover { background: #219a52; border-color: #219a52; color: white; }
+    .form-control, .form-select { border-radius: 8px; }
+    .is-err { border-color: #e74c3c !important; box-shadow: 0 0 0 0.15rem rgba(231,76,60,0.15) !important; }
+    .section-title { font-size: 0.95rem; font-weight: 700; color: #155e75; margin-bottom: 0.7rem; }
+    .trial-badge { background: #d5f5e3; color: #1e8449; padding: 10px 16px; border-radius: 8px; font-size: 0.88rem; }
+    #cb-form { display: none; }
+    .progress-steps .step.active .step-circle, .progress-steps .step.done .step-circle { background: #155e75; color: white; }
+    .progress-steps .step.done::after { background: #155e75; }
+    .progress-steps .step.active .step-label { color: #155e75; font-weight: 600; }
+  </style>
+</head>
+<body data-i18n-pagetitle="doc.pay.page_title" data-i18n-toggle>
+
+  <div class="proto-bar d-flex align-items-center gap-3 flex-wrap">
+    <span><i class="fa fa-eye text-warning me-1"></i><strong data-i18n="doc.pay.proto_bar">Écran 15 — Paiement Médecin</strong></span>
+    <a href="01-home.html" class="text-decoration-none text-muted ms-auto small" data-i18n="common.back_home">← Retour à l'accueil</a>
+  </div>
+
+  <div class="brand-area">
+    <div class="brand-bar">
+      <a href="01-home.html" class="brand-logo" aria-label="FUENI — Accueil"><img src="assets/fueni-lockup-horizontal.svg" alt="FUENI"></a>
+      <a href="01-home.html" class="btn-home"><i class="fa fa-house"></i><span data-i18n="common.home">Accueil</span></a>
+    </div>
+  </div>
+
+  <div class="container py-4" style="max-width:900px;">
+    <div class="progress-steps mb-4" style="max-width:600px; margin:0 auto 2rem;">
+      <div class="step done"><div class="step-circle"><i class="fa fa-check" style="font-size:0.7rem;"></i></div><div class="step-label" data-i18n="doc.steps.elig">Éligibilité</div></div>
+      <div class="step done"><div class="step-circle"><i class="fa fa-check" style="font-size:0.7rem;"></i></div><div class="step-label" data-i18n="doc.steps.reg">Inscription</div></div>
+      <div class="step done"><div class="step-circle"><i class="fa fa-check" style="font-size:0.7rem;"></i></div><div class="step-label" data-i18n="doc.steps.plan">Choix du plan</div></div>
+      <div class="step active"><div class="step-circle">4</div><div class="step-label" data-i18n="doc.steps.pay">Paiement</div></div>
+      <div class="step inactive"><div class="step-circle">5</div><div class="step-label" data-i18n="doc.steps.kyc">Justificatifs</div></div>
+      <div class="step inactive"><div class="step-circle">6</div><div class="step-label" data-i18n="doc.steps.access">Accès</div></div>
+    </div>
+
+    <div class="row g-4">
+      <div class="col-lg-7">
+        <div class="card p-4">
+          <div id="payment-block">
+            <div class="section-title"><i class="fa fa-credit-card me-1"></i><span data-i18n="doc.pay.method_title">Moyen de paiement</span></div>
+
+            <button class="payment-method-btn active" onclick="showPayment('mobile', this)">
+              <span class="icon"><i class="fa fa-mobile-alt text-warning"></i></span>
+              <div>
+                <div class="fw-semibold" data-i18n="doc.pay.m_mobile">Mobile Money</div>
+                <div class="text-muted small" id="mmSubtext">Orange Money · Wave · MTN Mobile Money</div>
+              </div>
+            </button>
+
+            <button class="payment-method-btn" onclick="showPayment('cb', this)">
+              <span class="icon"><i class="fa fa-credit-card" style="color:#155e75;"></i></span>
+              <div>
+                <div class="fw-semibold" data-i18n="doc.pay.m_card">Carte bancaire</div>
+                <div class="text-muted small">Visa, Mastercard</div>
+              </div>
+              <span class="ms-auto me-1 px-2 py-1 rounded fw-bold" style="background:#1a1f71;color:white;font-size:0.7rem;letter-spacing:1px;">VISA</span>
+              <span class="px-1 py-1 rounded" style="font-size:1rem;line-height:1;"><span style="color:#eb001b;">&#9679;</span><span style="color:#f79e1b;margin-left:-6px;">&#9679;</span></span>
+            </button>
+
+            <!-- Mobile Money -->
+            <div id="mobile-form" class="mt-3">
+              <div class="section-title"><span data-i18n="doc.pay.m_mobile">Mobile Money</span></div>
+              <div class="mb-3">
+                <label class="form-label" data-i18n="doc.pay.mobile_operator">Opérateur</label>
+                <select class="form-select" id="mobileOperator"></select>
+              </div>
+              <div class="mb-3">
+                <label class="form-label" data-i18n="doc.pay.mobile_phone">Numéro de téléphone</label>
+                <div class="input-group">
+                  <span class="input-group-text" id="mmPrefix">🇸🇳 +221</span>
+                  <input type="text" class="form-control" id="mmPhone" placeholder="77 123 45 67" inputmode="tel">
+                </div>
+              </div>
+              <div class="alert alert-info small"><i class="fa fa-info-circle me-1"></i><span data-i18n="doc.pay.mobile_note">Vous recevrez une notification sur votre téléphone pour confirmer le paiement.</span></div>
+            </div>
+
+            <!-- Carte bancaire -->
+            <div id="cb-form" class="mt-3">
+              <div class="section-title" data-i18n="doc.pay.card_info_title">Informations de carte</div>
+              <div class="mb-3">
+                <label class="form-label" data-i18n="doc.pay.card_holder">Titulaire de la carte</label>
+                <input type="text" class="form-control" id="cbName" placeholder="Dr Aboubacar Diallo">
+              </div>
+              <div class="mb-3">
+                <label class="form-label" data-i18n="doc.pay.card_number">Numéro de carte</label>
+                <input type="text" class="form-control" id="cbNumber" placeholder="1234 5678 9012 3456">
+              </div>
+              <div class="row g-3">
+                <div class="col-6">
+                  <label class="form-label" data-i18n="doc.pay.card_expiry">Date d'expiration</label>
+                  <input type="text" class="form-control" id="cbExpiry" placeholder="MM/AA">
+                </div>
+                <div class="col-6">
+                  <label class="form-label">CVV *</label>
+                  <input type="text" class="form-control" id="cbCvv" placeholder="123">
+                </div>
+              </div>
+              <div class="form-text mt-2"><i class="fa fa-lock text-success me-1"></i><span data-i18n="doc.pay.card_secure_note">Vos données de carte sont chiffrées et traitées par notre prestataire de paiement. FUENI ne stocke aucune donnée bancaire.</span></div>
+            </div>
+          </div>
+
+          <div id="payError" class="alert alert-danger py-2 small mb-2 d-none"><i class="fa fa-circle-exclamation me-1"></i><span data-i18n="doc.pay.required">Veuillez renseigner vos informations de paiement.</span></div>
+          <div class="d-grid mt-4">
+            <button class="btn btn-pay w-100" onclick="payGo(this)"><i class="fa fa-shield-alt me-2"></i><span id="payBtnText"></span></button>
+          </div>
+          <a href="14-doctor-plans.html" class="btn btn-link w-100 text-muted small" data-i18n="common.prev_step">← Étape précédente</a>
+        </div>
+      </div>
+
+      <div class="col-lg-5">
+        <div class="plan-summary mb-3">
+          <div class="small opacity-75 fw-semibold mb-1 text-uppercase" data-i18n="doc.pay.summary_selected">Plan sélectionné</div>
+          <h4 class="fw-bold mb-0" id="payPlanName">—</h4>
+          <div class="opacity-75 small mb-3" id="payPlanDesc">—</div>
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <span id="paySubLabel" data-i18n="doc.pay.sub_monthly">Abonnement mensuel</span>
+            <span class="fw-bold" id="payPrice">—</span>
+          </div>
+          <hr style="border-color:rgba(255,255,255,0.2);">
+          <div class="d-flex justify-content-between align-items-center">
+            <span class="fw-bold" data-i18n="doc.pay.due_today">Dû aujourd'hui</span>
+            <span class="fw-bold fs-5">0,00 €</span>
+          </div>
+          <div class="mt-3 opacity-75 small" id="payFuture">—</div>
+        </div>
+
+        <div class="text-center mt-3 text-muted small">
+          <i class="fa fa-lock me-1"></i><span data-i18n="doc.pay.secure">Paiement sécurisé</span> ·
+          <i class="fa fa-undo me-1 ms-2"></i><span data-i18n="doc.pay.cancelable">Annulable à tout moment</span>
+        </div>
+
+        <a href="14-doctor-plans.html" class="d-block text-center mt-2 text-decoration-none text-muted small">
+          <i class="fa fa-arrow-left me-1"></i><span data-i18n="doc.pay.change_plan">Changer de plan</span>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="naz-common.js"></script>
+  <script>
+    const t = (k, fb) => (window.NazI18n ? NazI18n.t(k) : '') || fb;
+    const getLang = () => (window.NazI18n ? NazI18n.getLang() : 'fr');
+
+    let payMethod = 'mobile';
+    function showPayment(type, btn) {
+      payMethod = type;
+      document.querySelectorAll('.payment-method-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('mobile-form').style.display = (type === 'mobile') ? 'block' : 'none';
+      document.getElementById('cb-form').style.display = (type === 'cb') ? 'block' : 'none';
+      document.getElementById('payError').classList.add('d-none');
+      document.querySelectorAll('.is-err').forEach(e => e.classList.remove('is-err'));
+    }
+
+    const PAY_PLAN_META = {
+      solo:    { nameKey: 'doc.plans.solo_name', name: 'Solo',    descKey: 'doc.pay.desc_solo', featKeys: ['doc.plans.solo_f2','doc.plans.solo_f3','doc.plans.solo_f4','doc.plans.solo_f5','doc.plans.solo_f6'] },
+      gratuit: { nameKey: 'doc.plans.free_name', name: 'Gratuit', descKey: 'doc.pay.desc_free', featKeys: ['doc.plans.free_f1','doc.plans.free_f2','doc.plans.free_f3'] }
+    };
+
+    function trialEndDate() {
+      // 15 jours d'essai à partir d'aujourd'hui — formaté selon la langue
+      const d = new Date(); d.setDate(d.getDate() + 15);
+      try { return new Intl.DateTimeFormat(getLang() === 'en' ? 'en-GB' : 'fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }).format(d); }
+      catch (e) { return d.toLocaleDateString(); }
+    }
+
+    function render() {
+      const planKey = localStorage.getItem('naz_plan') || 'solo';
+      const isAnnual = (localStorage.getItem('naz_billing') || 'monthly') === 'annual';
+      const isFree = planKey === 'gratuit';
+      const meta = PAY_PLAN_META[planKey] || PAY_PLAN_META.solo;
+      const zp = ZONE_PRICES.africa;
+      const monthlyEur = isFree ? 0 : zp.solo;
+      const priceEur = isAnnual ? monthlyEur * ANNUAL_MULT : monthlyEur;
+      const period = isAnnual ? t('doc.plans.per_year', '/an') : t('doc.plans.per_month', '/mois');
+      const priceStr = priceEur === 0 ? '0,00 €' : priceEur.toLocaleString('fr-FR') + ' €';
+      const date = trialEndDate();
+
+      document.getElementById('payPlanName').textContent = t(meta.nameKey, meta.name) + (isAnnual ? ' · ' + t('doc.plans.billing_annual', 'Annuel') : '');
+      document.getElementById('payPlanDesc').textContent = t(meta.descKey, '');
+      document.getElementById('payPrice').textContent = priceStr + period;
+      document.getElementById('paySubLabel').textContent = isAnnual ? t('doc.pay.sub_annual', 'Abonnement annuel') : t('doc.pay.sub_monthly', 'Abonnement mensuel');
+      document.getElementById('payment-block').style.display = isFree ? 'none' : 'block';
+      if (isFree) {
+        document.getElementById('payBtnText').textContent = t('doc.pay.btn_free', 'Finaliser mon inscription');
+        document.getElementById('payFuture').textContent = t('doc.pay.future_free', 'Gratuit — aucun prélèvement.');
+      } else {
+        document.getElementById('payBtnText').textContent = t('doc.pay.btn_trial', 'Démarrer mon essai gratuit de 15 jours');
+        document.getElementById('payFuture').textContent = t('doc.pay.future_from', 'À partir du {date} : {price}{period}').replace('{date}', date).replace('{price}', priceStr).replace('{period}', period);
+      }
+    }
+
+    function payGo(btn) {
+      const fields = payMethod === 'cb' ? ['cbName', 'cbNumber', 'cbExpiry', 'cbCvv'] : ['mmPhone'];
+      let ok = true;
+      fields.forEach(id => {
+        const el = document.getElementById(id);
+        const empty = !el.value.trim();
+        el.classList.toggle('is-err', empty);
+        if (empty) ok = false;
+      });
+      const err = document.getElementById('payError');
+      if (!ok) { err.classList.remove('d-none'); err.scrollIntoView({ behavior: 'smooth', block: 'center' }); return; }
+      err.classList.add('d-none');
+      btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>' + t('doc.pay.processing', 'Traitement en cours…');
+      btn.disabled = true;
+      setTimeout(() => window.location.href = '15b-doctor-kyc.html', 1200);
+    }
+    // Efface l'erreur d'un champ dès sa correction
+    document.querySelectorAll('#payment-block input').forEach(el => el.addEventListener('input', () => {
+      el.classList.remove('is-err');
+      document.getElementById('payError').classList.add('d-none');
+    }));
+
+    // Opérateurs Mobile Money selon le pays d'exercice (choisi à l'Éligibilité) — à confirmer avec Flutterwave
+    const MM_OPERATORS = {
+      'Sénégal': ['Orange Money', 'Wave', 'Free Money'],
+      "Côte d'Ivoire": ['Orange Money', 'MTN MoMo', 'Moov Money', 'Wave'],
+      'Mali': ['Orange Money', 'Moov Money'],
+      'Bénin': ['MTN MoMo', 'Moov Money'],
+      'Togo': ['Moov Money (Flooz)', 'T-Money'],
+      'Burkina Faso': ['Orange Money', 'Moov Money'],
+      'Niger': ['Airtel Money', 'Moov Money'],
+      'Cameroun': ['MTN MoMo', 'Orange Money'],
+      'RDC': ['M-Pesa (Vodacom)', 'Orange Money', 'Airtel Money']
+    };
+    function initOperators() {
+      const ops = MM_OPERATORS[localStorage.getItem('naz_doctor_country')] || ['Orange Money', 'MTN MoMo', 'Moov Money'];
+      const sel = document.getElementById('mobileOperator');
+      if (sel) sel.innerHTML = ops.map(o => '<option>' + o + '</option>').join('');
+      const sub = document.getElementById('mmSubtext');
+      if (sub) sub.textContent = ops.join(' · ');
+    }
+    initOperators();
+    // Indicatif Mobile Money verrouillé sur le pays d'exercice + numéro local pré-rempli (modifiable)
+    const COUNTRY_DIAL = { 'Bénin': {f:'🇧🇯',d:'+229'}, 'Burkina Faso': {f:'🇧🇫',d:'+226'}, 'Cameroun': {f:'🇨🇲',d:'+237'}, "Côte d'Ivoire": {f:'🇨🇮',d:'+225'}, 'Mali': {f:'🇲🇱',d:'+223'}, 'Niger': {f:'🇳🇪',d:'+227'}, 'RDC': {f:'🇨🇩',d:'+243'}, 'Sénégal': {f:'🇸🇳',d:'+221'}, 'Togo': {f:'🇹🇬',d:'+228'} };
+    (function initMobilePrefix(){
+      const c = COUNTRY_DIAL[localStorage.getItem('naz_doctor_country')] || COUNTRY_DIAL['Sénégal'];
+      const p = document.getElementById('mmPrefix'); if (p) p.textContent = c.f + ' ' + c.d;
+      const mm = document.getElementById('mmPhone');
+      if (mm && !mm.value) { try { const d = JSON.parse(sessionStorage.getItem('fueni_doctor_data') || 'null'); if (d && d.phone) mm.value = d.phone; } catch (e) {} }
+    })();
+
+    fetchRates(render);
+    render();
+    document.addEventListener('fueni:langchange', render);
+  </script>
+<script>/* Stepper cliquable : retour aux étapes déjà franchies */(function(){var u=['12b-doctor-eligibilite.html','13-doctor-inscription.html','14-doctor-plans.html','15-doctor-paiement.html','15b-doctor-kyc.html','16-doctor-confirmation.html'];document.querySelectorAll('.progress-steps .step').forEach(function(s,i){if(s.classList.contains('done')&&u[i]){s.style.cursor='pointer';s.title='Revenir à cette étape';s.addEventListener('click',function(){location.href=u[i];});}});})();</script>
+<!-- Prototype version badge -->
+<script>(function(){if(window.__pv)return;window.__pv=1;var v=document.createElement('div');v.style.cssText='position:fixed;top:0;left:50%;transform:translateX(-50%);background:#155e75;color:#fff;padding:6px 20px;border-radius:0 0 16px 16px;font:600 12px/1 system-ui,-apple-system,sans-serif;letter-spacing:.6px;z-index:99999;box-shadow:0 3px 10px rgba(0,0,0,.2);text-transform:uppercase;display:flex;align-items:center;gap:8px';v.innerHTML='🧪 Prototype <span style="background:#f59e0b;color:#1a1a1a;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:4px">v1.4.0</span><span style="background:#facc15;color:#1a1a1a;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:4px;text-transform:none;letter-spacing:0">⏳ À valider</span>';document.body.appendChild(v);})();</script>
+</body>
+</html>

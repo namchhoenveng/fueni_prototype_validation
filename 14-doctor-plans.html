@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FUENI — Choisir un plan</title>
+  <script src="naz-i18n.js" defer></script>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="naz-common.css">
+  <style>
+    body { background: #f0f4f8; font-family: 'Segoe UI', sans-serif; min-height: 100vh; }
+    .proto-bar { position: sticky; top: 0; z-index: 100; }
+    .brand-area { background: #ffffff; border-bottom: 1px solid #e6edf3; padding: 0.7rem 0; }
+    .brand-bar { max-width: 980px; margin: 0 auto; padding: 0 1.25rem; display: flex; align-items: center; justify-content: space-between; }
+    .brand-logo img { height: 40px; width: auto; display: block; }
+    .btn-home { display: inline-flex; align-items: center; gap: 6px; color: #5b6b7b; text-decoration: none; font-weight: 600; font-size: 0.88rem; padding: 7px 12px; border-radius: 8px; transition: background .15s, color .15s; }
+    .btn-home:hover { background: #f0f4f8; color: #0F2444; }
+    .plan-card { border: 2px solid #e9ecef; border-radius: 16px; padding: 28px; transition: all 0.2s; background: white; position: relative; height: 100%; display: flex; flex-direction: column; }
+    .plan-card.popular { border-color: #155e75; box-shadow: 0 4px 20px rgba(21,94,117,0.18); }
+    .badge-popular { position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: #155e75; color: white; padding: 3px 16px; border-radius: 20px; font-size: 0.72rem; font-weight: 700; white-space: nowrap; }
+    .price-main { font-size: 2.4rem; font-weight: 800; color: #155e75; line-height: 1; }
+    .price-period { font-size: 0.85rem; color: #7f8c8d; }
+    .conversion-line { font-size: 0.78rem; color: #117a65; }
+    .feature-list { list-style: none; padding: 0; margin: 0; flex-grow: 1; }
+    .feature-list li { padding: 6px 0; font-size: 0.88rem; display: flex; align-items: flex-start; gap: 8px; }
+    .feature-list li .icon-ok { color: #27ae60; flex-shrink: 0; }
+    .feature-list li .icon-no { color: #bdc3c7; flex-shrink: 0; }
+    .feature-list li .icon-tbd { color: #f39c12; flex-shrink: 0; }
+    .btn-select { width: 100%; padding: 12px; border-radius: 10px; font-weight: 600; margin-top: 20px; }
+    .btn-doctor { background: #155e75; border-color: #155e75; color: white; }
+    .btn-doctor:hover { background: #114c5f; border-color: #114c5f; color: white; }
+    .btn-outline-doctor { border: 1px solid #155e75; color: #155e75; background: white; }
+    .btn-outline-doctor:hover { background: #eaf3f6; color: #114c5f; }
+    .divider { border-top: 1px solid #f0f0f0; margin: 16px 0; }
+    .limit-badge { font-size: 0.7rem; background: #eaf3f6; color: #155e75; padding: 2px 8px; border-radius: 10px; }
+    .progress-steps .step.active .step-circle, .progress-steps .step.done .step-circle { background: #155e75; color: white; }
+    .progress-steps .step.done::after { background: #155e75; }
+    .progress-steps .step.active .step-label { color: #155e75; font-weight: 600; }
+    .role-chip { display: inline-flex; align-items: center; gap: 8px; padding: 6px 14px; border-radius: 20px; font-size: 0.82rem; font-weight: 600; background: #d6eaf2; color: #155e75; }
+    .seg { display: flex; background: #e6edf3; border: 1px solid #cbd5e1; border-radius: 12px; padding: 5px; max-width: 380px; margin: 0 auto; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+    .seg button { flex: 1; border: 0; background: transparent; padding: 11px 12px; border-radius: 9px; font-weight: 700; font-size: 0.95rem; color: #334155; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 7px; transition: background .15s, color .15s; }
+    .seg button.active { background: #155e75; color: #fff; box-shadow: 0 2px 8px rgba(21,94,117,0.35); }
+    .seg .save-badge { font-size: 0.62rem; background: #27ae60; color: #fff; border-radius: 6px; padding: 2px 7px; font-weight: 700; }
+  </style>
+</head>
+<body data-i18n-pagetitle="doc.plans.page_title" data-i18n-toggle>
+
+  <div class="proto-bar d-flex align-items-center gap-3 flex-wrap">
+    <span><i class="fa fa-eye text-warning me-1"></i><strong data-i18n="doc.plans.proto_bar">Écran 14 — Plans médecin individuel</strong></span>
+    <a href="01-home.html" class="text-decoration-none text-muted ms-auto small" data-i18n="common.back_home">← Retour à l'accueil</a>
+  </div>
+
+  <div class="brand-area">
+    <div class="brand-bar">
+      <a href="01-home.html" class="brand-logo" aria-label="FUENI — Accueil"><img src="assets/fueni-lockup-horizontal.svg" alt="FUENI"></a>
+      <a href="01-home.html" class="btn-home"><i class="fa fa-house"></i><span data-i18n="common.home">Accueil</span></a>
+    </div>
+  </div>
+
+  <div class="container py-4">
+    <div class="progress-steps mb-2" style="max-width:600px; margin:0 auto;">
+      <div class="step done"><div class="step-circle"><i class="fa fa-check" style="font-size:0.7rem;"></i></div><div class="step-label" data-i18n="doc.steps.elig">Éligibilité</div></div>
+      <div class="step done"><div class="step-circle"><i class="fa fa-check" style="font-size:0.7rem;"></i></div><div class="step-label" data-i18n="doc.steps.reg">Inscription</div></div>
+      <div class="step active"><div class="step-circle">3</div><div class="step-label" data-i18n="doc.steps.plan">Choix du plan</div></div>
+      <div class="step inactive"><div class="step-circle">4</div><div class="step-label" data-i18n="doc.steps.pay">Paiement</div></div>
+      <div class="step inactive"><div class="step-circle">5</div><div class="step-label" data-i18n="doc.steps.kyc">Justificatifs</div></div>
+      <div class="step inactive"><div class="step-circle">6</div><div class="step-label" data-i18n="doc.steps.access">Accès</div></div>
+    </div>
+
+    <div class="text-center mb-3 mt-4">
+      <p class="fw-semibold mb-2" style="font-size:1.25rem; color:#155e75;" data-i18n="doc.plans.subtitle">Choisissez la formule qui vous convient — changez à tout moment.</p>
+      <div class="seg" id="billingSeg" role="tablist" aria-label="Périodicité">
+        <button type="button" class="active" id="billMonthly" role="tab" onclick="setBilling('monthly')" data-i18n="doc.plans.billing_monthly">Mensuel</button>
+        <button type="button" id="billAnnual" role="tab" onclick="setBilling('annual')">
+          <span data-i18n="doc.plans.billing_annual">Annuel</span>
+          <span class="save-badge" data-i18n="doc.plans.annual_badge">2 mois offerts</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="row g-3 justify-content-center" style="max-width:620px; margin:0 auto;">
+
+      <!-- Plan Gratuit -->
+      <div class="col-md-6">
+        <div class="plan-card">
+          <div class="text-muted small fw-semibold mb-2 text-uppercase" data-i18n="doc.plans.free_name">Gratuit</div>
+          <div class="price-main">0 €</div>
+          <div class="price-period mb-3" data-i18n="doc.plans.free_period">pour toujours</div>
+          <div class="divider"></div>
+          <ul class="feature-list">
+            <li><i class="fa fa-check icon-ok"></i><span data-i18n="doc.plans.free_f1">Profil médecin public</span></li>
+            <li><i class="fa fa-check icon-ok"></i><span data-i18n="doc.plans.free_f2">Connexion & authentification</span></li>
+            <li><i class="fa fa-times icon-no"></i><span class="text-muted" data-i18n="doc.plans.free_f4">Prise de rendez-vous</span></li>
+            <li><i class="fa fa-times icon-no"></i><span class="text-muted" data-i18n="doc.plans.free_f5">Dossier médical</span></li>
+            <li><i class="fa fa-times icon-no"></i><span class="text-muted" data-i18n="doc.plans.free_f6">Tableau de bord analytics</span></li>
+          </ul>
+          <div class="divider"></div>
+          <div class="small text-muted"><i class="fa fa-user me-1"></i><span data-i18n="doc.plans.meta_one_doc">1 médecin</span></div>
+          <button class="btn btn-outline-doctor btn-select" onclick="choosePlan('gratuit')" data-i18n="doc.plans.free_cta">Commencer gratuitement</button>
+        </div>
+      </div>
+
+      <!-- Plan Solo -->
+      <div class="col-md-6">
+        <div class="plan-card popular">
+          <div class="badge-popular"><i class="fa fa-star me-1"></i><span data-i18n="doc.plans.recommended">Recommandé</span></div>
+          <div class="small fw-semibold mb-2 text-uppercase" style="color:#155e75;" data-i18n="doc.plans.solo_name">Solo</div>
+          <div class="price-main" id="solo-price">15 €</div>
+          <div class="price-period" id="solo-period" data-i18n="doc.plans.per_month">/mois</div>
+          <div class="text-success small fw-semibold mt-1 mb-3" id="solo-equiv" style="display:none;"></div>
+          <div class="divider"></div>
+          <ul class="feature-list">
+            <li><i class="fa fa-check icon-ok"></i><span data-i18n="doc.plans.solo_f1">Tout le plan Gratuit</span></li>
+            <li><i class="fa fa-check icon-ok"></i><span data-i18n="doc.plans.solo_f2">Prise de rendez-vous illimitée</span></li>
+            <li><i class="fa fa-check icon-ok"></i><span data-i18n="doc.plans.solo_f4">Tableau de bord analytics</span></li>
+            <li><i class="fa fa-clock icon-tbd"></i><span><span class="text-muted" data-i18n="doc.plans.solo_f3">Dossier médical complet (POMR / SOAP)</span> <span class="limit-badge" data-i18n="doc.elig.soon">Bientôt</span></span></li>
+            <li><i class="fa fa-clock icon-tbd"></i><span><span class="text-muted" data-i18n="doc.plans.solo_f5">Réseau partenaires</span> <span class="limit-badge" data-i18n="doc.elig.soon">Bientôt</span></span></li>
+          </ul>
+          <div class="divider"></div>
+          <div class="small text-muted"><i class="fa fa-user me-1"></i><span data-i18n="doc.plans.meta_one_doc">1 médecin</span></div>
+          <button class="btn btn-doctor btn-select" onclick="choosePlan('solo')" data-i18n="doc.plans.solo_cta">Choisir Solo</button>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="text-center mt-4 mb-2">
+      <span style="display:inline-block; background:#eafaf0; color:#1e8449; border:1px solid #b8e6c8; border-radius:12px; padding:8px 18px; font-size:0.88rem; font-weight:600;"><i class="fa fa-gift me-2"></i><span data-i18n="doc.plans.trial_note">15 jours d'essai gratuit sur le plan Solo · Sans engagement · Annulable à tout moment</span></span>
+    </div>
+    <div class="text-center"><a href="13-doctor-inscription.html" class="btn btn-link text-muted small" data-i18n="common.prev_step">← Étape précédente</a></div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="naz-common.js"></script>
+  <script>
+    // Les 9 pays MVP sont en zone Afrique → tarification Afrique systématique.
+    localStorage.setItem('naz_zone', 'africa');
+    const t = (k, fb) => (window.NazI18n ? NazI18n.t(k) : '') || fb;
+
+    // Sélecteur segmenté Mensuel / Annuel (style identique à la bascule E-mail/Téléphone du login)
+    let billing = (localStorage.getItem('naz_billing') === 'monthly') ? 'monthly' : 'annual'; // défaut = annuel (incitation à l'abonnement)
+    function setBilling(mode) {
+      billing = mode;
+      document.getElementById('billMonthly').classList.toggle('active', mode === 'monthly');
+      document.getElementById('billAnnual').classList.toggle('active', mode === 'annual');
+      document.getElementById('billMonthly').setAttribute('aria-selected', mode === 'monthly');
+      document.getElementById('billAnnual').setAttribute('aria-selected', mode === 'annual');
+      localStorage.setItem('naz_billing', mode);
+      refreshDisplay();
+    }
+
+    function refreshDisplay() {
+      const isAnnual = billing === 'annual';
+      const zp = ZONE_PRICES.africa;
+      const priceEur = isAnnual ? zp.solo * ANNUAL_MULT : zp.solo;
+      document.getElementById('solo-price').textContent = priceEur.toLocaleString('fr-FR') + ' €';
+      document.getElementById('solo-period').textContent = isAnnual ? t('doc.plans.per_year', '/an') : t('doc.plans.per_month', '/mois');
+      // En mode annuel : afficher l'équivalent mensuel (150 €/an ≈ 12,50 €/mois) — la valeur, pas le gros chiffre
+      const equiv = document.getElementById('solo-equiv');
+      if (isAnnual) {
+        const perMonthStr = (priceEur / 12).toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
+        equiv.textContent = t('doc.plans.solo_equiv', 'soit ≈ {price}/mois').replace('{price}', perMonthStr);
+        equiv.style.display = 'block';
+      } else {
+        equiv.style.display = 'none';
+      }
+    }
+
+    function choosePlan(plan) {
+      localStorage.setItem('naz_plan', plan);
+      if (plan === 'solo') localStorage.setItem('naz_billing', billing);
+      // Solo → paiement ; Gratuit → pas de paiement, direct aux justificatifs (KYC)
+      window.location.href = (plan === 'gratuit') ? '15b-doctor-kyc.html' : '15-doctor-paiement.html';
+    }
+
+    setBilling(billing); // synchronise l'UI du sélecteur + l'affichage des prix
+    document.addEventListener('fueni:langchange', refreshDisplay);
+  </script>
+<script>/* Stepper cliquable : retour aux étapes déjà franchies */(function(){var u=['12b-doctor-eligibilite.html','13-doctor-inscription.html','14-doctor-plans.html','15-doctor-paiement.html','15b-doctor-kyc.html','16-doctor-confirmation.html'];document.querySelectorAll('.progress-steps .step').forEach(function(s,i){if(s.classList.contains('done')&&u[i]){s.style.cursor='pointer';s.title='Revenir à cette étape';s.addEventListener('click',function(){location.href=u[i];});}});})();</script>
+<!-- Prototype version badge -->
+<script>(function(){if(window.__pv)return;window.__pv=1;var v=document.createElement('div');v.style.cssText='position:fixed;top:0;left:50%;transform:translateX(-50%);background:#155e75;color:#fff;padding:6px 20px;border-radius:0 0 16px 16px;font:600 12px/1 system-ui,-apple-system,sans-serif;letter-spacing:.6px;z-index:99999;box-shadow:0 3px 10px rgba(0,0,0,.2);text-transform:uppercase;display:flex;align-items:center;gap:8px';v.innerHTML='🧪 Prototype <span style="background:#f59e0b;color:#1a1a1a;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:4px">v1.4.0</span><span style="background:#facc15;color:#1a1a1a;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:4px;text-transform:none;letter-spacing:0">⏳ À valider</span>';document.body.appendChild(v);})();</script>
+</body>
+</html>

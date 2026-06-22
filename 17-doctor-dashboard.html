@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FUENI — Espace médecin</title>
+  <script src="naz-i18n.js" defer></script>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="naz-common.css">
+  <style>
+    body { background: #f0f4f8; font-family: 'Segoe UI', sans-serif; }
+    .sidebar { background: #155e75; min-height: 100vh; width: 240px; position: fixed; top: 0; left: 0; z-index: 100; }
+    .sidebar-brand { padding: 20px 20px 12px; display: flex; align-items: center; gap: 10px; color: white; }
+    .sidebar-brand .logo-mark { width: 34px; height: 34px; border-radius: 50%; background: rgba(255,255,255,0.18); display: flex; align-items: center; justify-content: center; font-weight: 800; }
+    .sidebar-brand .logo-text { font-size: 1.25rem; font-weight: 800; letter-spacing: -0.5px; }
+    .sidebar-user { padding: 12px 20px 18px; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; gap: 10px; }
+    .sidebar-user .avatar { width: 40px; height: 40px; border-radius: 50%; background: #0e7490; display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; flex-shrink: 0; }
+    .nav-section { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: rgba(255,255,255,0.3); padding: 16px 20px 6px; }
+    .nav-link-side { color: rgba(255,255,255,0.42); padding: 10px 20px; display: flex; align-items: center; gap: 10px; font-size: 0.9rem; cursor: not-allowed; text-decoration: none; }
+    .nav-link-side i:first-child { width: 16px; text-align: center; flex-shrink: 0; }
+    .nav-link-side.unlocked { color: rgba(255,255,255,0.72); cursor: pointer; }
+    .nav-link-side.unlocked:hover { color: white; background: rgba(255,255,255,0.1); }
+    .nav-link-side.active { color: white; background: rgba(255,255,255,0.15); border-left: 3px solid #22d3ee; cursor: default; }
+    .nav-link-side .lock-icon { font-size: 0.65rem; margin-left: auto; opacity: 0.5; }
+    .nav-link-side.unlocked .lock-icon { display: none; }
+    .main { margin-left: 240px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .main-topbar { position: fixed; top: 0; left: 240px; right: 0; z-index: 200; background: white; border-bottom: 1px solid #f1f5f9; padding: 14px 28px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 1px 3px rgba(0,0,0,0.03); }
+    .topbar-title { font-size: 1.15rem; font-weight: 700; margin: 0; color: #0f172a; }
+    .topbar-btn { background: #155e75; color: white; padding: 9px 16px; border-radius: 10px; font-size: 0.85rem; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; }
+    .topbar-btn:hover { background: #0f4858; color: white; }
+    .content-area { padding: 92px 28px 28px; position: relative; }
+    .locked-overlay { position: fixed; inset: 0; left: 240px; top: 56px; background: rgba(240,244,248,0.7); backdrop-filter: blur(3px); z-index: 150; display: flex; align-items: flex-start; justify-content: center; padding: 32px; overflow-y: auto; }
+    .lock-card { background: white; border-radius: 20px; padding: 36px; box-shadow: 0 8px 32px rgba(0,0,0,0.12); max-width: 480px; width: 100%; text-align: center; }
+    .lock-ic { width: 70px; height: 70px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 18px; font-size: 1.7rem; }
+    .lock-ic.wait { background: #fef9e7; color: #f39c12; }
+    .lock-ic.fix { background: #fdeeee; color: #c0392b; }
+    .step-row { display: flex; align-items: flex-start; gap: 12px; text-align: left; margin-bottom: 14px; }
+    .step-row .sd { width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .step-row .sd.ok { background: #d5f5e3; color: #27ae60; }
+    .step-row .sd.cur { background: #fef9e7; }
+    .spinner-ring { width: 16px; height: 16px; border: 2px solid #f39c12; border-top-color: transparent; border-radius: 50%; animation: spin 1s linear infinite; }
+    .bg-content { filter: blur(2px); pointer-events: none; user-select: none; }
+    .stat-block { background: white; border-radius: 12px; padding: 20px; text-align: center; }
+    .bg-card { background: white; border: none; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+    .btn-doctor { background: #155e75; border-color: #155e75; color: white; }
+    .btn-doctor:hover { background: #114c5f; border-color: #114c5f; color: white; }
+  </style>
+</head>
+<body data-i18n-pagetitle="doc.dash.page_title" data-i18n-toggle>
+
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="sidebar-brand">
+      <a href="01-home.html" class="brand-logo" aria-label="FUENI"><img src="assets/fueni-lockup-horizontal.svg" alt="FUENI" style="height:34px;"></a>
+    </div>
+    <div class="sidebar-user">
+      <div class="avatar">AD</div>
+      <div>
+        <div class="text-white fw-semibold small" data-i18n="doc.dash.greeting">Dr Aboubacar Diallo</div>
+        <div id="sidebarStatus" style="color:rgba(255,255,255,0.45); font-size:0.72rem;"><i class="fa fa-clock me-1"></i><span data-i18n="doc.dash.status_chip">Vérification en cours</span></div>
+      </div>
+    </div>
+
+    <div class="nav-section" data-i18n="doc.dash.sec_main">Principal</div>
+    <a href="#" class="nav-link-side unlocked active"><i class="fa fa-home"></i><span data-i18n="doc.dash.nav_dashboard">Tableau de bord</span></a>
+    <a href="#" class="nav-link-side js-locked" onclick="event.preventDefault();"><i class="fa fa-user-injured"></i><span data-i18n="doc.dash.tile_patients">Patients</span><i class="fa fa-lock lock-icon"></i></a>
+    <a href="#" class="nav-link-side js-locked" onclick="event.preventDefault();"><i class="fa fa-calendar-check"></i><span data-i18n="doc.dash.tile_rdv">Rendez-vous</span><i class="fa fa-lock lock-icon"></i></a>
+    <a href="#" class="nav-link-side js-locked" onclick="event.preventDefault();"><i class="fa fa-file-medical"></i><span data-i18n="doc.dash.tile_records">Dossiers médicaux</span><i class="fa fa-lock lock-icon"></i></a>
+    <a href="#" class="nav-link-side js-locked" onclick="event.preventDefault();"><i class="fa fa-comments"></i><span data-i18n="doc.dash.tile_messages">Messagerie</span><i class="fa fa-lock lock-icon"></i></a>
+
+    <div class="nav-section" data-i18n="doc.dash.sec_account">Compte</div>
+    <a href="#" class="nav-link-side unlocked"><i class="fa fa-star"></i><span data-i18n="doc.dash.nav_subscription">Mon abonnement</span></a>
+    <a href="#" class="nav-link-side unlocked"><i class="fa fa-cog"></i><span data-i18n="doc.dash.nav_settings">Paramètres</span></a>
+    <a href="10-login.html" class="nav-link-side unlocked"><i class="fa fa-arrow-right-from-bracket"></i><span data-i18n="doc.dash.logout">Déconnexion</span></a>
+  </div>
+
+  <div class="main">
+    <header class="main-topbar">
+      <h1 class="topbar-title" data-i18n="doc.dash.nav_dashboard">Tableau de bord</h1>
+      <a href="01-home.html" class="topbar-btn"><i class="fa fa-arrow-left"></i><span data-i18n="doc.dash.topbar_back">Retour à l'accueil</span></a>
+    </header>
+
+    <div class="content-area">
+
+      <!-- Overlay verrouillé -->
+      <div class="locked-overlay" id="lockedOverlay">
+        <div class="lock-card">
+
+          <!-- État : en attente de validation -->
+          <div id="cardAttente">
+            <div class="lock-ic wait"><i class="fa fa-shield-halved"></i></div>
+            <h4 class="fw-bold mb-2" data-i18n="doc.dash.status_title">Vérification en cours</h4>
+            <p class="text-muted mb-4" data-i18n="doc.dash.status_sub">Votre compte est créé, mais les fonctionnalités médicales restent désactivées le temps de vérifier votre profil de professionnel de santé.</p>
+
+            <div class="mb-3">
+              <div class="step-row">
+                <div class="sd ok"><i class="fa fa-check"></i></div>
+                <div><div class="fw-semibold small" data-i18n="doc.dash.s1_title">Compte créé</div><div class="text-muted" style="font-size:0.78rem;" data-i18n="doc.dash.s1_sub">Inscription confirmée</div></div>
+              </div>
+              <div class="step-row">
+                <div class="sd ok"><i class="fa fa-check"></i></div>
+                <div><div class="fw-semibold small" data-i18n="doc.dash.s2_title">Plan souscrit</div><div class="text-muted" style="font-size:0.78rem;" id="s2sub" data-i18n="doc.dash.s2_sub_solo">Plan Solo — essai gratuit actif</div></div>
+              </div>
+              <div class="step-row">
+                <div class="sd cur"><div class="spinner-ring"></div></div>
+                <div><div class="fw-semibold small" data-i18n="doc.dash.s3_title">Vérification du profil médecin</div><div class="text-muted" style="font-size:0.78rem;" data-i18n="doc.dash.s3_sub">Contrôle du numéro d'Ordre et des justificatifs</div><div style="font-size:0.75rem;color:#f39c12;font-weight:500;margin-top:2px;"><i class="fa fa-clock me-1"></i><span data-i18n="doc.dash.s3_delay">Délai max : 48 h</span></div></div>
+              </div>
+            </div>
+
+            <div class="alert alert-light border small py-2 mb-3"><i class="fa fa-envelope me-1" style="color:#155e75;"></i><span data-i18n="doc.dash.email_note">Vous recevrez un e-mail dès que votre profil est validé.</span></div>
+
+            <a href="mailto:support@fueni.com" class="btn btn-outline-secondary btn-sm w-100"><i class="fa fa-headset me-1"></i><span data-i18n="doc.dash.btn_support">Contacter le support</span></a>
+
+            <hr class="my-3">
+            <div class="small text-muted"><i class="fa fa-flask me-1"></i><span data-i18n="doc.dash.demo_label">Démo :</span>
+              <a href="#" class="text-decoration-none" onclick="event.preventDefault(); simulateUnlock();" data-i18n="doc.dash.demo_validate">valider le compte</a> ·
+              <a href="#" class="text-decoration-none" onclick="event.preventDefault(); setState('fix');" data-i18n="doc.dash.demo_tofix">dossier à compléter</a>
+            </div>
+          </div>
+
+          <!-- État : dossier à compléter -->
+          <div id="cardFix" class="d-none">
+            <div class="lock-ic fix"><i class="fa fa-triangle-exclamation"></i></div>
+            <h4 class="fw-bold mb-2" data-i18n="doc.dash.tofix_title">Votre dossier doit être complété</h4>
+            <p class="text-muted mb-4" data-i18n="doc.dash.tofix_sub">Une ou plusieurs pièces ont été signalées « À corriger ». Corrigez-les pour relancer la vérification.</p>
+            <a href="15b-doctor-kyc.html?revision=1" class="btn btn-doctor w-100 mb-2"><i class="fa fa-pen-to-square me-2"></i><span data-i18n="doc.dash.btn_correct">Corriger mon dossier</span></a>
+            <a href="mailto:support@fueni.com" class="btn btn-outline-secondary btn-sm w-100"><i class="fa fa-headset me-1"></i><span data-i18n="doc.dash.btn_support">Contacter le support</span></a>
+            <hr class="my-3">
+            <a href="#" class="small text-muted text-decoration-none" onclick="event.preventDefault(); setState('wait');" data-i18n="doc.dash.demo_attente">← Revenir à « en attente »</a>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Tableau de bord flouté en arrière-plan -->
+      <div class="bg-content">
+        <h2 class="fw-bold mb-4" style="color:#155e75;" data-i18n="doc.dash.bg_title">Tableau de bord</h2>
+        <div class="row g-3 mb-4">
+          <div class="col-sm-3"><div class="stat-block"><div class="fs-2 fw-bold" style="color:#155e75;">—</div><div class="small text-muted" data-i18n="doc.dash.bg_patients">Patients</div></div></div>
+          <div class="col-sm-3"><div class="stat-block"><div class="fs-2 fw-bold text-success">—</div><div class="small text-muted" data-i18n="doc.dash.bg_rdv">Rendez-vous du jour</div></div></div>
+          <div class="col-sm-3"><div class="stat-block"><div class="fs-2 fw-bold text-warning">—</div><div class="small text-muted" data-i18n="doc.dash.bg_messages">Messages non lus</div></div></div>
+          <div class="col-sm-3"><div class="stat-block"><div class="fs-2 fw-bold text-danger">—</div><div class="small text-muted" data-i18n="doc.dash.bg_docs">Documents en attente</div></div></div>
+        </div>
+        <div class="row g-3">
+          <div class="col-md-8"><div class="bg-card p-4" style="height:200px;"><div class="text-muted text-center pt-4" data-i18n="doc.dash.bg_agenda">Agenda du jour</div></div></div>
+          <div class="col-md-4"><div class="bg-card p-4" style="height:200px;"><div class="text-muted text-center pt-4" data-i18n="doc.dash.bg_recent">Derniers patients</div></div></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    const t = (k, fb) => (window.NazI18n ? NazI18n.t(k) : '') || fb;
+
+    function setState(s) {
+      const fix = s === 'fix';
+      document.getElementById('cardAttente').classList.toggle('d-none', fix);
+      document.getElementById('cardFix').classList.toggle('d-none', !fix);
+    }
+
+    function simulateUnlock() {
+      document.getElementById('lockedOverlay').style.display = 'none';
+      const bg = document.querySelector('.bg-content');
+      bg.style.filter = 'none';
+      document.querySelectorAll('.nav-link-side.js-locked').forEach(l => { l.classList.add('unlocked'); l.classList.remove('js-locked'); });
+      document.getElementById('sidebarStatus').innerHTML = '<i class="fa fa-circle-check me-1" style="color:#22d3ee;"></i><span style="color:rgba(255,255,255,0.72);">' + t('doc.dash.validated_status', 'Profil validé') + '</span>';
+      document.querySelectorAll('.stat-block .fs-2').forEach(el => el.textContent = '0');
+    }
+
+    // Plan souscrit : Solo (essai) ou Gratuit
+    function applyPlan() {
+      const free = (localStorage.getItem('naz_plan') || 'solo') === 'gratuit';
+      const el = document.getElementById('s2sub');
+      el.setAttribute('data-i18n', free ? 'doc.dash.s2_sub_free' : 'doc.dash.s2_sub_solo');
+      if (window.NazI18n) el.textContent = t(free ? 'doc.dash.s2_sub_free' : 'doc.dash.s2_sub_solo', el.textContent);
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', applyPlan); else applyPlan();
+    // validated_status re-localisé au changement de langue (si déjà déverrouillé)
+    document.addEventListener('fueni:langchange', () => {
+      const s = document.getElementById('sidebarStatus');
+      if (s && s.querySelector('.fa-circle-check')) s.innerHTML = '<i class="fa fa-circle-check me-1" style="color:#22d3ee;"></i><span style="color:rgba(255,255,255,0.72);">' + t('doc.dash.validated_status', 'Profil validé') + '</span>';
+    });
+  </script>
+<!-- Prototype version badge -->
+<script>(function(){if(window.__pv)return;window.__pv=1;var v=document.createElement('div');v.style.cssText='position:fixed;top:0;left:50%;transform:translateX(-50%);background:#155e75;color:#fff;padding:6px 20px;border-radius:0 0 16px 16px;font:600 12px/1 system-ui,-apple-system,sans-serif;letter-spacing:.6px;z-index:99999;box-shadow:0 3px 10px rgba(0,0,0,.2);text-transform:uppercase;display:flex;align-items:center;gap:8px';v.innerHTML='🧪 Prototype <span style="background:#f59e0b;color:#1a1a1a;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:4px">v1.4.0</span><span style="background:#facc15;color:#1a1a1a;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:4px;text-transform:none;letter-spacing:0">⏳ À valider</span>';document.body.appendChild(v);})();</script>
+</body>
+</html>
