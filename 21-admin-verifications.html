@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FUENI Admin — Vérification des dossiers médecins</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root { --slate:#2c3e50; --slate-dark:#1f2d3d; --purple:#6c3483; --purple-light:#f5eef8; --accent:#f59e0b; }
+    * { box-sizing: border-box; }
+    body { background:#f0f4f8; font-family:'Inter','Segoe UI',sans-serif; color:#0f172a; margin:0; }
+
+    /* Sidebar */
+    .sidebar { position:fixed; top:0; left:0; width:248px; height:100vh; background:linear-gradient(180deg,var(--slate-dark),var(--slate)); color:#fff; padding:0; overflow-y:auto; z-index:100; }
+    .sidebar-brand { padding:20px 22px 6px; font-weight:800; font-size:1.3rem; letter-spacing:-0.5px; }
+    .sidebar-brand .accent-f { color:var(--accent); }
+    .sidebar-brand small { font-weight:500; opacity:0.55; font-size:0.72rem; }
+    .sidebar-label { font-size:0.64rem; text-transform:uppercase; letter-spacing:1px; color:rgba(255,255,255,0.4); padding:16px 22px 6px; font-weight:700; }
+    .nav-link-side { color:rgba(255,255,255,0.82); padding:10px 22px; display:flex; align-items:center; gap:11px; font-size:0.88rem; text-decoration:none; transition:background .15s; cursor:pointer; }
+    .nav-link-side i { width:18px; text-align:center; }
+    .nav-link-side:hover { background:rgba(255,255,255,0.08); color:#fff; }
+    .nav-link-side.active { background:rgba(108,52,131,0.55); border-left:3px solid var(--accent); color:#fff; font-weight:600; }
+    .nav-link-side.disabled { color:rgba(255,255,255,0.34); cursor:not-allowed; }
+    .nav-link-side.disabled:hover { background:none; }
+    .soon-pill { margin-left:auto; font-size:0.6rem; background:rgba(255,255,255,0.12); color:rgba(255,255,255,0.6); padding:1px 7px; border-radius:10px; font-weight:700; letter-spacing:0.3px; }
+    .badge-notif { margin-left:auto; background:#e74c3c; color:#fff; font-size:0.64rem; padding:2px 7px; border-radius:20px; font-weight:700; }
+
+    .main { margin-left:248px; padding:0 28px 40px; }
+
+    /* Topbar */
+    .admin-topbar { display:flex; align-items:center; gap:10px; padding:14px 0; margin-bottom:10px; border-bottom:1px solid #e6edf3; font-size:0.9rem; }
+    .sa-avatar { width:30px; height:30px; border-radius:50%; background:var(--purple); display:flex; align-items:center; justify-content:center; color:#fff; font-size:0.72rem; font-weight:700; }
+
+    .stat-pill { background:#fff; border-radius:10px; padding:14px 18px; display:flex; align-items:center; gap:13px; box-shadow:0 2px 8px rgba(0,0,0,0.05); }
+    .stat-icon { width:42px; height:42px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:1.1rem; flex-shrink:0; }
+    .stat-value { font-size:1.4rem; font-weight:800; line-height:1; }
+    .stat-label { font-size:0.72rem; color:#718096; }
+
+    .filter-bar { background:#fff; border-radius:10px; padding:12px 18px; margin-bottom:18px; box-shadow:0 2px 8px rgba(0,0,0,0.05); display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+    .filter-btn { padding:5px 14px; border-radius:20px; font-size:0.78rem; font-weight:600; border:1.5px solid #e9ecef; background:#fff; cursor:pointer; transition:all .15s; }
+    .filter-btn.active, .filter-btn:hover { border-color:var(--purple); color:var(--purple); background:var(--purple-light); }
+    .page-btn { min-width:34px; height:34px; border:1.5px solid #e9ecef; background:#fff; border-radius:8px; font-size:0.82rem; font-weight:600; color:#475569; cursor:pointer; }
+    .page-btn:hover:not(:disabled) { border-color:var(--purple); color:var(--purple); }
+    .page-btn.active { background:var(--purple); border-color:var(--purple); color:#fff; }
+    .page-btn:disabled { opacity:0.45; cursor:not-allowed; }
+    .search-box { flex:0 1 300px; min-width:200px; position:relative; }
+    .search-box input { padding-left:34px; border-radius:8px; border:1.5px solid #e9ecef; font-size:0.85rem; width:100%; height:36px; }
+    .search-box .fa { position:absolute; left:11px; top:50%; transform:translateY(-50%); color:#a0aec0; }
+
+    .request-card { background:#fff; border-radius:12px; padding:18px; margin-bottom:12px; box-shadow:0 2px 8px rgba(0,0,0,0.05); border-left:4px solid transparent; cursor:pointer; transition:border-color .15s; }
+    .request-card:hover { border-left-color:var(--purple); }
+    .request-card.urgent { border-left-color:#e74c3c; }
+    .request-card.done { opacity:0.45; }
+    .avatar-circle { width:44px; height:44px; border-radius:50%; background:#dbeafe; color:#1e40af; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:0.9rem; flex-shrink:0; }
+    .prof-badge { font-size:0.68rem; font-weight:700; padding:3px 9px; border-radius:20px; }
+    .b-medecin { background:#dbeafe; color:#1e40af; }
+    .b-pending { background:#fff3cd; color:#856404; }
+    .b-approved { background:#d1e7dd; color:#0f5132; }
+    .b-corr { background:#fde2cf; color:#9c4221; }
+
+    .action-btn { padding:6px 14px; border-radius:8px; font-size:0.8rem; font-weight:600; border:none; cursor:pointer; transition:all .15s; }
+    .btn-approve { background:#d1e7dd; color:#0f5132; } .btn-approve:hover { background:#198754; color:#fff; }
+    .btn-corr { background:#fde2cf; color:#9c4221; } .btn-corr:hover { background:#dd6b20; color:#fff; }
+    .btn-view { background:#f5eef8; color:#6c3483; } .btn-view:hover { background:#6c3483; color:#fff; }
+
+    /* Detail */
+    #detailContent h6 { font-size:0.74rem; font-weight:800; text-transform:uppercase; letter-spacing:0.8px; color:var(--purple); margin:0 0 10px; padding-bottom:6px; border-bottom:1px solid #ece7f1; }
+    .kv { display:flex; gap:10px; font-size:0.85rem; padding:3px 0; }
+    .kv .k { flex:0 0 116px; color:#94a3b8; font-weight:600; }
+    .kv .v { color:#2d3748; }
+    .detail-row { margin-bottom:15px; }
+    .doc-line { display:flex; align-items:center; gap:10px; padding:9px 11px; border:1.5px solid #e6edf3; border-radius:9px; margin-bottom:8px; font-size:0.84rem; }
+    .doc-line.flagged { border-color:#dd6b20; background:#fff8f1; }
+    .doc-item { margin-bottom:8px; }
+    .doc-item .doc-line { margin-bottom:4px; }
+    .corr-motif { font-size:0.8rem; }
+    .corr-motif.is-err { border-color:#dc3545; }
+    .doc-decide { display:flex; gap:4px; flex-shrink:0; }
+    .dec-btn { border:1.5px solid #e9ecef; background:#fff; border-radius:7px; font-size:0.7rem; font-weight:600; padding:3px 9px; color:#64748b; cursor:pointer; white-space:nowrap; }
+    .dec-btn:hover { border-color:#cbd5e1; }
+    .dec-btn.dec-ok.active { background:#d1e7dd; border-color:#198754; color:#0f5132; }
+    .dec-btn.dec-corr.active { background:#fde2cf; border-color:#dd6b20; color:#9c4221; }
+    .btn:disabled { opacity:0.5; cursor:not-allowed; }
+    .doc-line .doc-ic { width:30px; height:30px; border-radius:7px; display:flex; align-items:center; justify-content:center; flex-shrink:0; background:#fdedec; color:#c0392b; }
+    .doc-line .ic-blue { background:#ebf5fb; color:#2980b9; }
+    .doc-meta { font-size:0.72rem; color:#94a3b8; white-space:nowrap; }
+    .doc-line > .flex-grow-1 > div:first-child { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .doc-see { margin-left:auto; color:var(--purple); cursor:pointer; font-size:0.76rem; font-weight:600; white-space:nowrap; }
+    .corr-check { display:flex; align-items:center; gap:5px; font-size:0.7rem; color:#9c4221; font-weight:600; white-space:nowrap; }
+    .corr-check input { accent-color:#dd6b20; }
+    .reject-reason { border:1.5px solid #fde2cf; border-radius:8px; padding:10px; font-size:0.85rem; width:100%; resize:vertical; min-height:74px; }
+    .empty-state { text-align:center; padding:54px 20px; color:#a0aec0; }
+    @media (max-width:900px){ .sidebar{ display:none; } .main{ margin-left:0; padding:0 14px 30px; } }
+  </style>
+</head>
+<body>
+
+  <!-- Sidebar (seule la Vérification est active en MVP) -->
+  <div class="sidebar">
+    <div class="sidebar-brand"><img src="assets/fueni-lockup-white.svg" alt="FUENI" style="height:26px;width:auto;vertical-align:middle;"> <small>Admin</small></div>
+
+    <div class="sidebar-label">Tableau de bord</div>
+    <a class="nav-link-side disabled"><i class="fa fa-chart-bar"></i> Vue d'ensemble <span class="soon-pill">Bientôt</span></a>
+
+    <div class="sidebar-label">Gestion</div>
+    <a class="nav-link-side active"><i class="fa fa-user-check"></i> Vérification des dossiers <span class="badge-notif" id="navCount">4</span></a>
+    <a class="nav-link-side disabled"><i class="fa fa-users"></i> Abonnements <span class="soon-pill">Bientôt</span></a>
+    <a class="nav-link-side disabled"><i class="fa fa-history"></i> Journal d'audit <span class="soon-pill">Bientôt</span></a>
+
+    <div class="sidebar-label">Configuration</div>
+    <a class="nav-link-side disabled"><i class="fa fa-th-large"></i> Plans <span class="soon-pill">Bientôt</span></a>
+    <a class="nav-link-side disabled"><i class="fa fa-globe"></i> Tarification <span class="soon-pill">Bientôt</span></a>
+
+    <div class="sidebar-label">Compte</div>
+    <a href="12-login-admin.html" class="nav-link-side"><i class="fa fa-sign-out-alt"></i> Déconnexion</a>
+  </div>
+
+  <div class="main">
+
+    <!-- Topbar -->
+    <div class="admin-topbar">
+      <div class="sa-avatar">SA</div>
+      <span class="fw-semibold" style="color:var(--slate);">Super Admin</span>
+      <span class="text-muted">›</span>
+      <span class="text-muted small">Vérification des dossiers</span>
+      <div class="ms-auto d-flex align-items-center gap-3">
+        <span class="text-muted small"><i class="fa fa-calendar-alt me-1"></i>25 juin 2026</span>
+        <span class="small text-muted fw-semibold">admin@fueni.com</span>
+      </div>
+    </div>
+
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-start mb-3 mt-1">
+      <div>
+        <h3 class="fw-bold mb-0" style="color:var(--slate);">Vérification des dossiers médecins</h3>
+        <p class="text-muted mb-0 small">Examinez les justificatifs KYC, validez le compte ou demandez des corrections.</p>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="row g-3 mb-4">
+      <div class="col-6 col-xl-4"><div class="stat-pill"><div class="stat-icon" style="background:#fff3cd;"><i class="fa fa-hourglass-half" style="color:#f39c12;"></i></div><div><div class="stat-value" style="color:#f39c12;" id="statPending">4</div><div class="stat-label">En attente</div></div></div></div>
+      <div class="col-6 col-xl-4"><div class="stat-pill"><div class="stat-icon" style="background:#d1e7dd;"><i class="fa fa-check-circle" style="color:#198754;"></i></div><div><div class="stat-value" style="color:#198754;">37</div><div class="stat-label">Validés ce mois</div></div></div></div>
+      <div class="col-6 col-xl-4"><div class="stat-pill"><div class="stat-icon" style="background:#fde2cf;"><i class="fa fa-rotate-left" style="color:#dd6b20;"></i></div><div><div class="stat-value" style="color:#dd6b20;">3</div><div class="stat-label">À corriger</div></div></div></div>
+    </div>
+
+    <div class="filter-bar">
+      <button class="filter-btn active" onclick="setFilter('all', this)">Tous</button>
+      <button class="filter-btn" onclick="setFilter('pending', this)">En attente <span class="badge bg-secondary ms-1" style="font-size:0.65rem;" id="pillPending">2</span></button>
+      <button class="filter-btn" onclick="setFilter('approved', this)">Validé</button>
+      <button class="filter-btn" onclick="setFilter('corr', this)">À corriger</button>
+      <div class="search-box ms-auto"><i class="fa fa-search"></i><input type="text" placeholder="Rechercher par nom, e-mail, n° d'ordre…"></div>
+    </div>
+
+    <div id="queue">
+      <!-- cards injected -->
+    </div>
+    <nav id="pager" class="d-flex justify-content-center align-items-center gap-1 mt-2"></nav>
+
+    <!-- Detail drawer (offcanvas droite) -->
+    <div class="offcanvas offcanvas-end" tabindex="-1" id="detailDrawer" style="width:780px; max-width:96vw;">
+      <div class="offcanvas-header border-bottom">
+        <h6 class="mb-0 fw-bold" style="color:var(--slate);"><i class="fa fa-folder-open me-2" style="color:var(--purple);"></i>Examen du dossier</h6>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Fermer"></button>
+      </div>
+      <div class="offcanvas-body" id="detailContent">
+            <div class="d-flex align-items-center gap-3 mb-3">
+              <div class="avatar-circle" id="dAvatar" style="width:52px;height:52px;font-size:1.05rem;"></div>
+              <div>
+                <div class="fw-bold" id="dName" style="font-size:1.05rem;"></div>
+                <div><span class="prof-badge b-medecin">Médecin</span> <span class="prof-badge b-pending">En attente</span></div>
+              </div>
+            </div>
+
+            <div class="detail-row">
+              <h6>Identité</h6>
+              <div class="kv"><span class="k">E-mail</span><span class="v" id="dEmail"></span></div>
+              <div class="kv"><span class="k">Pays</span><span class="v" id="dCountry"></span></div>
+            </div>
+
+            <div class="detail-row">
+              <h6>Informations professionnelles</h6>
+              <div class="kv"><span class="k">Spécialité</span><span class="v" id="dSpec"></span></div>
+              <div class="kv"><span class="k">N° d'ordre</span><span class="v font-monospace" id="dOrdre"></span></div>
+              <div class="kv"><span class="k">Localisation</span><span class="v" id="dLoc"></span></div>
+            </div>
+
+            <div class="detail-row">
+              <h6>Justificatifs — marquez chaque pièce Conforme ou À corriger</h6>
+              <div class="doc-item" data-doc="Pièce d'identité">
+                <div class="doc-line"><div class="doc-ic"><i class="fa fa-id-card"></i></div><div class="flex-grow-1" style="min-width:0;"><div>Pièce d'identité</div><div class="doc-meta">Délivrée 12/03/2021 · expire 12/03/2031</div></div><span class="doc-see">Voir</span><div class="doc-decide"><button type="button" class="dec-btn dec-ok" onclick="setDoc(this,'ok')"><i class="fa fa-check me-1"></i>Conforme</button><button type="button" class="dec-btn dec-corr" onclick="setDoc(this,'corr')"><i class="fa fa-rotate-left me-1"></i>À corriger</button></div></div>
+                <input type="text" class="form-control form-control-sm corr-motif d-none" placeholder="Motif — ex : document illisible, expiré…">
+              </div>
+              <div class="doc-item" data-doc="Diplôme médical">
+                <div class="doc-line"><div class="doc-ic ic-blue"><i class="fa fa-graduation-cap"></i></div><div class="flex-grow-1" style="min-width:0;"><div>Diplôme médical</div></div><span class="doc-see">Voir</span><div class="doc-decide"><button type="button" class="dec-btn dec-ok" onclick="setDoc(this,'ok')"><i class="fa fa-check me-1"></i>Conforme</button><button type="button" class="dec-btn dec-corr" onclick="setDoc(this,'corr')"><i class="fa fa-rotate-left me-1"></i>À corriger</button></div></div>
+                <input type="text" class="form-control form-control-sm corr-motif d-none" placeholder="Motif — ex : document illisible, expiré…">
+              </div>
+              <div class="doc-item" data-doc="Attestation Ordre">
+                <div class="doc-line"><div class="doc-ic"><i class="fa fa-stamp"></i></div><div class="flex-grow-1" style="min-width:0;"><div>Attestation d'inscription à l'Ordre <span class="text-muted">(ou équiv.)</span></div><div class="doc-meta">Délivrée 02/01/2026 · expire 31/12/2026</div></div><span class="doc-see">Voir</span><div class="doc-decide"><button type="button" class="dec-btn dec-ok" onclick="setDoc(this,'ok')"><i class="fa fa-check me-1"></i>Conforme</button><button type="button" class="dec-btn dec-corr" onclick="setDoc(this,'corr')"><i class="fa fa-rotate-left me-1"></i>À corriger</button></div></div>
+                <input type="text" class="form-control form-control-sm corr-motif d-none" placeholder="Motif — ex : document illisible, expiré…">
+              </div>
+              <div class="doc-item" data-doc="RIB">
+                <div class="doc-line"><div class="doc-ic ic-blue"><i class="fa fa-building-columns"></i></div><div class="flex-grow-1" style="min-width:0;"><div>RIB / Mobile Money</div></div><span class="doc-see">Voir</span><div class="doc-decide"><button type="button" class="dec-btn dec-ok" onclick="setDoc(this,'ok')"><i class="fa fa-check me-1"></i>Conforme</button><button type="button" class="dec-btn dec-corr" onclick="setDoc(this,'corr')"><i class="fa fa-rotate-left me-1"></i>À corriger</button></div></div>
+                <input type="text" class="form-control form-control-sm corr-motif d-none" placeholder="Motif — ex : document illisible, expiré…">
+              </div>
+              <div class="doc-item" data-doc="Domicile">
+                <div class="doc-line"><div class="doc-ic"><i class="fa fa-house-chimney"></i></div><div class="flex-grow-1" style="min-width:0;"><div>Justificatif de domicile <span class="text-muted">(&lt; 3 mois)</span></div></div><span class="doc-see">Voir</span><div class="doc-decide"><button type="button" class="dec-btn dec-ok" onclick="setDoc(this,'ok')"><i class="fa fa-check me-1"></i>Conforme</button><button type="button" class="dec-btn dec-corr" onclick="setDoc(this,'corr')"><i class="fa fa-rotate-left me-1"></i>À corriger</button></div></div>
+                <input type="text" class="form-control form-control-sm corr-motif d-none" placeholder="Motif — ex : trop ancien (> 3 mois)…">
+              </div>
+              <div class="doc-item" data-doc="RC Pro">
+                <div class="doc-line"><div class="doc-ic"><i class="fa fa-shield-halved"></i></div><div class="flex-grow-1" style="min-width:0;"><div>Attestation RC Pro <span class="text-muted">(optionnel)</span></div><div class="doc-meta">Délivrée 01/01/2026 · expire 31/12/2026</div></div><span class="doc-see">Voir</span><div class="doc-decide"><button type="button" class="dec-btn dec-ok" onclick="setDoc(this,'ok')"><i class="fa fa-check me-1"></i>Conforme</button><button type="button" class="dec-btn dec-corr" onclick="setDoc(this,'corr')"><i class="fa fa-rotate-left me-1"></i>À corriger</button></div></div>
+                <input type="text" class="form-control form-control-sm corr-motif d-none" placeholder="Motif — ex : document illisible, expiré…">
+              </div>
+            </div>
+
+            <div class="detail-row">
+              <h6>Déclarations</h6>
+              <div class="small text-success"><i class="fa fa-check me-1"></i>Authenticité · Vérification Ordre autorisée · Code de conduite</div>
+            </div>
+
+            <hr>
+
+            <!-- Actions -->
+            <div id="actionZone">
+              <div id="corrError" class="small text-danger mb-2 d-none"><i class="fa fa-circle-exclamation me-1"></i><span id="corrErrorMsg"></span></div>
+              <div class="d-grid gap-2">
+                <button id="btnValider" class="btn btn-success fw-semibold" onclick="approve()" disabled><i class="fa fa-check me-2"></i>Valider le dossier — activer le compte</button>
+                <button id="btnCorr" class="btn fw-semibold text-white" style="background:#dd6b20;" onclick="sendCorr()" disabled><i class="fa fa-rotate-left me-2"></i>Demander des corrections</button>
+              </div>
+              <p class="text-muted small mt-2 mb-0"><i class="fa fa-info-circle me-1"></i>Pour des corrections : cochez les pièces concernées ci-dessus + motif. Le compte reste <strong>PENDING_KYC</strong> ; le médecin est notifié.</p>
+            </div>
+
+            <!-- Decision done -->
+            <div id="decisionDone" class="d-none text-center py-3">
+              <i class="fa fa-check-circle fa-2x text-success mb-2 d-block" id="decisionIcon"></i>
+              <p class="fw-semibold mb-1" id="decisionMsg"></p>
+              <p class="text-muted small mb-2">Le médecin a été notifié par e-mail.</p>
+              <a id="seeDoctorLink" href="15b-doctor-kyc.html?revision=1" target="_blank" class="small fw-semibold d-none" style="color:var(--purple);">Voir le dossier côté médecin (démo) →</a>
+            </div>
+      </div><!-- offcanvas-body -->
+    </div><!-- offcanvas -->
+  </div><!-- main -->
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    const DOCTORS = [
+      { id:'aminata', initials:'AD', name:'Dr Aminata Diop', email:'aminata.diop@exemple.sn', country:'🇸🇳 Sénégal', spec:'Cardiologie', ordre:'ONMS-2024-00871', loc:'Dakar · Plateau', hours:'52h — dépassé', urgent:true, status:'pending' },
+      { id:'kwame',   initials:'KM', name:'Dr Kwame Mensah', email:'k.mensah@exemple.ci', country:"🇨🇮 Côte d'Ivoire", spec:'Médecine générale', ordre:'CNOM-CI-2024-00214', loc:'Abidjan · Cocody', hours:'28h', urgent:false, status:'pending' },
+      { id:'ibrahim', initials:'IT', name:'Dr Ibrahim Touré', email:'i.toure@exemple.ml', country:'🇲🇱 Mali', spec:'Pédiatrie', ordre:'ONM-ML-2024-00102', loc:'Bamako', hours:'12h', urgent:false, status:'corr' },
+      { id:'fatou',   initials:'FB', name:'Dr Fatou Bensouda', email:'f.bensouda@exemple.bj', country:'🇧🇯 Bénin', spec:'Dermatologie', ordre:'ONMB-2024-00077', loc:'Cotonou', hours:'5h', urgent:false, status:'approved' },
+      { id:'mariama', initials:'MS', name:'Dr Mariama Sylla', email:'m.sylla@exemple.tg', country:'🇹🇬 Togo', spec:'Gynéco-obstétrique', ordre:'ONMT-2024-00188', loc:'Lomé', hours:'19h', urgent:false, status:'pending' },
+      { id:'ousmane', initials:'OO', name:'Dr Ousmane Ouédraogo', email:'o.ouedraogo@exemple.bf', country:'🇧🇫 Burkina Faso', spec:'Médecine générale', ordre:'ONMBF-2024-00131', loc:'Ouagadougou', hours:'34h', urgent:false, status:'approved' },
+      { id:'adama',   initials:'AK', name:'Dr Adama Kané', email:'a.kane@exemple.ne', country:'🇳🇪 Niger', spec:'Pédiatrie', ordre:'ONMN-2024-00059', loc:'Niamey', hours:'9h', urgent:false, status:'corr' },
+      { id:'jean',    initials:'JM', name:'Dr Jean Mukendi', email:'j.mukendi@exemple.cd', country:'🇨🇩 RD Congo', spec:'Cardiologie', ordre:'CNOM-CD-2024-00302', loc:'Kinshasa', hours:'3h', urgent:false, status:'pending' },
+      { id:'khadija', initials:'KN', name:'Dr Khadija Ndiaye', email:'k.ndiaye@exemple.sn', country:'🇸🇳 Sénégal', spec:'Dermatologie', ordre:'ONMS-2024-00912', loc:'Dakar', hours:'41h', urgent:false, status:'pending' },
+      { id:'samuel',  initials:'SK', name:'Dr Samuel Koffi', email:'s.koffi@exemple.ci', country:"🇨🇮 Côte d'Ivoire", spec:'Cardiologie', ordre:'CNOM-CI-2024-00255', loc:'Abidjan', hours:'30h', urgent:false, status:'pending' },
+      { id:'aicha',   initials:'AT', name:'Dr Aïcha Traoré', email:'a.traore@exemple.ml', country:'🇲🇱 Mali', spec:'Gynéco-obstétrique', ordre:'ONM-ML-2024-00140', loc:'Bamako', hours:'22h', urgent:false, status:'pending' },
+      { id:'pierre',  initials:'PM', name:'Dr Pierre Mbarga', email:'p.mbarga@exemple.cm', country:'🇨🇲 Cameroun', spec:'Médecine générale', ordre:'ONMC-2024-00198', loc:'Yaoundé', hours:'15h', urgent:false, status:'pending' },
+      { id:'nadia',   initials:'NB', name:'Dr Nadia Bio', email:'n.bio@exemple.bj', country:'🇧🇯 Bénin', spec:'Pédiatrie', ordre:'ONMB-2024-00090', loc:'Porto-Novo', hours:'7h', urgent:false, status:'corr' },
+      { id:'moussa',  initials:'MD', name:'Dr Moussa Diallo', email:'m.diallo@exemple.ne', country:'🇳🇪 Niger', spec:'Médecine générale', ordre:'ONMN-2024-00071', loc:'Niamey', hours:'2h', urgent:false, status:'pending' }
+    ];
+    const STATUS = { pending:{cls:'b-pending',label:'En attente'}, approved:{cls:'b-approved',label:'Validé'}, corr:{cls:'b-corr',label:'À corriger'} };
+    const byId = Object.fromEntries(DOCTORS.map(d => [d.id, d]));
+    let current = null, page = 1, filter = 'all', pending = DOCTORS.filter(d => d.status === 'pending').length;
+    const pageSize = 10;
+
+    function gotoPage(p) { page = p; renderQueue(); document.querySelector('.main').scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+    function renderPager(pages) {
+      const pager = document.getElementById('pager');
+      if (pages <= 1) { pager.innerHTML = ''; return; }
+      let h = `<button class="page-btn" onclick="gotoPage(${page - 1})" ${page === 1 ? 'disabled' : ''}><i class="fa fa-chevron-left"></i></button>`;
+      for (let i = 1; i <= pages; i++) h += `<button class="page-btn ${i === page ? 'active' : ''}" onclick="gotoPage(${i})">${i}</button>`;
+      h += `<button class="page-btn" onclick="gotoPage(${page + 1})" ${page === pages ? 'disabled' : ''}><i class="fa fa-chevron-right"></i></button>`;
+      pager.innerHTML = h;
+    }
+
+    function setFilter(f, btn) {
+      filter = f; page = 1;
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      renderQueue();
+    }
+    function renderQueue() {
+      const list = DOCTORS.filter(d => filter === 'all' || d.status === filter);
+      const pages = Math.max(1, Math.ceil(list.length / pageSize));
+      if (page > pages) page = pages;
+      const q = document.getElementById('queue');
+      if (!list.length) { q.innerHTML = '<div class="text-center text-muted py-5"><i class="fa fa-folder-open fa-2x mb-2 d-block" style="color:#cbd5e1;"></i>Aucun dossier dans ce filtre.</div>'; renderPager(1); return; }
+      q.innerHTML = list.slice((page - 1) * pageSize, page * pageSize).map(d => {
+        const st = STATUS[d.status];
+        const actions = `<button class="action-btn btn-view" onclick="event.stopPropagation(); showDetail('${d.id}')"><i class="fa fa-eye me-1"></i>Examiner</button>`;
+        return `
+        <div class="request-card ${d.urgent ? 'urgent' : ''}" id="card-${d.id}" onclick="showDetail('${d.id}')">
+          <div class="d-flex align-items-start gap-3">
+            <div class="avatar-circle">${d.initials}</div>
+            <div class="flex-fill">
+              <div class="d-flex align-items-center gap-2 mb-1">
+                <span class="fw-semibold">${d.name}</span>
+                <span class="prof-badge b-medecin">Médecin</span>
+                <span class="prof-badge ${st.cls} ms-auto" id="badge-${d.id}">${st.label}</span>
+              </div>
+              <div class="text-muted small mb-2">${d.email} · ${d.spec} · ${d.country}</div>
+              <div class="small ${d.urgent ? 'text-danger fw-semibold' : 'text-muted'}"><i class="fa fa-clock me-1"></i>${d.hours} · N° ${d.ordre}</div>
+            </div>
+          </div>
+          <div class="d-flex gap-2 mt-3 justify-content-end">${actions}</div>
+        </div>`;
+      }).join('');
+      renderPager(pages);
+    }
+
+    function showDetail(id) {
+      current = id; const d = byId[id];
+      bootstrap.Offcanvas.getOrCreateInstance(document.getElementById('detailDrawer')).show();
+      document.getElementById('actionZone').classList.remove('d-none');
+      document.getElementById('decisionDone').classList.add('d-none');
+      document.querySelectorAll('.doc-item').forEach(it => {
+        delete it.dataset.state;
+        it.querySelectorAll('.dec-btn').forEach(b => b.classList.remove('active'));
+        it.querySelector('.doc-line').classList.remove('flagged');
+        const m = it.querySelector('.corr-motif'); m.classList.add('d-none'); m.value = ''; m.classList.remove('is-err');
+      });
+      document.getElementById('corrError').classList.add('d-none');
+      updateActions();
+      document.getElementById('dAvatar').textContent = d.initials;
+      document.getElementById('dName').textContent = d.name;
+      document.getElementById('dEmail').textContent = d.email;
+      document.getElementById('dCountry').textContent = d.country;
+      document.getElementById('dSpec').textContent = d.spec;
+      document.getElementById('dOrdre').textContent = d.ordre;
+      document.getElementById('dLoc').textContent = d.loc;
+    }
+
+    function setDoc(btn, state) {
+      const item = btn.closest('.doc-item');
+      item.dataset.state = state;
+      item.querySelectorAll('.dec-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const corr = state === 'corr';
+      item.querySelector('.doc-line').classList.toggle('flagged', corr);
+      const m = item.querySelector('.corr-motif');
+      m.classList.toggle('d-none', !corr);
+      if (!corr) { m.value = ''; m.classList.remove('is-err'); } else m.focus();
+      document.getElementById('corrError').classList.add('d-none');
+      updateActions();
+    }
+    function updateActions() {
+      const items = Array.from(document.querySelectorAll('.doc-item'));
+      const allOk = items.length && items.every(it => it.dataset.state === 'ok');
+      const hasCorr = items.some(it => it.dataset.state === 'corr');
+      document.getElementById('btnValider').disabled = !allOk;
+      document.getElementById('btnCorr').disabled = !hasCorr;
+    }
+    document.addEventListener('input', e => {
+      if (e.target.classList.contains('corr-motif')) {
+        e.target.classList.remove('is-err');
+        document.getElementById('corrError').classList.add('d-none');
+      }
+    });
+
+    function finish(msg, color, icon, showLink) {
+      document.getElementById('card-' + current).classList.add('done');
+      document.getElementById('badge-' + current).className = 'prof-badge ms-auto ' + (color === '#198754' ? 'b-approved' : 'b-corr');
+      document.getElementById('badge-' + current).textContent = (color === '#198754' ? 'Validé' : 'À corriger');
+      document.getElementById('actionZone').classList.add('d-none');
+      document.getElementById('decisionDone').classList.remove('d-none');
+      document.getElementById('decisionMsg').textContent = msg;
+      document.getElementById('decisionMsg').style.color = color;
+      document.getElementById('decisionIcon').className = icon + ' fa-2x mb-2 d-block';
+      document.getElementById('seeDoctorLink').classList.toggle('d-none', !showLink);
+      if (byId[current].status === 'pending') pending = Math.max(0, pending - 1);
+      byId[current].status = (color === '#198754' ? 'approved' : 'corr');
+      document.getElementById('navCount').textContent = pending;
+      document.getElementById('statPending').textContent = pending;
+      document.getElementById('pillPending').textContent = pending;
+      if (pending === 0) document.getElementById('navCount').style.display = 'none';
+    }
+
+    function approve() { if (!current) return; finish('Dossier validé — compte activé', '#198754', 'fa fa-check-circle text-success', false); }
+
+    function sendCorr() {
+      const err = document.getElementById('corrError'), errMsg = document.getElementById('corrErrorMsg');
+      err.classList.add('d-none');
+      document.querySelectorAll('.corr-motif.is-err').forEach(m => m.classList.remove('is-err'));
+      const corrItems = Array.from(document.querySelectorAll('.doc-item')).filter(it => it.dataset.state === 'corr');
+      if (!corrItems.length) { errMsg.textContent = 'Marquez au moins une pièce « À corriger ».'; err.classList.remove('d-none'); return; }
+      let firstBad = null;
+      corrItems.forEach(it => { const m = it.querySelector('.corr-motif'); if (!m.value.trim()) { m.classList.add('is-err'); if (!firstBad) firstBad = m; } });
+      if (firstBad) { errMsg.textContent = 'Indiquez un motif pour chaque pièce à corriger.'; err.classList.remove('d-none'); firstBad.focus(); return; }
+      finish('Corrections demandées (' + corrItems.length + ' pièce' + (corrItems.length > 1 ? 's' : '') + ') — médecin notifié', '#dd6b20', 'fa fa-rotate-left', true);
+    }
+
+    renderQueue();
+    document.getElementById('navCount').textContent = pending;
+    document.getElementById('statPending').textContent = pending;
+    document.getElementById('pillPending').textContent = pending;
+  </script>
+<!-- Prototype version badge -->
+<script>(function(){if(window.__pv)return;window.__pv=1;var v=document.createElement('div');v.style.cssText='position:fixed;top:0;left:50%;transform:translateX(-50%);background:#155e75;color:#fff;padding:6px 20px;border-radius:0 0 16px 16px;font:600 12px/1 system-ui,-apple-system,sans-serif;letter-spacing:.6px;z-index:99999;box-shadow:0 3px 10px rgba(0,0,0,.2);text-transform:uppercase;display:flex;align-items:center;gap:8px';v.innerHTML='🧪 Prototype <span style="background:#f59e0b;color:#1a1a1a;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:4px">v1.4.0</span><span style="background:#facc15;color:#1a1a1a;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:4px;text-transform:none;letter-spacing:0">⏳ À valider</span>';document.body.appendChild(v);})();</script>
+</body>
+</html>

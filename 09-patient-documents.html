@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FUENI — Mes documents</title>
+  <script src="naz-i18n.js" defer></script>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="naz-common.css">
+  <style>
+    body { background: #f0f4f8; }
+
+    /* Sidebar (identique au tableau de bord) */
+    .sidebar { background: #16a085; min-height: 100vh; padding: 0; width: 240px; position: fixed; top: 0; left: 0; z-index: 100; }
+    .sidebar-brand { padding: 20px 20px 10px; font-size: 1.3rem; font-weight: 700; color: white; }
+    .sidebar-brand small { display: block; font-size: 0.65rem; font-weight: 500; opacity: 0.75; letter-spacing: 0.5px; text-transform: uppercase; margin-top: 2px; }
+    .sidebar-user { padding: 14px 20px 20px; border-bottom: 1px solid rgba(255,255,255,0.15); }
+    .sidebar-user .avatar { width: 40px; height: 40px; border-radius: 50%; background: #fff; color: #16a085; display: flex; align-items: center; justify-content: center; font-weight: 700; }
+    .nav-link-side { color: rgba(255,255,255,0.85) !important; padding: 10px 20px; display: flex; align-items: center; gap: 10px; font-size: 0.9rem; cursor: pointer; text-decoration: none; transition: background 0.15s; }
+    .nav-link-side:hover { background: rgba(255,255,255,0.1); color: white !important; }
+    .nav-link-side.active { background: rgba(255,255,255,0.2); border-left: 3px solid white; color: white !important; }
+    .nav-section { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: rgba(255,255,255,0.45); padding: 16px 20px 6px; }
+    .nav-link-side i { width: 18px; text-align: center; }
+    .main { margin-left: 240px; }
+
+    .proto-bar { background: #fff3cd; border: 1px solid #ffc107; border-top: none; padding: 6px 14px; font-size: 0.82rem; position: fixed; top: 0; right: 200px; z-index: 300; border-radius: 0 0 8px 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+    #fueni-lang-toggle { top: 8px !important; right: 20px !important; }
+
+    .content-area { padding: 48px 28px 28px; }
+    .page-header { background: white; border-radius: 12px; padding: 22px; margin-bottom: 18px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+
+    .btn-patient { background: #16a085; border-color: #16a085; color: white; }
+    .btn-patient:hover { background: #138d75; border-color: #138d75; color: white; }
+
+    /* Quota */
+    .quota-card { background: white; border-radius: 12px; padding: 14px 18px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+    .quota-top { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+    .quota-bar { flex: 1; min-width: 160px; height: 8px; background: #ecf0f1; border-radius: 6px; overflow: hidden; }
+    .quota-bar > span { display: block; height: 100%; background: #16a085; border-radius: 6px; }
+
+    /* Banner */
+    .info-banner { background: #e8f8f5; border-left: 3px solid #16a085; padding: 12px 16px; border-radius: 6px; font-size: 0.85rem; color: #145a4f; margin-bottom: 16px; }
+
+    /* Segment */
+    .seg-group { display: inline-flex; background: #e8f8f5; border-radius: 10px; padding: 3px; gap: 2px; flex-wrap: wrap; }
+    .seg-btn { border: none; background: transparent; color: #117a65; font-size: 0.82rem; font-weight: 600; padding: 6px 14px; border-radius: 8px; cursor: pointer; }
+    .seg-btn.active { background: #16a085; color: white; }
+
+    /* Toolbar */
+    .docs-toolbar { background: white; border-radius: 10px; padding: 12px 16px; margin: 14px 0 16px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+    .docs-toolbar .form-select, .docs-toolbar .form-control { font-size: 0.85rem; }
+
+    /* Table */
+    .docs-table { background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+    .docs-table table { margin-bottom: 0; }
+    .docs-table thead th { background: #f8f9fa; color: #7f8c8d; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid #e9ecef; font-weight: 700; padding: 12px 16px; }
+    .docs-table thead th.sortable { cursor: pointer; user-select: none; }
+    .docs-table thead th.sortable:hover { color: #16a085; }
+    .sort-ico { font-size: 0.7rem; opacity: 0.45; }
+    .docs-table tbody td { padding: 14px 16px; vertical-align: middle; }
+
+    .file-icon { width: 38px; height: 38px; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .icon-pdf { background: #fdedec; color: #c0392b; }
+    .icon-img { background: #ebf5fb; color: #2980b9; }
+    .icon-doc { background: #fef9e7; color: #f39c12; }
+
+    .type-badge { font-size: 0.72rem; padding: 3px 10px; border-radius: 12px; font-weight: 600; background: #e8f8f5; color: #117a65; }
+    .origin-badge { font-size: 0.72rem; padding: 3px 10px; border-radius: 12px; font-weight: 600; background: #eef3f7; color: #5d6d7e; }
+    .origin-badge.origin-shared { background: #ebf5fb; color: #2471a3; }
+    .status-pill { display: inline-block; margin-top: 5px; font-size: 0.68rem; padding: 2px 9px; border-radius: 10px; font-weight: 600; }
+    .st-private { background: #eef3f7; color: #5d6d7e; }
+    .st-pending { background: #fef9e7; color: #b9770e; }
+    .st-validated { background: #e8f8f5; color: #117a65; }
+    .st-refused { background: #fdedec; color: #c0392b; }
+    .st-new { background: #fdebd0; color: #ca6f1e; }
+    .st-seen { background: #f0f4f8; color: #5d6d7e; }
+    .btn-action.btn-share.shared { background: #e8f8f5; border-color: #16a085; color: #16a085; }
+
+    .btn-action { background: white; border: 1px solid #dee2e6; color: #5d6d7e; padding: 6px 10px; border-radius: 6px; font-size: 0.85rem; cursor: pointer; transition: all 0.15s; }
+    .btn-action:hover { background: #e8f8f5; border-color: #16a085; color: #16a085; }
+
+    .upload-zone { background: linear-gradient(135deg, #e8f8f5, #d1f2eb); border: 2px dashed #16a085; border-radius: 12px; padding: 28px; text-align: center; color: #117a65; cursor: pointer; transition: background 0.15s; margin-bottom: 16px; }
+    .upload-zone:hover { background: #d1f2eb; }
+    .upload-zone.dragging { background: #d1f2eb; border-color: #117a65; }
+
+    .empty-state { background: white; border-radius: 12px; padding: 48px 24px; text-align: center; color: #95a5a6; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+    .empty-state i { font-size: 2.4rem; color: #cdd6e0; margin-bottom: 12px; }
+  </style>
+</head>
+<body data-i18n-pagetitle="pdoc.page_title" data-i18n-toggle>
+
+  <div class="proto-bar d-flex align-items-center gap-3" data-i18n-html="pdoc.proto_bar_html">
+    <span><i class="fa fa-eye me-1"></i> Espace Patient · Mes documents · <a href="01-home.html" class="text-decoration-none">← Retour à l'accueil</a></span>
+  </div>
+
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="sidebar-brand">
+      <img src="assets/fueni-lockup-white.svg" alt="FUENI" style="height:30px;width:auto;display:block;margin-bottom:6px">
+      <small data-i18n="dash.sidebar.area">Espace Patient</small>
+    </div>
+    <div class="sidebar-user d-flex align-items-center gap-2">
+      <div class="avatar" id="userAvatar">AD</div>
+      <div>
+        <div class="text-white fw-semibold small" id="userFullName">Aïssatou Diop</div>
+        <div style="color:rgba(255,255,255,0.65); font-size:0.72rem;">
+          <i class="fa fa-circle-check me-1"></i><span data-i18n="dash.sidebar.verified">Compte vérifié</span>
+        </div>
+      </div>
+    </div>
+    <div class="nav-section" data-i18n="dash.sidebar.section_my_space">Mon espace</div>
+    <a href="05-patient-dashboard.html" class="nav-link-side"><i class="fa fa-home"></i><span data-i18n="dash.sidebar.dashboard">Tableau de bord</span></a>
+    <a href="#" class="nav-link-side"><i class="fa fa-calendar-check"></i><span data-i18n="dash.sidebar.my_appts">Mes RDV</span></a>
+    <a href="#" class="nav-link-side"><i class="fa fa-plus-circle"></i><span data-i18n="dash.sidebar.book">Prendre RDV</span></a>
+    <a class="nav-link-side active"><i class="fa fa-folder"></i><span data-i18n="dash.sidebar.my_docs">Mes documents</span></a>
+    <div class="nav-section" data-i18n="dash.sidebar.section_account">Mon compte</div>
+    <a href="06-patient-profile.html" class="nav-link-side"><i class="fa fa-user"></i><span data-i18n="dash.sidebar.my_profile">Mon profil</span></a>
+    <a href="07-account-security.html" class="nav-link-side"><i class="fa fa-shield-halved"></i><span data-i18n="dash.sidebar.security">Connexion & sécurité</span></a>
+    <div class="nav-section" data-i18n="dash.sidebar.section_help">Aide</div>
+    <a class="nav-link-side"><i class="fa fa-circle-question"></i><span data-i18n="dash.sidebar.faq">FAQ</span></a>
+    <a class="nav-link-side"><i class="fa fa-headset"></i><span data-i18n="dash.sidebar.support">Contacter le support</span></a>
+    <a href="10-login.html" class="nav-link-side" onclick="try{sessionStorage.setItem('fueni_logout','1')}catch(e){}"><i class="fa fa-right-from-bracket"></i><span data-i18n="dash.sidebar.logout">Se déconnecter</span></a>
+  </div>
+
+  <!-- Main -->
+  <div class="main">
+    <div class="content-area">
+
+      <div class="page-header">
+        <div>
+          <h4 class="fw-bold mb-0"><i class="fa fa-folder me-2" style="color:#16a085;"></i><span data-i18n="pdoc.title">Mes documents</span></h4>
+        </div>
+        <button class="btn btn-patient" data-bs-toggle="modal" data-bs-target="#uploadModal">
+          <i class="fa fa-upload me-2"></i><span data-i18n="pdoc.upload_btn">Téléverser un document</span>
+        </button>
+      </div>
+
+      <!-- Quota (compte uniquement les téléversements du patient) -->
+      <div class="quota-card">
+        <div class="quota-top">
+          <i class="fa fa-database" style="color:#16a085;"></i>
+          <strong class="small" data-i18n="pdoc.quota_label">Stockage — vos téléversements</strong>
+          <div class="quota-bar"><span style="width:0.6%;"></span></div>
+          <span class="small text-muted" id="quotaText">≈ 3 Mo / 500 Mo</span>
+        </div>
+        <div class="small text-muted mt-2"><i class="fa fa-circle-info me-1"></i><span data-i18n="pdoc.quota_note">Les documents partagés par un médecin via FUENI ne comptent pas dans ce quota.</span></div>
+      </div>
+
+      <!-- Segment : origine -->
+      <div class="seg-group">
+        <button type="button" class="seg-btn active" onclick="setSeg('all', this)" data-i18n="pdoc.seg_all">Tous</button>
+        <button type="button" class="seg-btn" onclick="setSeg('mine', this)" data-i18n="pdoc.seg_mine">Mes téléversements</button>
+        <button type="button" class="seg-btn" onclick="setSeg('shared', this)" data-i18n="pdoc.seg_shared">Partagés par un médecin</button>
+      </div>
+
+      <!-- Toolbar -->
+      <div class="docs-toolbar" id="docToolbar">
+        <span class="small text-muted me-1"><i class="fa fa-filter me-1"></i><span data-i18n="pdoc.filters">Filtres</span> :</span>
+        <select class="form-select form-select-sm" style="max-width:180px;" id="filterType" onchange="applyFilters()">
+          <option value="" data-i18n="pdoc.type_all">Tous les types</option>
+          <option value="analyses" data-i18n="pdoc.type_analyses">Analyses</option>
+          <option value="ordonnance" data-i18n="pdoc.type_ordonnance">Ordonnance</option>
+          <option value="imagerie" data-i18n="pdoc.type_imagerie">Imagerie</option>
+          <option value="cr" data-i18n="pdoc.type_cr">Compte-rendu</option>
+          <option value="vaccins" data-i18n="pdoc.type_vaccins">Vaccins</option>
+          <option value="autre" data-i18n="pdoc.type_autre">Autre</option>
+        </select>
+        <input type="search" class="form-control form-control-sm ms-auto" style="max-width:240px;" id="searchDocs" oninput="applyFilters()" data-i18n-placeholder="pdoc.search_ph" placeholder="Rechercher un document…">
+      </div>
+
+      <!-- Table -->
+      <div id="docTableWrap">
+        <div class="docs-table">
+          <table class="table mb-0">
+            <thead>
+              <tr>
+                <th></th>
+                <th class="sortable" data-sortkey="name" onclick="sortBy('name')"><span data-i18n="pdoc.col_name">Nom</span> <i class="fa fa-sort sort-ico"></i></th>
+                <th class="sortable" data-sortkey="type" onclick="sortBy('type')"><span data-i18n="pdoc.col_type">Type</span> <i class="fa fa-sort sort-ico"></i></th>
+                <th class="sortable" data-sortkey="date" onclick="sortBy('date')"><span data-i18n="pdoc.col_date">Date d'ajout</span> <i class="fa fa-sort sort-ico"></i></th>
+                <th data-i18n="pdoc.col_origin">Origine</th>
+                <th class="sortable" data-sortkey="status" onclick="sortBy('status')"><span data-i18n="pdoc.col_status">Statut</span> <i class="fa fa-sort sort-ico"></i></th>
+                <th style="text-align:right;" data-i18n="pdoc.col_actions">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="docTbody">
+
+              <tr data-type="analyses" data-origin="self" data-status="prive" data-date="2026-05-05" data-name="résultat analyse sang">
+                <td><div class="file-icon icon-img"><i class="fa fa-file-image"></i></div></td>
+                <td><div class="fw-semibold small doc-title" data-i18n="pdoc.d1_title">Résultat analyse sang</div><div class="small text-muted">analyse-mai-2026.jpg · 2,1 Mo</div></td>
+                <td><span class="type-badge" data-i18n="pdoc.type_analyses">Analyses</span></td>
+                <td><div class="small">05/05/2026</div></td>
+                <td><span class="origin-badge"><i class="fa fa-user me-1"></i><span data-i18n="pdoc.origin_self">Vous</span></span></td>
+                <td><span class="status-pill st-private" data-i18n="pdoc.st_private">Privé</span></td>
+                <td style="text-align:right; white-space:nowrap;">
+                  <button class="btn-action" data-i18n-title="pdoc.act_view" title="Aperçu"><i class="fa fa-eye"></i></button>
+                  <button class="btn-action" data-i18n-title="pdoc.act_download" title="Télécharger"><i class="fa fa-download"></i></button>
+                  <button class="btn-action btn-share" onclick="shareDoc(this)" data-i18n-title="pdoc.act_share" title="Partager"><i class="fa fa-share-nodes"></i></button>
+                  <button class="btn-action" onclick="renameDoc(this)" data-i18n-title="pdoc.act_rename" title="Renommer"><i class="fa fa-pen"></i></button>
+                  <button class="btn-action" onclick="delDoc(this)" data-i18n-title="pdoc.act_delete" title="Supprimer"><i class="fa fa-trash"></i></button>
+                </td>
+              </tr>
+
+              <tr data-type="vaccins" data-origin="self" data-status="prive" data-date="2026-03-22" data-name="carnet de vaccination">
+                <td><div class="file-icon icon-pdf"><i class="fa fa-file-pdf"></i></div></td>
+                <td><div class="fw-semibold small doc-title" data-i18n="pdoc.d2_title">Carnet de vaccination</div><div class="small text-muted">vaccins.pdf · 580 Ko</div></td>
+                <td><span class="type-badge" data-i18n="pdoc.type_vaccins">Vaccins</span></td>
+                <td><div class="small">22/03/2026</div></td>
+                <td><span class="origin-badge"><i class="fa fa-user me-1"></i><span data-i18n="pdoc.origin_self">Vous</span></span></td>
+                <td><span class="status-pill st-private" data-i18n="pdoc.st_private">Privé</span></td>
+                <td style="text-align:right; white-space:nowrap;">
+                  <button class="btn-action" data-i18n-title="pdoc.act_view" title="Aperçu"><i class="fa fa-eye"></i></button>
+                  <button class="btn-action" data-i18n-title="pdoc.act_download" title="Télécharger"><i class="fa fa-download"></i></button>
+                  <button class="btn-action btn-share" onclick="shareDoc(this)" data-i18n-title="pdoc.act_share" title="Partager"><i class="fa fa-share-nodes"></i></button>
+                  <button class="btn-action" onclick="renameDoc(this)" data-i18n-title="pdoc.act_rename" title="Renommer"><i class="fa fa-pen"></i></button>
+                  <button class="btn-action" onclick="delDoc(this)" data-i18n-title="pdoc.act_delete" title="Supprimer"><i class="fa fa-trash"></i></button>
+                </td>
+              </tr>
+
+              <tr data-type="ordonnance" data-origin="self" data-status="prive" data-date="2026-02-10" data-name="ordonnance traitement hta">
+                <td><div class="file-icon icon-pdf"><i class="fa fa-file-pdf"></i></div></td>
+                <td><div class="fw-semibold small doc-title" data-i18n="pdoc.d3_title">Ordonnance — traitement HTA</div><div class="small text-muted">ordonnance-2026-02-10.pdf · 320 Ko</div></td>
+                <td><span class="type-badge" data-i18n="pdoc.type_ordonnance">Ordonnance</span></td>
+                <td><div class="small">10/02/2026</div></td>
+                <td><span class="origin-badge"><i class="fa fa-user me-1"></i><span data-i18n="pdoc.origin_self">Vous</span></span></td>
+                <td><span class="status-pill st-private" data-i18n="pdoc.st_private">Privé</span></td>
+                <td style="text-align:right; white-space:nowrap;">
+                  <button class="btn-action" data-i18n-title="pdoc.act_view" title="Aperçu"><i class="fa fa-eye"></i></button>
+                  <button class="btn-action" data-i18n-title="pdoc.act_download" title="Télécharger"><i class="fa fa-download"></i></button>
+                  <button class="btn-action btn-share" onclick="shareDoc(this)" data-i18n-title="pdoc.act_share" title="Partager"><i class="fa fa-share-nodes"></i></button>
+                  <button class="btn-action" onclick="renameDoc(this)" data-i18n-title="pdoc.act_rename" title="Renommer"><i class="fa fa-pen"></i></button>
+                  <button class="btn-action" onclick="delDoc(this)" data-i18n-title="pdoc.act_delete" title="Supprimer"><i class="fa fa-trash"></i></button>
+                </td>
+              </tr>
+
+              <!-- Partagés par un médecin (origine fueni) — lecture seule -->
+              <tr data-type="ordonnance" data-origin="fueni" data-status="nouveau" data-date="2026-05-10" data-name="ordonnance bisoprolol">
+                <td><div class="file-icon icon-pdf"><i class="fa fa-file-pdf"></i></div></td>
+                <td><div class="fw-semibold small doc-title" data-i18n="pdoc.d4_title">Ordonnance — Bisoprolol 5 mg</div><div class="small text-muted">ord-2026-05-10.pdf · 89 Ko</div></td>
+                <td><span class="type-badge" data-i18n="pdoc.type_ordonnance">Ordonnance</span></td>
+                <td><div class="small">10/05/2026</div></td>
+                <td><span class="origin-badge origin-shared"><i class="fa fa-share-nodes me-1"></i><span data-i18n="pdoc.origin_shared">Partagé</span> · Dr Sow</span></td>
+                <td><span class="status-pill st-new" data-i18n="pdoc.st_new">Nouveau</span></td>
+                <td style="text-align:right; white-space:nowrap;">
+                  <button class="btn-action" data-i18n-title="pdoc.act_view" title="Aperçu"><i class="fa fa-eye"></i></button>
+                  <button class="btn-action" data-i18n-title="pdoc.act_download" title="Télécharger"><i class="fa fa-download"></i></button>
+                </td>
+              </tr>
+
+              <tr data-type="cr" data-origin="fueni" data-status="vu" data-date="2026-04-28" data-name="compte-rendu consultation">
+                <td><div class="file-icon icon-doc"><i class="fa fa-file-medical"></i></div></td>
+                <td><div class="fw-semibold small doc-title" data-i18n="pdoc.d5_title">Compte-rendu de consultation</div><div class="small text-muted">cr-2026-04-28.pdf · 145 Ko</div></td>
+                <td><span class="type-badge" data-i18n="pdoc.type_cr">Compte-rendu</span></td>
+                <td><div class="small">28/04/2026</div></td>
+                <td><span class="origin-badge origin-shared"><i class="fa fa-share-nodes me-1"></i><span data-i18n="pdoc.origin_shared">Partagé</span> · Dr Diallo</span></td>
+                <td><span class="status-pill st-seen" data-i18n="pdoc.st_seen">Vu</span></td>
+                <td style="text-align:right; white-space:nowrap;">
+                  <button class="btn-action" data-i18n-title="pdoc.act_view" title="Aperçu"><i class="fa fa-eye"></i></button>
+                  <button class="btn-action" data-i18n-title="pdoc.act_download" title="Télécharger"><i class="fa fa-download"></i></button>
+                </td>
+              </tr>
+
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Empty state (aucun résultat / vault vide) -->
+        <div class="empty-state d-none" id="emptyState">
+          <i class="fa fa-folder-open d-block"></i>
+          <div class="fw-semibold" data-i18n="pdoc.empty_title">Aucun document</div>
+          <div class="small" data-i18n="pdoc.empty_text">Téléversez votre premier document de santé.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Upload modal -->
+  <div class="modal fade" id="uploadModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h6 class="modal-title fw-bold"><i class="fa fa-upload me-2" style="color:#16a085;"></i><span data-i18n="pdoc.up_title">Téléverser un document</span></h6>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+
+          <div class="upload-zone" id="dropZone" onclick="pickFile()" ondragover="dzOver(event)" ondragleave="dzLeave(event)" ondrop="dzDrop(event)">
+            <i class="fa fa-cloud-arrow-up fs-1 mb-2"></i>
+            <div class="fw-semibold" data-i18n="pdoc.up_drop">Glissez-déposez votre fichier ici</div>
+            <div class="small" data-i18n-html="pdoc.up_browse_html">ou <span class="fw-semibold" style="color:#117a65; cursor:pointer; text-decoration:underline;">parcourez votre appareil</span></div>
+            <div class="small text-muted mt-2" data-i18n="pdoc.up_formats">PDF, JPG ou PNG · Max 10 Mo</div>
+            <div id="fileInfo"></div>
+          </div>
+          <input type="file" id="fileInput" class="d-none" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png" onchange="onFileChosen(this)">
+
+          <form>
+            <div class="mb-3">
+              <label class="form-label small fw-semibold" data-i18n="pdoc.up_type">Type *</label>
+              <select class="form-select form-select-sm">
+                <option data-i18n="pdoc.type_analyses">Analyses</option>
+                <option data-i18n="pdoc.type_ordonnance">Ordonnance</option>
+                <option data-i18n="pdoc.type_imagerie">Imagerie</option>
+                <option data-i18n="pdoc.type_cr">Compte-rendu</option>
+                <option data-i18n="pdoc.type_vaccins">Vaccins</option>
+                <option data-i18n="pdoc.type_autre">Autre</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label class="form-label small fw-semibold" data-i18n="pdoc.up_name">Nom du document *</label>
+              <input type="text" class="form-control form-control-sm" data-i18n-placeholder="pdoc.up_name_ph" placeholder="Ex : Résultat IRM cervical">
+            </div>
+            <div class="mb-3">
+              <label class="form-label small fw-semibold"><span data-i18n="pdoc.up_note">Note</span> <span class="text-muted fw-normal" data-i18n="pdoc.up_note_opt">(optionnel)</span></label>
+              <textarea class="form-control form-control-sm" rows="2" data-i18n-placeholder="pdoc.up_note_ph" placeholder="Quelques mots de contexte…"></textarea>
+            </div>
+          </form>
+
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-link text-muted small" data-bs-dismiss="modal" data-i18n="pdoc.up_cancel">Annuler</button>
+          <button type="button" class="btn btn-patient" data-bs-dismiss="modal">
+            <i class="fa fa-upload me-1"></i><span data-i18n="pdoc.up_submit">Téléverser</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Share modal (patient → praticien) -->
+  <div class="modal fade" id="shareModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h6 class="modal-title fw-bold"><i class="fa fa-share-nodes me-2" style="color:#16a085;"></i><span data-i18n="pdoc.share_title">Partager avec un praticien</span></h6>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label small fw-semibold" data-i18n="pdoc.share_doctor">Praticien *</label>
+            <select class="form-select form-select-sm" id="shareDoctor">
+              <option value="" data-i18n="pdoc.share_doctor_ph">Choisir un praticien…</option>
+              <option>Dr Mamadou Sow — Cardiologue</option>
+              <option>Dr Fatou Ndiaye — Pédiatre</option>
+              <option>Dr Cheikh Diallo — Médecine générale</option>
+            </select>
+            <div class="small text-muted mt-1"><i class="fa fa-circle-info me-1"></i><span data-i18n="pdoc.share_linked_note">Seuls les médecins consultés sur FUENI apparaissent ici.</span></div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label small fw-semibold"><span data-i18n="pdoc.share_note">Message</span> <span class="text-muted fw-normal" data-i18n="pdoc.up_note_opt">(optionnel)</span></label>
+            <textarea class="form-control form-control-sm" rows="2"></textarea>
+          </div>
+          <div class="small text-muted"><i class="fa fa-circle-info me-1" style="color:#16a085;"></i><span data-i18n="pdoc.share_info">Le praticien devra valider le document avant son intégration à votre dossier.</span></div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-link text-muted small" data-bs-dismiss="modal" data-i18n="pdoc.up_cancel">Annuler</button>
+          <button type="button" class="btn btn-patient" onclick="confirmShare()" data-bs-dismiss="modal"><i class="fa fa-share-nodes me-1"></i><span data-i18n="pdoc.share_submit">Partager</span></button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    const t = (k, fb) => (window.NazI18n ? NazI18n.t(k) : '') || fb;
+
+    // Téléversement (démo) : sélecteur de fichier + glisser-déposer + validation client
+    const UP_MAX = 10 * 1024 * 1024, UP_TYPES = ['application/pdf', 'image/jpeg', 'image/png'];
+    function pickFile() { document.getElementById('fileInput').click(); }
+    function onFileChosen(input) { if (input.files && input.files[0]) handleFile(input.files[0]); }
+    function handleFile(file) {
+      const info = document.getElementById('fileInfo');
+      const okType = UP_TYPES.includes(file.type) || /\.(pdf|jpe?g|png)$/i.test(file.name);
+      if (!okType) { info.className = 'small text-danger mt-2'; info.innerHTML = '<i class="fa fa-circle-exclamation me-1"></i>' + t('pdoc.up_err_type', 'Format non supporté (PDF, JPG ou PNG).'); return; }
+      if (file.size > UP_MAX) { info.className = 'small text-danger mt-2'; info.innerHTML = '<i class="fa fa-circle-exclamation me-1"></i>' + t('pdoc.up_err_size', 'Fichier trop volumineux (max 10 Mo).'); return; }
+      const sz = file.size >= 1048576 ? (file.size / 1048576).toFixed(1) + ' Mo' : Math.max(1, Math.round(file.size / 1024)) + ' Ko';
+      info.className = 'small text-success mt-2'; info.innerHTML = '<i class="fa fa-circle-check me-1"></i>' + file.name + ' · ' + sz;
+    }
+    function dzOver(e) { e.preventDefault(); document.getElementById('dropZone').classList.add('dragging'); }
+    function dzLeave() { document.getElementById('dropZone').classList.remove('dragging'); }
+    function dzDrop(e) { e.preventDefault(); document.getElementById('dropZone').classList.remove('dragging'); if (e.dataTransfer.files && e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]); }
+
+    let segOrigin = 'all';
+    function setSeg(seg, btn) {
+      segOrigin = seg;
+      document.querySelectorAll('.seg-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      applyFilters();
+    }
+
+    function applyFilters() {
+      const type = document.getElementById('filterType').value;
+      const q = (document.getElementById('searchDocs').value || '').toLowerCase().trim();
+      let visible = 0;
+      document.querySelectorAll('#docTbody tr').forEach(tr => {
+        const okSeg = segOrigin === 'all' || (segOrigin === 'mine' && tr.dataset.origin === 'self') || (segOrigin === 'shared' && tr.dataset.origin === 'fueni');
+        const okType = !type || tr.dataset.type === type;
+        const okQ = !q || (tr.dataset.name || '').includes(q);
+        const show = okSeg && okType && okQ;
+        tr.classList.toggle('d-none', !show);
+        if (show) visible++;
+      });
+      document.getElementById('emptyState').classList.toggle('d-none', visible > 0);
+    }
+
+    // Tri (défaut : date d'ajout décroissante)
+    let sortKey = 'date', sortDir = 'desc';
+    function sortBy(key) {
+      if (sortKey === key) sortDir = sortDir === 'asc' ? 'desc' : 'asc';
+      else { sortKey = key; sortDir = key === 'date' ? 'desc' : 'asc'; }
+      applySort(); updateSortIndicators();
+    }
+    function applySort() {
+      const tb = document.getElementById('docTbody');
+      Array.from(tb.querySelectorAll('tr')).sort((a, b) => {
+        const va = (a.dataset[sortKey] || '').toString(), vb = (b.dataset[sortKey] || '').toString();
+        const cmp = va < vb ? -1 : va > vb ? 1 : 0;
+        return sortDir === 'asc' ? cmp : -cmp;
+      }).forEach(r => tb.appendChild(r));
+    }
+    function updateSortIndicators() {
+      document.querySelectorAll('th.sortable').forEach(th => {
+        const ico = th.querySelector('.sort-ico'); if (!ico) return;
+        ico.className = 'sort-ico fa ' + (th.dataset.sortkey === sortKey ? (sortDir === 'asc' ? 'fa-sort-up' : 'fa-sort-down') : 'fa-sort');
+      });
+    }
+    applySort(); updateSortIndicators();
+
+    // Partage patient → praticien (démo)
+    let shareRow = null;
+    function shareDoc(btn) { shareRow = btn.closest('tr'); new bootstrap.Modal(document.getElementById('shareModal')).show(); }
+    function confirmShare() {
+      if (!shareRow) return;
+      const pill = shareRow.querySelector('.status-pill');
+      if (pill) { pill.className = 'status-pill st-pending'; pill.removeAttribute('data-i18n'); pill.textContent = t('pdoc.st_pending', 'En attente de validation'); }
+      shareRow.dataset.status = 'pending';
+      const sb = shareRow.querySelector('.btn-share');
+      if (sb) { sb.classList.add('shared'); sb.setAttribute('onclick', 'revokeShare(this)'); sb.title = t('pdoc.act_revoke', 'Révoquer le partage'); }
+      shareRow = null;
+    }
+    function revokeShare(btn) {
+      const tr = btn.closest('tr'), pill = tr.querySelector('.status-pill');
+      if (pill) { pill.className = 'status-pill st-private'; pill.removeAttribute('data-i18n'); pill.textContent = t('pdoc.st_private', 'Privé'); }
+      tr.dataset.status = 'prive';
+      btn.classList.remove('shared'); btn.setAttribute('onclick', 'shareDoc(this)'); btn.title = t('pdoc.act_share', 'Partager');
+    }
+
+    function delDoc(btn) {
+      if (!confirm(t('pdoc.confirm_delete', 'Supprimer ce document ?'))) return;
+      btn.closest('tr').remove();
+      applyFilters();
+    }
+
+    function renameDoc(btn) {
+      const title = btn.closest('tr').querySelector('.doc-title');
+      const v = prompt(t('pdoc.prompt_rename', 'Nouveau nom du document :'), title.textContent.trim());
+      if (v && v.trim()) {
+        title.removeAttribute('data-i18n');
+        title.textContent = v.trim();
+        btn.closest('tr').dataset.name = v.trim().toLowerCase();
+      }
+    }
+
+    // Nom + initiales depuis la session (cohérent avec le tableau de bord)
+    function applyUserDisplay() {
+      try {
+        const u = JSON.parse(sessionStorage.getItem('fueni_user') || 'null');
+        if (!u) return;
+        const first = (u.firstName || '').trim(), last = (u.lastName || '').trim();
+        if (!first && !last) return;
+        const full = (first + ' ' + last).trim();
+        const initials = ((first[0] || '') + (last[0] || '')).toUpperCase() || 'P';
+        const f = document.getElementById('userFullName'); if (f) f.textContent = full;
+        const a = document.getElementById('userAvatar'); if (a) a.textContent = initials;
+      } catch (e) {}
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', applyUserDisplay);
+    else applyUserDisplay();
+    document.addEventListener('fueni:langchange', applyUserDisplay);
+  </script>
+<!-- Prototype version badge -->
+<script>(function(){if(window.__pv)return;window.__pv=1;var v=document.createElement('div');v.style.cssText='position:fixed;top:0;left:50%;transform:translateX(-50%);background:#155e75;color:#fff;padding:6px 20px;border-radius:0 0 16px 16px;font:600 12px/1 system-ui,-apple-system,sans-serif;letter-spacing:.6px;z-index:99999;box-shadow:0 3px 10px rgba(0,0,0,.2);text-transform:uppercase;display:flex;align-items:center;gap:8px';v.innerHTML='🧪 Prototype <span style="background:#f59e0b;color:#1a1a1a;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:4px">v1.4.0</span><span style="background:#facc15;color:#1a1a1a;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:4px;text-transform:none;letter-spacing:0">⏳ À valider</span>';document.body.appendChild(v);})();</script>
+</body>
+</html>

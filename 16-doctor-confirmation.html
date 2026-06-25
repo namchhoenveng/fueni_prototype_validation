@@ -97,17 +97,11 @@
     const t = (k, fb) => (window.NazI18n ? NazI18n.t(k) : '') || fb;
     const getLang = () => (window.NazI18n ? NazI18n.getLang() : 'fr');
 
-    function trialEndDate() {
-      const d = new Date(); d.setDate(d.getDate() + 15);
-      try { return new Intl.DateTimeFormat(getLang() === 'en' ? 'en-GB' : 'fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }).format(d); }
-      catch (e) { return d.toLocaleDateString(); }
-    }
-
     function render() {
       const isFree = (localStorage.getItem('naz_plan') || 'solo') === 'gratuit';
       document.getElementById('confWelcome').textContent = isFree
         ? t('doc.conf.welcome', 'Bienvenue sur FUENI.')
-        : t('doc.conf.welcome_trial', 'Bienvenue sur FUENI. Votre essai gratuit de 15 jours commence aujourd\'hui.');
+        : t('doc.conf.welcome_solo', 'Bienvenue sur FUENI. Votre abonnement Solo est actif.');
     }
 
     render();

@@ -183,13 +183,6 @@
       gratuit: { nameKey: 'doc.plans.free_name', name: 'Gratuit', descKey: 'doc.pay.desc_free', featKeys: ['doc.plans.free_f1','doc.plans.free_f2','doc.plans.free_f3'] }
     };
 
-    function trialEndDate() {
-      // 15 jours d'essai à partir d'aujourd'hui — formaté selon la langue
-      const d = new Date(); d.setDate(d.getDate() + 15);
-      try { return new Intl.DateTimeFormat(getLang() === 'en' ? 'en-GB' : 'fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }).format(d); }
-      catch (e) { return d.toLocaleDateString(); }
-    }
-
     function render() {
       const planKey = localStorage.getItem('naz_plan') || 'solo';
       const isAnnual = (localStorage.getItem('naz_billing') || 'monthly') === 'annual';
@@ -200,7 +193,6 @@
       const priceEur = isAnnual ? monthlyEur * ANNUAL_MULT : monthlyEur;
       const period = isAnnual ? t('doc.plans.per_year', '/an') : t('doc.plans.per_month', '/mois');
       const priceStr = priceEur === 0 ? '0,00 €' : priceEur.toLocaleString('fr-FR') + ' €';
-      const date = trialEndDate();
 
       document.getElementById('payPlanName').textContent = t(meta.nameKey, meta.name) + (isAnnual ? ' · ' + t('doc.plans.billing_annual', 'Annuel') : '');
       document.getElementById('payPlanDesc').textContent = t(meta.descKey, '');
@@ -211,8 +203,8 @@
         document.getElementById('payBtnText').textContent = t('doc.pay.btn_free', 'Finaliser mon inscription');
         document.getElementById('payFuture').textContent = t('doc.pay.future_free', 'Gratuit — aucun prélèvement.');
       } else {
-        document.getElementById('payBtnText').textContent = t('doc.pay.btn_trial', 'Démarrer mon essai gratuit de 15 jours');
-        document.getElementById('payFuture').textContent = t('doc.pay.future_from', 'À partir du {date} : {price}{period}').replace('{date}', date).replace('{price}', priceStr).replace('{period}', period);
+        document.getElementById('payBtnText').textContent = t('doc.pay.btn_pay', 'Payer et activer mon abonnement');
+        document.getElementById('payFuture').textContent = t('doc.pay.future_paid', 'Abonnement {price}{period} · annulable à tout moment').replace('{price}', priceStr).replace('{period}', period);
       }
     }
 

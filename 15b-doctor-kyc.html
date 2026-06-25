@@ -16,11 +16,11 @@
     .brand-logo img { height: 40px; width: auto; display: block; }
     .btn-home { display: inline-flex; align-items: center; gap: 6px; color: #5b6b7b; text-decoration: none; font-weight: 600; font-size: 0.88rem; padding: 7px 12px; border-radius: 8px; }
     .btn-home:hover { background: #f0f4f8; color: #0F2444; }
-    .kyc-card { background: white; border-radius: 16px; box-shadow: 0 4px 24px rgba(0,0,0,0.08); padding: 1.8rem 2rem; max-width: 680px; margin: 1.5rem auto 2rem; }
+    .kyc-card { background: white; border-radius: 16px; box-shadow: 0 4px 24px rgba(0,0,0,0.08); padding: 1.8rem 2rem; max-width: 820px; margin: 1.5rem auto 2rem; }
     .progress-steps .step.active .step-circle, .progress-steps .step.done .step-circle { background: #155e75; color: white; }
     .progress-steps .step.done::after { background: #155e75; }
     .progress-steps .step.active .step-label { color: #155e75; font-weight: 600; }
-    .kyc-doc { display: flex; align-items: center; gap: 14px; border: 1.5px solid #9fb0c0; border-radius: 10px; padding: 12px 14px; margin-bottom: 10px; transition: border-color .15s, background .15s; }
+    .kyc-doc { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 14px; border: 1.5px solid #9fb0c0; border-radius: 10px; padding: 12px 14px; margin-bottom: 10px; transition: border-color .15s, background .15s; }
     .kyc-doc.done { border-color: #27ae60; background: #f4fbf6; }
     .doc-icon { font-size: 1.3rem; color: #155e75; width: 28px; text-align: center; flex-shrink: 0; }
     .kyc-doc.done .doc-icon { color: #27ae60; }
@@ -42,6 +42,10 @@
     .form-check.is-err .form-check-label { color: #dc3545; }
     .form-check.is-err .form-check-input { border-color: #dc3545; }
     .doc-motif { font-size: 0.76rem; color: #c0392b; margin-top: 5px; }
+    .doc-dates { flex-basis: 100%; padding-top: 10px; border-top: 1px dashed #d4dce4; }
+    .doc-dates .form-label { margin-bottom: 2px; }
+    .kyc-doc .flex-grow-1 { min-width: 0; }
+    .kyc-doc .btn-upload { flex-shrink: 0; }
     .btn-upload:disabled { opacity: 1; border-color: #27ae60; color: #27ae60; background: #eafaf0; cursor: default; }
   </style>
 </head>
@@ -59,7 +63,7 @@
     </div>
   </div>
 
-  <div class="container py-3" style="max-width:720px;">
+  <div class="container py-3" style="max-width:860px;">
 
     <div class="progress-steps mb-4" style="max-width:600px; margin:0 auto;">
       <div class="step done"><div class="step-circle"><i class="fa fa-check" style="font-size:0.7rem;"></i></div><div class="step-label" data-i18n="doc.steps.elig">Éligibilité</div></div>
@@ -80,9 +84,46 @@
         <i class="fa fa-triangle-exclamation me-1"></i><span data-i18n="doc.kyc.revision_banner">Votre dossier doit être complété. Corrigez la ou les pièces signalées « À corriger », puis renvoyez votre dossier.</span>
       </div>
 
+      <div class="alert alert-danger small d-none" id="kycError"><i class="fa fa-circle-exclamation me-1"></i><span data-i18n="doc.kyc.error">Veuillez compléter les champs obligatoires et téléverser toutes les pièces requises.</span></div>
+
       <div id="kycProInfo">
         <div class="fw-bold mb-2 mt-1" style="color:#155e75;font-size:0.95rem;"><i class="fa fa-stethoscope me-1"></i><span data-i18n="doc.kyc.sec_proinfo">Informations professionnelles</span></div>
-        <div class="row g-2">
+        <div class="row g-3">
+          <div class="col-md-6 mb-2">
+            <label class="form-label small fw-semibold" data-i18n="doc.reg.f_spec">Spécialité médicale *</label>
+            <select class="form-select" id="kycSpecialite" onchange="toggleKycSpecAutre()">
+              <option value="" data-i18n="doc.reg.spec_choose">— Sélectionner —</option>
+              <option data-i18n="doc.reg.spec_general">Médecine générale</option>
+              <option data-i18n="doc.reg.spec_anesth">Anesthésie-Réanimation</option>
+              <option data-i18n="doc.reg.spec_cardio">Cardiologie</option>
+              <option data-i18n="doc.reg.spec_chir">Chirurgie générale</option>
+              <option data-i18n="doc.reg.spec_dermato">Dermatologie</option>
+              <option data-i18n="doc.reg.spec_diabeto">Diabétologie</option>
+              <option data-i18n="doc.reg.spec_endocrino">Endocrinologie</option>
+              <option data-i18n="doc.reg.spec_gastro">Gastro-entérologie</option>
+              <option data-i18n="doc.reg.spec_gyneco">Gynéco-obstétrique</option>
+              <option data-i18n="doc.reg.spec_urgence">Médecine d'urgence</option>
+              <option data-i18n="doc.reg.spec_interne">Médecine interne</option>
+              <option data-i18n="doc.reg.spec_nephro">Néphrologie</option>
+              <option data-i18n="doc.reg.spec_neuro">Neurologie</option>
+              <option data-i18n="doc.reg.spec_ophtalmo">Ophtalmologie</option>
+              <option data-i18n="doc.reg.spec_orl">ORL</option>
+              <option data-i18n="doc.reg.spec_pediatrie">Pédiatrie</option>
+              <option data-i18n="doc.reg.spec_pneumo">Pneumologie</option>
+              <option data-i18n="doc.reg.spec_psy">Psychiatrie</option>
+              <option data-i18n="doc.reg.spec_rhumato">Rhumatologie</option>
+              <option data-i18n="doc.reg.spec_uro">Urologie</option>
+              <option value="autre" data-i18n="doc.reg.spec_autre">Autre</option>
+            </select>
+            <input type="text" class="form-control mt-2 d-none" id="kycSpecAutre" data-i18n-placeholder="doc.reg.spec_autre_ph" placeholder="Précisez votre spécialité">
+          </div>
+          <div class="col-md-6 mb-2">
+            <label class="form-label small fw-semibold" data-i18n="doc.reg.f_ordre">Numéro d'ordre médical *</label>
+            <input type="text" class="form-control" id="kycOrdre" data-i18n-placeholder="doc.reg.f_ordre_ph" placeholder="Ex : ONMS-2024-XXXXX">
+            <div class="small text-muted mt-1"><i class="fa fa-circle-info me-1"></i><span data-i18n="doc.reg.f_ordre_hint">Délivré par votre Ordre des médecins.</span></div>
+          </div>
+        </div>
+        <div class="row g-3">
           <div class="col-md-6 mb-2">
             <label class="form-label small fw-semibold" data-i18n="doc.kyc.f_region">Région *</label>
             <select class="form-select" id="kycRegion" onchange="onRegionChange()"><option value="" data-i18n="doc.kyc.region_ph">Sélectionner la région…</option></select>
@@ -94,40 +135,50 @@
             <input type="text" class="form-control mt-2 d-none" id="kycCityOther" data-i18n-placeholder="doc.kyc.city_other_ph" placeholder="Préciser la ville">
           </div>
         </div>
-        <div class="mb-2">
+        <div class="mb-3">
           <label class="form-label small fw-semibold" data-i18n="doc.kyc.f_cabinet">Adresse du cabinet (rue, quartier) *</label>
           <input type="text" class="form-control" id="kycCabinet" data-i18n-placeholder="doc.kyc.f_cabinet_ph" placeholder="Rue, quartier, point de repère">
-        </div>
-        <div class="mb-3">
-          <label class="form-label small fw-semibold" data-i18n="doc.kyc.f_license_exp">Date d'expiration de la licence *</label>
-          <input type="date" class="form-control" id="kycLicenseExp">
         </div>
       </div>
 
       <div class="fw-bold mb-2" style="color:#155e75;font-size:0.95rem;"><i class="fa fa-file-upload me-1"></i><span data-i18n="doc.kyc.sec_docs">Justificatifs</span></div>
       <div id="kyc-list">
-        <div class="kyc-doc" data-required="1">
+        <div class="kyc-doc" data-required="1" data-datekey="id">
           <i class="fa fa-id-card doc-icon"></i>
           <div class="flex-grow-1">
             <div class="doc-name" data-i18n="doc.kyc.d_id">Pièce d'identité (CNI, passeport ou carte professionnelle)</div>
             <div class="doc-format"><span class="badge-req" data-i18n="doc.kyc.required">Obligatoire</span> · <span data-i18n="doc.kyc.format">PDF, JPG ou PNG · Max 5 Mo</span></div>
           </div>
           <button type="button" class="btn btn-upload" onclick="toggleDoc(this)"><i class="fa fa-upload me-1"></i><span data-i18n="doc.kyc.btn_upload">Téléverser</span></button>
+          <div class="doc-dates" data-for="id">
+            <div class="row g-2">
+              <div class="col-6"><label class="form-label small fw-semibold" data-i18n="doc.kyc.date_start">Date de délivrance *</label><input type="date" class="form-control form-control-sm dd-start"></div>
+              <div class="col-6"><label class="form-label small fw-semibold" data-i18n="doc.kyc.date_end">Date d'expiration *</label><input type="date" class="form-control form-control-sm dd-end"></div>
+            </div>
+            <div class="small text-danger mt-1 d-none dd-err"><i class="fa fa-circle-exclamation me-1"></i><span data-i18n="doc.kyc.date_order_err">La date d'expiration doit être postérieure à la date de délivrance.</span></div>
+          </div>
+        </div>
+
+        <div class="kyc-doc" data-required="1" data-datekey="ordre">
+          <i class="fa fa-stamp doc-icon"></i>
+          <div class="flex-grow-1">
+            <div class="doc-name" data-i18n="doc.kyc.d_ordre">Attestation d'inscription à l'Ordre des médecins (ou équivalent)</div>
+            <div class="doc-format"><span class="badge-req" data-i18n="doc.kyc.required">Obligatoire</span> · <span data-i18n="doc.kyc.format">PDF, JPG ou PNG · Max 5 Mo</span></div>
+          </div>
+          <button type="button" class="btn btn-upload" onclick="toggleDoc(this)"><i class="fa fa-upload me-1"></i><span data-i18n="doc.kyc.btn_upload">Téléverser</span></button>
+          <div class="doc-dates" data-for="ordre">
+            <div class="row g-2">
+              <div class="col-6"><label class="form-label small fw-semibold" data-i18n="doc.kyc.date_start">Date de délivrance *</label><input type="date" class="form-control form-control-sm dd-start"></div>
+              <div class="col-6"><label class="form-label small fw-semibold" data-i18n="doc.kyc.date_end">Date d'expiration *</label><input type="date" class="form-control form-control-sm dd-end"></div>
+            </div>
+            <div class="small text-danger mt-1 d-none dd-err"><i class="fa fa-circle-exclamation me-1"></i><span data-i18n="doc.kyc.date_order_err">La date d'expiration doit être postérieure à la date de délivrance.</span></div>
+          </div>
         </div>
 
         <div class="kyc-doc" data-required="1">
           <i class="fa fa-graduation-cap doc-icon"></i>
           <div class="flex-grow-1">
             <div class="doc-name" data-i18n="doc.kyc.d_diploma">Diplôme médical</div>
-            <div class="doc-format"><span class="badge-req" data-i18n="doc.kyc.required">Obligatoire</span> · <span data-i18n="doc.kyc.format">PDF, JPG ou PNG · Max 5 Mo</span></div>
-          </div>
-          <button type="button" class="btn btn-upload" onclick="toggleDoc(this)"><i class="fa fa-upload me-1"></i><span data-i18n="doc.kyc.btn_upload">Téléverser</span></button>
-        </div>
-
-        <div class="kyc-doc" data-required="1">
-          <i class="fa fa-stamp doc-icon"></i>
-          <div class="flex-grow-1">
-            <div class="doc-name" data-i18n="doc.kyc.d_ordre">Attestation d'inscription à l'Ordre des médecins</div>
             <div class="doc-format"><span class="badge-req" data-i18n="doc.kyc.required">Obligatoire</span> · <span data-i18n="doc.kyc.format">PDF, JPG ou PNG · Max 5 Mo</span></div>
           </div>
           <button type="button" class="btn btn-upload" onclick="toggleDoc(this)"><i class="fa fa-upload me-1"></i><span data-i18n="doc.kyc.btn_upload">Téléverser</span></button>
@@ -145,19 +196,26 @@
         <div class="kyc-doc" data-required="1">
           <i class="fa fa-house-chimney doc-icon"></i>
           <div class="flex-grow-1">
-            <div class="doc-name" data-i18n="doc.kyc.d_domicile">Justificatif de domicile du cabinet</div>
+            <div class="doc-name" data-i18n="doc.kyc.d_domicile">Justificatif de domicile du cabinet (daté de moins de 3 mois)</div>
             <div class="doc-format"><span class="badge-req" data-i18n="doc.kyc.required">Obligatoire</span> · <span data-i18n="doc.kyc.format">PDF, JPG ou PNG · Max 5 Mo</span></div>
           </div>
           <button type="button" class="btn btn-upload" onclick="toggleDoc(this)"><i class="fa fa-upload me-1"></i><span data-i18n="doc.kyc.btn_upload">Téléverser</span></button>
         </div>
 
-        <div class="kyc-doc">
+        <div class="kyc-doc" data-datekey="rcpro">
           <i class="fa fa-shield-halved doc-icon"></i>
           <div class="flex-grow-1">
             <div class="doc-name" data-i18n="doc.kyc.d_rcpro">Attestation RC Pro</div>
             <div class="doc-format"><span class="badge-opt" data-i18n="doc.kyc.optional">Optionnel</span> · <span data-i18n="doc.kyc.format">PDF, JPG ou PNG · Max 5 Mo</span></div>
           </div>
           <button type="button" class="btn btn-upload" onclick="toggleDoc(this)"><i class="fa fa-upload me-1"></i><span data-i18n="doc.kyc.btn_upload">Téléverser</span></button>
+          <div class="doc-dates" data-for="rcpro">
+            <div class="row g-2">
+              <div class="col-6"><label class="form-label small fw-semibold" data-i18n="doc.kyc.date_start">Date de délivrance *</label><input type="date" class="form-control form-control-sm dd-start"></div>
+              <div class="col-6"><label class="form-label small fw-semibold" data-i18n="doc.kyc.date_end">Date d'expiration *</label><input type="date" class="form-control form-control-sm dd-end"></div>
+            </div>
+            <div class="small text-danger mt-1 d-none dd-err"><i class="fa fa-circle-exclamation me-1"></i><span data-i18n="doc.kyc.date_order_err">La date d'expiration doit être postérieure à la date de délivrance.</span></div>
+          </div>
         </div>
       </div>
 
@@ -173,7 +231,6 @@
           <span data-i18n="doc.kyc.submit">Soumettre mon dossier</span> <i class="fa fa-arrow-right ms-2"></i>
         </button>
       </div>
-      <p class="text-center text-danger small mt-2 mb-0 d-none" id="kycError"><i class="fa fa-circle-exclamation me-1"></i><span data-i18n="doc.kyc.error">Veuillez compléter les champs obligatoires et téléverser toutes les pièces requises.</span></p>
       <div class="text-center mt-3" id="kycDemo">
         <a href="#" id="demoToRevision" class="small text-muted text-decoration-none" onclick="event.preventDefault(); setRevision(true);" data-i18n="doc.kyc.demo_revision">🔎 Démo : simuler un dossier à compléter</a>
         <a href="#" id="demoToNormal" class="small text-muted text-decoration-none d-none" onclick="event.preventDefault(); setRevision(false);" data-i18n="doc.kyc.demo_normal">← Démo : revenir au dépôt initial</a>
@@ -256,19 +313,58 @@
       city.classList.remove('is-err'); clearGlobalIfOk();
     }
 
+    function toggleKycSpecAutre() {
+      const isAutre = document.getElementById('kycSpecialite').value === 'autre';
+      const inp = document.getElementById('kycSpecAutre');
+      inp.classList.toggle('d-none', !isAutre);
+      document.getElementById('kycSpecialite').classList.remove('is-err'); inp.classList.remove('is-err');
+      clearGlobalIfOk();
+    }
+    function getSpec() { const s = document.getElementById('kycSpecialite'); if (!s) return ''; return s.value === 'autre' ? (document.getElementById('kycSpecAutre').value || '').trim() : s.value; }
+
+    // ── Dates de validité par document (saisies au téléversement, recoupables avec le scan) ──
+    const DOC_DATES = { id: 'period', ordre: 'period', rcpro: 'period' };
+    function dateBlockFor(key) { return document.querySelector('.doc-dates[data-for="' + key + '"]'); }
+    function docDateState(key) {
+      const blk = dateBlockFor(key); if (!blk) return { filled: true, valid: true };
+      const s = blk.querySelector('.dd-start').value, e = blk.querySelector('.dd-end').value;
+      if (!s || !e) return { filled: false, valid: false };
+      const local = v => { const p = v.split('-').map(Number); return new Date(p[0], p[1] - 1, p[2]); };
+      const now = new Date(); now.setHours(0, 0, 0, 0);
+      const min3 = new Date(now.getFullYear(), now.getMonth() + 3, now.getDate());
+      const sd = local(s), ed = local(e);
+      return { filled: true, valid: sd <= now && ed >= min3 && ed > sd };
+    }
+    function setDocDateBounds() {
+      const now = new Date(), pad = n => String(n).padStart(2, '0'), iso = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+      const today = iso(now), min3 = iso(new Date(now.getFullYear(), now.getMonth() + 3, now.getDate()));
+      document.querySelectorAll('.dd-start').forEach(i => i.max = today);
+      document.querySelectorAll('.dd-end').forEach(i => i.min = min3);
+    }
+    function allDatesOk() {
+      return Array.from(document.querySelectorAll('.kyc-doc[data-datekey]')).every(row => {
+        const need = row.hasAttribute('data-required') || row.classList.contains('done');
+        if (!need) return true;
+        const st = docDateState(row.getAttribute('data-datekey'));
+        return st.filled && st.valid;
+      });
+    }
+
     function requiredDone() {
       const docsOk = Array.from(document.querySelectorAll('.kyc-doc[data-required="1"]')).every(r => r.classList.contains('done'));
       if (revision) return docsOk; // correction : seules les pièces signalées comptent
       const g = id => (document.getElementById(id) || {}).value;
       const ck = id => (document.getElementById(id) || {}).checked;
-      return docsOk && getLoc('Region') && getLoc('City') && g('kycCabinet') && g('kycLicenseExp') && ck('decl1') && ck('decl2') && ck('decl3');
+      return docsOk && allDatesOk() && getSpec() && g('kycOrdre') && getLoc('Region') && getLoc('City') && g('kycCabinet') && ck('decl1') && ck('decl2') && ck('decl3');
     }
     // Bouton toujours actif : on valide au clic et on signale les éléments manquants (même logique que l'inscription)
     function clearGlobalIfOk() { if (requiredDone()) document.getElementById('kycError').classList.add('d-none'); }
 
     function clearKycErrors() {
       document.querySelectorAll('.kyc-doc.is-err').forEach(r => r.classList.remove('is-err'));
-      ['kycCabinet', 'kycLicenseExp', 'kycRegion', 'kycCity', 'kycRegionOther', 'kycCityOther'].forEach(id => { const e = document.getElementById(id); if (e) e.classList.remove('is-err'); });
+      ['kycCabinet', 'kycRegion', 'kycCity', 'kycRegionOther', 'kycCityOther', 'kycSpecialite', 'kycSpecAutre', 'kycOrdre'].forEach(id => { const e = document.getElementById(id); if (e) e.classList.remove('is-err'); });
+      document.querySelectorAll('.doc-dates input.is-err').forEach(i => i.classList.remove('is-err'));
+      document.querySelectorAll('.doc-dates .dd-err').forEach(e => e.classList.add('d-none'));
       document.querySelectorAll('#kycDecl .form-check.is-err').forEach(c => c.classList.remove('is-err'));
       document.getElementById('kycError').classList.add('d-none');
     }
@@ -280,10 +376,19 @@
         if (!row.classList.contains('done')) { row.classList.add('is-err'); if (!firstBad) firstBad = row; }
       });
       if (!revision) {
+        if (!getSpec()) { const el = document.getElementById('kycSpecialite').value === 'autre' ? document.getElementById('kycSpecAutre') : document.getElementById('kycSpecialite'); el.classList.add('is-err'); if (!firstBad) firstBad = el; }
+        const ord = document.getElementById('kycOrdre'); if (!ord.value.trim()) { ord.classList.add('is-err'); if (!firstBad) firstBad = ord; }
         if (!getLoc('Region')) { const el = document.getElementById('kycRegion').value === LOC_OTHER ? document.getElementById('kycRegionOther') : document.getElementById('kycRegion'); el.classList.add('is-err'); if (!firstBad) firstBad = el; }
         if (!getLoc('City')) { const el = document.getElementById('kycCity').value === LOC_OTHER ? document.getElementById('kycCityOther') : document.getElementById('kycCity'); el.classList.add('is-err'); if (!firstBad) firstBad = el; }
         const cab = document.getElementById('kycCabinet'); if (!cab.value.trim()) { cab.classList.add('is-err'); if (!firstBad) firstBad = cab; }
-        const lic = document.getElementById('kycLicenseExp'); if (!lic.value) { lic.classList.add('is-err'); if (!firstBad) firstBad = lic; }
+        document.querySelectorAll('.kyc-doc[data-datekey]').forEach(row => {
+          if (!(row.hasAttribute('data-required') || row.classList.contains('done'))) return;
+          const key = row.getAttribute('data-datekey'), st = docDateState(key), blk = dateBlockFor(key);
+          if (st.filled && st.valid) return;
+          blk.querySelectorAll('input').forEach(i => { if (!i.value) i.classList.add('is-err'); });
+          if (st.filled && !st.valid) { const e = blk.querySelector('.dd-err'); if (e) e.classList.remove('d-none'); blk.querySelectorAll('input').forEach(i => i.classList.add('is-err')); }
+          if (!firstBad) firstBad = blk.querySelector('input');
+        });
         ['decl1', 'decl2', 'decl3'].forEach(id => { const c = document.getElementById(id); if (!c.checked) { c.closest('.form-check').classList.add('is-err'); if (!firstBad) firstBad = c; } });
       }
       if (firstBad) { document.getElementById('kycError').classList.remove('d-none'); firstBad.scrollIntoView({ behavior: 'smooth', block: 'center' }); return false; }
@@ -322,6 +427,7 @@
           setBtn(btn, 'upload');
         }
       });
+      document.querySelectorAll('.doc-dates').forEach(b => { b.classList.toggle('d-none', revision); b.querySelectorAll('input').forEach(i => { i.value = ''; i.classList.remove('is-err'); }); b.querySelectorAll('.dd-err').forEach(e => e.classList.add('d-none')); });
       const span = document.querySelector('#submitKyc span');
       span.setAttribute('data-i18n', revision ? 'doc.kyc.btn_resubmit' : 'doc.kyc.submit');
       span.textContent = revision ? t('doc.kyc.btn_resubmit', 'Renvoyer les pièces corrigées') : t('doc.kyc.submit', 'Soumettre mon dossier');
@@ -341,10 +447,12 @@
       span.textContent = revision ? t('doc.kyc.btn_resubmit', 'Renvoyer les pièces corrigées') : t('doc.kyc.submit', 'Soumettre mon dossier');
     });
 
-    ['kycCabinet','kycLicenseExp','kycRegionOther','kycCityOther'].forEach(id => { const el = document.getElementById(id); if (el) el.addEventListener('input', () => { el.classList.remove('is-err'); clearGlobalIfOk(); }); });
+    ['kycCabinet','kycRegionOther','kycCityOther','kycOrdre','kycSpecAutre'].forEach(id => { const el = document.getElementById(id); if (el) el.addEventListener('input', () => { el.classList.remove('is-err'); clearGlobalIfOk(); }); });
+    document.querySelectorAll('.doc-dates input').forEach(i => i.addEventListener('input', () => { i.classList.remove('is-err'); const e = i.closest('.doc-dates').querySelector('.dd-err'); if (e) e.classList.add('d-none'); clearGlobalIfOk(); }));
     ['decl1','decl2','decl3'].forEach(id => { const el = document.getElementById(id); if (el) el.addEventListener('change', () => { el.closest('.form-check').classList.remove('is-err'); clearGlobalIfOk(); }); });
 
     initLocation();
+    setDocDateBounds();
 
     if (correctionMode) {
       // Vue « correction » : pas de parcours d'inscription, on cible les pièces à corriger

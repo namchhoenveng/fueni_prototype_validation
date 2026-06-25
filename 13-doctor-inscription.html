@@ -118,43 +118,6 @@
         </div>
         <div class="row g-2 mb-2">
           <div class="col-md-6">
-            <label class="form-label fw-semibold small" data-i18n="doc.reg.f_spec">Spécialité médicale *</label>
-            <select class="form-select" id="specialiteSelect" onchange="toggleSpecAutre()">
-              <option value="" data-i18n="doc.reg.spec_choose">— Sélectionner —</option>
-              <option data-i18n="doc.reg.spec_general">Médecine générale</option>
-              <option data-i18n="doc.reg.spec_anesth">Anesthésie-Réanimation</option>
-              <option data-i18n="doc.reg.spec_cardio">Cardiologie</option>
-              <option data-i18n="doc.reg.spec_chir">Chirurgie générale</option>
-              <option data-i18n="doc.reg.spec_dermato">Dermatologie</option>
-              <option data-i18n="doc.reg.spec_diabeto">Diabétologie</option>
-              <option data-i18n="doc.reg.spec_endocrino">Endocrinologie</option>
-              <option data-i18n="doc.reg.spec_gastro">Gastro-entérologie</option>
-              <option data-i18n="doc.reg.spec_gyneco">Gynéco-obstétrique</option>
-              <option data-i18n="doc.reg.spec_urgence">Médecine d'urgence</option>
-              <option data-i18n="doc.reg.spec_interne">Médecine interne</option>
-              <option data-i18n="doc.reg.spec_nephro">Néphrologie</option>
-              <option data-i18n="doc.reg.spec_neuro">Neurologie</option>
-              <option data-i18n="doc.reg.spec_ophtalmo">Ophtalmologie</option>
-              <option data-i18n="doc.reg.spec_orl">ORL</option>
-              <option data-i18n="doc.reg.spec_pediatrie">Pédiatrie</option>
-              <option data-i18n="doc.reg.spec_pneumo">Pneumologie</option>
-              <option data-i18n="doc.reg.spec_psy">Psychiatrie</option>
-              <option data-i18n="doc.reg.spec_rhumato">Rhumatologie</option>
-              <option data-i18n="doc.reg.spec_uro">Urologie</option>
-              <option value="autre" data-i18n="doc.reg.spec_autre">Autre</option>
-            </select>
-            <input type="text" class="form-control mt-2 d-none" id="specialiteAutre" data-i18n-placeholder="doc.reg.spec_autre_ph" placeholder="Précisez votre spécialité">
-            <div class="field-err d-none text-danger mt-1" id="err-specAutre"><i class="fa fa-circle-exclamation me-1"></i><span data-i18n="doc.reg.required">Ce champ est requis.</span></div>
-          </div>
-          <div class="col-md-6">
-            <label class="form-label fw-semibold small" data-i18n="doc.reg.f_ordre">Numéro d'ordre médical *</label>
-            <input type="text" class="form-control" id="ordreInput" data-i18n-placeholder="doc.reg.f_ordre_ph" placeholder="Ex : ONMS-2024-XXXXX">
-            <div class="field-hint"><i class="fa fa-circle-info me-1"></i><span data-i18n="doc.reg.f_ordre_hint">Délivré par votre Ordre national des médecins.</span></div>
-            <div class="field-err d-none text-danger" id="err-ordre"><i class="fa fa-circle-exclamation me-1"></i><span data-i18n="doc.reg.required">Ce champ est requis.</span></div>
-          </div>
-        </div>
-        <div class="row g-2 mb-2">
-          <div class="col-md-6">
             <label class="form-label fw-semibold small" data-i18n="doc.reg.f_email">Adresse e-mail professionnelle *</label>
             <input type="email" class="form-control" id="emailField" data-i18n-placeholder="doc.reg.f_email_ph" placeholder="Ex : a.diallo@cabinet.com">
             <div class="field-err d-none text-danger" id="err-email"><i class="fa fa-circle-exclamation me-1"></i><span data-i18n="doc.reg.email_err">Adresse e-mail invalide.</span></div>
@@ -223,12 +186,6 @@
   <script>
     const t = (k, fb) => (window.NazI18n ? NazI18n.t(k) : '') || fb;
 
-    function toggleSpecAutre() {
-      const isAutre = document.getElementById('specialiteSelect').value === 'autre';
-      document.getElementById('specialiteAutre').classList.toggle('d-none', !isAutre);
-      if (!isAutre) document.getElementById('err-specAutre').classList.add('d-none');
-    }
-
     function checkPwd() {
       const v = document.getElementById('pwdField').value;
       const rules = {
@@ -271,7 +228,6 @@
       const firstName = document.getElementById('firstName').value.trim();
       const lastName  = document.getElementById('lastName').value.trim();
       const email     = document.getElementById('emailField').value.trim();
-      const ordre     = document.getElementById('ordreInput').value.trim();
       const pwd       = document.getElementById('pwdField').value;
       const cgu       = document.getElementById('cgu').checked;
       const rgpd      = document.getElementById('rgpd').checked;
@@ -287,8 +243,8 @@
       if (cObj && cObj.len) { const okBJ = cObj.iso === 'BJ' && (digitsP.length === 8 || digitsP.length === 10); phoneOk = !!digitsP && (okBJ || digitsP.length === cObj.len); }
       else if (cObj) { phoneOk = digitsP.length >= 6 && digitsP.length <= 14; }
       // reset
-      ['firstName','lastName','dobField','sexField','emailField','phoneField','ordreInput','pwdField','specialiteAutre'].forEach(id => markErr(id, false));
-      ['err-firstName','err-lastName','err-sex','err-email','phoneHint','err-ordre','err-pwd','err-cgu','err-rgpd','err-specAutre'].forEach(id => showErr(id, false));
+      ['firstName','lastName','dobField','sexField','emailField','phoneField','pwdField'].forEach(id => markErr(id, false));
+      ['err-firstName','err-lastName','err-sex','err-email','phoneHint','err-pwd','err-cgu','err-rgpd'].forEach(id => showErr(id, false));
       document.getElementById('dobHint').classList.add('d-none'); document.getElementById('dobInfo').classList.remove('d-none');
 
       if (!firstName) fail('firstName', 'err-firstName');
@@ -302,8 +258,6 @@
       if (!document.getElementById('sexField').value) fail('sexField', 'err-sex');
       if (!email || !rxEmail.test(email)) fail('emailField', 'err-email');
       if (!digitsP || !phoneOk) fail('phoneField', 'phoneHint');
-      if (!ordre)     fail('ordreInput', 'err-ordre');
-      if (document.getElementById('specialiteSelect').value === 'autre' && !document.getElementById('specialiteAutre').value.trim()) fail('specialiteAutre', 'err-specAutre');
       if (!pwdOk) fail('pwdField', 'err-pwd');
       if (!cgu)  showErr('err-cgu', true);
       if (!rgpd) showErr('err-rgpd', true);
@@ -402,8 +356,6 @@
       sessionStorage.setItem('fueni_doctor_data', JSON.stringify({
         firstName: g('firstName'), lastName: g('lastName'), dob: g('dobField'), sex: g('sexField'), email: g('emailField'),
         ccIso: g('ccIso'), phone: g('phoneField'),
-        specIndex: document.getElementById('specialiteSelect').selectedIndex,
-        specialiteAutre: g('specialiteAutre'), ordre: g('ordreInput'),
         cgu: document.getElementById('cgu').checked, rgpd: document.getElementById('rgpd').checked
       }));
     }
@@ -412,10 +364,8 @@
       if (!d) return;
       const set = (id, v) => { const el = document.getElementById(id); if (el && v != null && v !== '') el.value = v; };
       set('firstName', d.firstName); set('lastName', d.lastName); set('dobField', d.dob); set('sexField', d.sex); set('emailField', d.email);
-      set('ordreInput', d.ordre); set('phoneField', d.phone);
+      set('phoneField', d.phone);
       if (d.ccIso) setCountry(d.ccIso);
-      if (typeof d.specIndex === 'number' && d.specIndex > 0) { document.getElementById('specialiteSelect').selectedIndex = d.specIndex; toggleSpecAutre(); }
-      set('specialiteAutre', d.specialiteAutre);
       if (d.cgu) document.getElementById('cgu').checked = true;
       if (d.rgpd) document.getElementById('rgpd').checked = true;
     }

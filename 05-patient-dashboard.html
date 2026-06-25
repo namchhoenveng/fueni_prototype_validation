@@ -89,7 +89,7 @@
     <a class="nav-link-side active"><i class="fa fa-home"></i><span data-i18n="dash.sidebar.dashboard">Tableau de bord</span></a>
     <a href="#" class="nav-link-side"><i class="fa fa-calendar-check"></i><span data-i18n="dash.sidebar.my_appts">Mes RDV</span></a>
     <a href="#" class="nav-link-side"><i class="fa fa-plus-circle"></i><span data-i18n="dash.sidebar.book">Prendre RDV</span></a>
-    <a href="#" class="nav-link-side"><i class="fa fa-folder"></i><span data-i18n="dash.sidebar.my_docs">Mes documents</span></a>
+    <a href="09-patient-documents.html" class="nav-link-side"><i class="fa fa-folder"></i><span data-i18n="dash.sidebar.my_docs">Mes documents</span></a>
 
     <div class="nav-section" data-i18n="dash.sidebar.section_account">Mon compte</div>
     <a href="06-patient-profile.html" class="nav-link-side"><i class="fa fa-user"></i><span data-i18n="dash.sidebar.my_profile">Mon profil</span></a>
@@ -163,10 +163,10 @@
 
         <!-- Documents récents + actions -->
         <div class="col-lg-5">
-          <div class="card-section">
+          <div class="card-section" style="cursor:pointer;" onclick="location.href='09-patient-documents.html'">
             <div class="d-flex justify-content-between align-items-center mb-3">
               <h6 class="fw-bold mb-0" data-i18n-html="dash.docs.title_html"><i class="fa fa-folder me-2" style="color:#16a085;"></i>Documents récents</h6>
-              <a href="#" class="small text-decoration-none" style="color:#16a085;" data-i18n="dash.appts.view_all">Tout voir →</a>
+              <a href="09-patient-documents.html" class="small text-decoration-none" style="color:#16a085;" data-i18n="dash.appts.view_all">Tout voir →</a>
             </div>
 
             <div class="rdv-item">

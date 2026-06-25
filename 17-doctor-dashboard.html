@@ -101,7 +101,7 @@
               </div>
               <div class="step-row">
                 <div class="sd ok"><i class="fa fa-check"></i></div>
-                <div><div class="fw-semibold small" data-i18n="doc.dash.s2_title">Plan souscrit</div><div class="text-muted" style="font-size:0.78rem;" id="s2sub" data-i18n="doc.dash.s2_sub_solo">Plan Solo — essai gratuit actif</div></div>
+                <div><div class="fw-semibold small" data-i18n="doc.dash.s2_title">Plan souscrit</div><div class="text-muted" style="font-size:0.78rem;" id="s2sub" data-i18n="doc.dash.s2_sub_solo">Plan Solo — actif</div></div>
               </div>
               <div class="step-row">
                 <div class="sd cur"><div class="spinner-ring"></div></div>
@@ -171,7 +171,7 @@
       document.querySelectorAll('.stat-block .fs-2').forEach(el => el.textContent = '0');
     }
 
-    // Plan souscrit : Solo (essai) ou Gratuit
+    // Plan souscrit : Solo ou Gratuit
     function applyPlan() {
       const free = (localStorage.getItem('naz_plan') || 'solo') === 'gratuit';
       const el = document.getElementById('s2sub');

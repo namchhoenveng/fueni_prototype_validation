@@ -119,8 +119,8 @@
         <form onsubmit="return doLogin(event)">
           <!-- Bascule explicite E-mail / Téléphone (sous le message « Bon retour », au-dessus du champ Identifiant — cf. SF-LOGIN §4.3/DL8) -->
           <div class="seg" role="tablist" aria-label="Type d'identifiant">
-            <button type="button" class="active" id="modeEmail" role="tab" aria-selected="true" onclick="setIdentMode('email', true)" data-i18n="login.mode.email">E-mail</button>
-            <button type="button" id="modePhone" role="tab" aria-selected="false" onclick="setIdentMode('phone', true)" data-i18n="login.mode.phone">Téléphone</button>
+            <button type="button" class="active" id="modePhone" role="tab" aria-selected="true" onclick="setIdentMode('phone', true)" data-i18n="login.mode.phone">Téléphone</button>
+            <button type="button" id="modeEmail" role="tab" aria-selected="false" onclick="setIdentMode('email', true)" data-i18n="login.mode.email">E-mail</button>
           </div>
           <div class="mb-3">
             <label class="form-label" data-i18n="login.field.identifier">Identifiant</label>
@@ -128,7 +128,7 @@
               <button type="button" class="form-select iti-trigger d-none" id="ccTrigger" onclick="toggleCcMenu(event)" aria-haspopup="listbox">
                 <span id="ccFlag">🇸🇳</span><span id="ccDial">+221</span>
               </button>
-              <input type="text" class="form-control" id="identField" autocomplete="username" inputmode="email" value="sandrine@fueni.com" placeholder="Adresse e-mail">
+              <input type="text" class="form-control" id="identField" autocomplete="username" inputmode="tel" value="771234567" placeholder="Numéro de téléphone">
               <input type="hidden" id="ccIso" value="SN">
               <div class="iti-menu d-none" id="ccMenu">
                 <div class="iti-search-wrap">
@@ -331,7 +331,7 @@
 
     // Retour de réinitialisation : bannière de succès + pré-remplissage de l'identifiant
     document.addEventListener('DOMContentLoaded', () => {
-      setIdentMode('email');
+      setIdentMode('phone');
       try {
         if (sessionStorage.getItem('fueni_reset_done')) {
           const b = document.getElementById('resetBanner'); if (b) b.classList.remove('d-none');
