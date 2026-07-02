@@ -73,7 +73,7 @@
     <div class="nav-section" data-i18n="doc.dash.sec_account">Compte</div>
     <a href="#" class="nav-link-side unlocked"><i class="fa fa-star"></i><span data-i18n="doc.dash.nav_subscription">Mon abonnement</span></a>
     <a href="#" class="nav-link-side unlocked"><i class="fa fa-cog"></i><span data-i18n="doc.dash.nav_settings">Paramètres</span></a>
-    <a href="10-login.html" class="nav-link-side unlocked"><i class="fa fa-arrow-right-from-bracket"></i><span data-i18n="doc.dash.logout">Déconnexion</span></a>
+    <a href="10b-login-doctor.html" class="nav-link-side unlocked"><i class="fa fa-arrow-right-from-bracket"></i><span data-i18n="doc.dash.logout">Déconnexion</span></a>
   </div>
 
   <div class="main">
@@ -87,6 +87,15 @@
       <!-- Overlay verrouillé -->
       <div class="locked-overlay" id="lockedOverlay">
         <div class="lock-card">
+
+          <!-- État : KYC à compléter (arrivée juste après l'inscription) -->
+          <div id="cardTodo" class="d-none">
+            <div class="lock-ic wait"><i class="fa fa-file-upload"></i></div>
+            <h4 class="fw-bold mb-2" data-i18n="doc.dash.todo_title">Finalisez votre vérification</h4>
+            <p class="text-muted mb-4" data-i18n="doc.dash.todo_sub">Votre compte est créé. Complétez votre dossier de vérification (justificatifs KYC) pour activer votre espace médecin. Vous pouvez le faire dès maintenant ou y revenir plus tard.</p>
+            <a href="15b-doctor-kyc.html" class="btn btn-doctor w-100 mb-2"><i class="fa fa-file-upload me-2"></i><span data-i18n="doc.dash.btn_startkyc">Compléter mon dossier de vérification</span></a>
+            <a href="mailto:support@fueni.com" class="btn btn-outline-secondary btn-sm w-100"><i class="fa fa-headset me-1"></i><span data-i18n="doc.dash.btn_support">Contacter le support</span></a>
+          </div>
 
           <!-- État : en attente de validation -->
           <div id="cardAttente">
@@ -115,7 +124,7 @@
 
             <hr class="my-3">
             <div class="small text-muted"><i class="fa fa-flask me-1"></i><span data-i18n="doc.dash.demo_label">Démo :</span>
-              <a href="#" class="text-decoration-none" onclick="event.preventDefault(); simulateUnlock();" data-i18n="doc.dash.demo_validate">valider le compte</a> ·
+              <a href="#" class="text-decoration-none" onclick="event.preventDefault(); validateAccount();" data-i18n="doc.dash.demo_validate">valider le compte</a> ·
               <a href="#" class="text-decoration-none" onclick="event.preventDefault(); setState('fix');" data-i18n="doc.dash.demo_tofix">dossier à compléter</a>
             </div>
           </div>
@@ -129,6 +138,15 @@
             <a href="mailto:support@fueni.com" class="btn btn-outline-secondary btn-sm w-100"><i class="fa fa-headset me-1"></i><span data-i18n="doc.dash.btn_support">Contacter le support</span></a>
             <hr class="my-3">
             <a href="#" class="small text-muted text-decoration-none" onclick="event.preventDefault(); setState('wait');" data-i18n="doc.dash.demo_attente">← Revenir à « en attente »</a>
+          </div>
+
+          <!-- État : validé, paiement Solo requis pour activer -->
+          <div id="cardPay" class="d-none">
+            <div class="lock-ic" style="background:#d1e7dd; color:#0f5132;"><i class="fa fa-circle-check"></i></div>
+            <h4 class="fw-bold mb-2" data-i18n="doc.dash.pay_title">Dossier validé — activez votre plan Solo</h4>
+            <p class="text-muted mb-4" data-i18n="doc.dash.pay_sub">Félicitations, votre profil est vérifié. Réglez votre premier terme pour activer le plan Solo et débloquer toutes les fonctionnalités. En attendant, vous pouvez utiliser le plan Free.</p>
+            <a href="15-doctor-paiement.html" class="btn btn-doctor w-100 mb-2"><i class="fa fa-credit-card me-2"></i><span data-i18n="doc.dash.btn_pay_activate">Payer et activer Solo</span></a>
+            <a href="#" class="btn btn-outline-secondary btn-sm w-100" onclick="event.preventDefault(); simulateUnlock();"><span data-i18n="doc.dash.btn_stay_free">Rester sur Free pour l'instant</span></a>
           </div>
 
         </div>
@@ -157,10 +175,26 @@
     const t = (k, fb) => (window.NazI18n ? NazI18n.t(k) : '') || fb;
 
     function setState(s) {
-      const fix = s === 'fix';
-      document.getElementById('cardAttente').classList.toggle('d-none', fix);
-      document.getElementById('cardFix').classList.toggle('d-none', !fix);
+      document.getElementById('cardTodo').classList.toggle('d-none', s !== 'todo');
+      document.getElementById('cardAttente').classList.toggle('d-none', s !== 'wait');
+      document.getElementById('cardFix').classList.toggle('d-none', s !== 'fix');
+      document.getElementById('cardPay').classList.toggle('d-none', s !== 'pay');
     }
+
+    // Validation du dossier : Solo → paiement requis (après validation) ; Free → déverrouillage direct
+    function validateAccount() {
+      const free = (localStorage.getItem('naz_plan') || 'solo') === 'gratuit';
+      if (free) simulateUnlock(); else setState('pay');
+    }
+
+    // État initial : ?kyc=todo (juste inscrit) · ?kyc=submitted (dossier envoyé) · ?state=active (retour du paiement → débloqué)
+    (function () {
+      const params = new URLSearchParams(location.search);
+      if (params.get('state') === 'active') { simulateUnlock(); return; }
+      const p = params.get('kyc');
+      if (p === 'todo') setState('todo');
+      else if (p === 'submitted') setState('wait');
+    })();
 
     function simulateUnlock() {
       document.getElementById('lockedOverlay').style.display = 'none';

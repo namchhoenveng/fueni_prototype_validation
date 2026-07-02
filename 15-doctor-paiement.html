@@ -49,13 +49,9 @@
   </div>
 
   <div class="container py-4" style="max-width:900px;">
-    <div class="progress-steps mb-4" style="max-width:600px; margin:0 auto 2rem;">
-      <div class="step done"><div class="step-circle"><i class="fa fa-check" style="font-size:0.7rem;"></i></div><div class="step-label" data-i18n="doc.steps.elig">Éligibilité</div></div>
-      <div class="step done"><div class="step-circle"><i class="fa fa-check" style="font-size:0.7rem;"></i></div><div class="step-label" data-i18n="doc.steps.reg">Inscription</div></div>
-      <div class="step done"><div class="step-circle"><i class="fa fa-check" style="font-size:0.7rem;"></i></div><div class="step-label" data-i18n="doc.steps.plan">Choix du plan</div></div>
-      <div class="step active"><div class="step-circle">4</div><div class="step-label" data-i18n="doc.steps.pay">Paiement</div></div>
-      <div class="step inactive"><div class="step-circle">5</div><div class="step-label" data-i18n="doc.steps.kyc">Justificatifs</div></div>
-      <div class="step inactive"><div class="step-circle">6</div><div class="step-label" data-i18n="doc.steps.access">Accès</div></div>
+    <div class="mb-4 text-center">
+      <span class="badge" style="background:#d1e7dd; color:#0f5132; font-weight:600; padding:7px 16px; border-radius:20px; font-size:0.82rem;"><i class="fa fa-circle-check me-1"></i><span data-i18n="doc.pay.context_badge">Dossier validé — activation de l'abonnement Solo</span></span>
+      <div class="text-muted small mt-2" data-i18n="doc.pay.context_sub">Réglez votre premier terme pour activer Solo. Accessible depuis votre tableau de bord.</div>
     </div>
 
     <div class="row g-4">
@@ -222,7 +218,7 @@
       err.classList.add('d-none');
       btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>' + t('doc.pay.processing', 'Traitement en cours…');
       btn.disabled = true;
-      setTimeout(() => window.location.href = '15b-doctor-kyc.html', 1200);
+      setTimeout(() => window.location.href = '17-doctor-dashboard.html?state=active', 1200);
     }
     // Efface l'erreur d'un champ dès sa correction
     document.querySelectorAll('#payment-block input').forEach(el => el.addEventListener('input', () => {

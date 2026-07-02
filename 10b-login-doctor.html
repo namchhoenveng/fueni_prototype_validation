@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>FUENI — Connexion</title>
+  <title>FUENI — Connexion praticien</title>
   <script src="naz-i18n.js" defer></script>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
@@ -12,17 +12,17 @@
     body { font-family: 'Segoe UI', sans-serif; min-height: 100vh; }
     .proto-bar { position: sticky; top: 0; z-index: 100; }
     .login-wrap { display: flex; min-height: calc(100vh - 0px); }
-    /* ── Brand panel (left) ───────────────────────────────────────────── */
+    /* ── Brand panel (left) — Espace professionnel ────────────────────── */
     .brand-panel { flex: 0 0 38%; max-width: 520px; background: linear-gradient(160deg, #0c4a5e 0%, #155e75 60%, #134e63 100%); color: #fff; padding: 2.5rem 2.5rem 2rem; display: flex; flex-direction: column; position: relative; overflow: hidden; }
     .brand-panel::after { content: ''; position: absolute; right: -120px; top: -80px; width: 320px; height: 320px; border-radius: 50%; background: rgba(255,255,255,0.05); }
-    .brand-logo { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 1.25rem; }
-    .brand-logo .mark { width: 34px; height: 34px; border-radius: 9px; background: rgba(255,255,255,0.15); display: flex; align-items: center; justify-content: center; font-weight: 800; }
-    .brand-kicker { margin-top: 3.5rem; font-size: 0.72rem; letter-spacing: 1.5px; text-transform: uppercase; color: rgba(255,255,255,0.6); font-weight: 600; }
-    .brand-title { font-size: 2rem; font-weight: 800; line-height: 1.15; margin-top: 0.5rem; }
+    .pro-tag { display: inline-flex; align-items: center; gap: 8px; margin-top: 2.4rem; background: rgba(245,158,11,0.16); border: 1px solid rgba(245,158,11,0.42); color: #fde6bd; padding: 5px 13px; border-radius: 20px; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.4px; width: fit-content; }
+    .pro-tag i { color: #f59e0b; }
+    .brand-title { font-size: 2rem; font-weight: 800; line-height: 1.15; margin-top: 0.7rem; }
     .brand-desc { color: rgba(255,255,255,0.8); margin-top: 1rem; max-width: 360px; line-height: 1.5; }
     .trust-list { margin-top: auto; display: flex; flex-direction: column; gap: 1.1rem; }
     .trust-item { display: flex; gap: 12px; align-items: flex-start; }
     .trust-item .ic { width: 34px; height: 34px; border-radius: 9px; background: rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center; flex: 0 0 34px; }
+    .trust-item .ic i { color: #f59e0b; }
     .trust-item .t { font-weight: 700; font-size: 0.85rem; }
     .trust-item .d { color: rgba(255,255,255,0.65); font-size: 0.78rem; }
     .brand-foot { margin-top: 1.6rem; font-size: 0.72rem; color: rgba(255,255,255,0.5); letter-spacing: 0.5px; }
@@ -32,8 +32,6 @@
     .seg { display: flex; background: #eef2f6; border-radius: 12px; padding: 4px; margin-bottom: 1.8rem; }
     .seg button { flex: 1; border: 0; background: transparent; padding: 8px 10px; border-radius: 9px; font-weight: 600; font-size: 0.86rem; color: #64748b; cursor: pointer; position: relative; display: flex; align-items: center; justify-content: center; gap: 6px; }
     .seg button.active { background: #fff; color: #0f172a; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
-    .seg button:disabled { cursor: not-allowed; opacity: 0.8; }
-    .seg .soon { font-size: 0.6rem; background: #f59e0b; color: #1a1a1a; border-radius: 6px; padding: 1px 6px; font-weight: 700; letter-spacing: 0.3px; }
     .login-card h1 { font-size: 1.6rem; font-weight: 800; color: #0f172a; margin-bottom: 4px; }
     .login-card .sub { color: #64748b; font-size: 0.9rem; margin-bottom: 1.5rem; }
     .form-label { font-weight: 600; font-size: 0.85rem; color: #334155; margin-bottom: 4px; }
@@ -48,7 +46,7 @@
     .signup-line { text-align: center; font-size: 0.88rem; color: #64748b; margin-top: 1.1rem; }
     .signup-line a { color: #155e75; font-weight: 700; text-decoration: none; }
     .secure-line { text-align: center; font-size: 0.76rem; color: #94a3b8; margin-top: 0.9rem; }
-    /* ── Smart identifier + country selector ──────────────────────────── */
+    /* ── Identifier + country selector ────────────────────────────────── */
     .ident-combo { position: relative; display: flex; gap: 6px; }
     .iti-trigger { flex: 0 0 100px; display: flex; align-items: center; gap: 6px; cursor: pointer; text-align: left; }
     .iti-trigger #ccFlag { font-size: 1.05rem; }
@@ -66,14 +64,29 @@
     .iti-opt:hover, .iti-opt.active { background: #e8f1f4; }
     .iti-opt .dial { margin-left: auto; color: #95a5a6; font-size: 0.82rem; }
     .iti-empty { padding: 0.6rem 0.9rem; color: #95a5a6; font-size: 0.85rem; }
-    .ident-hint { font-size: 0.72rem; color: #94a3b8; margin-top: 4px; }
+    .ident-hint { font-size: 0.75rem; color: #475569; margin-top: 4px; }
+    /* ── MFA step ──────────────────────────────────────────────────────── */
+    .mfa-icon { width: 58px; height: 58px; border-radius: 50%; background: #e6f2f5; border: 1.5px solid #bcdfe7; display: flex; align-items: center; justify-content: center; margin: 0 auto 14px; color: #155e75; font-size: 1.35rem; }
+    .mfa-method { display: flex; gap: 6px; background: #eef2f6; border-radius: 10px; padding: 4px; margin-bottom: 14px; }
+    .mfa-method button { flex: 1; border: 0; background: transparent; padding: 7px 6px; border-radius: 7px; font-weight: 600; font-size: 0.8rem; color: #64748b; cursor: pointer; }
+    .mfa-method button.active { background: #fff; color: #0f172a; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+    .mfa-method button:disabled { color: #b6c2cf; cursor: not-allowed; }
+    .mfa-method .soon { font-size: 0.58rem; background: #cbd5e1; color: #475569; border-radius: 6px; padding: 1px 5px; margin-left: 4px; font-weight: 700; }
+    .otp-inputs { display: flex; gap: 8px; justify-content: center; margin: 10px 0 6px; }
+    .otp-inputs input { width: 44px; height: 52px; text-align: center; font-size: 1.3rem; font-weight: 700; border-radius: 9px; border: 1.5px solid #cbd5e1; background: #f8fafc; color: #0f172a; }
+    .otp-inputs input:focus { border-color: #155e75; box-shadow: 0 0 0 3px rgba(21,94,117,0.12); outline: none; background: #fff; }
+    .otp-inputs.err input { border-color: #e74c3c; }
+    .step-error { background: #fdecea; border: 1px solid #f5c6c2; color: #a93226; border-radius: 9px; padding: 9px 12px; font-size: 0.84rem; margin-bottom: 12px; display: none; align-items: center; gap: 8px; }
+    .step-error.show { display: flex; }
+    .mfa-resend { color: #155e75; cursor: pointer; font-weight: 600; }
+    .mfa-resend.disabled { color: #adb5bd; cursor: not-allowed; pointer-events: none; }
     @media (max-width: 860px) { .brand-panel { display: none; } }
   </style>
 </head>
-<body data-i18n-pagetitle="login.page_title" data-i18n-toggle>
+<body data-i18n-pagetitle="doclogin.page_title" data-i18n-toggle>
 
   <div class="proto-bar d-flex align-items-center gap-3 flex-wrap">
-    <span><i class="fa fa-eye text-warning me-1"></i><strong data-i18n="login.proto_bar">Écran — Connexion</strong></span>
+    <span><i class="fa fa-eye text-warning me-1"></i><strong data-i18n="doclogin.proto_bar">Écran — Connexion praticien</strong></span>
     <a href="01-home.html" class="text-decoration-none text-muted ms-auto small" data-i18n="common.back_home">← Retour à l'accueil</a>
   </div>
 
@@ -81,22 +94,21 @@
     <!-- Brand panel -->
     <div class="brand-panel">
       <div class="brand-logo"><a href="01-home.html" aria-label="FUENI — Accueil"><img src="assets/fueni-lockup-white.svg" alt="FUENI" style="height:34px;width:auto"></a></div>
-      <div class="brand-kicker" data-i18n="login.brand.kicker">Plateforme santé digitale</div>
-      <div class="brand-title" data-i18n="login.brand.title">Une plateforme. Tous vos soins.</div>
-      <div class="brand-desc" data-i18n="login.brand.desc">Prenez rendez-vous, gérez vos documents médicaux et restez en lien avec votre équipe de soins.</div>
+      <div class="brand-title" style="margin-top:3rem" data-i18n="doclogin.brand.title">Votre pratique, en ligne.</div>
+      <div class="brand-desc" data-i18n="doclogin.brand.desc">Gérez votre agenda, vos patients et vos consultations depuis un espace sécurisé.</div>
 
       <div class="trust-list">
         <div class="trust-item">
-          <div class="ic"><i class="fa fa-shield-halved"></i></div>
-          <div><div class="t" data-i18n="login.trust.enc_t">Données chiffrées AES-256</div><div class="d" data-i18n="login.trust.enc_d">Vos données sont chiffrées avant stockage.</div></div>
+          <div class="ic"><i class="fa fa-user-check"></i></div>
+          <div><div class="t" data-i18n="doclogin.trust.kyc_t">Identité vérifiée</div><div class="d" data-i18n="doclogin.trust.kyc_d">Profil validé par notre équipe (KYC).</div></div>
+        </div>
+        <div class="trust-item">
+          <div class="ic"><i class="fa fa-calendar-check"></i></div>
+          <div><div class="t" data-i18n="doclogin.trust.agenda_t">Agenda & patients</div><div class="d" data-i18n="doclogin.trust.agenda_d">Vos rendez-vous et dossiers au même endroit.</div></div>
         </div>
         <div class="trust-item">
           <div class="ic"><i class="fa fa-lock"></i></div>
-          <div><div class="t" data-i18n="login.trust.gdpr_t">Conforme RGPD & HDS</div><div class="d" data-i18n="login.trust.gdpr_d">Aux plus hauts standards du secteur de la santé.</div></div>
-        </div>
-        <div class="trust-item">
-          <div class="ic"><i class="fa fa-earth-africa"></i></div>
-          <div><div class="t" data-i18n="login.trust.countries_t">9 pays couverts (MVP)</div><div class="d" data-i18n="login.trust.countries_d">Disponible en Afrique francophone.</div></div>
+          <div><div class="t" data-i18n="doclogin.trust.gdpr_t">Conforme RGPD & HDS</div><div class="d" data-i18n="doclogin.trust.gdpr_d">Aux plus hauts standards du secteur de la santé.</div></div>
         </div>
       </div>
       <div class="brand-foot">RGPD · HDS · ISO 27001</div>
@@ -105,19 +117,21 @@
     <!-- Form panel -->
     <div class="form-panel">
       <div class="login-card">
+        <!-- Étape 1 — Identifiant + mot de passe -->
+        <div id="step1">
         <div class="text-end mb-2">
           <a href="01-home.html" class="text-decoration-none small" style="color:#64748b;font-weight:600" aria-label="Accueil"><i class="fa fa-house me-1"></i><span data-i18n="common.home">Accueil</span></a>
         </div>
 
-        <h1 data-i18n="login.title">Bon retour</h1>
-        <p class="sub" data-i18n="login.subtitle">Connectez-vous avec votre e-mail ou votre numéro de téléphone.</p>
+        <h1 data-i18n="doclogin.title">Bon retour</h1>
+        <p class="sub" data-i18n="doclogin.subtitle">Connectez-vous à votre espace praticien.</p>
 
         <div class="alert alert-success py-2 px-3 small d-none" id="resetBanner" role="alert"><i class="fa fa-circle-check me-1"></i><span data-i18n="login.reset_success">Mot de passe réinitialisé. Connectez-vous avec votre nouveau mot de passe.</span></div>
         <div class="alert alert-info py-2 px-3 small d-none" id="logoutBanner" role="alert"><i class="fa fa-circle-info me-1"></i><span data-i18n="login.logout_success">Vous avez été déconnecté.</span></div>
         <div class="alert alert-danger py-2 px-3 small d-none" id="loginError" role="alert"><i class="fa fa-circle-exclamation me-1"></i><span id="loginErrorMsg"></span></div>
 
         <form onsubmit="return doLogin(event)">
-          <!-- Bascule explicite E-mail / Téléphone (sous le message « Bon retour », au-dessus du champ Identifiant — cf. SF-LOGIN §4.3/DL8) -->
+          <!-- Bascule explicite Téléphone / E-mail — Téléphone par défaut (praticien mobile-first ; n° vérifié à l'inscription) -->
           <div class="seg" role="tablist" aria-label="Type d'identifiant">
             <button type="button" class="active" id="modePhone" role="tab" aria-selected="true" onclick="setIdentMode('phone', true)" data-i18n="login.mode.phone">Téléphone</button>
             <button type="button" id="modeEmail" role="tab" aria-selected="false" onclick="setIdentMode('email', true)" data-i18n="login.mode.email">E-mail</button>
@@ -128,7 +142,7 @@
               <button type="button" class="form-select iti-trigger d-none" id="ccTrigger" onclick="toggleCcMenu(event)" aria-haspopup="listbox">
                 <span id="ccFlag">🇸🇳</span><span id="ccDial">+221</span>
               </button>
-              <input type="text" class="form-control" id="identField" autocomplete="username" inputmode="tel" value="771234567" placeholder="Numéro de téléphone">
+              <input type="text" class="form-control" id="identField" autocomplete="username" inputmode="tel" value="770000000" placeholder="Numéro de téléphone">
               <input type="hidden" id="ccIso" value="SN">
               <div class="iti-menu d-none" id="ccMenu">
                 <div class="iti-search-wrap">
@@ -143,7 +157,7 @@
           <div class="mb-2">
             <div class="pwd-row">
               <label class="form-label" data-i18n="login.field.password">Mot de passe</label>
-              <a href="11-password-reset.html" data-i18n="login.forgot">Mot de passe oublié ?</a>
+              <a href="11-password-reset.html?role=doctor" data-i18n="login.forgot">Mot de passe oublié ?</a>
             </div>
             <div class="pwd-wrap">
               <input type="password" class="form-control" id="pwdField" value="MotDePasse123!" placeholder="••••••••••••">
@@ -152,24 +166,58 @@
           </div>
 
           <div class="form-check mb-3">
-            <input class="form-check-input" type="checkbox" id="remember">
-            <label class="form-check-label small" for="remember" data-i18n="login.remember">Rester connecté</label>
+            <input class="form-check-input" type="checkbox" id="remember" onchange="toggleRememberHint()">
+            <label class="form-check-label small" for="remember" data-i18n="doclogin.remember">Rester connecté sur cet appareil</label>
+            <div class="ident-hint mt-1 d-none" id="rememberHint" data-i18n="doclogin.remember_hint">Évite de redemander le code de vérification sur cet appareil. À ne pas cocher sur un ordinateur partagé.</div>
           </div>
 
           <button type="submit" class="btn-signin" data-i18n-html="login.submit_html">Se connecter <i class="fa fa-arrow-right"></i></button>
         </form>
 
         <div class="signup-line">
-          <span data-i18n="login.signup_prompt">Pas encore de compte ?</span>
-          <a href="02-patient-signup.html" data-i18n="login.signup_link">S'inscrire</a>
+          <span data-i18n="doclogin.signup_prompt">Pas encore inscrit comme praticien ?</span>
+          <a href="12b-doctor-eligibilite.html" data-i18n="doclogin.signup_link">Créer un compte praticien</a>
         </div>
         <div class="secure-line"><i class="fa fa-lock me-1"></i><span data-i18n="login.secure">Connexion chiffrée et sécurisée</span></div>
-        <!-- Accès Espace professionnel (lien en bas — l'espace pro relève d'une SF/flux Keycloak dédiés ; « Bientôt » tant qu'il n'est pas livré) -->
+        <!-- Retour vers l'Espace patient -->
         <div class="text-center" style="margin-top:1rem;padding-top:0.9rem;border-top:1px solid #e2e8f0;font-size:0.84rem;color:#64748b">
-          <span data-i18n="login.pro_prompt">Vous êtes un professionnel de santé ?</span>
-          <a href="10b-login-doctor.html" style="color:#155e75;font-weight:700;text-decoration:none" data-i18n="login.pro_link">Espace professionnel</a>
+          <span data-i18n="doclogin.patient_prompt">Vous êtes un patient ?</span>
+          <a href="10-login.html" style="color:#155e75;font-weight:700;text-decoration:none" data-i18n="doclogin.patient_link">Espace patient</a>
         </div>
-        <div class="secure-line" style="margin-top:6px" data-i18n="login.demo_hint">🔑 Démo : sandrine@fueni.com · mot de passe MotDePasse123!</div>
+        <div class="secure-line" style="margin-top:6px" data-i18n="doclogin.demo_hint">🔑 Démo : 770000000 ou dr.diallo@fueni.com · mot de passe MotDePasse123!</div>
+        </div><!-- /step1 -->
+
+        <!-- Étape 2 — MFA (obligatoire MVP : e-mail défaut · SMS option · TOTP post-MVP) -->
+        <div id="step2" style="display:none;">
+          <div class="mfa-icon"><i class="fa fa-shield-halved"></i></div>
+          <h1 style="text-align:center;font-size:1.4rem;" data-i18n="doclogin.mfa.title">Vérification en deux étapes</h1>
+          <p class="sub" style="text-align:center;" id="mfaSub"><span data-i18n="doclogin.mfa.sub_email">Saisissez le code à 6 chiffres envoyé par e-mail à</span> <strong style="color:#0f172a;" id="mfaTarget">dr.diallo@fueni.com</strong>.</p>
+
+          <div class="step-error" id="mfaError"><i class="fa fa-circle-exclamation"></i><span id="mfaErrorMsg"></span></div>
+
+          <form onsubmit="event.preventDefault(); validateMfa();">
+            <div class="otp-inputs" id="otpRow">
+              <input type="text" inputmode="numeric" maxlength="1" pattern="[0-9]" autocomplete="one-time-code" oninput="otpNext(this)" onfocus="this.select()">
+              <input type="text" inputmode="numeric" maxlength="1" pattern="[0-9]" oninput="otpNext(this)" onfocus="this.select()">
+              <input type="text" inputmode="numeric" maxlength="1" pattern="[0-9]" oninput="otpNext(this)" onfocus="this.select()">
+              <input type="text" inputmode="numeric" maxlength="1" pattern="[0-9]" oninput="otpNext(this)" onfocus="this.select()">
+              <input type="text" inputmode="numeric" maxlength="1" pattern="[0-9]" oninput="otpNext(this)" onfocus="this.select()">
+              <input type="text" inputmode="numeric" maxlength="1" pattern="[0-9]" oninput="otpNext(this)" onfocus="this.select()">
+            </div>
+            <p class="secure-line" style="margin-top:6px" data-i18n="doclogin.mfa.validity">Votre code reste valide 5 minutes.</p>
+            <p class="secure-line" style="margin-top:2px" data-i18n="doclogin.mfa.hint">Prototype — utilisez 000000 pour simuler une connexion réussie.</p>
+            <button type="submit" class="btn-signin mt-2"><i class="fa fa-check"></i><span data-i18n="doclogin.mfa.submit">Valider et accéder</span></button>
+          </form>
+
+          <p class="text-center mt-3 mb-0" style="font-size:0.84rem;color:#64748b;" data-i18n-html="doclogin.mfa.resend_html">
+            Pas reçu ? <span id="mfaResendLink" class="mfa-resend disabled">Renvoyer le code</span>
+            <span id="mfaResendWrap">· disponible dans <strong id="mfaResendTimer">01:00</strong></span>
+          </p>
+          <div class="ident-hint text-center mt-2"><i class="fa fa-laptop me-1"></i><span data-i18n="doclogin.mfa.device_note">Cet appareil sera mémorisé — le code ne sera redemandé que sur un nouvel appareil.</span></div>
+          <div class="text-center mt-3">
+            <button type="button" class="btn btn-link btn-sm text-muted" onclick="backToStep1()"><i class="fa fa-arrow-left me-1"></i><span data-i18n="doclogin.mfa.back">Retour</span></button>
+          </div>
+        </div><!-- /step2 -->
       </div>
     </div>
   </div>
@@ -191,27 +239,14 @@
       { iso: 'BE', fr: 'Belgique', en: 'Belgium', dial: '+32', flag: '🇧🇪' },
       { iso: 'CH', fr: 'Suisse', en: 'Switzerland', dial: '+41', flag: '🇨🇭' },
       { iso: 'CA', fr: 'Canada', en: 'Canada', dial: '+1', flag: '🇨🇦' },
-      { iso: 'US', fr: 'États-Unis', en: 'United States', dial: '+1', flag: '🇺🇸' },
-      { iso: 'GB', fr: 'Royaume-Uni', en: 'United Kingdom', dial: '+44', flag: '🇬🇧' },
-      { iso: 'DE', fr: 'Allemagne', en: 'Germany', dial: '+49', flag: '🇩🇪' },
-      { iso: 'ES', fr: 'Espagne', en: 'Spain', dial: '+34', flag: '🇪🇸' },
-      { iso: 'IT', fr: 'Italie', en: 'Italy', dial: '+39', flag: '🇮🇹' },
-      { iso: 'PT', fr: 'Portugal', en: 'Portugal', dial: '+351', flag: '🇵🇹' },
       { iso: 'MA', fr: 'Maroc', en: 'Morocco', dial: '+212', flag: '🇲🇦' },
       { iso: 'DZ', fr: 'Algérie', en: 'Algeria', dial: '+213', flag: '🇩🇿' },
       { iso: 'TN', fr: 'Tunisie', en: 'Tunisia', dial: '+216', flag: '🇹🇳' },
-      { iso: 'NG', fr: 'Nigeria', en: 'Nigeria', dial: '+234', flag: '🇳🇬' },
-      { iso: 'GH', fr: 'Ghana', en: 'Ghana', dial: '+233', flag: '🇬🇭' },
       { iso: 'GN', fr: 'Guinée', en: 'Guinea', dial: '+224', flag: '🇬🇳' },
       { iso: 'GA', fr: 'Gabon', en: 'Gabon', dial: '+241', flag: '🇬🇦' },
       { iso: 'CG', fr: 'Congo-Brazzaville', en: 'Congo-Brazzaville', dial: '+242', flag: '🇨🇬' },
       { iso: 'TD', fr: 'Tchad', en: 'Chad', dial: '+235', flag: '🇹🇩' },
-      { iso: 'MR', fr: 'Mauritanie', en: 'Mauritania', dial: '+222', flag: '🇲🇷' },
-      { iso: 'CN', fr: 'Chine', en: 'China', dial: '+86', flag: '🇨🇳' },
-      { iso: 'IN', fr: 'Inde', en: 'India', dial: '+91', flag: '🇮🇳' },
-      { iso: 'AE', fr: 'Émirats arabes unis', en: 'United Arab Emirates', dial: '+971', flag: '🇦🇪' },
-      { iso: 'TR', fr: 'Turquie', en: 'Türkiye', dial: '+90', flag: '🇹🇷' },
-      { iso: 'LB', fr: 'Liban', en: 'Lebanon', dial: '+961', flag: '🇱🇧' }
+      { iso: 'MR', fr: 'Mauritanie', en: 'Mauritania', dial: '+222', flag: '🇲🇷' }
     ];
 
     let ccActiveIdx = -1;
@@ -219,8 +254,8 @@
     function getCountry(iso) { return COUNTRIES.find(c => c.iso === iso); }
     function ccLabel(c) { const en = (document.documentElement.lang || 'fr').toLowerCase().startsWith('en'); return (en && c.en) ? c.en : c.fr; }
 
-    // Bascule explicite E-mail / Téléphone — pas de détection automatique (cf. SF-LOGIN §4.3 / DL8)
-    let identMode = 'email';
+    // Bascule explicite E-mail / Téléphone — E-mail par défaut côté praticien
+    let identMode = 'phone';
     function setIdentMode(mode, clearField) {
       const changed = mode !== identMode;
       identMode = mode;
@@ -293,16 +328,18 @@
     }
     document.addEventListener('click', e => { if (!e.target.closest('.ident-combo')) closeCcMenu(); });
 
+    function toggleRememberHint() {
+      document.getElementById('rememberHint').classList.toggle('d-none', !document.getElementById('remember').checked);
+    }
     function togglePwd() {
       const f = document.getElementById('pwdField'); const eye = document.getElementById('pwdEye');
       const hidden = f.type === 'password';
       f.type = hidden ? 'text' : 'password';
       eye.innerHTML = hidden ? '<i class="fa fa-eye-slash"></i>' : '<i class="fa fa-eye"></i>';
     }
-    // (Espace pro = lien en bas de page ; sa connexion relève d'une SF/flux Keycloak dédiés — SF-DOCTOR-LOGIN)
 
-    // Compte de démonstration (prototype) pour valider la connexion
-    const DEMO_LOGIN = { ids: ['sandrine@fueni.com', '+221771234567', '771234567'], pwd: 'MotDePasse123!' };
+    // Compte de démonstration praticien (prototype)
+    const DEMO_LOGIN = { ids: ['dr.diallo@fueni.com', '+221770000000', '770000000'], pwd: 'MotDePasse123!' };
     function normId(s) { s = (s || '').trim().toLowerCase(); return s.includes('@') ? s : s.replace(/\D/g, ''); }
 
     function doLogin(e) {
@@ -313,23 +350,107 @@
       const errMsg = document.getElementById('loginErrorMsg');
       const t = k => (window.NazI18n ? NazI18n.t(k) : '');
       errBox.classList.add('d-none');
-      // Champs requis
       if (!idRaw || !pwd) {
         errMsg.textContent = t('login.err.empty') || 'Veuillez saisir votre identifiant et votre mot de passe.';
         errBox.classList.remove('d-none'); return false;
       }
-      // Validation du compte (e-mail ou téléphone) + mot de passe — message générique si échec
       const nid = normId(idRaw);
       const idOk = DEMO_LOGIN.ids.some(x => { const nx = normId(x); return nx === nid || (!nid.includes('@') && (nx.endsWith(nid) || nid.endsWith(nx))); });
       if (!idOk || pwd !== DEMO_LOGIN.pwd) {
         errMsg.textContent = t('login.err.invalid') || 'Identifiant ou mot de passe incorrect.';
         errBox.classList.remove('d-none'); return false;
       }
-      window.location = '05-patient-dashboard.html';
+      goToMfa();
       return false;
     }
 
-    // Retour de réinitialisation : bannière de succès + pré-remplissage de l'identifiant
+    // ── Étape 2 — MFA (obligatoire MVP : e-mail défaut · SMS option · TOTP post-MVP) ──
+    const DEMO_MFA = '000000';
+    const MAX_MFA_TRIES = 5;
+    const DEMO_PHONE_MASKED = '•• •• •• 00 00';
+    let mfaMethod = 'email', mfaTries = 0, mfaLocked = false;
+
+    function goToMfa() {
+      document.getElementById('step1').style.display = 'none';
+      document.getElementById('step2').style.display = '';
+      // Le facteur MFA hérite de l'identifiant utilisé : téléphone → SMS, e-mail → e-mail
+      mfaTries = 0; mfaLocked = false; setMfaMethod(identMode === 'phone' ? 'sms' : 'email'); clearOtp(); startMfaResendTimer();
+      document.getElementById('mfaError').classList.remove('show');
+      setTimeout(() => document.querySelector('#otpRow input').focus(), 100);
+    }
+    function backToStep1() {
+      document.getElementById('step2').style.display = 'none';
+      document.getElementById('step1').style.display = '';
+      clearOtp(); document.getElementById('mfaError').classList.remove('show');
+    }
+    // Le canal MFA est déterminé par l'identifiant de connexion — non modifiable ici.
+    function setMfaMethod(m) {
+      mfaMethod = m;
+      const t = k => (window.NazI18n ? NazI18n.t(k) : '');
+      const isEmail = m === 'email';
+      const lead = isEmail ? (t('doclogin.mfa.sub_email') || 'Saisissez le code à 6 chiffres envoyé par e-mail à')
+                           : (t('doclogin.mfa.sub_sms') || 'Saisissez le code à 6 chiffres envoyé par SMS au');
+      const idv = document.getElementById('identField').value.trim();
+      const dial = (document.getElementById('ccDial') || {}).textContent || '+221';
+      const phoneShown = (!idv.includes('@') && idv.replace(/\D/g, '').length >= 6) ? (dial + ' ' + idv) : (dial + ' 77 000 00 00');
+      const target = isEmail ? (idv.includes('@') ? idv : DEMO_LOGIN.ids[0]) : phoneShown;
+      document.getElementById('mfaSub').innerHTML = lead + ' <strong style="color:#0f172a;">' + target + '</strong>.';
+      document.getElementById('mfaError').classList.remove('show');
+      clearOtp();
+    }
+    function clearOtp() {
+      document.querySelectorAll('#otpRow input').forEach(i => { i.value = ''; i.disabled = false; });
+      document.getElementById('otpRow').classList.remove('err');
+    }
+    // Renvoi du code : minuteur 60 s puis lien actif (même règle que l'inscription)
+    let mfaResendSeconds = 60, mfaResendInterval;
+    function startMfaResendTimer() {
+      const link = document.getElementById('mfaResendLink'), wrap = document.getElementById('mfaResendWrap'), timer = document.getElementById('mfaResendTimer');
+      mfaResendSeconds = 60; if (link) link.classList.add('disabled'); if (wrap) wrap.style.display = '';
+      clearInterval(mfaResendInterval);
+      mfaResendInterval = setInterval(() => {
+        mfaResendSeconds--;
+        const m = String(Math.floor(mfaResendSeconds / 60)).padStart(2, '0'), s = String(mfaResendSeconds % 60).padStart(2, '0');
+        if (timer) timer.textContent = m + ':' + s;
+        if (mfaResendSeconds <= 0) { clearInterval(mfaResendInterval); if (link) link.classList.remove('disabled'); if (wrap) wrap.style.display = 'none'; }
+      }, 1000);
+    }
+    document.addEventListener('click', e => {
+      if (e.target && e.target.id === 'mfaResendLink' && !e.target.classList.contains('disabled')) startMfaResendTimer();
+    });
+    function otpNext(input) {
+      if (mfaLocked) { input.value = ''; return; }
+      input.value = input.value.replace(/[^0-9]/g, '');
+      if (input.value && input.nextElementSibling && input.nextElementSibling.tagName === 'INPUT') input.nextElementSibling.focus();
+      if (Array.from(document.querySelectorAll('#otpRow input')).every(i => i.value.length === 1)) setTimeout(validateMfa, 200);
+    }
+    function validateMfa() {
+      if (mfaLocked) return;
+      const t = k => (window.NazI18n ? NazI18n.t(k) : '');
+      const box = document.getElementById('mfaError'), msg = document.getElementById('mfaErrorMsg');
+      box.classList.remove('show');
+      const code = Array.from(document.querySelectorAll('#otpRow input')).map(i => i.value).join('');
+      if (!/^[0-9]{6}$/.test(code)) {
+        msg.textContent = t('doclogin.mfa.err_incomplete') || 'Veuillez saisir les 6 chiffres du code.';
+        box.classList.add('show'); return;
+      }
+      if (code !== DEMO_MFA) {
+        mfaTries++;
+        const remaining = MAX_MFA_TRIES - mfaTries;
+        document.getElementById('otpRow').classList.add('err');
+        if (remaining <= 0) {
+          mfaLocked = true;
+          document.querySelectorAll('#otpRow input').forEach(i => i.disabled = true);
+          msg.textContent = t('doclogin.mfa.err_locked') || 'Trop de tentatives. Réessayez dans quelques minutes.';
+        } else {
+          msg.textContent = (t('doclogin.mfa.err_wrong') || 'Code incorrect. Il vous reste {n} essai(s).').replace('{n}', remaining);
+          clearOtp(); setTimeout(() => document.querySelector('#otpRow input').focus(), 50);
+        }
+        box.classList.add('show'); return;
+      }
+      window.location = '17-doctor-dashboard.html';
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
       setIdentMode('phone');
       try {
@@ -347,8 +468,10 @@
       } catch (e) { /* ignore */ }
     });
 
-    // Ré-applique le placeholder du champ identifiant à chaque changement de langue
-    document.addEventListener('fueni:langchange', () => setIdentMode(identMode));
+    document.addEventListener('fueni:langchange', () => {
+      setIdentMode(identMode);
+      if (document.getElementById('step2').style.display !== 'none') setMfaMethod(mfaMethod);
+    });
   </script>
 <!-- Prototype version badge -->
 <script>(function(){if(window.__pv)return;window.__pv=1;var v=document.createElement('div');v.style.cssText='position:fixed;top:0;left:50%;transform:translateX(-50%);background:#155e75;color:#fff;padding:6px 20px;border-radius:0 0 16px 16px;font:600 12px/1 system-ui,-apple-system,sans-serif;letter-spacing:.6px;z-index:99999;box-shadow:0 3px 10px rgba(0,0,0,.2);text-transform:uppercase;display:flex;align-items:center;gap:8px';v.innerHTML='🧪 Prototype <span style="background:#f59e0b;color:#1a1a1a;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:4px">v1.4.0</span><span style="background:#facc15;color:#1a1a1a;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:4px;text-transform:none;letter-spacing:0">⏳ À valider</span>';document.body.appendChild(v);})();</script>

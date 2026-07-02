@@ -63,9 +63,7 @@
       <div class="step done"><div class="step-circle"><i class="fa fa-check" style="font-size:0.7rem;"></i></div><div class="step-label" data-i18n="doc.steps.elig">Éligibilité</div></div>
       <div class="step done"><div class="step-circle"><i class="fa fa-check" style="font-size:0.7rem;"></i></div><div class="step-label" data-i18n="doc.steps.reg">Inscription</div></div>
       <div class="step active"><div class="step-circle">3</div><div class="step-label" data-i18n="doc.steps.plan">Choix du plan</div></div>
-      <div class="step inactive"><div class="step-circle">4</div><div class="step-label" data-i18n="doc.steps.pay">Paiement</div></div>
-      <div class="step inactive"><div class="step-circle">5</div><div class="step-label" data-i18n="doc.steps.kyc">Justificatifs</div></div>
-      <div class="step inactive"><div class="step-circle">6</div><div class="step-label" data-i18n="doc.steps.access">Accès</div></div>
+      <div class="step inactive"><div class="step-circle">4</div><div class="step-label" data-i18n="doc.steps.access">Accès</div></div>
     </div>
 
     <div class="text-center mb-3 mt-4">
@@ -125,6 +123,13 @@
 
     </div>
 
+    <div class="mt-4" style="max-width:620px; margin:0 auto;">
+      <div class="alert d-flex align-items-start gap-2 py-2 px-3" style="background:#e6f2f5; border:1px solid #bcdfe7; color:#0e4456; border-radius:10px; font-size:0.86rem;">
+        <i class="fa fa-circle-info mt-1" style="color:#155e75;"></i>
+        <span data-i18n-html="doc.plans.pay_notice">Aucun paiement à cette étape. Vous choisissez votre formule maintenant ; pour le plan <strong>Solo</strong>, le premier prélèvement n'intervient <strong>qu'après la validation de votre dossier</strong>. Le plan <strong>Free</strong> reste gratuit.</span>
+      </div>
+    </div>
+
     <div class="text-center mt-4 mb-2">
       <span style="display:inline-block; background:#eafaf0; color:#1e8449; border:1px solid #b8e6c8; border-radius:12px; padding:8px 18px; font-size:0.88rem; font-weight:600;"><i class="fa fa-circle-check me-2"></i><span data-i18n="doc.plans.trial_note">Sans engagement · Annulable à tout moment</span></span>
     </div>
@@ -170,8 +175,8 @@
     function choosePlan(plan) {
       localStorage.setItem('naz_plan', plan);
       if (plan === 'solo') localStorage.setItem('naz_billing', billing);
-      // Solo → paiement ; Gratuit → pas de paiement, direct aux justificatifs (KYC)
-      window.location.href = (plan === 'gratuit') ? '15b-doctor-kyc.html' : '15-doctor-paiement.html';
+      // Aucun paiement à cette étape (validé client 2026-07-01). Dans les deux cas → tableau de bord verrouillé ; KYC depuis le dashboard ; le paiement Solo intervient après validation.
+      window.location.href = '17-doctor-dashboard.html?kyc=todo';
     }
 
     setBilling(billing); // synchronise l'UI du sélecteur + l'affichage des prix

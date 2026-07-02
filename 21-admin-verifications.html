@@ -13,12 +13,12 @@
     body { background:#f0f4f8; font-family:'Inter','Segoe UI',sans-serif; color:#0f172a; margin:0; }
 
     /* Sidebar */
-    .sidebar { position:fixed; top:0; left:0; width:248px; height:100vh; background:linear-gradient(180deg,var(--slate-dark),var(--slate)); color:#fff; padding:0; overflow-y:auto; z-index:100; }
+    .sidebar { position:fixed; top:0; left:0; width:272px; height:100vh; background:linear-gradient(180deg,var(--slate-dark),var(--slate)); color:#fff; padding:0; overflow-y:auto; z-index:100; }
     .sidebar-brand { padding:20px 22px 6px; font-weight:800; font-size:1.3rem; letter-spacing:-0.5px; }
     .sidebar-brand .accent-f { color:var(--accent); }
     .sidebar-brand small { font-weight:500; opacity:0.55; font-size:0.72rem; }
     .sidebar-label { font-size:0.64rem; text-transform:uppercase; letter-spacing:1px; color:rgba(255,255,255,0.4); padding:16px 22px 6px; font-weight:700; }
-    .nav-link-side { color:rgba(255,255,255,0.82); padding:10px 22px; display:flex; align-items:center; gap:11px; font-size:0.88rem; text-decoration:none; transition:background .15s; cursor:pointer; }
+    .nav-link-side { color:rgba(255,255,255,0.82); padding:10px 18px; display:flex; align-items:center; gap:11px; font-size:0.88rem; text-decoration:none; transition:background .15s; cursor:pointer; white-space:nowrap; }
     .nav-link-side i { width:18px; text-align:center; }
     .nav-link-side:hover { background:rgba(255,255,255,0.08); color:#fff; }
     .nav-link-side.active { background:rgba(108,52,131,0.55); border-left:3px solid var(--accent); color:#fff; font-weight:600; }
@@ -27,7 +27,7 @@
     .soon-pill { margin-left:auto; font-size:0.6rem; background:rgba(255,255,255,0.12); color:rgba(255,255,255,0.6); padding:1px 7px; border-radius:10px; font-weight:700; letter-spacing:0.3px; }
     .badge-notif { margin-left:auto; background:#e74c3c; color:#fff; font-size:0.64rem; padding:2px 7px; border-radius:20px; font-weight:700; }
 
-    .main { margin-left:248px; padding:0 28px 40px; }
+    .main { margin-left:272px; padding:0 28px 40px; }
 
     /* Topbar */
     .admin-topbar { display:flex; align-items:center; gap:10px; padding:14px 0; margin-bottom:10px; border-bottom:1px solid #e6edf3; font-size:0.9rem; }
@@ -59,6 +59,7 @@
     .b-pending { background:#fff3cd; color:#856404; }
     .b-approved { background:#d1e7dd; color:#0f5132; }
     .b-corr { background:#fde2cf; color:#9c4221; }
+    .b-rejected { background:#f8d7da; color:#842029; }
 
     .action-btn { padding:6px 14px; border-radius:8px; font-size:0.8rem; font-weight:600; border:none; cursor:pointer; transition:all .15s; }
     .btn-approve { background:#d1e7dd; color:#0f5132; } .btn-approve:hover { background:#198754; color:#fff; }
@@ -151,6 +152,7 @@
       <button class="filter-btn" onclick="setFilter('pending', this)">En attente <span class="badge bg-secondary ms-1" style="font-size:0.65rem;" id="pillPending">2</span></button>
       <button class="filter-btn" onclick="setFilter('approved', this)">Validé</button>
       <button class="filter-btn" onclick="setFilter('corr', this)">À corriger</button>
+      <button class="filter-btn" onclick="setFilter('rejected', this)">Rejeté</button>
       <div class="search-box ms-auto"><i class="fa fa-search"></i><input type="text" placeholder="Rechercher par nom, e-mail, n° d'ordre…"></div>
     </div>
 
@@ -228,8 +230,28 @@
               <div class="d-grid gap-2">
                 <button id="btnValider" class="btn btn-success fw-semibold" onclick="approve()" disabled><i class="fa fa-check me-2"></i>Valider le dossier — activer le compte</button>
                 <button id="btnCorr" class="btn fw-semibold text-white" style="background:#dd6b20;" onclick="sendCorr()" disabled><i class="fa fa-rotate-left me-2"></i>Demander des corrections</button>
+                <button id="btnReject" class="btn btn-outline-danger fw-semibold" onclick="showRejectPanel()"><i class="fa fa-ban me-2"></i>Rejeter le dossier (refus définitif)</button>
               </div>
-              <p class="text-muted small mt-2 mb-0"><i class="fa fa-info-circle me-1"></i>Pour des corrections : cochez les pièces concernées ci-dessus + motif. Le compte reste <strong>PENDING_KYC</strong> ; le médecin est notifié.</p>
+              <p class="text-muted small mt-2 mb-0"><i class="fa fa-info-circle me-1"></i><strong>Corrections</strong> : cochez les pièces + motif → reste <strong>PENDING_KYC</strong>, le médecin re-soumet. <strong>Rejet</strong> : refus définitif → <strong>REJECTED</strong> (terminal).</p>
+
+              <!-- Panneau de rejet définitif -->
+              <div id="rejectPanel" class="d-none mt-3 p-3 border rounded" style="border-color:#f5c2c7 !important; background:#fdf2f3;">
+                <label class="form-label small fw-semibold text-danger mb-1"><i class="fa fa-ban me-1"></i>Motif du rejet définitif</label>
+                <select id="rejectMotif" class="form-select form-select-sm mb-2" onchange="onRejectMotifChange()">
+                  <option value="">— Sélectionner un motif —</option>
+                  <option>Documents falsifiés / fraude avérée</option>
+                  <option>Praticien non éligible (non inscrit à un Ordre, exercice non autorisé)</option>
+                  <option>Non-conformité répétée malgré corrections</option>
+                  <option value="autre">Autre</option>
+                </select>
+                <input type="text" id="rejectOther" class="form-control form-control-sm mb-2 d-none" placeholder="Préciser le motif…">
+                <div id="rejectError" class="small text-danger mb-2 d-none"><i class="fa fa-circle-exclamation me-1"></i><span id="rejectErrorMsg"></span></div>
+                <div class="d-flex gap-2">
+                  <button class="btn btn-danger btn-sm fw-semibold" onclick="confirmReject()"><i class="fa fa-ban me-1"></i>Confirmer le rejet définitif</button>
+                  <button class="btn btn-light btn-sm" onclick="hideRejectPanel()">Annuler</button>
+                </div>
+                <p class="text-muted small mt-2 mb-0">Action <strong>terminale</strong> — le compte passe en <strong>REJECTED</strong>. Le médecin est notifié et ne re-soumet pas librement (recours via support).</p>
+              </div>
             </div>
 
             <!-- Decision done -->
@@ -261,7 +283,7 @@
       { id:'nadia',   initials:'NB', name:'Dr Nadia Bio', email:'n.bio@exemple.bj', country:'🇧🇯 Bénin', spec:'Pédiatrie', ordre:'ONMB-2024-00090', loc:'Porto-Novo', hours:'7h', urgent:false, status:'corr' },
       { id:'moussa',  initials:'MD', name:'Dr Moussa Diallo', email:'m.diallo@exemple.ne', country:'🇳🇪 Niger', spec:'Médecine générale', ordre:'ONMN-2024-00071', loc:'Niamey', hours:'2h', urgent:false, status:'pending' }
     ];
-    const STATUS = { pending:{cls:'b-pending',label:'En attente'}, approved:{cls:'b-approved',label:'Validé'}, corr:{cls:'b-corr',label:'À corriger'} };
+    const STATUS = { pending:{cls:'b-pending',label:'En attente'}, approved:{cls:'b-approved',label:'Validé'}, corr:{cls:'b-corr',label:'À corriger'}, rejected:{cls:'b-rejected',label:'Rejeté'} };
     const byId = Object.fromEntries(DOCTORS.map(d => [d.id, d]));
     let current = null, page = 1, filter = 'all', pending = DOCTORS.filter(d => d.status === 'pending').length;
     const pageSize = 10;
@@ -323,6 +345,10 @@
         const m = it.querySelector('.corr-motif'); m.classList.add('d-none'); m.value = ''; m.classList.remove('is-err');
       });
       document.getElementById('corrError').classList.add('d-none');
+      hideRejectPanel();
+      document.getElementById('rejectMotif').value = '';
+      document.getElementById('rejectOther').value = '';
+      document.getElementById('rejectOther').classList.add('d-none');
       updateActions();
       document.getElementById('dAvatar').textContent = d.initials;
       document.getElementById('dName').textContent = d.name;
@@ -360,10 +386,11 @@
       }
     });
 
-    function finish(msg, color, icon, showLink) {
+    function finish(msg, color, icon, showLink, status) {
+      const badge = document.getElementById('badge-' + current);
+      badge.className = 'prof-badge ms-auto ' + STATUS[status].cls;
+      badge.textContent = STATUS[status].label;
       document.getElementById('card-' + current).classList.add('done');
-      document.getElementById('badge-' + current).className = 'prof-badge ms-auto ' + (color === '#198754' ? 'b-approved' : 'b-corr');
-      document.getElementById('badge-' + current).textContent = (color === '#198754' ? 'Validé' : 'À corriger');
       document.getElementById('actionZone').classList.add('d-none');
       document.getElementById('decisionDone').classList.remove('d-none');
       document.getElementById('decisionMsg').textContent = msg;
@@ -371,14 +398,34 @@
       document.getElementById('decisionIcon').className = icon + ' fa-2x mb-2 d-block';
       document.getElementById('seeDoctorLink').classList.toggle('d-none', !showLink);
       if (byId[current].status === 'pending') pending = Math.max(0, pending - 1);
-      byId[current].status = (color === '#198754' ? 'approved' : 'corr');
+      byId[current].status = status;
       document.getElementById('navCount').textContent = pending;
       document.getElementById('statPending').textContent = pending;
       document.getElementById('pillPending').textContent = pending;
       if (pending === 0) document.getElementById('navCount').style.display = 'none';
     }
 
-    function approve() { if (!current) return; finish('Dossier validé — compte activé', '#198754', 'fa fa-check-circle text-success', false); }
+    function approve() { if (!current) return; finish('Dossier validé — compte activé', '#198754', 'fa fa-check-circle text-success', false, 'approved'); }
+
+    // ── Rejet définitif ──────────────────────────────────────────────────
+    function showRejectPanel() { document.getElementById('rejectPanel').classList.remove('d-none'); document.getElementById('btnReject').disabled = true; }
+    function hideRejectPanel() {
+      document.getElementById('rejectPanel').classList.add('d-none');
+      document.getElementById('rejectError').classList.add('d-none');
+      document.getElementById('btnReject').disabled = false;
+    }
+    function onRejectMotifChange() {
+      document.getElementById('rejectOther').classList.toggle('d-none', document.getElementById('rejectMotif').value !== 'autre');
+    }
+    function confirmReject() {
+      if (!current) return;
+      const sel = document.getElementById('rejectMotif').value, other = document.getElementById('rejectOther');
+      const err = document.getElementById('rejectError'), errMsg = document.getElementById('rejectErrorMsg');
+      err.classList.add('d-none');
+      if (!sel) { errMsg.textContent = 'Sélectionnez un motif de rejet.'; err.classList.remove('d-none'); return; }
+      if (sel === 'autre' && !other.value.trim()) { errMsg.textContent = 'Précisez le motif.'; err.classList.remove('d-none'); other.focus(); return; }
+      finish('Dossier rejeté (refus définitif) — médecin notifié', '#c0392b', 'fa fa-ban text-danger', false, 'rejected');
+    }
 
     function sendCorr() {
       const err = document.getElementById('corrError'), errMsg = document.getElementById('corrErrorMsg');
@@ -389,7 +436,7 @@
       let firstBad = null;
       corrItems.forEach(it => { const m = it.querySelector('.corr-motif'); if (!m.value.trim()) { m.classList.add('is-err'); if (!firstBad) firstBad = m; } });
       if (firstBad) { errMsg.textContent = 'Indiquez un motif pour chaque pièce à corriger.'; err.classList.remove('d-none'); firstBad.focus(); return; }
-      finish('Corrections demandées (' + corrItems.length + ' pièce' + (corrItems.length > 1 ? 's' : '') + ') — médecin notifié', '#dd6b20', 'fa fa-rotate-left', true);
+      finish('Corrections demandées (' + corrItems.length + ' pièce' + (corrItems.length > 1 ? 's' : '') + ') — médecin notifié', '#dd6b20', 'fa fa-rotate-left', true, 'corr');
     }
 
     renderQueue();
