@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FUENI Admin — Journal d'audit</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root { --slate:#2c3e50; --slate-dark:#1f2d3d; --purple:#6c3483; --purple-light:#f5eef8; --accent:#f59e0b; }
+    * { box-sizing: border-box; }
+    body { background:#f0f4f8; font-family:'Inter','Segoe UI',sans-serif; color:#0f172a; margin:0; }
+    .sidebar { position:fixed; top:0; left:0; width:272px; height:100vh; background:linear-gradient(180deg,var(--slate-dark),var(--slate)); color:#fff; padding:0; overflow-y:auto; z-index:100; }
+    .sidebar-brand { padding:20px 22px 6px; }
+    .sidebar-brand small { font-weight:500; opacity:0.55; font-size:0.72rem; }
+    .sidebar-label { font-size:0.64rem; text-transform:uppercase; letter-spacing:1px; color:rgba(255,255,255,0.4); padding:16px 22px 6px; font-weight:700; }
+    .nav-link-side { color:rgba(255,255,255,0.82); padding:10px 18px; display:flex; align-items:center; gap:11px; font-size:0.88rem; text-decoration:none; transition:background .15s; cursor:pointer; white-space:nowrap; }
+    .nav-link-side i { width:18px; text-align:center; }
+    .nav-link-side:hover { background:rgba(255,255,255,0.08); color:#fff; }
+    .nav-link-side.active { background:rgba(108,52,131,0.55); border-left:3px solid var(--accent); color:#fff; font-weight:600; }
+    .nav-link-side.disabled { color:rgba(255,255,255,0.34); cursor:not-allowed; }
+    .nav-link-side.disabled:hover { background:none; }
+    .soon-pill { margin-left:auto; font-size:0.6rem; background:rgba(255,255,255,0.12); color:rgba(255,255,255,0.6); padding:1px 7px; border-radius:10px; font-weight:700; letter-spacing:0.3px; }
+    .main { margin-left:272px; padding:0 28px 40px; }
+    .admin-topbar { display:flex; align-items:center; gap:10px; padding:14px 0; margin-bottom:10px; border-bottom:1px solid #e6edf3; font-size:0.9rem; }
+    .sa-avatar { width:30px; height:30px; border-radius:50%; background:var(--purple); display:flex; align-items:center; justify-content:center; color:#fff; font-size:0.72rem; font-weight:700; }
+    .filter-bar { background:#fff; border-radius:10px; padding:9px 12px; margin-bottom:18px; box-shadow:0 2px 8px rgba(0,0,0,0.05); display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+    .filter-bar select, .filter-bar input[type=date], .filter-bar input[type=text] { border-radius:8px; border:1.5px solid #e9ecef; font-size:0.82rem; padding:5px 9px; color:#334155; background:#fff; height:34px; }
+    .filter-bar select:focus, .filter-bar input:focus { border-color:var(--purple); outline:none; }
+    .filter-bar select:disabled, .filter-bar input:disabled { background:#f1f5f9; color:#adb5bd; cursor:not-allowed; }
+    .fb-div { width:1px; height:20px; background:#e9ecef; margin:0 2px; }
+    .fb-date { display:flex; align-items:center; gap:5px; color:#b6c0cc; }
+    .fb-date .fa { font-size:0.78rem; }
+    .fb-date span { color:#cbd5e1; font-size:0.8rem; }
+    .page-btn { min-width:34px; height:34px; border:1.5px solid #e9ecef; background:#fff; border-radius:8px; font-size:0.82rem; font-weight:600; color:#475569; cursor:pointer; }
+    .page-btn:hover:not(:disabled) { border-color:var(--purple); color:var(--purple); }
+    .page-btn.active { background:var(--purple); border-color:var(--purple); color:#fff; }
+    .page-btn:disabled { opacity:0.45; cursor:not-allowed; }
+    .search-box { position:relative; flex:1 1 220px; min-width:190px; }
+    .filter-bar .search-box input[type=text] { padding-left:32px; width:100%; }
+    .search-box .fa { position:absolute; left:11px; top:50%; transform:translateY(-50%); color:#a0aec0; font-size:0.8rem; }
+    .dossier-typeahead input { width:150px; }
+    .audit-wrap { background:#fff; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.05); overflow:hidden; }
+    .audit-scroll { overflow-x:auto; }
+    table.audit { width:100%; border-collapse:collapse; font-size:0.83rem; min-width:820px; }
+    table.audit th { text-align:left; font-size:0.7rem; text-transform:uppercase; letter-spacing:0.5px; color:#94a3b8; font-weight:700; padding:11px 14px; border-bottom:2px solid #eef2f6; white-space:nowrap; }
+    table.audit td { padding:11px 14px; border-bottom:1px solid #f1f5f9; vertical-align:top; }
+    table.audit tr:last-child td { border-bottom:0; }
+    table.audit tr:hover td { background:#fafbfc; }
+    .ts { font-variant-numeric:tabular-nums; color:#475569; white-space:nowrap; }
+    .cat { font-size:0.68rem; font-weight:700; padding:2px 8px; border-radius:20px; white-space:nowrap; }
+    .cat-auth { background:#e0e7ff; color:#3730a3; }
+    .cat-kyc  { background:#e0f2fe; color:#075985; }
+    .cat-account { background:#f3e8ff; color:#6b21a8; }
+    .res-dot { display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:6px; vertical-align:middle; }
+    .res-ok { background:#198754; } .res-warn { background:#dd6b20; } .res-fail { background:#dc3545; } .res-info { background:#94a3b8; }
+    .detail-cell { color:#64748b; }
+    .motif-chip { background:#fff8f1; color:#9c4221; border-radius:6px; padding:2px 7px; font-size:0.76rem; }
+    .imm-note { background:#eef4fb; border:1px solid #bcdfe7; color:#0e4456; border-radius:10px; padding:9px 14px; font-size:0.82rem; margin-bottom:16px; display:flex; align-items:center; gap:9px; }
+    .dossier-results { position:absolute; z-index:1000; top:calc(100% + 4px); left:0; width:260px; max-width:80vw; background:#fff; border:1px solid #e2e8f0; border-radius:8px; box-shadow:0 8px 24px rgba(0,0,0,0.12); max-height:240px; overflow-y:auto; }
+    .dossier-results .opt { padding:8px 12px; font-size:0.83rem; cursor:pointer; }
+    .dossier-results .opt:hover { background:var(--purple-light); color:var(--purple); }
+    .dossier-results .empty { padding:8px 12px; font-size:0.82rem; color:#94a3b8; }
+    .dossier-chip { background:var(--purple-light); color:var(--purple); border-radius:20px; padding:4px 12px; font-size:0.78rem; font-weight:600; display:inline-flex; align-items:center; gap:8px; }
+    .dossier-chip a { color:var(--purple); text-decoration:none; }
+    .btn-export { border:1.5px solid #e9ecef; background:#fff; border-radius:8px; font-size:0.8rem; font-weight:600; color:#475569; padding:6px 13px; cursor:pointer; }
+    .btn-export:hover { border-color:var(--purple); color:var(--purple); }
+    @media (max-width:900px){ .sidebar{ display:none; } .main{ margin-left:0; padding:0 14px 30px; } }
+    .proto-bar { position: sticky; top: 0; z-index: 200; }
+  </style>
+</head>
+<body>
+
+  <div class="proto-bar d-flex align-items-center gap-3 flex-wrap" style="background:#fff8e1;border-bottom:1px dashed #f1c40f;padding:6px 16px;font-size:0.82rem;color:#7d5e00;">
+    <span><i class="fa fa-eye text-warning me-1"></i><strong>Écran 22 — Journal d'audit (Super Admin)</strong></span>
+    <a href="21-admin-verifications.html" class="text-decoration-none text-muted ms-auto small">← Vérifications</a>
+  </div>
+
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="sidebar-brand"><img src="assets/fueni-lockup-white.svg" alt="FUENI" style="height:26px;width:auto;vertical-align:middle;"> <small>Admin</small></div>
+
+    <div class="sidebar-label">Tableau de bord</div>
+    <a class="nav-link-side disabled"><i class="fa fa-chart-bar"></i> Vue d'ensemble <span class="soon-pill">Bientôt</span></a>
+
+    <div class="sidebar-label">Gestion</div>
+    <a href="21-admin-verifications.html" class="nav-link-side"><i class="fa fa-user-check"></i> Vérification des dossiers</a>
+    <a class="nav-link-side disabled"><i class="fa fa-users"></i> Abonnements <span class="soon-pill">Bientôt</span></a>
+    <a class="nav-link-side active"><i class="fa fa-clock-rotate-left"></i> Journal d'audit</a>
+
+    <div class="sidebar-label">Configuration</div>
+    <a class="nav-link-side disabled"><i class="fa fa-th-large"></i> Plans <span class="soon-pill">Bientôt</span></a>
+    <a class="nav-link-side disabled"><i class="fa fa-globe"></i> Tarification <span class="soon-pill">Bientôt</span></a>
+
+    <div class="sidebar-label">Compte</div>
+    <a href="12-login-admin.html" class="nav-link-side"><i class="fa fa-sign-out-alt"></i> Déconnexion</a>
+  </div>
+
+  <div class="main">
+
+    <div class="admin-topbar">
+      <div class="sa-avatar">SA</div>
+      <span class="fw-semibold" style="color:var(--slate);">Super Admin</span>
+      <span class="text-muted">›</span>
+      <span class="text-muted small">Journal d'audit</span>
+      <div class="ms-auto d-flex align-items-center gap-3">
+        <span class="text-muted small"><i class="fa fa-calendar-alt me-1"></i>3 juillet 2026</span>
+        <span class="small text-muted fw-semibold">admin@fueni.com</span>
+      </div>
+    </div>
+
+    <div class="d-flex justify-content-between align-items-start mb-3 mt-1 flex-wrap gap-2">
+      <div>
+        <h3 class="fw-bold mb-0" style="color:var(--slate);">Journal d'audit</h3>
+        <p class="text-muted mb-0 small">Toutes les actions des administrateurs, tracées et attribuées. Consultation seule.</p>
+      </div>
+      <button class="btn-export" onclick="exportCsv()"><i class="fa fa-file-arrow-down me-1"></i>Exporter (CSV)</button>
+    </div>
+
+    <div class="imm-note">
+      <i class="fa fa-lock" style="color:#155e75;"></i>
+      <span><strong>Registre inaltérable</strong> — ajout uniquement (append-only), non modifiable et non supprimable. Comptes nommés individuels · conservation à confirmer (DPO).</span>
+    </div>
+
+    <div id="dossierFilterWrap" class="mb-3 d-none">
+      <span class="dossier-chip">
+        <i class="fa fa-folder-open"></i> Dossier : <span id="dossierName"></span>
+        <a href="#" onclick="event.preventDefault(); clearDossier();" title="Retirer le filtre"><i class="fa fa-xmark"></i></a>
+      </span>
+    </div>
+
+    <div class="filter-bar">
+      <div class="search-box"><i class="fa fa-search"></i><input type="text" id="search" placeholder="Rechercher une action, un motif…" oninput="page=1;render()"></div>
+
+      <span class="fb-div"></span>
+
+      <select id="catSel" onchange="onCatChange()" title="Catégorie">
+        <option value="all">Toutes catégories</option>
+        <option value="auth">Authentification</option>
+        <option value="kyc">KYC</option>
+        <option value="account">Compte</option>
+      </select>
+
+      <select id="adminSel" onchange="page=1;render()" title="Admin">
+        <option value="">Tous les admins</option>
+        <option value="C. Thor">C. Thor</option>
+        <option value="N. Veng">N. Veng</option>
+      </select>
+
+      <div class="dossier-typeahead" style="position:relative;">
+        <input type="text" id="dossierSearch" autocomplete="off" placeholder="Dossier…" title="Filtrer par dossier" oninput="renderDossierResults()" onfocus="renderDossierResults()">
+        <div id="dossierResults" class="dossier-results d-none"></div>
+      </div>
+
+      <span class="fb-div"></span>
+
+      <span class="fb-date" title="Période"><i class="fa fa-calendar-day"></i>
+        <input type="date" id="dateFrom" onchange="page=1;render()">
+        <span>–</span>
+        <input type="date" id="dateTo" onchange="page=1;render()"></span>
+    </div>
+
+    <div class="audit-wrap">
+      <div class="audit-scroll">
+        <table class="audit">
+          <thead>
+            <tr><th>Horodatage</th><th>Admin</th><th>Catégorie</th><th>Action</th><th>Cible</th><th>Détail</th></tr>
+          </thead>
+          <tbody id="auditBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div id="emptyState" class="text-center text-muted py-5 d-none"><i class="fa fa-inbox fa-2x mb-2 d-block"></i>Aucun événement pour ces filtres.</div>
+
+    <div class="d-flex justify-content-between align-items-center mt-3 flex-wrap gap-2">
+      <span class="text-muted small" id="countLabel"></span>
+      <div class="d-flex gap-1" id="pager"></div>
+    </div>
+
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // Journal d'audit (démo) — événements append-only, du plus récent au plus ancien.
+    // Champs : ts · admin · cat (auth|kyc|account) · action · did (id dossier) · dname · result (ok|warn|fail|info) · motif
+    const EVENTS = [
+      { ts:'2026-06-13 11:20', admin:'N. Veng',       cat:'kyc',     action:'Corrections demandées',            did:'ibrahim', dname:'Dr Ibrahim Touré',    result:'warn', motif:"Attestation d'Ordre expirée" },
+      { ts:'2026-06-13 08:55', admin:'C. Thor',   cat:'auth',    action:'Connexion réussie',                did:'',        dname:'',                     result:'ok',   detail:'MFA e-mail validée' },
+      { ts:'2026-06-13 07:40', admin:'N. Veng',       cat:'auth',    action:'Connexion réussie',                did:'',        dname:'',                     result:'ok',   detail:'MFA SMS validée' },
+      { ts:'2026-06-13 07:38', admin:'N. Veng',       cat:'auth',    action:'Échec de connexion',               did:'',        dname:'',                     result:'fail', detail:'Mot de passe incorrect' },
+      { ts:'2026-06-12 18:20', admin:'C. Thor',   cat:'auth',    action:'Déconnexion',                      did:'',        dname:'',                     result:'info' },
+      { ts:'2026-06-12 15:40', admin:'C. Thor',   cat:'kyc',     action:'Corrections demandées',            did:'ibrahim', dname:'Dr Ibrahim Touré',    result:'warn', motif:"Pièce d'identité illisible" },
+      { ts:'2026-06-12 15:30', admin:'C. Thor',   cat:'kyc',     action:'Dossier consulté',                 did:'ibrahim', dname:'Dr Ibrahim Touré',    result:'info' },
+      { ts:'2026-06-12 14:00', admin:'N. Veng',       cat:'account', action:'Compte réactivé',                  did:'zoubir',  dname:'Dr Zoubir Amrani',    result:'ok',   detail:'Attestation renouvelée' },
+      { ts:'2026-06-11 16:45', admin:'N. Veng',       cat:'kyc',     action:'Dossier rejeté (définitif)',       did:'faux',    dname:'« Dr » K. Faux',      result:'fail', motif:'Documents falsifiés / fraude' },
+      { ts:'2026-06-11 10:00', admin:'C. Thor',   cat:'account', action:'Compte suspendu',                  did:'zoubir',  dname:'Dr Zoubir Amrani',    result:'warn', motif:'Licence médicale expirée' },
+      { ts:'2026-06-10 16:05', admin:'C. Thor',   cat:'kyc',     action:'Dossier validé',                   did:'fatou',   dname:'Dr Fatou Bensouda',   result:'ok',   detail:'Compte activé' },
+      { ts:'2026-06-10 09:10', admin:'C. Thor',   cat:'kyc',     action:'Corrections demandées',            did:'fatou',   dname:'Dr Fatou Bensouda',   result:'warn', motif:'RIB illisible' },
+      { ts:'2026-06-09 22:10', admin:'N. Veng',       cat:'auth',    action:'Verrouillage du compte',           did:'',        dname:'',                     result:'fail', detail:'Trop de tentatives · 15 min' },
+      { ts:'2026-06-09 12:00', admin:'C. Thor',   cat:'kyc',     action:'Dossier validé',                   did:'ousmane', dname:'Dr Ousmane Ouédraogo', result:'ok',  detail:'Compte activé' }
+    ];
+
+    const CATLABEL = { auth:'Authentification', kyc:'KYC', account:'Compte' };
+    let cat = 'all', page = 1, dossier = '';
+    const pageSize = 10;
+
+    // Liste distincte des dossiers présents (en prod : recherche typeahead côté serveur, pas de liste préchargée)
+    const DOSSIERS = (function () {
+      const seen = {}; EVENTS.filter(e => e.did).forEach(e => { seen[e.did] = e.dname; });
+      return Object.keys(seen).map(id => ({ id, name: seen[id] })).sort((a, b) => a.name.localeCompare(b.name));
+    })();
+
+    // Typeahead dossier (recherche au lieu d'une liste déroulante — scalable à 10 000+ dossiers)
+    function renderDossierResults() {
+      const q = document.getElementById('dossierSearch').value.trim().toLowerCase();
+      const box = document.getElementById('dossierResults');
+      const matches = DOSSIERS.filter(d => !q || d.name.toLowerCase().includes(q)).slice(0, 8);
+      box.innerHTML = matches.length
+        ? matches.map(d => '<div class="opt" onmousedown="event.preventDefault(); pickDossier(\'' + d.id + '\')">' + d.name + '</div>').join('')
+        : '<div class="empty">Aucun dossier trouvé.</div>';
+      box.classList.remove('d-none');
+    }
+    function pickDossier(id) {
+      setDossier(id);
+      document.getElementById('dossierSearch').value = '';
+      document.getElementById('dossierResults').classList.add('d-none');
+    }
+    document.addEventListener('click', e => { if (!e.target.closest('.dossier-typeahead')) document.getElementById('dossierResults').classList.add('d-none'); });
+
+    // Applique un filtre dossier (typeahead OU deep-link ?dossier=)
+    function setDossier(id) {
+      dossier = id || '';
+      const ev = EVENTS.find(e => e.did === dossier);
+      document.getElementById('dossierName').textContent = ev ? ev.dname : dossier;
+      document.getElementById('dossierFilterWrap').classList.toggle('d-none', !dossier);
+      // Dossier ⊗ Auth mutuellement exclusifs : Auth n'a pas de dossier
+      const authOpt = document.querySelector('#catSel option[value="auth"]');
+      if (authOpt) authOpt.disabled = !!dossier;
+      const catSel = document.getElementById('catSel');
+      if (dossier && catSel.value === 'auth') { catSel.value = 'all'; cat = 'all'; }
+      page = 1; render();
+    }
+
+    // État initial : deep-link ?dossier=
+    setDossier(new URLSearchParams(location.search).get('dossier') || '');
+
+    function filtered() {
+      const q = document.getElementById('search').value.trim().toLowerCase();
+      const from = document.getElementById('dateFrom').value, to = document.getElementById('dateTo').value;
+      const adm = document.getElementById('adminSel').value;
+      return EVENTS.filter(e => {
+        const day = e.ts.slice(0, 10);
+        return (cat === 'all' || e.cat === cat) &&
+          (!adm || e.admin === adm) &&
+          (!dossier || e.did === dossier) &&
+          (!from || day >= from) &&
+          (!to || day <= to) &&
+          (!q || (e.action + ' ' + (e.dname || '') + ' ' + (e.motif || e.detail || '')).toLowerCase().includes(q));
+      });
+    }
+
+    function render() {
+      const rows = filtered();
+      const pages = Math.max(1, Math.ceil(rows.length / pageSize));
+      if (page > pages) page = pages;
+      const slice = rows.slice((page - 1) * pageSize, page * pageSize);
+      document.getElementById('emptyState').classList.toggle('d-none', rows.length > 0);
+      document.querySelector('.audit-wrap').classList.toggle('d-none', rows.length === 0);
+
+      document.getElementById('auditBody').innerHTML = slice.map(e => (
+        '<tr>' +
+          '<td class="ts">' + e.ts + '</td>' +
+          '<td class="fw-semibold" style="color:#2d3748;white-space:nowrap;">' + e.admin + '</td>' +
+          '<td><span class="cat cat-' + e.cat + '">' + CATLABEL[e.cat] + '</span></td>' +
+          '<td><span class="res-dot res-' + e.result + '"></span>' + e.action + '</td>' +
+          '<td>' + (e.dname ? e.dname : '<span class="text-muted">—</span>') + '</td>' +
+          '<td class="detail-cell">' + (e.motif ? '<span class="motif-chip"><i class="fa fa-circle-exclamation me-1"></i>' + e.motif + '</span>' : (e.detail || '<span class="text-muted">—</span>')) + '</td>' +
+        '</tr>'
+      )).join('');
+
+      document.getElementById('countLabel').textContent = rows.length + ' événement' + (rows.length > 1 ? 's' : '') + (dossier ? ' · dossier filtré' : '');
+      renderPager(pages);
+    }
+
+    function renderPager(pages) {
+      if (pages <= 1) { document.getElementById('pager').innerHTML = ''; return; }
+      let h = '<button class="page-btn" onclick="gotoPage(' + (page - 1) + ')" ' + (page === 1 ? 'disabled' : '') + '><i class="fa fa-chevron-left"></i></button>';
+      for (let i = 1; i <= pages; i++) h += '<button class="page-btn ' + (i === page ? 'active' : '') + '" onclick="gotoPage(' + i + ')">' + i + '</button>';
+      h += '<button class="page-btn" onclick="gotoPage(' + (page + 1) + ')" ' + (page === pages ? 'disabled' : '') + '><i class="fa fa-chevron-right"></i></button>';
+      document.getElementById('pager').innerHTML = h;
+    }
+    function gotoPage(p) { page = p; render(); }
+    function onCatChange() {
+      cat = document.getElementById('catSel').value;
+      const dsInput = document.getElementById('dossierSearch');
+      if (cat === 'auth') {
+        // Auth n'est pas rattaché à un dossier → filtre dossier incompatible : désactivé + effacé
+        if (dossier) setDossier('');
+        dsInput.disabled = true; dsInput.value = ''; dsInput.placeholder = 'N/A — authentification';
+      } else {
+        dsInput.disabled = false; dsInput.placeholder = 'Dossier…';
+      }
+      page = 1; render();
+    }
+    function clearDossier() { setDossier(''); history.replaceState(null, '', '22-admin-audit.html'); }
+
+    function exportCsv() {
+      const rows = filtered();
+      const head = ['Horodatage', 'Admin', 'Categorie', 'Action', 'Cible', 'Detail/Motif'];
+      const esc = s => '"' + String(s || '').replace(/"/g, '""') + '"';
+      const lines = [head.join(',')].concat(rows.map(e => [e.ts, e.admin, CATLABEL[e.cat], e.action, e.dname || '', e.motif || e.detail || ''].map(esc).join(',')));
+      const blob = new Blob(['﻿' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8;' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'fueni-journal-audit' + (dossier ? '-' + dossier : '') + '.csv';
+      a.click();
+      URL.revokeObjectURL(a.href);
+    }
+
+    render();
+  </script>
+<!-- Prototype version badge -->
+<script>(function(){if(window.__pv)return;window.__pv=1;var v=document.createElement('div');v.style.cssText='position:fixed;top:0;left:50%;transform:translateX(-50%);background:#155e75;color:#fff;padding:6px 20px;border-radius:0 0 16px 16px;font:600 12px/1 system-ui,-apple-system,sans-serif;letter-spacing:.6px;z-index:99999;box-shadow:0 3px 10px rgba(0,0,0,.2);text-transform:uppercase;display:flex;align-items:center;gap:8px';v.innerHTML='🧪 Prototype <span style="background:#f59e0b;color:#1a1a1a;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:4px">v1.4.0</span><span style="background:#facc15;color:#1a1a1a;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:4px;text-transform:none;letter-spacing:0">⏳ À valider</span>';document.body.appendChild(v);})();</script>
+</body>
+</html>

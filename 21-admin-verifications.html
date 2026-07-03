@@ -72,6 +72,18 @@
     .kv .k { flex:0 0 116px; color:#94a3b8; font-weight:600; }
     .kv .v { color:#2d3748; }
     .detail-row { margin-bottom:15px; }
+    .tl { position:relative; padding-left:22px; }
+    .tl::before { content:''; position:absolute; left:6px; top:4px; bottom:4px; width:2px; background:#e6edf3; }
+    .tl-item { position:relative; padding:0 0 12px 0; }
+    .tl-item:last-child { padding-bottom:0; }
+    .tl-dot { position:absolute; left:-22px; top:2px; width:14px; height:14px; border-radius:50%; background:#fff; border:2px solid #cbd5e1; display:flex; align-items:center; justify-content:center; font-size:0.5rem; color:#fff; }
+    .tl-dot.ok { border-color:#198754; background:#198754; }
+    .tl-dot.corr { border-color:#dd6b20; background:#dd6b20; }
+    .tl-dot.rej { border-color:#c0392b; background:#c0392b; }
+    .tl-dot.sub { border-color:#2980b9; background:#2980b9; }
+    .tl-label { font-size:0.84rem; font-weight:600; color:#2d3748; }
+    .tl-meta { font-size:0.74rem; color:#94a3b8; }
+    .tl-motif { font-size:0.78rem; color:#9c4221; background:#fff8f1; border-radius:6px; padding:3px 8px; margin-top:3px; display:inline-block; }
     .doc-line { display:flex; align-items:center; gap:10px; padding:9px 11px; border:1.5px solid #e6edf3; border-radius:9px; margin-bottom:8px; font-size:0.84rem; }
     .doc-line.flagged { border-color:#dd6b20; background:#fff8f1; }
     .doc-item { margin-bottom:8px; }
@@ -108,7 +120,7 @@
     <div class="sidebar-label">Gestion</div>
     <a class="nav-link-side active"><i class="fa fa-user-check"></i> Vérification des dossiers <span class="badge-notif" id="navCount">4</span></a>
     <a class="nav-link-side disabled"><i class="fa fa-users"></i> Abonnements <span class="soon-pill">Bientôt</span></a>
-    <a class="nav-link-side disabled"><i class="fa fa-history"></i> Journal d'audit <span class="soon-pill">Bientôt</span></a>
+    <a href="22-admin-audit.html" class="nav-link-side"><i class="fa fa-clock-rotate-left"></i> Journal d'audit</a>
 
     <div class="sidebar-label">Configuration</div>
     <a class="nav-link-side disabled"><i class="fa fa-th-large"></i> Plans <span class="soon-pill">Bientôt</span></a>
@@ -187,6 +199,11 @@
               <div class="kv"><span class="k">Spécialité</span><span class="v" id="dSpec"></span></div>
               <div class="kv"><span class="k">N° d'ordre</span><span class="v font-monospace" id="dOrdre"></span></div>
               <div class="kv"><span class="k">Localisation</span><span class="v" id="dLoc"></span></div>
+            </div>
+
+            <div class="detail-row">
+              <h6>Historique du dossier</h6>
+              <div id="dHistory" class="tl"></div>
             </div>
 
             <div class="detail-row">
@@ -270,8 +287,16 @@
     const DOCTORS = [
       { id:'aminata', initials:'AD', name:'Dr Aminata Diop', email:'aminata.diop@exemple.sn', country:'🇸🇳 Sénégal', spec:'Cardiologie', ordre:'ONMS-2024-00871', loc:'Dakar · Plateau', hours:'52h — dépassé', urgent:true, status:'pending' },
       { id:'kwame',   initials:'KM', name:'Dr Kwame Mensah', email:'k.mensah@exemple.ci', country:"🇨🇮 Côte d'Ivoire", spec:'Médecine générale', ordre:'CNOM-CI-2024-00214', loc:'Abidjan · Cocody', hours:'28h', urgent:false, status:'pending' },
-      { id:'ibrahim', initials:'IT', name:'Dr Ibrahim Touré', email:'i.toure@exemple.ml', country:'🇲🇱 Mali', spec:'Pédiatrie', ordre:'ONM-ML-2024-00102', loc:'Bamako', hours:'12h', urgent:false, status:'corr' },
-      { id:'fatou',   initials:'FB', name:'Dr Fatou Bensouda', email:'f.bensouda@exemple.bj', country:'🇧🇯 Bénin', spec:'Dermatologie', ordre:'ONMB-2024-00077', loc:'Cotonou', hours:'5h', urgent:false, status:'approved' },
+      { id:'ibrahim', initials:'IT', name:'Dr Ibrahim Touré', email:'i.toure@exemple.ml', country:'🇲🇱 Mali', spec:'Pédiatrie', ordre:'ONM-ML-2024-00102', loc:'Bamako', hours:'12h', urgent:false, status:'corr', hist:[
+        { type:'sub',  label:'Dossier soumis (v1)', meta:'12/06 09:14 · par le médecin' },
+        { type:'corr', label:'Corrections demandées', meta:'12/06 15:40 · C. Thor', motif:'Pièce d\'identité illisible' },
+        { type:'sub',  label:'Dossier re-soumis (v2)', meta:'13/06 08:02 · par le médecin — 1 pièce corrigée' },
+        { type:'corr', label:'Corrections demandées', meta:'13/06 11:20 · N. Veng', motif:'Attestation d\'Ordre expirée' } ] },
+      { id:'fatou',   initials:'FB', name:'Dr Fatou Bensouda', email:'f.bensouda@exemple.bj', country:'🇧🇯 Bénin', spec:'Dermatologie', ordre:'ONMB-2024-00077', loc:'Cotonou', hours:'5h', urgent:false, status:'approved', hist:[
+        { type:'sub', label:'Dossier soumis (v1)', meta:'09/06 17:31 · par le médecin' },
+        { type:'corr', label:'Corrections demandées', meta:'10/06 09:10 · C. Thor', motif:'RIB illisible' },
+        { type:'sub', label:'Dossier re-soumis (v2)', meta:'10/06 14:22 · par le médecin — 1 pièce corrigée' },
+        { type:'ok', label:'Dossier validé', meta:'10/06 16:05 · C. Thor — compte activé' } ] },
       { id:'mariama', initials:'MS', name:'Dr Mariama Sylla', email:'m.sylla@exemple.tg', country:'🇹🇬 Togo', spec:'Gynéco-obstétrique', ordre:'ONMT-2024-00188', loc:'Lomé', hours:'19h', urgent:false, status:'pending' },
       { id:'ousmane', initials:'OO', name:'Dr Ousmane Ouédraogo', email:'o.ouedraogo@exemple.bf', country:'🇧🇫 Burkina Faso', spec:'Médecine générale', ordre:'ONMBF-2024-00131', loc:'Ouagadougou', hours:'34h', urgent:false, status:'approved' },
       { id:'adama',   initials:'AK', name:'Dr Adama Kané', email:'a.kane@exemple.ne', country:'🇳🇪 Niger', spec:'Pédiatrie', ordre:'ONMN-2024-00059', loc:'Niamey', hours:'9h', urgent:false, status:'corr' },
@@ -357,6 +382,32 @@
       document.getElementById('dSpec').textContent = d.spec;
       document.getElementById('dOrdre').textContent = d.ordre;
       document.getElementById('dLoc').textContent = d.loc;
+      renderHistory(d);
+    }
+
+    // Historique du dossier (chronologie) — vue par dossier des mêmes événements que le journal d'audit
+    function dossierHistory(d) {
+      if (d.hist && d.hist.length) return d.hist;
+      const base = [{ type:'sub', label:'Dossier soumis', meta:'récemment · par le médecin' }];
+      if (d.status === 'corr') base.push({ type:'corr', label:'Corrections demandées', meta:'— · Super Admin', motif:'Justificatif à corriger' });
+      else if (d.status === 'approved') base.push({ type:'ok', label:'Dossier validé', meta:'— · Super Admin — compte activé' });
+      else if (d.status === 'rejected') base.push({ type:'rej', label:'Dossier rejeté (définitif)', meta:'— · Super Admin', motif:'Refus définitif' });
+      else base.push({ type:'wait', label:'En attente d\'examen', meta:'file d\'attente Super Admin' });
+      return base;
+    }
+    function renderHistory(d) {
+      const wrap = document.getElementById('dHistory');
+      const icons = { sub:'fa-arrow-up', corr:'fa-rotate-left', ok:'fa-check', rej:'fa-ban', wait:'fa-clock' };
+      wrap.innerHTML = dossierHistory(d).map(e => (
+        '<div class="tl-item">' +
+          '<span class="tl-dot ' + (e.type === 'wait' ? '' : e.type) + '"><i class="fa ' + (icons[e.type] || 'fa-circle') + '"></i></span>' +
+          '<div class="tl-label">' + e.label + '</div>' +
+          '<div class="tl-meta">' + (e.meta || '') + '</div>' +
+          (e.motif ? '<div class="tl-motif"><i class="fa fa-circle-exclamation me-1"></i>' + e.motif + '</div>' : '') +
+        '</div>'
+      )).join('') +
+      '<a href="22-admin-audit.html?dossier=' + d.id + '" class="d-inline-block mt-1" style="font-size:0.78rem;font-weight:600;color:var(--purple);text-decoration:none;">' +
+        'Voir dans le journal d\'audit <i class="fa fa-arrow-right ms-1"></i></a>';
     }
 
     function setDoc(btn, state) {
