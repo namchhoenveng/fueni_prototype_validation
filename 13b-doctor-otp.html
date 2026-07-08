@@ -52,12 +52,6 @@
 
   <div class="container py-3" style="max-width:620px;">
 
-    <div class="progress-steps mb-4">
-      <div class="step done"><div class="step-circle"><i class="fa fa-check"></i></div><div class="step-label" data-i18n="doc.steps.elig">Éligibilité</div></div>
-      <div class="step active"><div class="step-circle">2</div><div class="step-label" data-i18n="doc.steps.reg">Inscription</div></div>
-      <div class="step inactive"><div class="step-circle">3</div><div class="step-label" data-i18n="doc.steps.plan">Choix du plan</div></div>
-      <div class="step inactive"><div class="step-circle">4</div><div class="step-label" data-i18n="doc.steps.access">Accès</div></div>
-    </div>
 
     <div class="step-card">
       <div class="text-center mb-3"><i class="fa fa-comment-sms mail-illustration"></i></div>
@@ -95,7 +89,7 @@
       <button id="verifyBtn" class="btn btn-doctor w-100 mb-2" disabled data-i18n-html="doc.otp.verify_btn_html">
         Vérifier <i class="fa fa-arrow-right ms-2"></i>
       </button>
-      <a href="13-doctor-inscription.html" class="btn btn-link w-100 text-muted small" data-i18n="common.prev_step">← Étape précédente</a>
+      <a href="17-doctor-dashboard.html" class="btn btn-link w-100 text-muted small" data-i18n="doc.otp.back_dashboard">← Retour au tableau de bord</a>
     </div>
 
   </div>
@@ -132,8 +126,8 @@
       if (isLocked) return;
       const code = Array.from(inputs).map(i => i.value).join('');
       if (code === CORRECT_CODE) {
-        // Numéro vérifié → étape suivante : vérification e-mail (OTP)
-        window.location = '13c-doctor-email-verify.html';
+        // Vérification du téléphone APRÈS l'inscription (email-first) → retour au tableau de bord.
+        window.location = '17-doctor-dashboard.html?phone=verified';
         return;
       }
       attemptsLeft--;

@@ -71,6 +71,16 @@
     .btn-save { background: #16a085; border: 0; color: #fff; font-size: 0.82rem; font-weight: 600; padding: 6px 14px; border-radius: 8px; }
     .btn-cancel { background: transparent; border: 0; color: #7f8c8d; font-size: 0.82rem; padding: 6px 8px; }
     .btn-link-verify { background: transparent; border: 0; color: #f57c00; font-weight: 600; font-size: 0.82rem; padding: 0; margin-left: 6px; }
+    .verify-banner { display: flex; align-items: center; gap: 12px; background: #fff8e1; border: 1px solid #ffd54f; border-radius: 10px; padding: 11px 16px; margin: 4px 0 14px; }
+    .verify-banner i { color: #f57c00; font-size: 1.2rem; }
+    .verify-banner .vb-text { flex: 1; font-size: 0.86rem; color: #6d4c00; }
+    .verify-banner .vb-btn { background: #f57c00; border: 0; color: #fff; font-weight: 600; font-size: 0.85rem; padding: 6px 14px; border-radius: 7px; white-space: nowrap; }
+    .verify-banner .vb-btn:hover { background: #e65100; }
+    .reauth-target { display: flex; align-items: center; gap: 10px; background: #f1f5f9; border-radius: 8px; padding: 8px 12px; margin: 8px 0 4px; font-size: 0.86rem; color: #334155; }
+    .reauth-target .rt-text { flex: 1; min-width: 0; }
+    .reauth-target strong { color: #155e75; }
+    .reauth-target .rt-edit { flex: 0 0 auto; background: transparent; border: 0; color: #16a085; font-weight: 600; font-size: 0.82rem; padding: 0; cursor: pointer; }
+    .reauth-target .rt-edit:hover { text-decoration: underline; }
     .field-actions { flex: 0 0 auto; display: flex; gap: 6px; align-items: flex-start; padding-top: 3px; }
 
     .form-control, .form-select { border-radius: 8px; padding: 0.45rem 0.7rem; font-size: 0.9rem; font-weight: 500; }
@@ -211,14 +221,6 @@
         <p data-i18n="sec.subtitle">Gérez vos identifiants de connexion, votre mot de passe et vos données.</p>
       </div>
 
-      <!-- Bannière e-mail non vérifié -->
-      <div class="email-banner" id="emailBanner">
-        <i class="fa fa-envelope-circle-check"></i>
-        <div class="banner-text" data-i18n-html="prof.email_banner_html"><strong>Votre adresse e-mail n'est pas encore vérifiée.</strong> Vérifiez-la pour recevoir vos confirmations de rendez-vous et vos documents.</div>
-        <button class="btn btn-verify" onclick="startEmailVerify()" data-i18n="prof.email_banner.verify">Vérifier maintenant</button>
-      </div>
-
-
       <!-- 2. Coordonnées & connexion — édition PAR CHAMP (e-mail / téléphone séparément, une modif à la fois) -->
       <div class="prof-section" id="sec-coord">
         <div class="prof-section-head">
@@ -245,6 +247,13 @@
           </div>
         </div>
 
+        <!-- Bannière de vérification e-mail — pleine largeur, sous la ligne Adresse e-mail -->
+        <div class="verify-banner" id="emailVerifyNote">
+          <i class="fa fa-envelope-circle-check"></i>
+          <span class="vb-text" data-i18n="prof.coord.verify_reason">Vérifiez votre adresse pour recevoir vos confirmations de rendez-vous et vos documents.</span>
+          <button class="vb-btn" onclick="startEmailVerify()" data-i18n="prof.email_banner.verify">Vérifier maintenant</button>
+        </div>
+
         <!-- Téléphone -->
         <div class="field-row" id="row-phone">
           <div class="field-label" data-i18n="prof.coord.phone">Téléphone</div>
@@ -266,6 +275,7 @@
               </div>
               <input type="hidden" id="cpIso" value="SN">
               <div class="field-hint d-none text-danger mt-1" id="cpHint"><i class="fa fa-circle-exclamation me-1"></i><span data-i18n="signup.field.phone_hint">Numéro invalide pour l'indicatif sélectionné.</span></div>
+              <div class="field-hint d-none text-danger mt-1" id="cpTaken"><i class="fa fa-circle-exclamation me-1"></i><span data-i18n="prof.coord.phone_err_taken">Ce numéro est déjà associé à un compte FUENI.</span></div>
               <div class="field-help mt-1" id="coordPhoneHelp"><i class="fa fa-circle-info me-1"></i><span data-i18n-html="prof.coord.phone_help">Un code SMS sera envoyé au <strong>nouveau</strong> numéro pour le vérifier.</span></div>
             </div>
           </div>
@@ -373,6 +383,7 @@
   <div class="ov" id="reauthModal">
     <div class="ov-card">
       <h5 data-i18n="prof.reauth.title">Confirmez votre identité</h5>
+      <div class="reauth-target d-none" id="reauthTarget"><span class="rt-text"><span id="reauthTargetLabel"></span> <strong id="reauthTargetVal"></strong></span><button type="button" class="rt-edit" onclick="editFromReauth()" data-i18n="prof.reauth.edit">Modifier</button></div>
       <p class="text-muted small mb-1" data-i18n="prof.reauth.desc">Pour des raisons de sécurité, confirmez votre identité avec votre mot de passe actuel.</p>
       <p class="small mb-0" style="color:#94a3b8;" data-i18n="prof.reauth.demo">Mot de passe de démo : MotDePasse123!</p>
       <div class="pwd-wrap mt-2">
@@ -653,9 +664,23 @@
       else applySection(sec);
     }
 
-    // ---- Coordonnées : validation e-mail + téléphone, OTP seulement si changement ----
-    const TAKEN_EMAILS = ['admin@nazounki.com', 'test@example.com']; // simulation « déjà utilisé »
+    // ---- Coordonnées : validation e-mail + téléphone ----
+    // Unicité (« déjà associé à un compte ») = vérifiée APRÈS l'OTP (preuve de contrôle), jamais en
+    // inline ni avant l'envoi — cf. SF §6.2 / P17. Anti-énumération : le message « déjà associé »
+    // n'est atteignable qu'après saisie de l'OTP, donc par quelqu'un qui contrôle l'identifiant.
+    // Inline = FORMAT uniquement. Démo : les listes ci-dessous simulent le contrôle serveur post-OTP.
+    const TAKEN_EMAILS = ['admin@nazounki.com', 'test@example.com'];
+    const TAKEN_PHONES = ['771234567']; // chiffres du numéro national (hors indicatif)
+    function isTakenEmail(v) { return TAKEN_EMAILS.includes((v || '').trim().toLowerCase()); }
+    function isTakenPhone(nat) { return TAKEN_PHONES.includes((nat || '').replace(/\D/g, '')); }
     function isProfEmail(v) { return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v); }
+    // Démo : limitation des demandes de changement (cf. SF §6.2 quater / P18 — 3/jour).
+    // Compteur par SESSION (illustre l'axe « par compte demandeur » ; l'axe « par identifiant
+    // cible » est serveur). On compte chaque OTP réellement envoyé vers un nouveau canal.
+    // Rechargez la page pour réinitialiser.
+    const MAX_CHANGE_INIT = 3;
+    let changeInits = 0;
+    function overChangeLimit() { return changeInits >= MAX_CHANGE_INIT; }
     function profT(key, fb) { return (window.NazI18n ? NazI18n.t(key) : '') || fb; }
     function initCoordEmail() {
       const err = document.getElementById('coordEmailErr');
@@ -667,17 +692,18 @@
       const inp = document.getElementById('coord-email-input');
       const err = document.getElementById('coordEmailErr');
       const span = err.querySelector('span');
+      const help = document.getElementById('coordEmailHelp');
+      if (help) help.classList.remove('d-none'); // restaure l'aide si masquée après un « déjà associé »
       const v = inp.value.trim();
       if (!v) { // vide = pas d'erreur tant que l'utilisateur n'a pas validé
         err.classList.add('d-none'); inp.classList.remove('input-invalid', 'input-valid');
         return false;
       }
-      let msg = '';
-      if (!isProfEmail(v)) msg = force ? profT('prof.coord.email_err_format', 'Adresse e-mail invalide.') : '';
-      else if (TAKEN_EMAILS.includes(v.toLowerCase())) msg = profT('prof.coord.email_err_taken', 'Cette adresse est déjà utilisée.');
+      // Format uniquement — pas de contrôle d'unicité en inline (cf. note ci-dessus).
+      const msg = !isProfEmail(v) ? (force ? profT('prof.coord.email_err_format', 'Adresse e-mail invalide.') : '') : '';
       if (msg) { span.textContent = msg; err.classList.remove('d-none'); inp.classList.add('input-invalid'); inp.classList.remove('input-valid'); return false; }
       err.classList.add('d-none'); inp.classList.remove('input-invalid'); inp.classList.add('input-valid');
-      return isProfEmail(v) && !TAKEN_EMAILS.includes(v.toLowerCase());
+      return isProfEmail(v);
     }
     // ---- Édition PAR CHAMP (e-mail / téléphone séparément — une seule modification à la fois) ----
     let coordEditing = null;
@@ -722,36 +748,82 @@
       // Comparaison normalisée (casse + espaces) : retaper la même adresse = aucun changement
       const changed = emailInp.value.trim().toLowerCase() !== document.getElementById('coord-email-view').textContent.trim().toLowerCase();
       if (!changed) { exitField('email'); return; }
+      // Limitation des demandes de changement (démo — cf. SF §6.2 quater / P18)
+      if (overChangeLimit()) {
+        document.getElementById('coordEmailHelp').classList.add('d-none');
+        const err = document.getElementById('coordEmailErr');
+        err.querySelector('span').textContent = profT('prof.coord.change_ratelimit', 'Trop de demandes. Réessayez plus tard. (démo : 3 changements max par session)');
+        err.classList.remove('d-none');
+        emailInp.classList.add('input-invalid'); emailInp.classList.remove('input-valid'); emailInp.focus();
+        return;
+      }
       pendingApply = () => {
+        // Contrôle d'unicité APRÈS l'OTP (cf. SF §6.2 / P17) — message explicite si déjà pris.
+        if (isTakenEmail(emailInp.value)) {
+          document.getElementById('coordEmailHelp').classList.add('d-none'); // masque « un code sera envoyé » (déjà envoyé + vérifié)
+          const err = document.getElementById('coordEmailErr');
+          err.querySelector('span').textContent = profT('prof.coord.email_err_taken', 'Code vérifié, mais cette adresse est déjà associée à un compte FUENI.');
+          err.classList.remove('d-none');
+          emailInp.classList.add('input-invalid'); emailInp.classList.remove('input-valid'); emailInp.focus();
+          return; // changement non abouti
+        }
         document.getElementById('coord-email-view').textContent = emailInp.value.trim();
         exitField('email');
         markEmailVerified();
         toast('prof.coord.changed_email_alert');
       };
-      openReauth(() => openOtp('prof.otp.desc_new_email'));
+      openReauth(() => { changeInits++; openOtp('prof.otp.desc_new_email'); }, { label: profT('prof.reauth.new_email', 'Nouvel e-mail :'), value: emailInp.value.trim(), field: 'email' });
     }
     function savePhone() {
       const c = getCountry((document.getElementById('cpIso').value || '').trim());
       const digits = (document.getElementById('cpField').value || '').replace(/\D/g, '');
       const phoneHint = document.getElementById('cpHint');
+      const phoneHelp = document.getElementById('coordPhoneHelp'); if (phoneHelp) phoneHelp.classList.remove('d-none'); // restaure l'aide (retry)
+      const takenHint = document.getElementById('cpTaken'); if (takenHint) takenHint.classList.add('d-none');
       if (digits && c && c.len && digits.length !== c.len) { phoneHint.classList.remove('d-none'); document.getElementById('cpField').focus(); return; }
       phoneHint.classList.add('d-none');
       const newPhone = (document.getElementById('cpDial').textContent + ' ' + document.getElementById('cpField').value.trim()).trim();
       // Comparaison sur les chiffres (indicatif + numéro) : un simple reformatage ne compte pas comme un changement
       const changed = digits && newPhone.replace(/\D/g, '') !== document.getElementById('coord-phone-view').textContent.replace(/\D/g, '');
       if (!changed) { exitField('phone'); return; }
+      // Limitation des demandes de changement (démo — cf. SF §6.2 quater / P18)
+      if (overChangeLimit()) {
+        if (phoneHelp) phoneHelp.classList.add('d-none');
+        if (takenHint) { takenHint.querySelector('span').textContent = profT('prof.coord.change_ratelimit', 'Trop de demandes. Réessayez plus tard. (démo : 3 changements max par session)'); takenHint.classList.remove('d-none'); }
+        document.getElementById('cpField').focus();
+        return;
+      }
       pendingApply = () => {
+        // Contrôle d'unicité APRÈS l'OTP (cf. SF §6.2 / P17) — message explicite si déjà pris.
+        if (isTakenPhone(document.getElementById('cpField').value)) {
+          if (phoneHelp) phoneHelp.classList.add('d-none'); // masque « un code SMS sera envoyé » (déjà envoyé + vérifié)
+          if (takenHint) { takenHint.querySelector('span').textContent = profT('prof.coord.phone_err_taken', 'Code vérifié, mais ce numéro est déjà associé à un compte FUENI.'); takenHint.classList.remove('d-none'); }
+          document.getElementById('cpField').focus();
+          return; // changement non abouti
+        }
         applyCoordPhone();
         exitField('phone');
         toast('prof.coord.changed_phone_alert');
       };
-      openReauth(() => openOtp('prof.otp.desc_new_phone'));
+      openReauth(() => { changeInits++; openOtp('prof.otp.desc_new_phone'); }, { label: profT('prof.reauth.new_phone', 'Nouveau numéro :'), value: newPhone, field: 'phone' });
     }
 
     // ---- Step-up : ré-authentification par mot de passe avant un changement d'e-mail/téléphone ----
     let afterReauth = null;
-    function openReauth(next) {
+    let reauthEditField = null; // 'email' | 'phone' — champ à re-focaliser via « Modifier »
+    // target (optionnel) = { label, value, field } affiché en revue dans la fenêtre de ré-auth
+    // (dernier point de contrôle AVANT tout envoi d'OTP — permet de repérer une faute de saisie).
+    function openReauth(next, target) {
       afterReauth = next;
+      reauthEditField = (target && target.field) || null;
+      const wrap = document.getElementById('reauthTarget');
+      if (target && target.value) {
+        document.getElementById('reauthTargetLabel').textContent = target.label;
+        document.getElementById('reauthTargetVal').textContent = target.value;
+        wrap.classList.remove('d-none');
+      } else {
+        wrap.classList.add('d-none');
+      }
       const p = document.getElementById('reauthPwd'); p.value = ''; p.type = 'password';
       document.getElementById('reauthErr').classList.add('d-none');
       document.getElementById('reauthThrottle').classList.toggle('d-none', !pwdLocked);
@@ -759,7 +831,14 @@
       document.getElementById('reauthModal').classList.add('show');
       setTimeout(() => p.focus(), 50);
     }
-    function closeReauth() { document.getElementById('reauthModal').classList.remove('show'); afterReauth = null; pendingApply = null; }
+    function closeReauth() { document.getElementById('reauthModal').classList.remove('show'); document.getElementById('reauthTarget').classList.add('d-none'); afterReauth = null; pendingApply = null; }
+    // « Modifier » : ferme la ré-auth et rend le focus au champ (toujours en édition, valeur conservée).
+    function editFromReauth() {
+      const field = reauthEditField;
+      closeReauth();
+      const input = field === 'phone' ? document.getElementById('cpField') : document.getElementById('coord-email-input');
+      if (input) input.focus();
+    }
     function confirmReauth() {
       if (pwdLocked) { document.getElementById('reauthThrottle').classList.remove('d-none'); return; }
       const v = document.getElementById('reauthPwd').value;
@@ -881,7 +960,8 @@
       chip.textContent = (window.NazI18n ? NazI18n.t('prof.coord.verified') : 'Vérifié');
       chip.classList.remove('chip-no', 'd-none'); chip.classList.add('chip-ok');
       document.getElementById('emailVerifyBtn').classList.add('d-none');
-      document.getElementById('emailBanner').style.display = 'none';
+      const note = document.getElementById('emailVerifyNote');
+      if (note) note.classList.add('d-none');
       toast('prof.coord.email_verified_toast');
     }
 

@@ -131,10 +131,10 @@
         <div class="alert alert-danger py-2 px-3 small d-none" id="loginError" role="alert"><i class="fa fa-circle-exclamation me-1"></i><span id="loginErrorMsg"></span></div>
 
         <form onsubmit="return doLogin(event)">
-          <!-- Bascule explicite Téléphone / E-mail — Téléphone par défaut (praticien mobile-first ; n° vérifié à l'inscription) -->
+          <!-- Bascule explicite E-mail / Téléphone — E-mail par défaut (canal vérifié à l'inscription ; le téléphone est vérifié plus tard et ne permet pas la connexion tant qu'il ne l'est pas) -->
           <div class="seg" role="tablist" aria-label="Type d'identifiant">
-            <button type="button" class="active" id="modePhone" role="tab" aria-selected="true" onclick="setIdentMode('phone', true)" data-i18n="login.mode.phone">Téléphone</button>
-            <button type="button" id="modeEmail" role="tab" aria-selected="false" onclick="setIdentMode('email', true)" data-i18n="login.mode.email">E-mail</button>
+            <button type="button" class="active" id="modeEmail" role="tab" aria-selected="true" onclick="setIdentMode('email', true)" data-i18n="login.mode.email">E-mail</button>
+            <button type="button" id="modePhone" role="tab" aria-selected="false" onclick="setIdentMode('phone', true)" data-i18n="login.mode.phone">Téléphone</button>
           </div>
           <div class="mb-3">
             <label class="form-label" data-i18n="login.field.identifier">Identifiant</label>
@@ -142,7 +142,7 @@
               <button type="button" class="form-select iti-trigger d-none" id="ccTrigger" onclick="toggleCcMenu(event)" aria-haspopup="listbox">
                 <span id="ccFlag">🇸🇳</span><span id="ccDial">+221</span>
               </button>
-              <input type="text" class="form-control" id="identField" autocomplete="username" inputmode="tel" value="770000000" placeholder="Numéro de téléphone">
+              <input type="text" class="form-control" id="identField" autocomplete="username" inputmode="email" value="dr.diallo@fueni.com" placeholder="Adresse e-mail">
               <input type="hidden" id="ccIso" value="SN">
               <div class="iti-menu d-none" id="ccMenu">
                 <div class="iti-search-wrap">
@@ -184,7 +184,7 @@
           <span data-i18n="doclogin.patient_prompt">Vous êtes un patient ?</span>
           <a href="10-login.html" style="color:#155e75;font-weight:700;text-decoration:none" data-i18n="doclogin.patient_link">Espace patient</a>
         </div>
-        <div class="secure-line" style="margin-top:6px" data-i18n="doclogin.demo_hint">🔑 Démo : 770000000 ou dr.diallo@fueni.com · mot de passe MotDePasse123!</div>
+        <div class="secure-line" style="margin-top:6px" data-i18n-html="doclogin.demo_hint">🔑 Démo · e-mail <strong>dr.diallo@fueni.com</strong> ou tél <strong>770000000</strong> · mot de passe <strong>MotDePasse123!</strong><br>📱 Par téléphone → MFA avec message générique (« si vérifié, code envoyé »), sans OTP</div>
         </div><!-- /step1 -->
 
         <!-- Étape 2 — MFA (obligatoire MVP : e-mail défaut · SMS option · TOTP post-MVP) -->
@@ -255,7 +255,7 @@
     function ccLabel(c) { const en = (document.documentElement.lang || 'fr').toLowerCase().startsWith('en'); return (en && c.en) ? c.en : c.fr; }
 
     // Bascule explicite E-mail / Téléphone — E-mail par défaut côté praticien
-    let identMode = 'phone';
+    let identMode = 'email';
     function setIdentMode(mode, clearField) {
       const changed = mode !== identMode;
       identMode = mode;
@@ -355,12 +355,20 @@
         errBox.classList.remove('d-none'); return false;
       }
       const nid = normId(idRaw);
-      const idOk = DEMO_LOGIN.ids.some(x => { const nx = normId(x); return nx === nid || (!nid.includes('@') && (nx.endsWith(nid) || nid.endsWith(nx))); });
-      if (!idOk || pwd !== DEMO_LOGIN.pwd) {
+      const isPhone = !nid.includes('@');
+      // 1er facteur : identifiant connu ET mot de passe correct. Un identifiant inconnu ou un
+      // mauvais mot de passe → même message générique (anti-énumération).
+      const idKnown = DEMO_LOGIN.ids.some(x => { const nx = normId(x); return nx === nid || (isPhone && (nx.endsWith(nid) || nid.endsWith(nx))); });
+      if (!idKnown || pwd !== DEMO_LOGIN.pwd) {
         errMsg.textContent = t('login.err.invalid') || 'Identifiant ou mot de passe incorrect.';
         errBox.classList.remove('d-none'); return false;
       }
-      goToMfa();
+      // Mot de passe validé → passage à la MFA. On n'ENVOIE le code que par un canal vérifié :
+      // e-mail (toujours vérifié) → code envoyé ; téléphone → on avance vers la MFA avec un message
+      // générique (« si votre numéro est vérifié, le code a été envoyé ») SANS envoi ni fuite du
+      // statut du numéro (anti-énumération, SF-DOCTOR-LOGIN §4.3 bis).
+      const codeSent = !isPhone;
+      goToMfa(codeSent);
       return false;
     }
 
@@ -368,9 +376,10 @@
     const DEMO_MFA = '000000';
     const MAX_MFA_TRIES = 5;
     const DEMO_PHONE_MASKED = '•• •• •• 00 00';
-    let mfaMethod = 'email', mfaTries = 0, mfaLocked = false;
+    let mfaMethod = 'email', mfaTries = 0, mfaLocked = false, mfaCodeSent = true;
 
-    function goToMfa() {
+    function goToMfa(codeSent) {
+      mfaCodeSent = codeSent !== false; // téléphone non vérifié → on avance mais aucun code n'est envoyé
       document.getElementById('step1').style.display = 'none';
       document.getElementById('step2').style.display = '';
       // Le facteur MFA hérite de l'identifiant utilisé : téléphone → SMS, e-mail → e-mail
@@ -394,7 +403,12 @@
       const dial = (document.getElementById('ccDial') || {}).textContent || '+221';
       const phoneShown = (!idv.includes('@') && idv.replace(/\D/g, '').length >= 6) ? (dial + ' ' + idv) : (dial + ' 77 000 00 00');
       const target = isEmail ? (idv.includes('@') ? idv : DEMO_LOGIN.ids[0]) : phoneShown;
-      document.getElementById('mfaSub').innerHTML = lead + ' <strong style="color:#0f172a;">' + target + '</strong>.';
+      if (mfaCodeSent) {
+        document.getElementById('mfaSub').innerHTML = lead + ' <strong style="color:#0f172a;">' + target + '</strong>.';
+      } else {
+        // Téléphone non vérifié : message générique, sans révéler le statut du numéro.
+        document.getElementById('mfaSub').textContent = t('doclogin.mfa.sub_generic') || 'Si votre numéro est vérifié, un code à 6 chiffres vous a été envoyé.';
+      }
       document.getElementById('mfaError').classList.remove('show');
       clearOtp();
     }
@@ -434,7 +448,8 @@
         msg.textContent = t('doclogin.mfa.err_incomplete') || 'Veuillez saisir les 6 chiffres du code.';
         box.classList.add('show'); return;
       }
-      if (code !== DEMO_MFA) {
+      // Si aucun code n'a été envoyé (téléphone non vérifié), aucun code saisi ne peut réussir.
+      if (!(mfaCodeSent && code === DEMO_MFA)) {
         mfaTries++;
         const remaining = MAX_MFA_TRIES - mfaTries;
         document.getElementById('otpRow').classList.add('err');
@@ -452,7 +467,7 @@
     }
 
     document.addEventListener('DOMContentLoaded', () => {
-      setIdentMode('phone');
+      setIdentMode('email');
       try {
         if (sessionStorage.getItem('fueni_reset_done')) {
           const b = document.getElementById('resetBanner'); if (b) b.classList.remove('d-none');

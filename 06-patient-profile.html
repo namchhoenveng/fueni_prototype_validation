@@ -49,10 +49,9 @@
     .prof-section-head h6 { font-weight: 700; color: #2c3e50; margin: 0; display: flex; align-items: center; gap: 8px; }
     .prof-section-head .spacer { flex: 1; }
 
-    .sens-badge { font-size: 0.68rem; font-weight: 600; padding: 2px 8px; border-radius: 10px; }
-    .sens-direct { background: #d1f2eb; color: #117a65; }
-    .sens-code { background: #fdebd0; color: #9c640c; }
-    .sens-support { background: #eceff1; color: #607d8b; }
+    .identity-support { margin-top: 14px; font-size: 0.85rem; color: #7f8c8d; line-height: 1.6; }
+    .identity-support a { color: #16a085; font-weight: 600; text-decoration: none; white-space: nowrap; margin-left: 4px; }
+    .identity-support a:hover { text-decoration: underline; }
 
     .field-row { display: flex; align-items: flex-start; gap: 12px; padding: 12px 0; border-bottom: 1px solid #f1f4f6; }
     .field-row:last-child { border-bottom: none; }
@@ -213,19 +212,22 @@
       <!-- 1. Identité (lecture seule) -->
       <div class="prof-section">
         <div class="prof-section-head">
-          <h6><i class="fa fa-id-card" style="color:#16a085;"></i><span data-i18n="prof.identity.title">Identité</span> <span class="sens-badge sens-support" data-i18n="prof.legend.support">Via le support</span></h6>
+          <h6><i class="fa fa-id-card" style="color:#16a085;"></i><span data-i18n="prof.identity.title">Identité</span></h6>
         </div>
-        <p class="small mb-2" style="color:#95a5a6;" data-i18n="prof.identity.note">Ces informations d'identité légale ne sont pas modifiables en ligne. Contactez le support pour toute correction.</p>
         <div class="field-row"><div class="field-label" data-i18n="prof.identity.firstname">Prénom</div><div class="field-value"><span class="view">Aïssatou</span></div></div>
         <div class="field-row"><div class="field-label" data-i18n="prof.identity.lastname">Nom</div><div class="field-value"><span class="view">Diop</span></div></div>
         <div class="field-row"><div class="field-label" data-i18n="prof.identity.dob">Date de naissance</div><div class="field-value"><span class="view">02/05/1990</span></div></div>
         <div class="field-row"><div class="field-label" data-i18n="prof.identity.sex">Sexe à la naissance</div><div class="field-value"><span class="view" data-i18n="prof.identity.sex_female">Féminin</span></div></div>
+        <div class="identity-support">
+          <span data-i18n="prof.identity.note">Ces informations d'identité légale ne sont pas modifiables en ligne. Contactez le support pour toute correction.</span>
+          <a href="mailto:support@fueni.com"><i class="fa fa-envelope me-1"></i>support@fueni.com</a>
+        </div>
       </div>
 
       <!-- 3. Localisation & langue -->
       <div class="prof-section" id="sec-loc">
         <div class="prof-section-head">
-          <h6><i class="fa fa-location-dot" style="color:#16a085;"></i><span data-i18n="prof.loc.title">Localisation & langue</span> <span class="sens-badge sens-direct" data-i18n="prof.legend.direct">Modifiable directement</span></h6>
+          <h6><i class="fa fa-location-dot" style="color:#16a085;"></i><span data-i18n="prof.loc.title">Localisation & langue</span></h6>
           <span class="spacer"></span>
           <button class="btn-edit" id="loc-editbtn" onclick="editSection('loc')" data-i18n="prof.btn.edit">Modifier</button>
           <span id="loc-actions" class="d-none">
@@ -342,7 +344,7 @@
       <!-- 4. Contact d'urgence -->
       <div class="prof-section" id="sec-emerg">
         <div class="prof-section-head">
-          <h6><i class="fa fa-kit-medical" style="color:#16a085;"></i><span data-i18n="prof.emerg.title">Contact d'urgence</span> <span class="sens-badge sens-direct" data-i18n="prof.legend.direct">Modifiable directement</span> <span class="small" style="color:#b0b8bf; font-weight:500;" data-i18n="prof.optional">(optionnel)</span></h6>
+          <h6><i class="fa fa-kit-medical" style="color:#16a085;"></i><span data-i18n="prof.emerg.title">Contact d'urgence</span> <span class="small" style="color:#b0b8bf; font-weight:500;" data-i18n="prof.optional">(optionnel)</span></h6>
           <span class="spacer"></span>
           <button class="btn-edit" id="emerg-editbtn" onclick="editSection('emerg')" data-i18n="prof.btn.edit">Modifier</button>
           <span id="emerg-actions" class="d-none">
@@ -400,7 +402,7 @@
       <!-- 5. Préférences de notification -->
       <div class="prof-section">
         <div class="prof-section-head">
-          <h6><i class="fa fa-bell" style="color:#16a085;"></i><span data-i18n="prof.notif.title">Préférences de notification</span> <span class="sens-badge sens-direct" data-i18n="prof.legend.direct">Modifiable directement</span></h6>
+          <h6><i class="fa fa-bell" style="color:#16a085;"></i><span data-i18n="prof.notif.title">Préférences de notification</span></h6>
         </div>
         <p class="small mb-1" style="color:#95a5a6;" data-i18n="prof.notif.note">Concerne les rappels de rendez-vous. Les notifications essentielles (sécurité, confirmations) restent toujours actives.</p>
         <div class="tgl-row">
@@ -408,8 +410,11 @@
           <label for="notifSms" class="txt" data-i18n-html="prof.notif.sms">Rappels de rendez-vous par <strong>SMS</strong></label>
         </div>
         <div class="tgl-row">
-          <label class="tgl"><input type="checkbox" id="notifEmail" checked onchange="onNotifChange()"><span class="slider"></span></label>
+          <label class="tgl"><input type="checkbox" id="notifEmail" onchange="onNotifEmailToggle()"><span class="slider"></span></label>
           <label for="notifEmail" class="txt" data-i18n-html="prof.notif.email">Rappels de rendez-vous par <strong>e-mail</strong></label>
+        </div>
+        <div class="d-none mt-1" id="notifEmailVerifyNote" style="background:#fff8e1;border:1px solid #ffd54f;border-radius:8px;padding:8px 12px;font-size:0.82rem;color:#8a6d00;">
+          <i class="fa fa-circle-info me-1" style="color:#f57c00;"></i><span data-i18n="prof.notif.email_verify_required">Vérifiez votre adresse e-mail pour activer les rappels par e-mail.</span>
         </div>
         <div class="d-none mt-2" id="notifBothOffWarn" style="background:#fff8e1;border:1px solid #ffd54f;border-radius:8px;padding:8px 12px;font-size:0.82rem;color:#8a6d00;">
           <i class="fa fa-triangle-exclamation me-1" style="color:#f57c00;"></i><span data-i18n="prof.notif.both_off">Vous ne recevrez plus aucun rappel de rendez-vous — vous risquez d'oublier vos consultations.</span>
@@ -513,6 +518,19 @@
     function updateComplementCard() {
       const card = document.getElementById('complementCard');
       if (card) card.style.display = complementComplete() ? 'none' : '';
+    }
+    // État e-mail vérifié (démo : non vérifié au départ, comme la bannière du tableau de bord).
+    let profileEmailVerified = false;
+    // Rappels e-mail : impossibles tant que l'e-mail n'est pas vérifié (cf. SF P10 / §6.5).
+    // Tenter d'activer → on rétablit le toggle à OFF et on invite à vérifier l'e-mail.
+    function onNotifEmailToggle() {
+      const em = document.getElementById('notifEmail');
+      if (em.checked && !profileEmailVerified) {
+        em.checked = false;
+        document.getElementById('notifEmailVerifyNote').classList.remove('d-none');
+        return;
+      }
+      onNotifChange();
     }
     // Préférences de notification : enregistre + avertit si les DEUX rappels sont coupés (autonomie respectée, simple alerte)
     function onNotifChange() {
@@ -755,7 +773,10 @@
     }
 
     // ---- Coordonnées : validation e-mail + téléphone, OTP seulement si changement ----
-    const TAKEN_EMAILS = ['admin@nazounki.com', 'test@example.com']; // simulation « déjà utilisé »
+    // NB : l'UNICITÉ (adresse déjà utilisée) n'est PAS contrôlée en inline. Elle est vérifiée
+    // silencieusement côté serveur, avec réponse uniforme (anti-énumération) — cf. SF §6.2 / P17.
+    // Le prototype ne valide donc que le FORMAT ; le parcours (ré-auth → OTP) est identique quel
+    // que soit le résultat serveur.
     function isProfEmail(v) { return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v); }
     function profT(key, fb) { return (window.NazI18n ? NazI18n.t(key) : '') || fb; }
     function initCoordEmail() {
@@ -773,12 +794,11 @@
         err.classList.add('d-none'); inp.classList.remove('input-invalid', 'input-valid');
         return false;
       }
-      let msg = '';
-      if (!isProfEmail(v)) msg = force ? profT('prof.coord.email_err_format', 'Adresse e-mail invalide.') : '';
-      else if (TAKEN_EMAILS.includes(v.toLowerCase())) msg = profT('prof.coord.email_err_taken', 'Cette adresse est déjà utilisée.');
+      // Format uniquement — pas de contrôle d'unicité en inline (cf. note ci-dessus).
+      const msg = !isProfEmail(v) ? (force ? profT('prof.coord.email_err_format', 'Adresse e-mail invalide.') : '') : '';
       if (msg) { span.textContent = msg; err.classList.remove('d-none'); inp.classList.add('input-invalid'); inp.classList.remove('input-valid'); return false; }
       err.classList.add('d-none'); inp.classList.remove('input-invalid'); inp.classList.add('input-valid');
-      return isProfEmail(v) && !TAKEN_EMAILS.includes(v.toLowerCase());
+      return isProfEmail(v);
     }
     function saveCoord() {
       // 1) Validation e-mail
@@ -821,11 +841,11 @@
     // ---- Email verification ----
     function startEmailVerify() { pendingApply = markEmailVerified; openOtp('prof.otp.desc_email'); }
     function markEmailVerified() {
-      const chip = document.getElementById('emailChip');
-      chip.textContent = (window.NazI18n ? NazI18n.t('prof.coord.verified') : 'Vérifié');
-      chip.classList.remove('chip-no', 'd-none'); chip.classList.add('chip-ok');
-      document.getElementById('emailVerifyBtn').classList.add('d-none');
-      document.getElementById('emailBanner').style.display = 'none';
+      profileEmailVerified = true;
+      document.getElementById('notifEmailVerifyNote').classList.add('d-none');
+      const em = document.getElementById('notifEmail');
+      if (em) em.checked = true; // l'utilisateur voulait activer les rappels e-mail → on les active
+      onNotifChange();
       toast('prof.coord.email_verified_toast');
     }
 

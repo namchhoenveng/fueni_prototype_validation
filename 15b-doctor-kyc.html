@@ -85,7 +85,7 @@
       <div id="kycProInfo">
         <div class="fw-bold mb-2 mt-1" style="color:#155e75;font-size:0.95rem;"><i class="fa fa-stethoscope me-1"></i><span data-i18n="doc.kyc.sec_proinfo">Informations professionnelles</span></div>
         <div class="row g-3">
-          <div class="col-md-6 mb-2">
+          <div class="col-12 mb-2">
             <label class="form-label small fw-semibold" data-i18n="doc.reg.f_spec">Spécialité médicale *</label>
             <select class="form-select" id="kycSpecialite" onchange="toggleKycSpecAutre()">
               <option value="" data-i18n="doc.reg.spec_choose">— Sélectionner —</option>
@@ -113,10 +113,17 @@
             </select>
             <input type="text" class="form-control mt-2 d-none" id="kycSpecAutre" data-i18n-placeholder="doc.reg.spec_autre_ph" placeholder="Précisez votre spécialité">
           </div>
+        </div>
+        <div class="row g-3">
           <div class="col-md-6 mb-2">
             <label class="form-label small fw-semibold" data-i18n="doc.reg.f_ordre">Numéro d'ordre médical *</label>
             <input type="text" class="form-control" id="kycOrdre" data-i18n-placeholder="doc.reg.f_ordre_ph" placeholder="Ex : ONMS-2024-XXXXX">
             <div class="small text-muted mt-1"><i class="fa fa-circle-info me-1"></i><span data-i18n="doc.reg.f_ordre_hint">Délivré par votre Ordre des médecins.</span></div>
+          </div>
+          <div class="col-md-6 mb-2">
+            <label class="form-label small fw-semibold" data-i18n="doc.kyc.f_natid">Numéro d'identifiant national (N° CNI / NIN) *</label>
+            <input type="text" class="form-control" id="kycNatId" data-i18n-placeholder="doc.kyc.f_natid_ph" placeholder="Ex : 1234 5678 90123">
+            <div class="small text-muted mt-1"><i class="fa fa-circle-info me-1"></i><span data-i18n="doc.kyc.f_natid_hint">Figure sur votre pièce d'identité nationale.</span></div>
           </div>
         </div>
         <div class="row g-3">
@@ -139,80 +146,24 @@
 
       <div class="fw-bold mb-2" style="color:#155e75;font-size:0.95rem;"><i class="fa fa-file-upload me-1"></i><span data-i18n="doc.kyc.sec_docs">Justificatifs</span></div>
       <div id="kyc-list">
-        <div class="kyc-doc" data-required="1" data-datekey="id">
+        <div class="kyc-doc" data-required="1">
           <i class="fa fa-id-card doc-icon"></i>
           <div class="flex-grow-1">
             <div class="doc-name" data-i18n="doc.kyc.d_id">Pièce d'identité (CNI, passeport ou carte professionnelle)</div>
             <div class="doc-format"><span class="badge-req" data-i18n="doc.kyc.required">Obligatoire</span> · <span data-i18n="doc.kyc.format">PDF, JPG ou PNG · Max 5 Mo</span></div>
           </div>
           <button type="button" class="btn btn-upload" onclick="toggleDoc(this)"><i class="fa fa-upload me-1"></i><span data-i18n="doc.kyc.btn_upload">Téléverser</span></button>
-          <div class="doc-dates" data-for="id">
-            <div class="row g-2">
-              <div class="col-6"><label class="form-label small fw-semibold" data-i18n="doc.kyc.date_start">Date de délivrance *</label><input type="date" class="form-control form-control-sm dd-start"></div>
-              <div class="col-6"><label class="form-label small fw-semibold" data-i18n="doc.kyc.date_end">Date d'expiration *</label><input type="date" class="form-control form-control-sm dd-end"></div>
-            </div>
-            <div class="small text-danger mt-1 d-none dd-err"><i class="fa fa-circle-exclamation me-1"></i><span data-i18n="doc.kyc.date_order_err">La date d'expiration doit être postérieure à la date de délivrance.</span></div>
-          </div>
         </div>
 
-        <div class="kyc-doc" data-required="1" data-datekey="ordre">
+        <div class="kyc-doc" data-required="1">
           <i class="fa fa-stamp doc-icon"></i>
           <div class="flex-grow-1">
-            <div class="doc-name" data-i18n="doc.kyc.d_ordre">Attestation d'inscription à l'Ordre des médecins (ou équivalent)</div>
-            <div class="doc-format"><span class="badge-req" data-i18n="doc.kyc.required">Obligatoire</span> · <span data-i18n="doc.kyc.format">PDF, JPG ou PNG · Max 5 Mo</span></div>
-          </div>
-          <button type="button" class="btn btn-upload" onclick="toggleDoc(this)"><i class="fa fa-upload me-1"></i><span data-i18n="doc.kyc.btn_upload">Téléverser</span></button>
-          <div class="doc-dates" data-for="ordre">
-            <div class="row g-2">
-              <div class="col-6"><label class="form-label small fw-semibold" data-i18n="doc.kyc.date_start">Date de délivrance *</label><input type="date" class="form-control form-control-sm dd-start"></div>
-              <div class="col-6"><label class="form-label small fw-semibold" data-i18n="doc.kyc.date_end">Date d'expiration *</label><input type="date" class="form-control form-control-sm dd-end"></div>
-            </div>
-            <div class="small text-danger mt-1 d-none dd-err"><i class="fa fa-circle-exclamation me-1"></i><span data-i18n="doc.kyc.date_order_err">La date d'expiration doit être postérieure à la date de délivrance.</span></div>
-          </div>
-        </div>
-
-        <div class="kyc-doc" data-required="1">
-          <i class="fa fa-graduation-cap doc-icon"></i>
-          <div class="flex-grow-1">
-            <div class="doc-name" data-i18n="doc.kyc.d_diploma">Diplôme médical</div>
+            <div class="doc-name" data-i18n="doc.kyc.d_ordre">Attestation ou carte d'inscription à l'Ordre des médecins (ou équivalent)</div>
             <div class="doc-format"><span class="badge-req" data-i18n="doc.kyc.required">Obligatoire</span> · <span data-i18n="doc.kyc.format">PDF, JPG ou PNG · Max 5 Mo</span></div>
           </div>
           <button type="button" class="btn btn-upload" onclick="toggleDoc(this)"><i class="fa fa-upload me-1"></i><span data-i18n="doc.kyc.btn_upload">Téléverser</span></button>
         </div>
 
-        <div class="kyc-doc" data-required="1">
-          <i class="fa fa-building-columns doc-icon"></i>
-          <div class="flex-grow-1">
-            <div class="doc-name" data-i18n="doc.kyc.d_rib">RIB local ou justificatif de compte bancaire / Mobile Money</div>
-            <div class="doc-format"><span class="badge-req" data-i18n="doc.kyc.required">Obligatoire</span> · <span data-i18n="doc.kyc.format">PDF, JPG ou PNG · Max 5 Mo</span></div>
-          </div>
-          <button type="button" class="btn btn-upload" onclick="toggleDoc(this)"><i class="fa fa-upload me-1"></i><span data-i18n="doc.kyc.btn_upload">Téléverser</span></button>
-        </div>
-
-        <div class="kyc-doc" data-required="1">
-          <i class="fa fa-house-chimney doc-icon"></i>
-          <div class="flex-grow-1">
-            <div class="doc-name" data-i18n="doc.kyc.d_domicile">Justificatif de domicile du cabinet (daté de moins de 3 mois)</div>
-            <div class="doc-format"><span class="badge-req" data-i18n="doc.kyc.required">Obligatoire</span> · <span data-i18n="doc.kyc.format">PDF, JPG ou PNG · Max 5 Mo</span></div>
-          </div>
-          <button type="button" class="btn btn-upload" onclick="toggleDoc(this)"><i class="fa fa-upload me-1"></i><span data-i18n="doc.kyc.btn_upload">Téléverser</span></button>
-        </div>
-
-        <div class="kyc-doc" data-datekey="rcpro">
-          <i class="fa fa-shield-halved doc-icon"></i>
-          <div class="flex-grow-1">
-            <div class="doc-name" data-i18n="doc.kyc.d_rcpro">Attestation RC Pro</div>
-            <div class="doc-format"><span class="badge-opt" data-i18n="doc.kyc.optional">Optionnel</span> · <span data-i18n="doc.kyc.format">PDF, JPG ou PNG · Max 5 Mo</span></div>
-          </div>
-          <button type="button" class="btn btn-upload" onclick="toggleDoc(this)"><i class="fa fa-upload me-1"></i><span data-i18n="doc.kyc.btn_upload">Téléverser</span></button>
-          <div class="doc-dates" data-for="rcpro">
-            <div class="row g-2">
-              <div class="col-6"><label class="form-label small fw-semibold" data-i18n="doc.kyc.date_start">Date de délivrance *</label><input type="date" class="form-control form-control-sm dd-start"></div>
-              <div class="col-6"><label class="form-label small fw-semibold" data-i18n="doc.kyc.date_end">Date d'expiration *</label><input type="date" class="form-control form-control-sm dd-end"></div>
-            </div>
-            <div class="small text-danger mt-1 d-none dd-err"><i class="fa fa-circle-exclamation me-1"></i><span data-i18n="doc.kyc.date_order_err">La date d'expiration doit être postérieure à la date de délivrance.</span></div>
-          </div>
-        </div>
       </div>
 
       <div id="kycDecl">
@@ -226,6 +177,11 @@
         <button class="btn btn-doctor w-100" id="submitKyc" onclick="submitKyc(this)">
           <span data-i18n="doc.kyc.submit">Soumettre mon dossier</span> <i class="fa fa-arrow-right ms-2"></i>
         </button>
+      </div>
+      <button type="button" class="btn btn-outline-secondary w-100 mt-2" id="saveDraftBtn" onclick="saveDraftAndExit()"><i class="fa fa-floppy-disk me-1"></i><span data-i18n="doc.kyc.save_later">Enregistrer et reprendre plus tard</span></button>
+      <div class="text-center mt-3 small text-muted">
+        <i class="fa fa-circle-question me-1" style="color:#155e75;"></i><span data-i18n="doc.kyc.support_q">Une question sur les justificatifs ?</span>
+        <a href="mailto:support@fueni.com" style="color:#155e75;font-weight:600;text-decoration:none;">support@fueni.com</a>
       </div>
       <div class="text-center mt-3" id="kycDemo">
         <a href="#" id="demoToRevision" class="small text-muted text-decoration-none" onclick="event.preventDefault(); setRevision(true);" data-i18n="doc.kyc.demo_revision">🔎 Démo : simuler un dossier à compléter</a>
@@ -319,7 +275,7 @@
     function getSpec() { const s = document.getElementById('kycSpecialite'); if (!s) return ''; return s.value === 'autre' ? (document.getElementById('kycSpecAutre').value || '').trim() : s.value; }
 
     // ── Dates de validité par document (saisies au téléversement, recoupables avec le scan) ──
-    const DOC_DATES = { id: 'period', ordre: 'period', rcpro: 'period' };
+    const DOC_DATES = {}; // aucun justificatif daté (décision 2026-07-03 — ni identité ni attestation d'Ordre n'ont de date)
     function dateBlockFor(key) { return document.querySelector('.doc-dates[data-for="' + key + '"]'); }
     function docDateState(key) {
       const blk = dateBlockFor(key); if (!blk) return { filled: true, valid: true };
@@ -351,14 +307,14 @@
       if (revision) return docsOk; // correction : seules les pièces signalées comptent
       const g = id => (document.getElementById(id) || {}).value;
       const ck = id => (document.getElementById(id) || {}).checked;
-      return docsOk && allDatesOk() && getSpec() && g('kycOrdre') && getLoc('Region') && getLoc('City') && g('kycCabinet') && ck('decl1') && ck('decl2') && ck('decl3');
+      return docsOk && allDatesOk() && getSpec() && g('kycOrdre') && g('kycNatId') && getLoc('Region') && getLoc('City') && g('kycCabinet') && ck('decl1') && ck('decl2') && ck('decl3');
     }
     // Bouton toujours actif : on valide au clic et on signale les éléments manquants (même logique que l'inscription)
     function clearGlobalIfOk() { if (requiredDone()) document.getElementById('kycError').classList.add('d-none'); }
 
     function clearKycErrors() {
       document.querySelectorAll('.kyc-doc.is-err').forEach(r => r.classList.remove('is-err'));
-      ['kycCabinet', 'kycRegion', 'kycCity', 'kycRegionOther', 'kycCityOther', 'kycSpecialite', 'kycSpecAutre', 'kycOrdre'].forEach(id => { const e = document.getElementById(id); if (e) e.classList.remove('is-err'); });
+      ['kycCabinet', 'kycRegion', 'kycCity', 'kycRegionOther', 'kycCityOther', 'kycSpecialite', 'kycSpecAutre', 'kycOrdre', 'kycNatId'].forEach(id => { const e = document.getElementById(id); if (e) e.classList.remove('is-err'); });
       document.querySelectorAll('.doc-dates input.is-err').forEach(i => i.classList.remove('is-err'));
       document.querySelectorAll('.doc-dates .dd-err').forEach(e => e.classList.add('d-none'));
       document.querySelectorAll('#kycDecl .form-check.is-err').forEach(c => c.classList.remove('is-err'));
@@ -374,6 +330,7 @@
       if (!revision) {
         if (!getSpec()) { const el = document.getElementById('kycSpecialite').value === 'autre' ? document.getElementById('kycSpecAutre') : document.getElementById('kycSpecialite'); el.classList.add('is-err'); if (!firstBad) firstBad = el; }
         const ord = document.getElementById('kycOrdre'); if (!ord.value.trim()) { ord.classList.add('is-err'); if (!firstBad) firstBad = ord; }
+        const nat = document.getElementById('kycNatId'); if (!nat.value.trim()) { nat.classList.add('is-err'); if (!firstBad) firstBad = nat; }
         if (!getLoc('Region')) { const el = document.getElementById('kycRegion').value === LOC_OTHER ? document.getElementById('kycRegionOther') : document.getElementById('kycRegion'); el.classList.add('is-err'); if (!firstBad) firstBad = el; }
         if (!getLoc('City')) { const el = document.getElementById('kycCity').value === LOC_OTHER ? document.getElementById('kycCityOther') : document.getElementById('kycCity'); el.classList.add('is-err'); if (!firstBad) firstBad = el; }
         const cab = document.getElementById('kycCabinet'); if (!cab.value.trim()) { cab.classList.add('is-err'); if (!firstBad) firstBad = cab; }
@@ -393,9 +350,47 @@
 
     function submitKyc(btn) {
       if (!validateKyc()) return;
+      try { sessionStorage.removeItem(DRAFT_KEY); } catch (e) {} // dossier soumis → plus de brouillon
       btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>' + t('doc.kyc.processing', 'Envoi en cours…');
       btn.disabled = true;
       setTimeout(() => window.location.href = '17-doctor-dashboard.html?kyc=submitted', 1000);
+    }
+
+    // ── Enregistrer et reprendre plus tard (brouillon) ──────────────────────────
+    // Le compte reste PENDING_KYC ; on conserve champs + pièces téléversées en session,
+    // puis on renvoie au tableau de bord verrouillé. Le retour sur le KYC restaure le brouillon.
+    const DRAFT_KEY = 'fueni_kyc_draft';
+    function collectDraft() {
+      const g = id => (document.getElementById(id) || {}).value || '';
+      const ck = id => !!(document.getElementById(id) || {}).checked;
+      return {
+        spec: g('kycSpecialite'), specAutre: g('kycSpecAutre'),
+        ordre: g('kycOrdre'), natid: g('kycNatId'),
+        region: g('kycRegion'), regionOther: g('kycRegionOther'),
+        city: g('kycCity'), cityOther: g('kycCityOther'),
+        cabinet: g('kycCabinet'),
+        decl1: ck('decl1'), decl2: ck('decl2'), decl3: ck('decl3'),
+        docs: Array.from(document.querySelectorAll('#kyc-list .kyc-doc')).map(r => r.classList.contains('done'))
+      };
+    }
+    function saveDraftAndExit() {
+      try { sessionStorage.setItem(DRAFT_KEY, JSON.stringify(collectDraft())); } catch (e) {}
+      window.location.href = '17-doctor-dashboard.html?kyc=todo';
+    }
+    function restoreDraft() {
+      let d; try { d = JSON.parse(sessionStorage.getItem(DRAFT_KEY) || 'null'); } catch (e) { d = null; }
+      if (!d) return;
+      const set = (id, v) => { const el = document.getElementById(id); if (el && v != null) el.value = v; };
+      set('kycSpecialite', d.spec); toggleKycSpecAutre(); set('kycSpecAutre', d.specAutre);
+      set('kycOrdre', d.ordre); set('kycNatId', d.natid); set('kycCabinet', d.cabinet);
+      if (d.region) {
+        set('kycRegion', d.region); onRegionChange();
+        if (d.region === LOC_OTHER) set('kycRegionOther', d.regionOther);
+        if (d.city) { set('kycCity', d.city); onCityChange(); if (d.city === LOC_OTHER) set('kycCityOther', d.cityOther); }
+      }
+      ['decl1', 'decl2', 'decl3'].forEach((id, i) => { const el = document.getElementById(id); if (el) el.checked = !!d['decl' + (i + 1)]; });
+      const rows = document.querySelectorAll('#kyc-list .kyc-doc');
+      (d.docs || []).forEach((done, i) => { if (done && rows[i]) { rows[i].classList.add('done'); setBtn(btnUpload(rows[i]), 'uploaded'); } });
     }
 
     // ── État « dossier à compléter » (rejet partiel Super Admin) ────────────────
@@ -443,7 +438,7 @@
       span.textContent = revision ? t('doc.kyc.btn_resubmit', 'Renvoyer les pièces corrigées') : t('doc.kyc.submit', 'Soumettre mon dossier');
     });
 
-    ['kycCabinet','kycRegionOther','kycCityOther','kycOrdre','kycSpecAutre'].forEach(id => { const el = document.getElementById(id); if (el) el.addEventListener('input', () => { el.classList.remove('is-err'); clearGlobalIfOk(); }); });
+    ['kycCabinet','kycRegionOther','kycCityOther','kycOrdre','kycNatId','kycSpecAutre'].forEach(id => { const el = document.getElementById(id); if (el) el.addEventListener('input', () => { el.classList.remove('is-err'); clearGlobalIfOk(); }); });
     document.querySelectorAll('.doc-dates input').forEach(i => i.addEventListener('input', () => { i.classList.remove('is-err'); const e = i.closest('.doc-dates').querySelector('.dd-err'); if (e) e.classList.add('d-none'); clearGlobalIfOk(); }));
     ['decl1','decl2','decl3'].forEach(id => { const el = document.getElementById(id); if (el) el.addEventListener('change', () => { el.closest('.form-check').classList.remove('is-err'); clearGlobalIfOk(); }); });
 
@@ -458,9 +453,11 @@
       if (title) { title.setAttribute('data-i18n', 'doc.kyc.title_revision'); title.textContent = t('doc.kyc.title_revision', 'Correction de votre dossier'); }
       const demo = document.getElementById('kycDemo'); if (demo) demo.style.display = 'none';
       const back = document.getElementById('kycBack'); if (back) back.classList.remove('d-none');
+      const sd = document.getElementById('saveDraftBtn'); if (sd) sd.classList.add('d-none'); // pas de brouillon en mode correction
       setRevision(true);
     } else {
       applyMode();
+      restoreDraft(); // restaure un brouillon éventuel (« reprendre plus tard »)
     }
   </script>
 <script>/* Stepper cliquable : retour aux étapes déjà franchies */(function(){var u=['12b-doctor-eligibilite.html','13-doctor-inscription.html','14-doctor-plans.html','15-doctor-paiement.html','15b-doctor-kyc.html','16-doctor-confirmation.html'];document.querySelectorAll('.progress-steps .step').forEach(function(s,i){if(s.classList.contains('done')&&u[i]){s.style.cursor='pointer';s.title='Revenir à cette étape';s.addEventListener('click',function(){location.href=u[i];});}});})();</script>

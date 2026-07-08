@@ -133,16 +133,8 @@
         <div class="fw-semibold mb-2" style="color:#155e75;">
           <i class="fa fa-clipboard-check me-1"></i><span data-i18n="doc.elig.ref_title">Justificatifs à préparer</span> — <span id="ref-pays"></span>
         </div>
-        <div class="ref-regulateur mb-3">
-          <i class="fa fa-landmark me-1" style="color:#155e75;"></i>
-          <span data-i18n="doc.elig.ref_regulateur">Régulateur de référence :</span> <strong id="ref-ordre"></strong>
-        </div>
         <div class="doc-li"><i class="fa fa-check-circle text-success"></i><span data-i18n="doc.elig.doc_id">Pièce d'identité (CNI, passeport ou carte professionnelle)</span></div>
-        <div class="doc-li"><i class="fa fa-check-circle text-success"></i><span data-i18n="doc.elig.doc_diploma">Diplôme médical</span></div>
-        <div class="doc-li"><i class="fa fa-check-circle text-success"></i><span data-i18n="doc.elig.doc_ordre">Attestation d'inscription à l'Ordre</span></div>
-        <div class="doc-li"><i class="fa fa-check-circle text-success"></i><span data-i18n="doc.elig.doc_rib">RIB local ou justificatif de compte bancaire / Mobile Money</span></div>
-        <div class="doc-li"><i class="fa fa-check-circle text-success"></i><span data-i18n="doc.elig.doc_domicile">Justificatif de domicile du cabinet</span></div>
-        <div class="doc-li"><i class="fa fa-circle-question text-warning"></i><span data-i18n-html="doc.elig.doc_rcpro_html">Attestation RC Pro <span class="text-muted">(optionnelle dans votre pays — recommandée)</span></span></div>
+        <div class="doc-li"><i class="fa fa-check-circle text-success"></i><span data-i18n="doc.elig.doc_ordre">Attestation ou carte d'inscription à l'Ordre des médecins</span></div>
         <div class="small text-muted mt-2">
           <i class="fa fa-circle-info me-1"></i><span data-i18n="doc.elig.no_docs_now">Aucun document n'est demandé maintenant. Vous les téléverserez après la création de votre compte.</span>
         </div>
@@ -203,7 +195,6 @@
       if (pays && KYC_REF[pays]) {
         // Libellé localisé du pays = texte de l'option sélectionnée
         document.getElementById('ref-pays').textContent = sel.options[sel.selectedIndex].textContent;
-        document.getElementById('ref-ordre').textContent = KYC_REF[pays].ordre;
         preview.classList.remove('d-none');
         blocked.classList.add('d-none');
         cta.disabled = false;

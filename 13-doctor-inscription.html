@@ -264,9 +264,11 @@
       if (!cgu || !rgpd) { document.getElementById(cgu ? 'err-rgpd' : 'err-cgu').scrollIntoView({ behavior: 'smooth', block: 'center' }); return; }
 
       // Sauvegarde du formulaire + e-mail conservé pour l'écran de vérification OTP (masquage)
+      // Email-first : seul l'e-mail est vérifié à l'inscription (OTP e-mail). Le téléphone est
+      // vérifié plus tard, depuis le tableau de bord. On saute donc l'OTP SMS (13b).
       saveDoctorForm();
       sessionStorage.setItem('fueni_doctor_email', email);
-      window.location.href = '13b-doctor-otp.html';
+      window.location.href = '13c-doctor-email-verify.html';
     }
 
     // Le pays d'exercice est déjà capturé à l'étape Éligibilité (conservé dans naz_doctor_country).
