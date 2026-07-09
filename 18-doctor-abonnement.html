@@ -104,9 +104,9 @@
         <div class="manual-note mb-4"><i class="fa fa-circle-info me-2"></i><span data-i18n="abo.manual_renewal_note">Le paiement Mobile Money n'est pas prélevé automatiquement : renouvelez manuellement avant l'échéance pour éviter toute interruption.</span></div>
         <div class="d-flex gap-2 flex-wrap">
           <button class="btn btn-doctor btn-sm" onclick="openRenew()"><i class="fa fa-rotate me-1"></i><span data-i18n="abo.renew_now">Renouveler maintenant</span></button>
-          <button class="btn btn-ghost btn-sm"><i class="fa fa-repeat me-1"></i><span data-i18n="abo.change_period">Passer à l'annuel (−17 %)</span></button>
-          <button class="btn btn-ghost btn-sm"><i class="fa fa-credit-card me-1"></i><span data-i18n="abo.update_payment">Mettre à jour le paiement</span></button>
-          <button class="btn btn-danger-ghost btn-sm"><i class="fa fa-ban me-1"></i><span data-i18n="abo.cancel_sub">Annuler l'abonnement</span></button>
+          <button class="btn btn-ghost btn-sm" onclick="openAnnual()"><i class="fa fa-repeat me-1"></i><span data-i18n="abo.change_period">Passer à l'annuel (−17 %)</span></button>
+          <button class="btn btn-ghost btn-sm" onclick="openUpdatePay()"><i class="fa fa-credit-card me-1"></i><span data-i18n="abo.update_payment">Mettre à jour le paiement</span></button>
+          <button class="btn btn-danger-ghost btn-sm" onclick="openCancel()"><i class="fa fa-ban me-1"></i><span data-i18n="abo.cancel_sub">Annuler l'abonnement</span></button>
         </div>
       </div>
 
@@ -214,6 +214,117 @@
     </div>
   </div>
 
+  <!-- Annual switch modal -->
+  <div class="modal fade" id="annualModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content" style="border:0;border-radius:16px;">
+        <div class="modal-header border-0 pb-0">
+          <h5 class="modal-title fw-bold" style="font-size:1.05rem;" data-i18n="abo.annual_title">Passer à la facturation annuelle</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body pt-2">
+          <div id="annualConfirm">
+            <p class="text-muted small mb-3" data-i18n="abo.annual_txt">En passant à l'annuel, vous réglez 12 mois en une fois et bénéficiez de −17 % (environ 2 mois offerts). Le changement prend effet à votre prochaine échéance.</p>
+            <div class="d-flex justify-content-between align-items-center p-3 mb-2" style="background:#f8fafc;border-radius:10px;">
+              <span class="text-muted small" data-i18n="abo.annual_now">Mensuel actuel</span>
+              <span class="fw-semibold">5 000 XOF × 12 = 60 000 XOF</span>
+            </div>
+            <div class="d-flex justify-content-between align-items-center p-3" style="background:#eef5f7;border-radius:10px;border:1px solid #cfe3e9;">
+              <span class="fw-semibold" style="color:#155e75;" data-i18n="abo.annual_new">Annuel (−17 %)</span>
+              <span class="fw-bold" style="color:#155e75;">50 000 XOF / <span data-i18n="abo.per_year">an</span></span>
+            </div>
+          </div>
+          <div id="annualSuccess" class="d-none renew-step">
+            <div class="renew-ok-icon"><i class="fa fa-check"></i></div>
+            <p class="fw-semibold mb-1" data-i18n="abo.annual_ok_t">Modification enregistrée</p>
+            <p class="text-muted small mb-0" data-i18n="abo.annual_ok_txt">Votre abonnement passera en facturation annuelle à la prochaine échéance.</p>
+          </div>
+        </div>
+        <div class="modal-footer border-0 pt-0" id="annualFooter">
+          <button type="button" class="btn btn-ghost btn-sm" data-bs-dismiss="modal" data-i18n="abo.renew_cancel">Annuler</button>
+          <button type="button" class="btn btn-doctor btn-sm" onclick="doAnnual()"><i class="fa fa-check me-1"></i><span data-i18n="abo.annual_confirm">Confirmer le passage à l'annuel</span></button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Update payment modal -->
+  <div class="modal fade" id="payModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content" style="border:0;border-radius:16px;">
+        <div class="modal-header border-0 pb-0">
+          <h5 class="modal-title fw-bold" style="font-size:1.05rem;" data-i18n="abo.pay_title">Mettre à jour le moyen de paiement</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body pt-2">
+          <div id="payForm">
+            <label class="form-label small fw-semibold" data-i18n="abo.pay_method_lbl">Type de paiement</label>
+            <select class="form-select form-select-sm mb-3" id="payType">
+              <option value="mm" data-i18n="abo.pay_opt_mm">Mobile Money</option>
+              <option value="card" data-i18n="abo.pay_opt_card">Carte bancaire</option>
+            </select>
+            <div id="payMM">
+              <label class="form-label small fw-semibold" data-i18n="abo.pay_operator">Opérateur</label>
+              <select class="form-select form-select-sm mb-3">
+                <option>Orange Money</option><option>Wave</option><option>MTN MoMo</option><option>Airtel Money</option>
+              </select>
+              <label class="form-label small fw-semibold" data-i18n="abo.pay_phone">Numéro Mobile Money</label>
+              <input type="tel" class="form-control form-control-sm" placeholder="+221 77 000 45 67">
+            </div>
+            <div id="payCard" class="d-none">
+              <label class="form-label small fw-semibold" data-i18n="abo.pay_card_num">Numéro de carte</label>
+              <input type="text" class="form-control form-control-sm mb-2" placeholder="4242 4242 4242 4242" inputmode="numeric">
+              <div class="row g-2">
+                <div class="col-6"><input type="text" class="form-control form-control-sm" placeholder="MM/AA"></div>
+                <div class="col-6"><input type="text" class="form-control form-control-sm" placeholder="CVC"></div>
+              </div>
+            </div>
+            <p class="text-muted mt-3 mb-0" style="font-size:0.76rem;"><i class="fa fa-lock me-1"></i><span data-i18n="abo.pay_secure">Coordonnées traitées de façon sécurisée par notre prestataire de paiement. FUENI ne conserve aucune donnée bancaire.</span></p>
+          </div>
+          <div id="paySuccess" class="d-none renew-step">
+            <div class="renew-ok-icon"><i class="fa fa-check"></i></div>
+            <p class="fw-semibold mb-1" data-i18n="abo.pay_ok_t">Moyen de paiement mis à jour</p>
+            <p class="text-muted small mb-0" data-i18n="abo.pay_ok_txt">Il sera utilisé pour votre prochain renouvellement.</p>
+          </div>
+        </div>
+        <div class="modal-footer border-0 pt-0" id="payFooter">
+          <button type="button" class="btn btn-ghost btn-sm" data-bs-dismiss="modal" data-i18n="abo.renew_cancel">Annuler</button>
+          <button type="button" class="btn btn-doctor btn-sm" onclick="doUpdatePay()"><i class="fa fa-check me-1"></i><span data-i18n="abo.pay_save">Enregistrer</span></button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cancel modal -->
+  <div class="modal fade" id="cancelModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content" style="border:0;border-radius:16px;">
+        <div class="modal-header border-0 pb-0">
+          <h5 class="modal-title fw-bold" style="font-size:1.05rem;color:#b02a37;" data-i18n="abo.cancel_title">Annuler l'abonnement Solo</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body pt-2">
+          <div id="cancelConfirm">
+            <div class="manual-note mb-3" style="background:#fdf2f3;border-color:#f5c2c7;color:#842029;">
+              <i class="fa fa-triangle-exclamation me-2"></i><span data-i18n-html="abo.cancel_warn">Votre accès Solo reste actif jusqu'au terme de la période déjà payée (15/07/2026). À cette date, votre compte basculera automatiquement sur le plan <strong>Free</strong>. Vos dossiers patients restent accessibles ; vous pourrez réactiver Solo à tout moment.</span>
+            </div>
+            <label class="form-label small fw-semibold" data-i18n="abo.cancel_reason">Motif (facultatif)</label>
+            <textarea class="form-control form-control-sm" rows="2" maxlength="200" data-i18n-placeholder="abo.cancel_reason_ph" placeholder="Aidez-nous à nous améliorer…"></textarea>
+          </div>
+          <div id="cancelSuccess" class="d-none renew-step">
+            <div class="renew-ok-icon" style="background:#f8d7da;color:#842029;"><i class="fa fa-circle-check"></i></div>
+            <p class="fw-semibold mb-1" data-i18n="abo.cancel_ok_t">Abonnement annulé</p>
+            <p class="text-muted small mb-0" data-i18n="abo.cancel_ok_txt">Vous conservez l'accès Solo jusqu'au 15/07/2026, puis passage au plan Free.</p>
+          </div>
+        </div>
+        <div class="modal-footer border-0 pt-0" id="cancelFooter">
+          <button type="button" class="btn btn-ghost btn-sm" data-bs-dismiss="modal" data-i18n="abo.cancel_keep">Conserver mon abonnement</button>
+          <button type="button" class="btn btn-danger-ghost btn-sm" onclick="doCancel()"><i class="fa fa-ban me-1"></i><span data-i18n="abo.cancel_confirm">Confirmer l'annulation</span></button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script>
     let renewModal;
@@ -235,6 +346,63 @@
         setTimeout(function(){ if(renewModal) renewModal.hide(); }, 2600);
       }, 2400);
     }
+
+    // --- Passer à l'annuel ---
+    let annualModal;
+    function openAnnual(){
+      document.getElementById('annualConfirm').classList.remove('d-none');
+      document.getElementById('annualSuccess').classList.add('d-none');
+      document.getElementById('annualFooter').classList.remove('d-none');
+      annualModal = annualModal || new bootstrap.Modal(document.getElementById('annualModal'));
+      annualModal.show();
+    }
+    function doAnnual(){
+      document.getElementById('annualConfirm').classList.add('d-none');
+      document.getElementById('annualFooter').classList.add('d-none');
+      document.getElementById('annualSuccess').classList.remove('d-none');
+      setTimeout(function(){ if(annualModal) annualModal.hide(); }, 2600);
+    }
+
+    // --- Mettre à jour le paiement ---
+    let payModal;
+    function openUpdatePay(){
+      document.getElementById('payForm').classList.remove('d-none');
+      document.getElementById('paySuccess').classList.add('d-none');
+      document.getElementById('payFooter').classList.remove('d-none');
+      payModal = payModal || new bootstrap.Modal(document.getElementById('payModal'));
+      payModal.show();
+    }
+    function doUpdatePay(){
+      document.getElementById('payForm').classList.add('d-none');
+      document.getElementById('payFooter').classList.add('d-none');
+      document.getElementById('paySuccess').classList.remove('d-none');
+      setTimeout(function(){ if(payModal) payModal.hide(); }, 2600);
+    }
+
+    // --- Annuler l'abonnement ---
+    let cancelModal;
+    function openCancel(){
+      document.getElementById('cancelConfirm').classList.remove('d-none');
+      document.getElementById('cancelSuccess').classList.add('d-none');
+      document.getElementById('cancelFooter').classList.remove('d-none');
+      cancelModal = cancelModal || new bootstrap.Modal(document.getElementById('cancelModal'));
+      cancelModal.show();
+    }
+    function doCancel(){
+      document.getElementById('cancelConfirm').classList.add('d-none');
+      document.getElementById('cancelFooter').classList.add('d-none');
+      document.getElementById('cancelSuccess').classList.remove('d-none');
+      setTimeout(function(){ if(cancelModal) cancelModal.hide(); }, 2800);
+    }
+
+    document.addEventListener('DOMContentLoaded', function(){
+      var pt = document.getElementById('payType');
+      if(pt) pt.addEventListener('change', function(){
+        var mm = this.value === 'mm';
+        document.getElementById('payMM').classList.toggle('d-none', !mm);
+        document.getElementById('payCard').classList.toggle('d-none', mm);
+      });
+    });
   </script>
 <!-- Prototype version badge -->
 <script>(function(){if(window.__pv)return;window.__pv=1;var v=document.createElement('div');v.style.cssText='position:fixed;top:0;left:50%;transform:translateX(-50%);background:#155e75;color:#fff;padding:6px 20px;border-radius:0 0 16px 16px;font:600 12px/1 system-ui,-apple-system,sans-serif;letter-spacing:.6px;z-index:99999;box-shadow:0 3px 10px rgba(0,0,0,.2);text-transform:uppercase;display:flex;align-items:center;gap:8px';v.innerHTML='🧪 Prototype <span style="background:#f59e0b;color:#1a1a1a;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:4px">v1.4.0</span><span style="background:#facc15;color:#1a1a1a;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:4px;text-transform:none;letter-spacing:0">⏳ À valider</span>';document.body.appendChild(v);})();</script>
