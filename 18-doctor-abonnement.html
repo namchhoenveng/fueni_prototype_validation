@@ -46,6 +46,11 @@
     .inv-scroll { overflow-x: auto; }
     .dl-btn { border: 1.5px solid #e2e8f0; background: #fff; color: #155e75; border-radius: 7px; font-size: 0.8rem; font-weight: 600; padding: 5px 11px; text-decoration: none; white-space: nowrap; }
     .dl-btn:hover { border-color: #155e75; background: #eef5f7; color: #155e75; }
+    .manual-note { background: #fff7ed; border: 1px solid #fed7aa; color: #9a3412; border-radius: 10px; padding: 10px 14px; font-size: 0.83rem; line-height: 1.45; }
+    .renew-step { text-align: center; padding: 8px 0; }
+    .renew-spinner { width: 48px; height: 48px; border: 4px solid #e2e8f0; border-top-color: #155e75; border-radius: 50%; margin: 8px auto 14px; animation: rspin 0.8s linear infinite; }
+    @keyframes rspin { to { transform: rotate(360deg); } }
+    .renew-ok-icon { width: 56px; height: 56px; border-radius: 50%; background: #d1e7dd; color: #0f5132; display: flex; align-items: center; justify-content: center; font-size: 1.6rem; margin: 4px auto 14px; }
   </style>
 </head>
 <body data-i18n-pagetitle="abo.page_title" data-i18n-toggle>
@@ -91,13 +96,15 @@
           <span class="pill pill-active" data-i18n="abo.status_active">Actif</span>
           <span class="text-muted small" data-i18n="abo.periodicity_monthly">Facturation mensuelle</span>
         </div>
-        <div class="row g-3 mb-4">
+        <div class="row g-3 mb-3">
           <div class="col-sm-4"><div class="abo-kv"><span class="k" data-i18n="abo.next_renewal">Prochain renouvellement</span><span class="v">15/07/2026</span></div></div>
           <div class="col-sm-4"><div class="abo-kv"><span class="k" data-i18n="abo.amount">Montant</span><span class="v">5 000 XOF / <span data-i18n="abo.per_month">mois</span></span></div></div>
           <div class="col-sm-4"><div class="abo-kv"><span class="k" data-i18n="abo.payment_method">Moyen de paiement</span><span class="v"><i class="fa fa-mobile-screen-button me-1" style="color:#155e75;"></i>Orange Money •• 45 67</span></div></div>
         </div>
+        <div class="manual-note mb-4"><i class="fa fa-circle-info me-2"></i><span data-i18n="abo.manual_renewal_note">Le paiement Mobile Money n'est pas prélevé automatiquement : renouvelez manuellement avant l'échéance pour éviter toute interruption.</span></div>
         <div class="d-flex gap-2 flex-wrap">
-          <button class="btn btn-doctor btn-sm"><i class="fa fa-repeat me-1"></i><span data-i18n="abo.change_period">Passer à l'annuel (−17 %)</span></button>
+          <button class="btn btn-doctor btn-sm" onclick="openRenew()"><i class="fa fa-rotate me-1"></i><span data-i18n="abo.renew_now">Renouveler maintenant</span></button>
+          <button class="btn btn-ghost btn-sm"><i class="fa fa-repeat me-1"></i><span data-i18n="abo.change_period">Passer à l'annuel (−17 %)</span></button>
           <button class="btn btn-ghost btn-sm"><i class="fa fa-credit-card me-1"></i><span data-i18n="abo.update_payment">Mettre à jour le paiement</span></button>
           <button class="btn btn-danger-ghost btn-sm"><i class="fa fa-ban me-1"></i><span data-i18n="abo.cancel_sub">Annuler l'abonnement</span></button>
         </div>
@@ -165,7 +172,70 @@
     </div>
   </div>
 
+  <!-- Renew modal (demo Mobile Money push) -->
+  <div class="modal fade" id="renewModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content" style="border:0;border-radius:16px;">
+        <div class="modal-header border-0 pb-0">
+          <h5 class="modal-title fw-bold" style="font-size:1.05rem;" data-i18n="abo.renew_title">Renouveler l'abonnement Solo</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body pt-2">
+          <!-- Step 1: confirm -->
+          <div id="renewConfirm">
+            <p class="text-muted small mb-3" data-i18n="abo.renew_confirm_txt">Une demande de paiement va être envoyée sur votre téléphone Orange Money. Validez-la avec votre code PIN pour confirmer le renouvellement.</p>
+            <div class="d-flex justify-content-between align-items-center p-3 mb-3" style="background:#f8fafc;border-radius:10px;">
+              <span class="text-muted small" data-i18n="abo.renew_amount_lbl">Montant à payer</span>
+              <span class="fw-bold" style="color:#155e75;">5 000 XOF</span>
+            </div>
+            <div class="d-flex justify-content-between align-items-center p-3 mb-1" style="background:#f8fafc;border-radius:10px;">
+              <span class="text-muted small" data-i18n="abo.payment_method">Moyen de paiement</span>
+              <span class="fw-semibold"><i class="fa fa-mobile-screen-button me-1" style="color:#155e75;"></i>Orange Money •• 45 67</span>
+            </div>
+          </div>
+          <!-- Step 2: pending -->
+          <div id="renewPending" class="d-none renew-step">
+            <div class="renew-spinner"></div>
+            <p class="fw-semibold mb-1" data-i18n="abo.renew_pending_t">Demande envoyée</p>
+            <p class="text-muted small mb-0" data-i18n="abo.renew_pending_txt">Validez la demande sur votre téléphone (code PIN Orange Money)…</p>
+          </div>
+          <!-- Step 3: success -->
+          <div id="renewSuccess" class="d-none renew-step">
+            <div class="renew-ok-icon"><i class="fa fa-check"></i></div>
+            <p class="fw-semibold mb-1" data-i18n="abo.renew_ok_t">Paiement confirmé</p>
+            <p class="text-muted small mb-0"><span data-i18n="abo.renew_ok_txt">Abonnement renouvelé. Prochaine échéance :</span> <strong>15/08/2026</strong>.</p>
+          </div>
+        </div>
+        <div class="modal-footer border-0 pt-0" id="renewFooter">
+          <button type="button" class="btn btn-ghost btn-sm" data-bs-dismiss="modal" data-i18n="abo.renew_cancel">Annuler</button>
+          <button type="button" class="btn btn-doctor btn-sm" id="renewGo" onclick="doRenew()"><i class="fa fa-mobile-screen-button me-1"></i><span data-i18n="abo.renew_send">Envoyer la demande</span></button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    let renewModal;
+    function openRenew(){
+      document.getElementById('renewConfirm').classList.remove('d-none');
+      document.getElementById('renewPending').classList.add('d-none');
+      document.getElementById('renewSuccess').classList.add('d-none');
+      document.getElementById('renewFooter').classList.remove('d-none');
+      renewModal = renewModal || new bootstrap.Modal(document.getElementById('renewModal'));
+      renewModal.show();
+    }
+    function doRenew(){
+      document.getElementById('renewConfirm').classList.add('d-none');
+      document.getElementById('renewPending').classList.remove('d-none');
+      document.getElementById('renewFooter').classList.add('d-none');
+      setTimeout(function(){
+        document.getElementById('renewPending').classList.add('d-none');
+        document.getElementById('renewSuccess').classList.remove('d-none');
+        setTimeout(function(){ if(renewModal) renewModal.hide(); }, 2600);
+      }, 2400);
+    }
+  </script>
 <!-- Prototype version badge -->
 <script>(function(){if(window.__pv)return;window.__pv=1;var v=document.createElement('div');v.style.cssText='position:fixed;top:0;left:50%;transform:translateX(-50%);background:#155e75;color:#fff;padding:6px 20px;border-radius:0 0 16px 16px;font:600 12px/1 system-ui,-apple-system,sans-serif;letter-spacing:.6px;z-index:99999;box-shadow:0 3px 10px rgba(0,0,0,.2);text-transform:uppercase;display:flex;align-items:center;gap:8px';v.innerHTML='🧪 Prototype <span style="background:#f59e0b;color:#1a1a1a;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:4px">v1.4.0</span><span style="background:#facc15;color:#1a1a1a;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:4px;text-transform:none;letter-spacing:0">⏳ À valider</span>';document.body.appendChild(v);})();</script>
 </body>
