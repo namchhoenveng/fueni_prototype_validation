@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FUENI — Mon abonnement</title>
+  <script src="naz-i18n.js" defer></script>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="naz-common.css">
+  <style>
+    body { background: #f0f4f8; font-family: 'Segoe UI', sans-serif; }
+    .sidebar { background: #155e75; min-height: 100vh; width: 240px; position: fixed; top: 0; left: 0; z-index: 100; }
+    .sidebar-brand { padding: 20px 20px 12px; display: flex; align-items: center; gap: 10px; color: white; }
+    .sidebar-user { padding: 12px 20px 18px; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; gap: 10px; }
+    .sidebar-user .avatar { width: 40px; height: 40px; border-radius: 50%; background: #0e7490; display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; flex-shrink: 0; }
+    .nav-section { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: rgba(255,255,255,0.3); padding: 16px 20px 6px; }
+    .nav-link-side { color: rgba(255,255,255,0.72); padding: 10px 20px; display: flex; align-items: center; gap: 10px; font-size: 0.9rem; cursor: pointer; text-decoration: none; }
+    .nav-link-side i:first-child { width: 16px; text-align: center; flex-shrink: 0; }
+    .nav-link-side:hover { color: white; background: rgba(255,255,255,0.1); }
+    .nav-link-side.active { color: white; background: rgba(255,255,255,0.15); border-left: 3px solid #22d3ee; cursor: default; }
+    .main { margin-left: 240px; }
+    .main-topbar { position: fixed; top: 0; left: 240px; right: 0; z-index: 200; background: white; border-bottom: 1px solid #f1f5f9; padding: 14px 28px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 1px 3px rgba(0,0,0,0.03); }
+    .topbar-title { font-size: 1.15rem; font-weight: 700; margin: 0; color: #0f172a; }
+    .topbar-btn { background: #155e75; color: white; padding: 9px 16px; border-radius: 10px; font-size: 0.85rem; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; }
+    .topbar-btn:hover { background: #0f4858; color: white; }
+    .content-area { padding: 92px 28px 40px; max-width: 960px; }
+    .card-abo { background: white; border-radius: 14px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); padding: 24px; }
+    .card-abo h6 { font-size: 0.74rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px; color: #155e75; margin: 0 0 16px; }
+    .plan-name { font-size: 1.4rem; font-weight: 800; color: #155e75; }
+    .pill { font-size: 0.68rem; font-weight: 700; padding: 3px 10px; border-radius: 20px; }
+    .pill-active { background: #d1e7dd; color: #0f5132; }
+    .abo-kv { display: flex; flex-direction: column; gap: 3px; }
+    .abo-kv .k { font-size: 0.72rem; color: #94a3b8; font-weight: 600; text-transform: uppercase; letter-spacing: 0.4px; }
+    .abo-kv .v { font-size: 0.95rem; color: #2d3748; font-weight: 600; }
+    .btn-doctor { background: #155e75; border-color: #155e75; color: white; }
+    .btn-doctor:hover { background: #114c5f; border-color: #114c5f; color: white; }
+    .btn-ghost { background: #f1f5f9; border: 0; color: #475569; font-weight: 600; }
+    .btn-ghost:hover { background: #e2e8f0; color: #334155; }
+    .btn-danger-ghost { background: #fff; border: 1.5px solid #f5c2c7; color: #b02a37; font-weight: 600; }
+    .btn-danger-ghost:hover { background: #fdf2f3; }
+    table.inv { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+    table.inv th { text-align: left; font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.5px; color: #94a3b8; font-weight: 700; padding: 10px 12px; border-bottom: 2px solid #eef2f6; white-space: nowrap; }
+    table.inv td { padding: 11px 12px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
+    table.inv tr:last-child td { border-bottom: 0; }
+    .inv-scroll { overflow-x: auto; }
+    .dl-btn { border: 1.5px solid #e2e8f0; background: #fff; color: #155e75; border-radius: 7px; font-size: 0.8rem; font-weight: 600; padding: 5px 11px; text-decoration: none; white-space: nowrap; }
+    .dl-btn:hover { border-color: #155e75; background: #eef5f7; color: #155e75; }
+  </style>
+</head>
+<body data-i18n-pagetitle="abo.page_title" data-i18n-toggle>
+
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="sidebar-brand">
+      <a href="01-home.html" class="brand-logo" aria-label="FUENI"><img src="assets/fueni-lockup-horizontal.svg" alt="FUENI" style="height:34px;"></a>
+    </div>
+    <div class="sidebar-user">
+      <div class="avatar">AD</div>
+      <div>
+        <div class="text-white fw-semibold small" data-i18n="doc.dash.greeting">Dr Aboubacar Diallo</div>
+        <div style="color:rgba(255,255,255,0.72); font-size:0.72rem;"><i class="fa fa-circle-check me-1" style="color:#22d3ee;"></i><span data-i18n="doc.dash.validated_status">Profil validé</span></div>
+      </div>
+    </div>
+
+    <div class="nav-section" data-i18n="doc.dash.sec_main">Principal</div>
+    <a href="17-doctor-dashboard.html?state=active" class="nav-link-side"><i class="fa fa-home"></i><span data-i18n="doc.dash.nav_dashboard">Tableau de bord</span></a>
+    <a href="#" class="nav-link-side" onclick="event.preventDefault();"><i class="fa fa-user-injured"></i><span data-i18n="doc.dash.tile_patients">Patients</span></a>
+    <a href="#" class="nav-link-side" onclick="event.preventDefault();"><i class="fa fa-calendar-check"></i><span data-i18n="doc.dash.tile_rdv">Rendez-vous</span></a>
+    <a href="#" class="nav-link-side" onclick="event.preventDefault();"><i class="fa fa-file-medical"></i><span data-i18n="doc.dash.tile_records">Dossiers médicaux</span></a>
+
+    <div class="nav-section" data-i18n="doc.dash.sec_account">Compte</div>
+    <a href="#" class="nav-link-side active"><i class="fa fa-star"></i><span data-i18n="doc.dash.nav_subscription">Mon abonnement</span></a>
+    <a href="#" class="nav-link-side" onclick="event.preventDefault();"><i class="fa fa-cog"></i><span data-i18n="doc.dash.nav_settings">Paramètres</span></a>
+    <a href="10b-login-doctor.html" class="nav-link-side"><i class="fa fa-arrow-right-from-bracket"></i><span data-i18n="doc.dash.logout">Déconnexion</span></a>
+  </div>
+
+  <div class="main">
+    <header class="main-topbar">
+      <h1 class="topbar-title" data-i18n="doc.dash.nav_subscription">Mon abonnement</h1>
+      <a href="17-doctor-dashboard.html?state=active" class="topbar-btn"><i class="fa fa-arrow-left"></i><span data-i18n="abo.back_dash">Tableau de bord</span></a>
+    </header>
+
+    <div class="content-area">
+
+      <!-- Formule actuelle -->
+      <div class="card-abo mb-4">
+        <h6 data-i18n="abo.plan_current">Formule actuelle</h6>
+        <div class="d-flex align-items-center gap-3 mb-4 flex-wrap">
+          <span class="plan-name">Solo</span>
+          <span class="pill pill-active" data-i18n="abo.status_active">Actif</span>
+          <span class="text-muted small" data-i18n="abo.periodicity_monthly">Facturation mensuelle</span>
+        </div>
+        <div class="row g-3 mb-4">
+          <div class="col-sm-4"><div class="abo-kv"><span class="k" data-i18n="abo.next_renewal">Prochain renouvellement</span><span class="v">15/07/2026</span></div></div>
+          <div class="col-sm-4"><div class="abo-kv"><span class="k" data-i18n="abo.amount">Montant</span><span class="v">5 000 XOF / <span data-i18n="abo.per_month">mois</span></span></div></div>
+          <div class="col-sm-4"><div class="abo-kv"><span class="k" data-i18n="abo.payment_method">Moyen de paiement</span><span class="v"><i class="fa fa-mobile-screen-button me-1" style="color:#155e75;"></i>Orange Money •• 45 67</span></div></div>
+        </div>
+        <div class="d-flex gap-2 flex-wrap">
+          <button class="btn btn-doctor btn-sm"><i class="fa fa-repeat me-1"></i><span data-i18n="abo.change_period">Passer à l'annuel (−17 %)</span></button>
+          <button class="btn btn-ghost btn-sm"><i class="fa fa-credit-card me-1"></i><span data-i18n="abo.update_payment">Mettre à jour le paiement</span></button>
+          <button class="btn btn-danger-ghost btn-sm"><i class="fa fa-ban me-1"></i><span data-i18n="abo.cancel_sub">Annuler l'abonnement</span></button>
+        </div>
+      </div>
+
+      <!-- Historique de facturation -->
+      <div class="card-abo">
+        <h6 data-i18n="abo.history">Historique de facturation</h6>
+        <div class="inv-scroll">
+          <table class="inv">
+            <thead>
+              <tr>
+                <th data-i18n="abo.th_invoice">N° facture</th>
+                <th data-i18n="abo.th_date">Date</th>
+                <th data-i18n="abo.th_period">Période</th>
+                <th data-i18n="abo.th_amount">Montant</th>
+                <th data-i18n="abo.th_method">Mode</th>
+                <th data-i18n="abo.th_status">Statut</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="fw-semibold">FUENI-2026-000142</td>
+                <td>15/06/2026</td>
+                <td>15/06 → 14/07/2026</td>
+                <td>5 000 XOF</td>
+                <td>Orange Money</td>
+                <td><span class="pill pill-active" data-i18n="abo.paid">Payé</span></td>
+                <td class="text-end"><a href="#" class="dl-btn" onclick="event.preventDefault();"><i class="fa fa-download me-1"></i>PDF</a></td>
+              </tr>
+              <tr>
+                <td class="fw-semibold">FUENI-2026-000098</td>
+                <td>15/05/2026</td>
+                <td>15/05 → 14/06/2026</td>
+                <td>5 000 XOF</td>
+                <td>Orange Money</td>
+                <td><span class="pill pill-active" data-i18n="abo.paid">Payé</span></td>
+                <td class="text-end"><a href="#" class="dl-btn" onclick="event.preventDefault();"><i class="fa fa-download me-1"></i>PDF</a></td>
+              </tr>
+              <tr>
+                <td class="fw-semibold">FUENI-2026-000061</td>
+                <td>15/04/2026</td>
+                <td>15/04 → 14/05/2026</td>
+                <td>5 000 XOF</td>
+                <td>Orange Money</td>
+                <td><span class="pill pill-active" data-i18n="abo.paid">Payé</span></td>
+                <td class="text-end"><a href="#" class="dl-btn" onclick="event.preventDefault();"><i class="fa fa-download me-1"></i>PDF</a></td>
+              </tr>
+              <tr>
+                <td class="fw-semibold">FUENI-2026-000024</td>
+                <td>15/03/2026</td>
+                <td>15/03 → 14/04/2026 <span class="text-muted" data-i18n="abo.first_payment">(1ᵉʳ paiement)</span></td>
+                <td>5 000 XOF</td>
+                <td>Orange Money</td>
+                <td><span class="pill pill-active" data-i18n="abo.paid">Payé</span></td>
+                <td class="text-end"><a href="#" class="dl-btn" onclick="event.preventDefault();"><i class="fa fa-download me-1"></i>PDF</a></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="text-muted small mt-3 mb-0"><i class="fa fa-circle-info me-1"></i><span data-i18n="abo.invoice_note">Chaque paiement génère une facture, envoyée par e-mail et disponible ici.</span></p>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Prototype version badge -->
+<script>(function(){if(window.__pv)return;window.__pv=1;var v=document.createElement('div');v.style.cssText='position:fixed;top:0;left:50%;transform:translateX(-50%);background:#155e75;color:#fff;padding:6px 20px;border-radius:0 0 16px 16px;font:600 12px/1 system-ui,-apple-system,sans-serif;letter-spacing:.6px;z-index:99999;box-shadow:0 3px 10px rgba(0,0,0,.2);text-transform:uppercase;display:flex;align-items:center;gap:8px';v.innerHTML='🧪 Prototype <span style="background:#f59e0b;color:#1a1a1a;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:4px">v1.4.0</span><span style="background:#facc15;color:#1a1a1a;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:4px;text-transform:none;letter-spacing:0">⏳ À valider</span>';document.body.appendChild(v);})();</script>
+</body>
+</html>

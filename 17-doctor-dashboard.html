@@ -46,6 +46,14 @@
     .bg-card { background: white; border: none; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
     .btn-doctor { background: #155e75; border-color: #155e75; color: white; }
     .btn-doctor:hover { background: #114c5f; border-color: #114c5f; color: white; }
+    .stat-block.stat-tile { display: flex; align-items: center; gap: 14px; text-align: left; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+    .stat-ic { width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0; }
+    .card-title-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+    .dash-item { display: flex; align-items: center; gap: 12px; padding: 11px 0; border-bottom: 1px solid #eef2f6; }
+    .dash-item:last-child { border-bottom: 0; }
+    .dash-time { background: #e8f2f5; color: #155e75; border-radius: 8px; padding: 6px 8px; font-weight: 700; font-size: 0.82rem; min-width: 52px; text-align: center; }
+    .dash-av { width: 36px; height: 36px; border-radius: 50%; background: #dbeafe; color: #1e40af; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.78rem; flex-shrink: 0; }
+    .pill { font-size: 0.68rem; font-weight: 700; padding: 3px 9px; border-radius: 20px; white-space: nowrap; }
   </style>
 </head>
 <body data-i18n-pagetitle="doc.dash.page_title" data-i18n-toggle>
@@ -68,10 +76,9 @@
     <a href="#" class="nav-link-side js-locked" onclick="event.preventDefault();"><i class="fa fa-user-injured"></i><span data-i18n="doc.dash.tile_patients">Patients</span><i class="fa fa-lock lock-icon"></i></a>
     <a href="#" class="nav-link-side js-locked" onclick="event.preventDefault();"><i class="fa fa-calendar-check"></i><span data-i18n="doc.dash.tile_rdv">Rendez-vous</span><i class="fa fa-lock lock-icon"></i></a>
     <a href="#" class="nav-link-side js-locked" onclick="event.preventDefault();"><i class="fa fa-file-medical"></i><span data-i18n="doc.dash.tile_records">Dossiers médicaux</span><i class="fa fa-lock lock-icon"></i></a>
-    <a href="#" class="nav-link-side js-locked" onclick="event.preventDefault();"><i class="fa fa-comments"></i><span data-i18n="doc.dash.tile_messages">Messagerie</span><i class="fa fa-lock lock-icon"></i></a>
 
     <div class="nav-section" data-i18n="doc.dash.sec_account">Compte</div>
-    <a href="#" class="nav-link-side unlocked"><i class="fa fa-star"></i><span data-i18n="doc.dash.nav_subscription">Mon abonnement</span></a>
+    <a href="18-doctor-abonnement.html" class="nav-link-side unlocked"><i class="fa fa-star"></i><span data-i18n="doc.dash.nav_subscription">Mon abonnement</span></a>
     <a href="#" class="nav-link-side unlocked"><i class="fa fa-cog"></i><span data-i18n="doc.dash.nav_settings">Paramètres</span></a>
     <a href="10b-login-doctor.html" class="nav-link-side unlocked"><i class="fa fa-arrow-right-from-bracket"></i><span data-i18n="doc.dash.logout">Déconnexion</span></a>
   </div>
@@ -159,16 +166,45 @@
           <div class="flex-grow-1 small"><strong data-i18n="doc.dash.phone_unverified_t">Téléphone non vérifié.</strong> <span data-i18n="doc.dash.phone_unverified">Vérifiez-le pour pouvoir vous connecter par SMS et recevoir les alertes urgentes.</span></div>
           <a href="13b-doctor-otp.html" class="btn btn-sm" style="background:#f57c00;color:#fff;font-weight:600;white-space:nowrap;" data-i18n="doc.dash.phone_verify_btn">Vérifier maintenant</a>
         </div>
-        <h2 class="fw-bold mb-4" style="color:#155e75;" data-i18n="doc.dash.bg_title">Tableau de bord</h2>
-        <div class="row g-3 mb-4">
-          <div class="col-sm-3"><div class="stat-block"><div class="fs-2 fw-bold" style="color:#155e75;">—</div><div class="small text-muted" data-i18n="doc.dash.bg_patients">Patients</div></div></div>
-          <div class="col-sm-3"><div class="stat-block"><div class="fs-2 fw-bold text-success">—</div><div class="small text-muted" data-i18n="doc.dash.bg_rdv">Rendez-vous du jour</div></div></div>
-          <div class="col-sm-3"><div class="stat-block"><div class="fs-2 fw-bold text-warning">—</div><div class="small text-muted" data-i18n="doc.dash.bg_messages">Messages non lus</div></div></div>
-          <div class="col-sm-3"><div class="stat-block"><div class="fs-2 fw-bold text-danger">—</div><div class="small text-muted" data-i18n="doc.dash.bg_docs">Documents en attente</div></div></div>
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
+          <div>
+            <h2 class="fw-bold mb-1" style="color:#155e75;" data-i18n-html="doc.dash.hello_html">Bonjour <strong>Dr Diallo</strong> 👋</h2>
+            <p class="text-muted mb-0 small" data-i18n="doc.dash.hello_sub">Voici votre activité du jour.</p>
+          </div>
+          <a href="#" class="btn btn-doctor"><i class="fa fa-calendar-plus me-2"></i><span data-i18n="doc.dash.new_rdv">Nouveau rendez-vous</span></a>
         </div>
+
+        <div class="row g-3 mb-4">
+          <div class="col-sm-6 col-xl-4"><div class="stat-block stat-tile"><div class="stat-ic" style="background:#e8f2f5;color:#155e75;"><i class="fa fa-user-injured"></i></div><div><div class="fs-2 fw-bold" style="color:#155e75;">128</div><div class="small text-muted" data-i18n="doc.dash.bg_patients">Patients</div></div></div></div>
+          <div class="col-sm-6 col-xl-4"><div class="stat-block stat-tile"><div class="stat-ic" style="background:#e6f7ee;color:#0f5132;"><i class="fa fa-calendar-check"></i></div><div><div class="fs-2 fw-bold text-success">6</div><div class="small text-muted" data-i18n="doc.dash.bg_rdv">Rendez-vous du jour</div></div></div></div>
+          <div class="col-sm-6 col-xl-4"><div class="stat-block stat-tile"><div class="stat-ic" style="background:#fdeeee;color:#c0392b;"><i class="fa fa-file-medical"></i></div><div><div class="fs-2 fw-bold text-danger">2</div><div class="small text-muted" data-i18n="doc.dash.bg_docs">Documents en attente</div></div></div></div>
+        </div>
+
         <div class="row g-3">
-          <div class="col-md-8"><div class="bg-card p-4" style="height:200px;"><div class="text-muted text-center pt-4" data-i18n="doc.dash.bg_agenda">Agenda du jour</div></div></div>
-          <div class="col-md-4"><div class="bg-card p-4" style="height:200px;"><div class="text-muted text-center pt-4" data-i18n="doc.dash.bg_recent">Derniers patients</div></div></div>
+          <div class="col-lg-8">
+            <div class="bg-card p-4">
+              <div class="card-title-row">
+                <h6 class="fw-bold mb-0" style="color:#155e75;"><i class="fa fa-calendar-day me-2"></i><span data-i18n="doc.dash.bg_agenda">Agenda du jour</span></h6>
+                <a href="#" class="small text-decoration-none" style="color:#155e75;font-weight:600;" data-i18n="doc.dash.see_all">Tout voir →</a>
+              </div>
+              <div class="dash-item"><div class="dash-time">09:00</div><div class="dash-av">MS</div><div class="flex-grow-1"><div class="fw-semibold small">Mariama Sow</div><div class="text-muted" style="font-size:0.8rem;" data-i18n="doc.dash.m_consult">Consultation</div></div><span class="pill" style="background:#d1e7dd;color:#0f5132;" data-i18n="doc.dash.st_confirmed">Confirmé</span></div>
+              <div class="dash-item"><div class="dash-time">09:45</div><div class="dash-av">OB</div><div class="flex-grow-1"><div class="fw-semibold small">Ousmane Bâ</div><div class="text-muted" style="font-size:0.8rem;" data-i18n="doc.dash.m_suivi">Suivi</div></div><span class="pill" style="background:#d1e7dd;color:#0f5132;" data-i18n="doc.dash.st_confirmed">Confirmé</span></div>
+              <div class="dash-item"><div class="dash-time">10:30</div><div class="dash-av">FN</div><div class="flex-grow-1"><div class="fw-semibold small">Fatou Ndiaye</div><div class="text-muted" style="font-size:0.8rem;" data-i18n="doc.dash.m_teleconsult">Téléconsultation</div></div><span class="pill" style="background:#fff3cd;color:#856404;" data-i18n="doc.dash.st_pending">En attente</span></div>
+              <div class="dash-item"><div class="dash-time">11:15</div><div class="dash-av">AK</div><div class="flex-grow-1"><div class="fw-semibold small">Aminata Koné</div><div class="text-muted" style="font-size:0.8rem;" data-i18n="doc.dash.m_controle">Contrôle</div></div><span class="pill" style="background:#d1e7dd;color:#0f5132;" data-i18n="doc.dash.st_confirmed">Confirmé</span></div>
+              <div class="dash-item"><div class="dash-time">15:00</div><div class="dash-av">IT</div><div class="flex-grow-1"><div class="fw-semibold small">Ibrahim Traoré</div><div class="text-muted" style="font-size:0.8rem;" data-i18n="doc.dash.m_consult">Consultation</div></div><span class="pill" style="background:#fff3cd;color:#856404;" data-i18n="doc.dash.st_pending">En attente</span></div>
+            </div>
+          </div>
+          <div class="col-lg-4">
+            <div class="bg-card p-4">
+              <div class="card-title-row">
+                <h6 class="fw-bold mb-0" style="color:#155e75;"><i class="fa fa-user-clock me-2"></i><span data-i18n="doc.dash.bg_recent">Derniers patients</span></h6>
+              </div>
+              <div class="dash-item"><div class="dash-av">MS</div><div class="flex-grow-1"><div class="fw-semibold small">Mariama Sow</div><div class="text-muted" style="font-size:0.78rem;">18/05/2026</div></div></div>
+              <div class="dash-item"><div class="dash-av">CD</div><div class="flex-grow-1"><div class="fw-semibold small">Cheikh Diop</div><div class="text-muted" style="font-size:0.78rem;">17/05/2026</div></div></div>
+              <div class="dash-item"><div class="dash-av">AK</div><div class="flex-grow-1"><div class="fw-semibold small">Aminata Koné</div><div class="text-muted" style="font-size:0.78rem;">16/05/2026</div></div></div>
+              <div class="dash-item"><div class="dash-av">OB</div><div class="flex-grow-1"><div class="fw-semibold small">Ousmane Bâ</div><div class="text-muted" style="font-size:0.78rem;">15/05/2026</div></div></div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -211,7 +247,6 @@
       bg.style.filter = 'none';
       document.querySelectorAll('.nav-link-side.js-locked').forEach(l => { l.classList.add('unlocked'); l.classList.remove('js-locked'); });
       document.getElementById('sidebarStatus').innerHTML = '<i class="fa fa-circle-check me-1" style="color:#22d3ee;"></i><span style="color:rgba(255,255,255,0.72);">' + t('doc.dash.validated_status', 'Profil validé') + '</span>';
-      document.querySelectorAll('.stat-block .fs-2').forEach(el => el.textContent = '0');
     }
 
     // Plan souscrit : Solo ou Gratuit
