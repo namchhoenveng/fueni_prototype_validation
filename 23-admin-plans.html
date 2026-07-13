@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FUENI Admin — Gestion des plans</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root { --slate:#2c3e50; --slate-dark:#1f2d3d; --purple:#6c3483; --purple-light:#f5eef8; --accent:#f59e0b; }
+    * { box-sizing: border-box; }
+    body { background:#f0f4f8; font-family:'Inter','Segoe UI',sans-serif; color:#0f172a; margin:0; }
+    .sidebar { position:fixed; top:0; left:0; width:272px; height:100vh; background:linear-gradient(180deg,var(--slate-dark),var(--slate)); color:#fff; padding:0; overflow-y:auto; z-index:100; }
+    .sidebar-brand { padding:20px 22px 6px; }
+    .sidebar-brand small { font-weight:500; opacity:0.55; font-size:0.72rem; }
+    .sidebar-label { font-size:0.64rem; text-transform:uppercase; letter-spacing:1px; color:rgba(255,255,255,0.4); padding:16px 22px 6px; font-weight:700; }
+    .nav-link-side { color:rgba(255,255,255,0.82); padding:10px 18px; display:flex; align-items:center; gap:11px; font-size:0.88rem; text-decoration:none; transition:background .15s; cursor:pointer; white-space:nowrap; }
+    .nav-link-side i { width:18px; text-align:center; }
+    .nav-link-side:hover { background:rgba(255,255,255,0.08); color:#fff; }
+    .nav-link-side.active { background:rgba(108,52,131,0.55); border-left:3px solid var(--accent); color:#fff; font-weight:600; }
+    .nav-link-side.disabled { color:rgba(255,255,255,0.34); cursor:not-allowed; }
+    .nav-link-side.disabled:hover { background:none; }
+    .soon-pill { margin-left:auto; font-size:0.6rem; background:rgba(255,255,255,0.12); color:rgba(255,255,255,0.6); padding:1px 7px; border-radius:10px; font-weight:700; letter-spacing:0.3px; }
+    .main { margin-left:272px; padding:0 28px 40px; }
+    .admin-topbar { display:flex; align-items:center; gap:10px; padding:14px 0; margin-bottom:10px; border-bottom:1px solid #e6edf3; font-size:0.9rem; }
+    .sa-avatar { width:30px; height:30px; border-radius:50%; background:var(--purple); display:flex; align-items:center; justify-content:center; color:#fff; font-size:0.72rem; font-weight:700; }
+    .imm-note { background:#eef4fb; border:1px solid #bcdfe7; color:#0e4456; border-radius:10px; padding:9px 14px; font-size:0.82rem; margin-bottom:18px; display:flex; align-items:center; gap:9px; }
+    .todo-note { background:#fff8f1; border:1px solid #faddc0; color:#9c4221; border-radius:10px; padding:9px 14px; font-size:0.82rem; margin-bottom:18px; display:flex; align-items:center; gap:9px; }
+
+    .plan-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:18px; margin-bottom:26px; }
+    .plan-card { background:#fff; border-radius:14px; box-shadow:0 2px 10px rgba(0,0,0,0.06); padding:22px; border-top:4px solid #cbd5e1; position:relative; }
+    .plan-card.solo { border-top-color:var(--accent); }
+    .plan-head { display:flex; align-items:center; gap:10px; margin-bottom:4px; }
+    .plan-name { font-size:1.35rem; font-weight:800; color:var(--slate); }
+    .pill { font-size:0.64rem; font-weight:700; padding:3px 9px; border-radius:20px; text-transform:uppercase; letter-spacing:0.4px; }
+    .pill-on { background:#d1e7dd; color:#0f5132; }
+    .pill-off { background:#f8d7da; color:#842029; }
+    .pill-pop { background:#fff3cd; color:#8a6100; }
+    .plan-price { font-size:1.5rem; font-weight:800; color:var(--slate); margin:8px 0 2px; }
+    .plan-price small { font-size:0.9rem; font-weight:600; color:#94a3b8; }
+    .plan-price .free { color:#0f5132; }
+    .plan-sub { font-size:0.82rem; color:#64748b; margin-bottom:14px; }
+    .plan-metrics { display:flex; gap:20px; padding:12px 0; border-top:1px solid #f1f5f9; border-bottom:1px solid #f1f5f9; margin-bottom:14px; }
+    .metric .n { font-size:1.25rem; font-weight:800; color:var(--purple); }
+    .metric .l { font-size:0.72rem; color:#94a3b8; text-transform:uppercase; letter-spacing:0.4px; font-weight:600; }
+    .grace-note { font-size:0.78rem; color:#64748b; margin-bottom:14px; }
+    .grace-note i { color:var(--accent); }
+    .btn-slate { background:var(--slate); border:0; color:#fff; font-weight:600; border-radius:9px; font-size:0.85rem; padding:8px 14px; }
+    .btn-slate:hover { background:var(--slate-dark); color:#fff; }
+    .btn-ghost { background:#f1f5f9; border:0; color:#475569; font-weight:600; border-radius:9px; font-size:0.85rem; padding:8px 14px; }
+    .btn-ghost:hover { background:#e2e8f0; color:#334155; }
+    /* toggle */
+    .switch { position:relative; display:inline-block; width:42px; height:23px; flex-shrink:0; }
+    .switch input { opacity:0; width:0; height:0; }
+    .slider { position:absolute; cursor:pointer; inset:0; background:#cbd5e1; border-radius:23px; transition:.2s; }
+    .slider:before { content:""; position:absolute; height:17px; width:17px; left:3px; bottom:3px; background:#fff; border-radius:50%; transition:.2s; }
+    input:checked + .slider { background:#198754; }
+    input:checked + .slider:before { transform:translateX(19px); }
+
+    .matrix-wrap { background:#fff; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.05); overflow:hidden; }
+    .matrix-scroll { overflow-x:auto; }
+    table.matrix { width:100%; border-collapse:collapse; font-size:0.85rem; min-width:560px; }
+    table.matrix th { text-align:left; font-size:0.7rem; text-transform:uppercase; letter-spacing:0.5px; color:#94a3b8; font-weight:700; padding:12px 16px; border-bottom:2px solid #eef2f6; }
+    table.matrix th.col-plan { text-align:center; width:150px; }
+    table.matrix td { padding:11px 16px; border-bottom:1px solid #f1f5f9; vertical-align:middle; }
+    table.matrix td.val { text-align:center; }
+    table.matrix tr:last-child td { border-bottom:0; }
+    .yes { color:#198754; } .no { color:#cbd5e1; }
+    .val-text { font-size:0.8rem; font-weight:600; color:#475569; }
+    .feat-name { font-weight:600; color:#334155; }
+    .feat-name small { display:block; font-weight:400; color:#94a3b8; font-size:0.74rem; }
+    .toast-ok { position:fixed; bottom:24px; left:50%; transform:translateX(-50%); background:#0f5132; color:#fff; padding:12px 22px; border-radius:10px; font-size:0.88rem; font-weight:600; box-shadow:0 6px 20px rgba(0,0,0,0.25); z-index:3000; display:flex; align-items:center; gap:9px; }
+    @media (max-width:900px){ .sidebar{ display:none; } .main{ margin-left:0; padding:0 14px 30px; } }
+    .proto-bar { position: sticky; top: 0; z-index: 200; }
+  </style>
+</head>
+<body>
+
+  <div class="proto-bar d-flex align-items-center gap-3 flex-wrap" style="background:#fff8e1;border-bottom:1px dashed #f1c40f;padding:6px 16px;font-size:0.82rem;color:#7d5e00;">
+    <span><i class="fa fa-eye text-warning me-1"></i><strong>Écran 23 — Gestion des plans (Super Admin)</strong></span>
+    <a href="21-admin-verifications.html" class="text-decoration-none text-muted ms-auto small">← Vérifications</a>
+  </div>
+
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="sidebar-brand"><img src="assets/fueni-lockup-white.svg" alt="FUENI" style="height:26px;width:auto;vertical-align:middle;"> <small>Admin</small></div>
+
+    <div class="sidebar-label">Tableau de bord</div>
+    <a class="nav-link-side disabled"><i class="fa fa-chart-bar"></i> Vue d'ensemble <span class="soon-pill">Bientôt</span></a>
+
+    <div class="sidebar-label">Gestion</div>
+    <a href="21-admin-verifications.html" class="nav-link-side"><i class="fa fa-user-check"></i> Vérification des dossiers</a>
+    <a class="nav-link-side disabled"><i class="fa fa-users"></i> Abonnements <span class="soon-pill">Bientôt</span></a>
+    <a href="22-admin-audit.html" class="nav-link-side"><i class="fa fa-clock-rotate-left"></i> Journal d'audit</a>
+
+    <div class="sidebar-label">Configuration</div>
+    <a class="nav-link-side active"><i class="fa fa-th-large"></i> Plans</a>
+    <a class="nav-link-side disabled"><i class="fa fa-globe"></i> Tarification par pays <span class="soon-pill">Bientôt</span></a>
+
+    <div class="sidebar-label">Compte</div>
+    <a href="12-login-admin.html" class="nav-link-side"><i class="fa fa-sign-out-alt"></i> Déconnexion</a>
+  </div>
+
+  <div class="main">
+
+    <div class="admin-topbar">
+      <div class="sa-avatar">SA</div>
+      <span class="fw-semibold" style="color:var(--slate);">Super Admin</span>
+      <span class="text-muted">›</span>
+      <span class="text-muted small">Gestion des plans</span>
+      <div class="ms-auto d-flex align-items-center gap-3">
+        <span class="text-muted small"><i class="fa fa-calendar-alt me-1"></i>6 juillet 2026</span>
+        <span class="small text-muted fw-semibold">admin@fueni.com</span>
+      </div>
+    </div>
+
+    <div class="d-flex justify-content-between align-items-start mb-3 mt-1 flex-wrap gap-2">
+      <div>
+        <h3 class="fw-bold mb-0" style="color:var(--slate);">Gestion des plans</h3>
+        <p class="text-muted mb-0 small">Formules d'abonnement praticien — tarifs, disponibilité et fonctionnalités. Deux plans en Phase 1 : <strong>Free</strong> et <strong>Solo</strong>.</p>
+      </div>
+    </div>
+
+    <div class="imm-note">
+      <i class="fa fa-circle-info" style="color:#155e75;"></i>
+      <span>Toute modification de tarif s'applique aux <strong>nouvelles souscriptions</strong> et aux <strong>renouvellements à venir</strong> — jamais rétroactivement à une période déjà payée. Chaque changement est tracé dans le <a href="22-admin-audit.html">journal d'audit</a>.</span>
+    </div>
+
+    <div class="todo-note">
+      <i class="fa fa-triangle-exclamation"></i>
+      <span>🟠 <strong>À valider Nazounki</strong> — la répartition des fonctionnalités Free / Solo ci-dessous est une proposition de travail (illustrative). Le modèle définitif (limites, téléconsultation, etc.) reste à arrêter.</span>
+    </div>
+
+    <!-- Plan cards -->
+    <div class="plan-grid">
+
+      <!-- Free -->
+      <div class="plan-card">
+        <div class="plan-head">
+          <span class="plan-name">Free</span>
+          <span class="pill pill-on" id="freeStatus">Actif</span>
+        </div>
+        <div class="plan-price"><span class="free">Gratuit</span></div>
+        <div class="plan-sub">Socle d'accès offert à tout praticien validé (remplace l'essai).</div>
+        <div class="plan-metrics">
+          <div class="metric"><div class="n">84</div><div class="l">Abonnés actifs</div></div>
+          <div class="metric"><div class="n">—</div><div class="l">Revenu / mois</div></div>
+        </div>
+        <div class="d-flex align-items-center justify-content-between">
+          <button class="btn-ghost" onclick="openEdit('free')"><i class="fa fa-pen me-1"></i>Modifier</button>
+          <label class="d-flex align-items-center gap-2 mb-0" style="font-size:0.8rem;color:#64748b;">
+            Disponible
+            <span class="switch"><input type="checkbox" id="freeToggle" checked onchange="toggleStatus('free')"><span class="slider"></span></span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Solo -->
+      <div class="plan-card solo">
+        <div class="plan-head">
+          <span class="plan-name">Solo</span>
+          <span class="pill pill-on" id="soloStatus">Actif</span>
+          <span class="pill pill-pop">Populaire</span>
+        </div>
+        <div class="plan-price"><span id="soloMonthly">5 000</span> XOF <small>/ mois</small></div>
+        <div class="plan-sub"><span id="soloAnnual">50 000</span> XOF / an <span class="text-success fw-semibold">(−17 %)</span> · paiement Mobile Money ou carte</div>
+        <div class="plan-metrics">
+          <div class="metric"><div class="n">42</div><div class="l">Abonnés actifs</div></div>
+          <div class="metric"><div class="n">210 000</div><div class="l">XOF / mois (est.)</div></div>
+        </div>
+        <div class="grace-note"><i class="fa fa-clock me-1"></i>Délai de grâce renouvellement : <strong>2 j</strong> (mensuel) · <strong>7 j</strong> (annuel), rappels quotidiens.</div>
+        <div class="d-flex align-items-center justify-content-between">
+          <button class="btn-slate" onclick="openEdit('solo')"><i class="fa fa-pen me-1"></i>Modifier le tarif</button>
+          <label class="d-flex align-items-center gap-2 mb-0" style="font-size:0.8rem;color:#64748b;">
+            Disponible
+            <span class="switch"><input type="checkbox" id="soloToggle" checked onchange="toggleStatus('solo')"><span class="slider"></span></span>
+          </label>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Feature matrix -->
+    <h5 class="fw-bold mb-2" style="color:var(--slate);">Comparatif des fonctionnalités</h5>
+    <div class="matrix-wrap">
+      <div class="matrix-scroll">
+        <table class="matrix">
+          <thead>
+            <tr>
+              <th>Fonctionnalité</th>
+              <th class="col-plan">Free</th>
+              <th class="col-plan">Solo</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="feat-name">Profil vérifié &amp; référencement<small>Fiche publique dans l'annuaire</small></td>
+              <td class="val"><i class="fa fa-check yes"></i></td>
+              <td class="val"><i class="fa fa-check yes"></i></td>
+            </tr>
+            <tr>
+              <td class="feat-name">Agenda &amp; prise de rendez-vous</td>
+              <td class="val"><i class="fa fa-check yes"></i></td>
+              <td class="val"><i class="fa fa-check yes"></i></td>
+            </tr>
+            <tr>
+              <td class="feat-name">Dossiers patients</td>
+              <td class="val"><span class="val-text">Jusqu'à 50</span></td>
+              <td class="val"><span class="val-text">Illimités</span></td>
+            </tr>
+            <tr>
+              <td class="feat-name">Documents partagés avec les patients</td>
+              <td class="val"><i class="fa fa-xmark no"></i></td>
+              <td class="val"><i class="fa fa-check yes"></i></td>
+            </tr>
+            <tr>
+              <td class="feat-name">Téléconsultation</td>
+              <td class="val"><i class="fa fa-xmark no"></i></td>
+              <td class="val"><i class="fa fa-check yes"></i></td>
+            </tr>
+            <tr>
+              <td class="feat-name">Rappels SMS aux patients</td>
+              <td class="val"><i class="fa fa-xmark no"></i></td>
+              <td class="val"><i class="fa fa-check yes"></i></td>
+            </tr>
+            <tr>
+              <td class="feat-name">Facturation &amp; reçus PDF</td>
+              <td class="val"><i class="fa fa-check yes"></i></td>
+              <td class="val"><i class="fa fa-check yes"></i></td>
+            </tr>
+            <tr>
+              <td class="feat-name">Support</td>
+              <td class="val"><span class="val-text">Standard</span></td>
+              <td class="val"><span class="val-text">Prioritaire</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Edit plan modal -->
+  <div class="modal fade" id="editModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content" style="border:0;border-radius:16px;">
+        <div class="modal-header border-0 pb-0">
+          <h5 class="modal-title fw-bold" style="font-size:1.05rem;color:var(--slate);">Modifier le plan <span id="editPlanName"></span></h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body pt-2">
+          <div id="priceFields">
+            <div class="row g-3">
+              <div class="col-6">
+                <label class="form-label small fw-semibold">Tarif mensuel (XOF)</label>
+                <input type="number" class="form-control form-control-sm" id="editMonthly" min="0" step="500">
+              </div>
+              <div class="col-6">
+                <label class="form-label small fw-semibold">Tarif annuel (XOF)</label>
+                <input type="number" class="form-control form-control-sm" id="editAnnual" min="0" step="500">
+              </div>
+            </div>
+            <p class="text-muted mt-2 mb-0" style="font-size:0.78rem;"><i class="fa fa-tag me-1"></i>Remise annuelle calculée : <strong id="editDiscount">—</strong></p>
+          </div>
+          <div id="freeFields" class="d-none">
+            <p class="text-muted small mb-0"><i class="fa fa-circle-info me-1"></i>Le plan <strong>Free</strong> est gratuit — aucun tarif à définir. Sa disponibilité et ses fonctionnalités restent configurables.</p>
+          </div>
+        </div>
+        <div class="modal-footer border-0 pt-0">
+          <button type="button" class="btn btn-ghost btn-sm" data-bs-dismiss="modal">Annuler</button>
+          <button type="button" class="btn-slate btn-sm" onclick="saveEdit()"><i class="fa fa-check me-1"></i>Enregistrer</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // Gestion des plans (démo) — modifications non persistées côté serveur dans le prototype.
+    const PLANS = {
+      free: { name:'Free',  monthly:0,    annual:0 },
+      solo: { name:'Solo',  monthly:5000, annual:50000 }
+    };
+    let editing = null, editModal;
+    const fmt = n => n.toLocaleString('fr-FR');
+
+    function openEdit(key) {
+      editing = key;
+      const p = PLANS[key];
+      document.getElementById('editPlanName').textContent = p.name;
+      const isFree = key === 'free';
+      document.getElementById('priceFields').classList.toggle('d-none', isFree);
+      document.getElementById('freeFields').classList.toggle('d-none', !isFree);
+      if (!isFree) {
+        document.getElementById('editMonthly').value = p.monthly;
+        document.getElementById('editAnnual').value = p.annual;
+        updateDiscount();
+      }
+      editModal = editModal || new bootstrap.Modal(document.getElementById('editModal'));
+      editModal.show();
+    }
+
+    function updateDiscount() {
+      const m = +document.getElementById('editMonthly').value || 0;
+      const a = +document.getElementById('editAnnual').value || 0;
+      const full = m * 12;
+      const el = document.getElementById('editDiscount');
+      if (full > 0 && a > 0 && a <= full) {
+        const pct = Math.round((1 - a / full) * 100);
+        el.textContent = pct + ' % vs ' + fmt(full) + ' XOF (12 mois)';
+      } else { el.textContent = '—'; }
+    }
+    document.getElementById('editMonthly').addEventListener('input', updateDiscount);
+    document.getElementById('editAnnual').addEventListener('input', updateDiscount);
+
+    function saveEdit() {
+      if (editing === 'solo') {
+        PLANS.solo.monthly = +document.getElementById('editMonthly').value || 0;
+        PLANS.solo.annual  = +document.getElementById('editAnnual').value || 0;
+        document.getElementById('soloMonthly').textContent = fmt(PLANS.solo.monthly);
+        document.getElementById('soloAnnual').textContent  = fmt(PLANS.solo.annual);
+      }
+      if (editModal) editModal.hide();
+      showToast('Plan ' + PLANS[editing].name + ' mis à jour.');
+    }
+
+    function toggleStatus(key) {
+      const on = document.getElementById(key + 'Toggle').checked;
+      const badge = document.getElementById(key + 'Status');
+      badge.textContent = on ? 'Actif' : 'Masqué';
+      badge.className = 'pill ' + (on ? 'pill-on' : 'pill-off');
+      showToast('Plan ' + PLANS[key].name + (on ? ' réactivé.' : ' masqué (indisponible à la souscription).'));
+    }
+
+    let toastTimer;
+    function showToast(msg) {
+      let t = document.getElementById('saToast');
+      if (!t) {
+        t = document.createElement('div');
+        t.id = 'saToast'; t.className = 'toast-ok';
+        document.body.appendChild(t);
+      }
+      t.innerHTML = '<i class="fa fa-circle-check"></i>' + msg;
+      t.style.display = 'flex';
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => { t.style.display = 'none'; }, 2600);
+    }
+  </script>
+<!-- Prototype version badge -->
+<script>(function(){if(window.__pv)return;window.__pv=1;var v=document.createElement('div');v.style.cssText='position:fixed;top:0;left:50%;transform:translateX(-50%);background:#155e75;color:#fff;padding:6px 20px;border-radius:0 0 16px 16px;font:600 12px/1 system-ui,-apple-system,sans-serif;letter-spacing:.6px;z-index:99999;box-shadow:0 3px 10px rgba(0,0,0,.2);text-transform:uppercase;display:flex;align-items:center;gap:8px';v.innerHTML='🧪 Prototype <span style="background:#f59e0b;color:#1a1a1a;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:4px">v1.4.0</span><span style="background:#facc15;color:#1a1a1a;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:4px;text-transform:none;letter-spacing:0">⏳ À valider</span>';document.body.appendChild(v);})();</script>
+</body>
+</html>

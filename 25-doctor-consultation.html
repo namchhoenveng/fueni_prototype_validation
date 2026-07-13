@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FUENI — Consultation</title>
+  <script src="naz-i18n.js" defer></script>
+  <script src="naz-patients.js"></script>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="naz-common.css">
+  <style>
+    body { background: #f0f4f8; font-family: 'Segoe UI', sans-serif; }
+    .sidebar { background: #155e75; min-height: 100vh; width: 240px; position: fixed; top: 0; left: 0; z-index: 100; }
+    .sidebar-brand { padding: 20px 20px 12px; display: flex; align-items: center; gap: 10px; color: white; }
+    .sidebar-user { padding: 12px 20px 18px; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; gap: 10px; }
+    .sidebar-user .avatar { width: 40px; height: 40px; border-radius: 50%; background: #0e7490; display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; flex-shrink: 0; }
+    .nav-section { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: rgba(255,255,255,0.3); padding: 16px 20px 6px; }
+    .nav-link-side { color: rgba(255,255,255,0.72); padding: 10px 20px; display: flex; align-items: center; gap: 10px; font-size: 0.9rem; cursor: pointer; text-decoration: none; }
+    .nav-link-side i:first-child { width: 16px; text-align: center; flex-shrink: 0; }
+    .nav-link-side:hover { color: white; background: rgba(255,255,255,0.1); }
+    .nav-link-side.active { color: white; background: rgba(255,255,255,0.15); border-left: 3px solid #22d3ee; cursor: default; }
+    .main { margin-left: 240px; }
+    .main-topbar { position: fixed; top: 0; left: 240px; right: 0; z-index: 200; background: white; border-bottom: 1px solid #f1f5f9; padding: 14px 28px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 1px 3px rgba(0,0,0,0.03); }
+    .topbar-title { font-size: 1.15rem; font-weight: 700; margin: 0; color: #0f172a; }
+    .topbar-btn { background: #f1f5f9; color: #475569; padding: 9px 16px; border-radius: 10px; font-size: 0.85rem; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; }
+    .topbar-btn:hover { background:#e2e8f0; color:#334155; }
+    .content-area { padding: 88px 28px 40px; }
+    .patient-band { background:#fff; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.04); padding:14px 18px; display:flex; align-items:center; gap:14px; margin-bottom:16px; }
+    .pb-avatar { width:44px; height:44px; border-radius:50%; background:#e0f2f1; color:#0e7490; display:flex; align-items:center; justify-content:center; font-weight:700; }
+    .pb-name { font-weight:700; color:#0f172a; }
+    .pb-meta { font-size:0.83rem; color:#64748b; }
+    .safety-banner { display:flex; align-items:center; gap:10px; border-radius:12px; padding:11px 15px; font-size:0.86rem; margin-bottom:16px; }
+    .safety-banner.crit { background:#fee2e2; border:1px solid #fca5a5; color:#991b1b; }
+    .safety-banner.warn { background:#fff8f1; border:1px solid #faddc0; color:#9a3412; }
+    .safety-banner i { font-size:1rem; }
+    .vitals-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(108px,1fr)); gap:10px; }
+    .vitals-grid label { font-size:0.72rem; color:#64748b; font-weight:600; display:block; margin-bottom:3px; }
+    .seg { display:inline-flex; background:#eef2f6; border-radius:10px; padding:4px; gap:2px; margin-bottom:16px; }
+    .seg button { background:none; border:0; padding:8px 18px; border-radius:8px; font-size:0.88rem; font-weight:600; color:#64748b; cursor:pointer; display:inline-flex; gap:7px; align-items:center; }
+    .seg button.on { background:#fff; color:#155e75; box-shadow:0 1px 3px rgba(0,0,0,0.08); }
+    .work { display:grid; grid-template-columns:1fr 1fr; gap:18px; align-items:start; }
+    .card-c { background:#fff; border-radius:14px; box-shadow:0 2px 12px rgba(0,0,0,0.06); padding:20px; }
+    .card-c h6 { font-size:0.74rem; font-weight:800; text-transform:uppercase; letter-spacing:0.8px; color:#155e75; margin:0 0 14px; }
+    .form-label { font-size:0.82rem; font-weight:600; color:#334155; }
+    .rx-row { display:flex; gap:8px; align-items:center; margin-bottom:8px; }
+    .rx-row .rx-med { flex:1 1 auto; } .rx-row .rx-p { width:150px; } .rx-row .rx-d { width:120px; }
+    .btn-del { background:none; border:0; color:#cbd5e1; font-size:1rem; padding:6px 8px; cursor:pointer; }
+    .btn-del:hover { color:#dc3545; }
+    .btn-ghost { background:#f1f5f9; border:0; color:#475569; font-weight:600; }
+    .btn-doctor { background:#155e75; border:0; color:#fff; font-weight:600; }
+    .btn-doctor:hover { background:#114c5f; color:#fff; }
+    /* Document preview */
+    .doc { background:#fff; border:1px solid #e2e8f0; border-radius:6px; padding:34px 38px; font-size:0.9rem; color:#1e293b; min-height:520px; }
+    .doc-head { display:flex; justify-content:space-between; border-bottom:2px solid #155e75; padding-bottom:12px; margin-bottom:18px; }
+    .doc-dr { font-weight:800; color:#155e75; font-size:1.05rem; }
+    .doc-head small { display:block; font-weight:500; color:#475569; font-size:0.8rem; margin-top:2px; }
+    .doc-brand { text-align:right; font-size:0.75rem; color:#94a3b8; }
+    .doc-title { text-align:center; font-weight:800; text-transform:uppercase; letter-spacing:1px; color:#0f172a; margin:10px 0 18px; }
+    .doc-meta { display:flex; justify-content:space-between; font-size:0.85rem; color:#475569; margin-bottom:18px; }
+    .doc-sec { margin-bottom:14px; }
+    .doc-sec .lbl { font-weight:700; color:#155e75; font-size:0.8rem; text-transform:uppercase; letter-spacing:0.4px; }
+    .doc-sec .val { white-space:pre-line; margin-top:2px; }
+    .doc-rx-line { padding:8px 0; border-bottom:1px dashed #e2e8f0; }
+    .doc-rx-line .m { font-weight:700; }
+    .doc-rx-line .s { font-size:0.85rem; color:#475569; }
+    .doc-sign { margin-top:32px; text-align:right; }
+    .doc-sign .s-name { font-weight:700; }
+    .doc-sign .s-note { font-size:0.72rem; color:#94a3b8; margin-top:26px; border-top:1px solid #eef2f6; padding-top:6px; }
+    .muted-ph { color:#cbd5e1; font-style:italic; }
+    .toast-ok { position:fixed; bottom:24px; left:50%; transform:translateX(-50%); background:#0f5132; color:#fff; padding:12px 22px; border-radius:10px; font-size:0.9rem; font-weight:600; box-shadow:0 6px 20px rgba(0,0,0,0.25); z-index:3000; display:none; align-items:center; gap:9px; }
+    /* Diagnostic picker (référentiel codifié) */
+    .diag-box { position:relative; }
+    .diag-menu { position:absolute; z-index:20; left:0; right:0; top:calc(100% + 4px); background:#fff; border:1px solid #e2e8f0; border-radius:10px; box-shadow:0 8px 24px rgba(0,0,0,0.12); max-height:260px; overflow-y:auto; }
+    .diag-opt { padding:9px 12px; cursor:pointer; display:flex; gap:10px; align-items:baseline; border-bottom:1px solid #f6f8fa; }
+    .diag-opt:last-child { border-bottom:0; }
+    .diag-opt:hover { background:#eef5f7; }
+    .diag-opt .code { font-weight:800; color:#155e75; font-size:0.78rem; min-width:54px; }
+    .diag-opt .lbl { color:#334155; font-size:0.88rem; }
+    .diag-opt .none { color:#94a3b8; font-size:0.86rem; }
+    .diag-ref { font-size:0.72rem; color:#94a3b8; margin-top:6px; }
+    .diag-chips { display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; }
+    .diag-chip { display:inline-flex; align-items:center; gap:8px; background:#e0f2f1; color:#0e7490; border-radius:20px; padding:5px 8px 5px 6px; font-size:0.84rem; font-weight:600; }
+    .diag-chip .code { background:#155e75; color:#fff; border-radius:10px; padding:2px 8px; font-size:0.72rem; }
+    .diag-chip .x { cursor:pointer; color:#0e7490; opacity:0.55; }
+    .diag-chip .x:hover { opacity:1; }
+    .diag-opt .mform { margin-left:auto; color:#94a3b8; font-size:0.78rem; white-space:nowrap; padding-left:10px; }
+    /* Médicament : autocomplétion par ligne d'ordonnance */
+    .rx-med-box { flex:1 1 auto; position:relative; min-width:0; }
+    .rx-med-box .rx-med { width:100%; }
+    .rx-menu { position:absolute; z-index:20; left:0; right:0; top:calc(100% + 4px); background:#fff; border:1px solid #e2e8f0; border-radius:10px; box-shadow:0 8px 24px rgba(0,0,0,0.12); max-height:240px; overflow-y:auto; }
+    @media (max-width:960px){ .work { grid-template-columns:1fr; } }
+    @media (max-width:820px){ .sidebar{display:none;} .main{margin-left:0;} .main-topbar{left:0;} }
+    @media print {
+      body * { visibility:hidden !important; }
+      #docPreview, #docPreview * { visibility:visible !important; }
+      #docPreview { position:absolute; left:0; top:0; width:100%; }
+      .doc { border:0; }
+    }
+  </style>
+</head>
+<body data-i18n-pagetitle="docc.page_title" data-i18n-toggle>
+
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="sidebar-brand">
+      <a href="01-home.html" class="brand-logo" aria-label="FUENI"><img src="assets/fueni-lockup-horizontal.svg" alt="FUENI" style="height:34px;"></a>
+    </div>
+    <div class="sidebar-user">
+      <div class="avatar">AD</div>
+      <div>
+        <div class="text-white fw-semibold small" data-i18n="doc.dash.greeting">Dr Aboubacar Diallo</div>
+        <div style="color:rgba(255,255,255,0.72); font-size:0.72rem;"><i class="fa fa-circle-check me-1" style="color:#22d3ee;"></i><span data-i18n="doc.dash.validated_status">Profil validé</span></div>
+      </div>
+    </div>
+    <div class="nav-section" data-i18n="doc.dash.sec_main">Principal</div>
+    <a href="17-doctor-dashboard.html?state=active" class="nav-link-side"><i class="fa fa-home"></i><span data-i18n="doc.dash.nav_dashboard">Tableau de bord</span></a>
+    <a href="19-doctor-public-profile.html" class="nav-link-side"><i class="fa fa-id-badge"></i><span data-i18n="doc.dash.nav_public_profile">Mon profil public</span></a>
+    <a href="20-doctor-patients.html" class="nav-link-side"><i class="fa fa-user-injured"></i><span data-i18n="doc.dash.tile_patients">Mes patients</span></a>
+    <a href="24-doctor-rendezvous.html" class="nav-link-side"><i class="fa fa-calendar-check"></i><span data-i18n="doc.dash.tile_rdv">Mon planning</span></a>
+    <a href="26-doctor-records.html" class="nav-link-side active"><i class="fa fa-file-medical"></i><span data-i18n="doc.dash.tile_records">Dossiers médicaux</span></a>
+    <div class="nav-section" data-i18n="doc.dash.sec_account">Compte</div>
+    <a href="18-doctor-abonnement.html" class="nav-link-side"><i class="fa fa-star"></i><span data-i18n="doc.dash.nav_subscription">Mon abonnement</span></a>
+    <a href="#" class="nav-link-side" onclick="event.preventDefault();"><i class="fa fa-cog"></i><span data-i18n="doc.dash.nav_settings">Paramètres</span></a>
+    <a href="10b-login-doctor.html" class="nav-link-side"><i class="fa fa-arrow-right-from-bracket"></i><span data-i18n="doc.dash.logout">Déconnexion</span></a>
+  </div>
+
+  <div class="main">
+    <header class="main-topbar">
+      <h1 class="topbar-title" data-i18n="docc.page_title2">Consultation</h1>
+      <a href="24-doctor-rendezvous.html" class="topbar-btn" id="backBtn"><i class="fa fa-arrow-left"></i><span id="backLbl" data-i18n="docc.back">Retour au planning</span></a>
+    </header>
+
+    <div class="content-area">
+      <!-- Patient context -->
+      <div class="patient-band">
+        <div class="pb-avatar" id="pbAvatar">MD</div>
+        <div class="flex-grow-1">
+          <div class="pb-name" id="pbName">Mariam Diallo</div>
+          <div class="pb-meta"><span id="pbMeta"></span></div>
+        </div>
+      </div>
+
+      <!-- Allergy guard -->
+      <div id="cAllergy"></div>
+
+      <!-- Tabs -->
+      <div class="seg">
+        <button id="tabNote" class="on" onclick="setTab('note')"><i class="fa fa-notes-medical"></i><span data-i18n="docc.tab_note">Note de consultation</span></button>
+        <button id="tabRx" onclick="setTab('rx')"><i class="fa fa-prescription"></i><span data-i18n="docc.tab_rx">Ordonnance</span></button>
+      </div>
+
+      <div class="work">
+        <!-- Editor -->
+        <div class="card-c">
+          <!-- Note editor -->
+          <div id="noteEditor">
+            <h6 data-i18n="docc.tab_note">Note de consultation</h6>
+            <div class="mb-3"><label class="form-label" data-i18n="docc.n_motif">Motif</label><input type="text" class="form-control" id="nMotif" oninput="C.note.motif=this.value;renderPreview()"></div>
+            <div class="mb-3"><label class="form-label" data-i18n="docc.n_exam">Examen clinique / observations</label><textarea class="form-control" id="nExam" rows="4" oninput="C.note.exam=this.value;renderPreview()"></textarea></div>
+            <div class="mb-3"><label class="form-label" data-i18n="docc.vitals">Constantes</label>
+              <div class="vitals-grid">
+                <div><label data-i18n="docc.v_temp">Température (°C)</label><input type="number" inputmode="decimal" step="0.1" min="30" max="45" class="form-control form-control-sm" id="vTemp" placeholder="37,0" oninput="C.vitals.temp=this.value;renderPreview()"></div>
+                <div><label data-i18n="docc.v_ta">Tension (mmHg)</label><input type="text" inputmode="numeric" maxlength="7" class="form-control form-control-sm" id="vTa" placeholder="120/80" oninput="this.value=this.value.replace(/[^0-9/]/g,'');C.vitals.ta=this.value;renderPreview()"></div>
+                <div><label data-i18n="docc.v_pouls">Pouls (bpm)</label><input type="number" inputmode="numeric" step="1" min="0" max="300" class="form-control form-control-sm" id="vPouls" placeholder="72" oninput="C.vitals.pouls=this.value;renderPreview()"></div>
+                <div><label data-i18n="docc.v_spo2">SpO₂ (%)</label><input type="number" inputmode="numeric" step="1" min="0" max="100" class="form-control form-control-sm" id="vSpo2" placeholder="98" oninput="C.vitals.spo2=this.value;renderPreview()"></div>
+                <div><label data-i18n="docc.v_poids">Poids (kg)</label><input type="number" inputmode="decimal" step="0.1" min="0" max="400" class="form-control form-control-sm" id="vPoids" placeholder="70" oninput="C.vitals.poids=this.value;renderPreview()"></div>
+              </div>
+            </div>
+            <div class="mb-3"><label class="form-label" data-i18n="docc.n_diag">Diagnostic</label>
+              <div class="diag-box">
+                <input type="text" class="form-control" id="nDiagSearch" autocomplete="off" data-i18n-placeholder="docc.diag_search_ph" placeholder="Rechercher un diagnostic…" oninput="filterDiag(this.value)" onfocus="filterDiag(this.value)">
+                <div class="diag-menu" id="diagMenu" style="display:none;"></div>
+              </div>
+              <div class="diag-ref" data-i18n="docc.diag_ref">Référentiel officiel — CIM-10 / SNOMED CT (à confirmer)</div>
+              <div id="diagChips" class="diag-chips"></div>
+            </div>
+            <div class="mb-1"><label class="form-label" data-i18n="docc.n_cat">Conduite à tenir</label><textarea class="form-control" id="nCat" rows="3" oninput="C.note.cat=this.value;renderPreview()"></textarea></div>
+          </div>
+          <!-- Rx editor -->
+          <div id="rxEditor" style="display:none;">
+            <h6 data-i18n="docc.tab_rx">Ordonnance</h6>
+            <div class="form-hint text-muted" style="font-size:0.8rem;" data-i18n="docc.rx_hint">Une ligne par médicament (nom, posologie, durée).</div>
+            <div class="diag-ref mb-2" data-i18n="docc.rx_ref">Prescription en DCI · référentiel officiel — OMS (DCI/ATC) / SNOMED CT (à confirmer)</div>
+            <div id="rxLines"></div>
+            <button class="btn btn-ghost btn-sm mt-1" onclick="addRx()"><i class="fa fa-plus me-1"></i><span data-i18n="docc.rx_add">Ajouter un médicament</span></button>
+          </div>
+        </div>
+
+        <!-- Live preview -->
+        <div>
+          <div class="doc" id="docPreview"></div>
+          <div class="d-flex gap-2 justify-content-end mt-3 no-print">
+            <button class="btn btn-ghost" onclick="window.print()"><i class="fa fa-print me-1"></i><span data-i18n="docc.print_btn">Imprimer / PDF</span></button>
+            <button class="btn btn-doctor" onclick="share()"><i class="fa fa-share-nodes me-1"></i><span data-i18n="docc.share_btn">Partager au patient</span></button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast-ok" id="cToast"><i class="fa fa-circle-check"></i><span id="cToastMsg"></span></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    const T = k => (window.NazI18n ? NazI18n.t(k) : k);
+    const TODAY = '2026-07-10';
+    const params = new URLSearchParams(location.search);
+
+    // Identité du praticien depuis le profil public (données vérifiées KYC)
+    function profile() { try { const r = localStorage.getItem('fueni_pubprofile'); if (r) return JSON.parse(r); } catch (e) {} return {}; }
+    const PR = profile();
+    const DR = {
+      title: PR.title || 'Dr', name: PR.name || 'Aboubacar Diallo', spec: PR.spec || 'Médecine générale',
+      ordre: PR.ordre || 'ONMS-2024-00871', ordreBody: PR.ordreBody || 'Ordre des Médecins du Sénégal',
+      city: PR.city || 'Dakar'
+    };
+
+    const patient = params.get('patient') || 'Mariam Diallo';
+    const rdvMotif = params.get('motif') || 'Consultation générale';
+    let tab = 'note';
+    const C = { note: { motif: rdvMotif, exam: '', diags: [], cat: '' }, vitals: { temp: '', ta: '', pouls: '', spo2: '', poids: '' }, rx: [{ med: '', poso: '', duree: '' }] };
+    // Référentiel de diagnostics codifiés (sous-ensemble de démo).
+    // V2 : appel à une API officielle — WHO ICD (CIM-10/11) ou SNOMED CT — choix en attente de validation client.
+    const DIAG_REF = [
+      { code: 'J00', label: 'Rhinopharyngite aiguë (rhume banal)' },
+      { code: 'J02.9', label: 'Pharyngite aiguë, sans précision' },
+      { code: 'J03.9', label: 'Amygdalite aiguë, sans précision' },
+      { code: 'J06.9', label: 'Infection aiguë des voies respiratoires supérieures' },
+      { code: 'J20', label: 'Bronchite aiguë' },
+      { code: 'J45', label: 'Asthme' },
+      { code: 'I10', label: 'Hypertension essentielle (primitive)' },
+      { code: 'E78.5', label: 'Hyperlipidémie, sans précision' },
+      { code: 'E11', label: 'Diabète sucré de type 2' },
+      { code: 'E10', label: 'Diabète sucré de type 1' },
+      { code: 'G43', label: 'Migraine' },
+      { code: 'R51', label: 'Céphalée' },
+      { code: 'M54.5', label: 'Lombalgie basse' },
+      { code: 'M54', label: 'Dorsalgie' },
+      { code: 'A09', label: 'Diarrhée et gastro-entérite présumées infectieuses' },
+      { code: 'K29', label: 'Gastrite et duodénite' },
+      { code: 'N39.0', label: 'Infection des voies urinaires, siège non précisé' },
+      { code: 'B54', label: 'Paludisme, sans précision' },
+      { code: 'H66', label: 'Otite moyenne suppurée et sans précision' },
+      { code: 'L23', label: 'Dermatite allergique de contact' },
+      { code: 'Z34', label: "Surveillance d'une grossesse normale" },
+      { code: 'D50', label: 'Anémie par carence en fer' },
+      { code: 'F41', label: 'Autres troubles anxieux' },
+      { code: 'F32', label: 'Épisode dépressif' }
+    ];
+    // Allergies connues — lues depuis le dossier patient partagé (garde-fou à la prescription)
+    function patientAllergies(name) {
+      const rec = (window.NazPatients || []).find(p => p.name === name);
+      return rec ? rec.allergies : [];
+    }
+
+    function fmtLong(s) { try { return new Date(s + 'T00:00:00').toLocaleDateString((window.NazI18n && NazI18n.getLang() === 'en') ? 'en-GB' : 'fr-FR', { day:'numeric', month:'long', year:'numeric' }); } catch (e) { return s; } }
+    function ini(n) { return (n || 'P').split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase(); }
+    const esc = s => (s == null ? '' : String(s)).replace(/[&<>]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;' }[c]));
+
+    function setTab(t) {
+      tab = t;
+      document.getElementById('tabNote').classList.toggle('on', t === 'note');
+      document.getElementById('tabRx').classList.toggle('on', t === 'rx');
+      document.getElementById('noteEditor').style.display = t === 'note' ? '' : 'none';
+      document.getElementById('rxEditor').style.display = t === 'rx' ? '' : 'none';
+      renderPreview();
+    }
+
+    function renderRx() {
+      document.getElementById('rxLines').innerHTML = C.rx.map((r, i) =>
+        '<div class="rx-row">' +
+          '<div class="rx-med-box">' +
+            '<input type="text" autocomplete="off" class="form-control form-control-sm rx-med" value="' + esc(r.med).replace(/"/g,'&quot;') + '" placeholder="' + T('docc.rx_med') + '" oninput="medInput(' + i + ',this.value)" onfocus="showMedMenu(' + i + ',this.value)">' +
+            '<div class="rx-menu" id="rxMenu' + i + '" style="display:none;"></div>' +
+          '</div>' +
+          '<input type="text" class="form-control form-control-sm rx-p" value="' + esc(r.poso).replace(/"/g,'&quot;') + '" placeholder="' + T('docc.rx_poso') + '" oninput="C.rx[' + i + '].poso=this.value;renderPreview()">' +
+          '<input type="text" class="form-control form-control-sm rx-d" value="' + esc(r.duree).replace(/"/g,'&quot;') + '" placeholder="' + T('docc.rx_duree') + '" oninput="C.rx[' + i + '].duree=this.value;renderPreview()">' +
+          '<button class="btn-del" onclick="removeRx(' + i + ')"><i class="fa fa-trash-can"></i></button>' +
+        '</div>'
+      ).join('');
+    }
+    function addRx() { C.rx.push({ med:'', poso:'', duree:'' }); renderRx(); }
+    function removeRx(i) { C.rx.splice(i, 1); if (!C.rx.length) C.rx.push({ med:'', poso:'', duree:'' }); renderRx(); renderPreview(); }
+
+    function letterhead() {
+      return '<div class="doc-head"><div><div class="doc-dr">' + DR.title + ' ' + esc(DR.name) + '</div>' +
+        '<small>' + esc(DR.spec) + ' · ' + T('docc.ordre_no') + ' ' + esc(DR.ordre) + '</small>' +
+        '<small>' + esc(DR.ordreBody) + '</small></div>' +
+        '<div class="doc-brand"><i class="fa fa-shield-halved"></i> ' + T('docc.verified') + '<br>' + esc(DR.city) + ' · ' + fmtLong(TODAY) + '</div></div>';
+    }
+    function ph(v) { return v && v.trim() ? esc(v) : '<span class="muted-ph">' + T('docc.empty') + '</span>'; }
+
+    function renderPreview() {
+      const box = document.getElementById('docPreview');
+      const meta = '<div class="doc-meta"><div><strong>' + T('docc.patient') + '</strong> ' + esc(patient) + '</div><div>' + fmtLong(TODAY) + '</div></div>';
+      const sign = '<div class="doc-sign"><div class="s-name">' + DR.title + ' ' + esc(DR.name) + '</div><div class="s-note">' + T('docc.generated') + '</div></div>';
+      if (tab === 'note') {
+        const v = C.vitals;
+        const vParts = [];
+        if (v.temp) vParts.push('T° ' + esc(v.temp) + ' °C');
+        if (v.ta) vParts.push('TA ' + esc(v.ta));
+        if (v.pouls) vParts.push('Pouls ' + esc(v.pouls) + ' bpm');
+        if (v.spo2) vParts.push('SpO₂ ' + esc(v.spo2) + ' %');
+        if (v.poids) vParts.push('Poids ' + esc(v.poids) + ' kg');
+        const vitalsSec = vParts.length ? '<div class="doc-sec"><div class="lbl">' + T('docc.vitals') + '</div><div class="val">' + vParts.join(' · ') + '</div></div>' : '';
+        box.innerHTML = letterhead() +
+          '<div class="doc-title">' + T('docc.doc_note') + '</div>' + meta +
+          '<div class="doc-sec"><div class="lbl">' + T('docc.n_motif') + '</div><div class="val">' + ph(C.note.motif) + '</div></div>' +
+          '<div class="doc-sec"><div class="lbl">' + T('docc.n_exam') + '</div><div class="val">' + ph(C.note.exam) + '</div></div>' +
+          vitalsSec +
+          '<div class="doc-sec"><div class="lbl">' + T('docc.n_diag') + '</div><div class="val">' + (C.note.diags.length ? C.note.diags.map(d => '<strong style="color:#155e75">' + d.code + '</strong> — ' + esc(d.label)).join('<br>') : ph('')) + '</div></div>' +
+          '<div class="doc-sec"><div class="lbl">' + T('docc.n_cat') + '</div><div class="val">' + ph(C.note.cat) + '</div></div>' + sign;
+      } else {
+        const lines = C.rx.filter(r => r.med.trim());
+        const rxHtml = lines.length ? lines.map(r =>
+          '<div class="doc-rx-line"><div class="m">' + esc(r.med) + '</div><div class="s">' + [esc(r.poso), esc(r.duree)].filter(Boolean).join(' · ') + '</div></div>'
+        ).join('') : '<div class="muted-ph">' + T('docc.rx_empty') + '</div>';
+        box.innerHTML = letterhead() +
+          '<div class="doc-title">' + T('docc.doc_rx') + '</div>' + meta + rxHtml + sign;
+      }
+    }
+
+    let ct;
+    function share() {
+      const t = document.getElementById('cToast');
+      document.getElementById('cToastMsg').textContent = T(tab === 'note' ? 'docc.share_note_toast' : 'docc.share_rx_toast');
+      t.style.display = 'flex'; clearTimeout(ct); ct = setTimeout(() => { t.style.display = 'none'; }, 2800);
+    }
+
+    function renderAllergy() {
+      const al = patientAllergies(patient);
+      const box = document.getElementById('cAllergy');
+      if (!al.length) { box.innerHTML = ''; return; }
+      const hi = al.filter(a => a.sev === 'high');
+      box.innerHTML = hi.length
+        ? '<div class="safety-banner crit"><i class="fa fa-triangle-exclamation"></i><div><strong>' + T('docmr.allergy_severe') + ' :</strong> ' + hi.map(a => a.name).join(', ') + '</div></div>'
+        : '<div class="safety-banner warn"><i class="fa fa-triangle-exclamation"></i>' + T('docmr.allergy_warn') + '</div>';
+    }
+    // Bouton retour contextuel : dossier médical si l'on vient de « Documenter une consultation », sinon planning
+    const fromRecords = (params.get('from') === 'records');
+    function setBack() {
+      const btn = document.getElementById('backBtn'), lbl = document.getElementById('backLbl');
+      if (fromRecords) {
+        btn.href = '26-doctor-records.html?patient=' + encodeURIComponent(patient);
+        lbl.setAttribute('data-i18n', 'docc.back_records');
+      } else {
+        btn.href = '24-doctor-rendezvous.html';
+        lbl.setAttribute('data-i18n', 'docc.back');
+      }
+      lbl.textContent = T(lbl.getAttribute('data-i18n'));
+    }
+    function filterDiag(q) {
+      q = (q || '').trim().toLowerCase();
+      const menu = document.getElementById('diagMenu');
+      const chosen = new Set(C.note.diags.map(d => d.code));
+      let res = DIAG_REF.filter(d => !chosen.has(d.code));
+      if (q) res = res.filter(d => (d.code + ' ' + d.label).toLowerCase().includes(q));
+      res = res.slice(0, 8);
+      menu.innerHTML = res.length
+        ? res.map(d => '<div class="diag-opt" onclick="pickDiag(\'' + d.code + '\')"><span class="code">' + d.code + '</span><span class="lbl">' + esc(d.label) + '</span></div>').join('')
+        : '<div class="diag-opt"><span class="none">' + T('docc.diag_no_match') + '</span></div>';
+      menu.style.display = '';
+    }
+    function pickDiag(code) {
+      const d = DIAG_REF.find(x => x.code === code); if (!d) return;
+      if (!C.note.diags.some(x => x.code === code)) C.note.diags.push({ code: d.code, label: d.label });
+      document.getElementById('nDiagSearch').value = ''; hideDiagMenu();
+      renderDiagChips(); renderPreview();
+    }
+    function rmDiag(code) { C.note.diags = C.note.diags.filter(d => d.code !== code); renderDiagChips(); renderPreview(); }
+    function hideDiagMenu() { const m = document.getElementById('diagMenu'); if (m) m.style.display = 'none'; }
+    function renderDiagChips() {
+      document.getElementById('diagChips').innerHTML = C.note.diags.map(d =>
+        '<span class="diag-chip"><span class="code">' + d.code + '</span>' + esc(d.label) + '<i class="fa fa-xmark x" onclick="rmDiag(\'' + d.code + '\')"></i></span>'
+      ).join('');
+    }
+    // Référentiel de médicaments (sous-ensemble de démo, DCI + dosage + forme).
+    // V2 : API officielle — OMS (liste des médicaments essentiels / DCI-ATC) ou SNOMED CT — choix en attente de validation client.
+    const MED_REF = [
+      { dci: 'Paracétamol', dose: '500 mg', form: 'comprimé' },
+      { dci: 'Paracétamol', dose: '1 g', form: 'comprimé' },
+      { dci: 'Paracétamol', dose: '125 mg', form: 'suppositoire' },
+      { dci: 'Ibuprofène', dose: '400 mg', form: 'comprimé' },
+      { dci: 'Amoxicilline', dose: '500 mg', form: 'gélule' },
+      { dci: 'Amoxicilline', dose: '1 g', form: 'comprimé' },
+      { dci: 'Amoxicilline / Acide clavulanique', dose: '1 g', form: 'comprimé' },
+      { dci: 'Azithromycine', dose: '250 mg', form: 'comprimé' },
+      { dci: 'Ciprofloxacine', dose: '500 mg', form: 'comprimé' },
+      { dci: 'Métronidazole', dose: '500 mg', form: 'comprimé' },
+      { dci: 'Ceftriaxone', dose: '1 g', form: 'injectable' },
+      { dci: 'Amlodipine', dose: '5 mg', form: 'comprimé' },
+      { dci: 'Amlodipine', dose: '10 mg', form: 'comprimé' },
+      { dci: 'Metformine', dose: '500 mg', form: 'comprimé' },
+      { dci: 'Metformine', dose: '1000 mg', form: 'comprimé' },
+      { dci: 'Oméprazole', dose: '20 mg', form: 'gélule' },
+      { dci: 'Salbutamol', dose: '100 µg/dose', form: 'inhalateur' },
+      { dci: 'Artéméther / Luméfantrine', dose: '20/120 mg', form: 'comprimé' },
+      { dci: 'Prednisolone', dose: '20 mg', form: 'comprimé' },
+      { dci: 'Loratadine', dose: '10 mg', form: 'comprimé' },
+      { dci: 'Fer + acide folique', dose: '', form: 'comprimé' },
+      { dci: 'Sérum physiologique', dose: '0,9 %', form: 'solution nasale' }
+    ];
+    function medLabel(m) { return (m.dci + (m.dose ? ' ' + m.dose : '')).trim(); }
+    function medInput(i, v) { C.rx[i].med = v; renderPreview(); showMedMenu(i, v); }
+    function showMedMenu(i, q) {
+      const menu = document.getElementById('rxMenu' + i); if (!menu) return;
+      q = (q || '').trim().toLowerCase();
+      let res = MED_REF;
+      if (q) res = res.filter(m => (m.dci + ' ' + m.dose + ' ' + m.form).toLowerCase().includes(q));
+      res = res.slice(0, 8);
+      menu.innerHTML = res.map(m => '<div class="diag-opt" onmousedown="event.preventDefault();pickMed(' + i + ',' + MED_REF.indexOf(m) + ')"><span class="lbl">' + esc(medLabel(m)) + '</span><span class="mform">' + esc(m.form) + '</span></div>').join('');
+      menu.style.display = res.length ? '' : 'none';
+    }
+    function pickMed(i, idx) {
+      const m = MED_REF[idx]; if (!m) return;
+      C.rx[i].med = medLabel(m) + (m.form ? ' — ' + m.form : '');
+      renderRx(); renderPreview();
+    }
+    function hideAllMedMenus() { document.querySelectorAll('.rx-menu').forEach(m => m.style.display = 'none'); }
+    document.addEventListener('click', e => {
+      const inDiag = e.target.closest && e.target.closest('.diag-box');
+      const inMed = e.target.closest && e.target.closest('.rx-med-box');
+      if (!inDiag) hideDiagMenu();
+      if (!inMed) hideAllMedMenus();
+    });
+
+    function hydrate() {
+      document.getElementById('pbAvatar').textContent = ini(patient);
+      document.getElementById('pbName').textContent = patient;
+      document.getElementById('pbMeta').textContent = rdvMotif + ' · ' + fmtLong(TODAY);
+      document.getElementById('nMotif').value = C.note.motif;
+      setBack(); renderDiagChips(); renderAllergy(); renderRx(); renderPreview();
+    }
+    document.addEventListener('fueni:langchange', () => { document.getElementById('pbMeta').textContent = rdvMotif + ' · ' + fmtLong(TODAY); setBack(); renderAllergy(); renderRx(); renderPreview(); });
+    document.addEventListener('DOMContentLoaded', hydrate);
+  </script>
+<!-- Prototype version badge -->
+<script>(function(){if(window.__pv)return;window.__pv=1;var v=document.createElement('div');v.style.cssText='position:fixed;top:0;left:50%;transform:translateX(-50%);background:#155e75;color:#fff;padding:6px 20px;border-radius:0 0 16px 16px;font:600 12px/1 system-ui,-apple-system,sans-serif;letter-spacing:.6px;z-index:99999;box-shadow:0 3px 10px rgba(0,0,0,.2);text-transform:uppercase;display:flex;align-items:center;gap:8px';v.innerHTML='🧪 Prototype <span style="background:#f59e0b;color:#1a1a1a;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:4px">v1.4.0</span><span style="background:#facc15;color:#1a1a1a;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:4px;text-transform:none;letter-spacing:0">⏳ À valider</span>';document.body.appendChild(v);})();</script>
+</body>
+</html>

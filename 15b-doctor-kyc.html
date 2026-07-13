@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>FUENI — Justificatifs (KYC)</title>
   <script src="naz-i18n.js" defer></script>
+  <script src="naz-specialities.js"></script>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
   <link rel="stylesheet" href="naz-common.css">
@@ -87,28 +88,9 @@
         <div class="row g-3">
           <div class="col-12 mb-2">
             <label class="form-label small fw-semibold" data-i18n="doc.reg.f_spec">Spécialité médicale *</label>
+            <!-- Options peuplées depuis le référentiel officiel (naz-specialities.js, spécialités MVP) via populateSpecialities() -->
             <select class="form-select" id="kycSpecialite" onchange="toggleKycSpecAutre()">
               <option value="" data-i18n="doc.reg.spec_choose">— Sélectionner —</option>
-              <option data-i18n="doc.reg.spec_general">Médecine générale</option>
-              <option data-i18n="doc.reg.spec_anesth">Anesthésie-Réanimation</option>
-              <option data-i18n="doc.reg.spec_cardio">Cardiologie</option>
-              <option data-i18n="doc.reg.spec_chir">Chirurgie générale</option>
-              <option data-i18n="doc.reg.spec_dermato">Dermatologie</option>
-              <option data-i18n="doc.reg.spec_diabeto">Diabétologie</option>
-              <option data-i18n="doc.reg.spec_endocrino">Endocrinologie</option>
-              <option data-i18n="doc.reg.spec_gastro">Gastro-entérologie</option>
-              <option data-i18n="doc.reg.spec_gyneco">Gynéco-obstétrique</option>
-              <option data-i18n="doc.reg.spec_urgence">Médecine d'urgence</option>
-              <option data-i18n="doc.reg.spec_interne">Médecine interne</option>
-              <option data-i18n="doc.reg.spec_nephro">Néphrologie</option>
-              <option data-i18n="doc.reg.spec_neuro">Neurologie</option>
-              <option data-i18n="doc.reg.spec_ophtalmo">Ophtalmologie</option>
-              <option data-i18n="doc.reg.spec_orl">ORL</option>
-              <option data-i18n="doc.reg.spec_pediatrie">Pédiatrie</option>
-              <option data-i18n="doc.reg.spec_pneumo">Pneumologie</option>
-              <option data-i18n="doc.reg.spec_psy">Psychiatrie</option>
-              <option data-i18n="doc.reg.spec_rhumato">Rhumatologie</option>
-              <option data-i18n="doc.reg.spec_uro">Urologie</option>
               <option value="autre" data-i18n="doc.reg.spec_autre">Autre</option>
             </select>
             <input type="text" class="form-control mt-2 d-none" id="kycSpecAutre" data-i18n-placeholder="doc.reg.spec_autre_ph" placeholder="Précisez votre spécialité">
@@ -265,6 +247,21 @@
       city.classList.remove('is-err'); clearGlobalIfOk();
     }
 
+    // Peuple le sélecteur de spécialité depuis le référentiel officiel (spécialités MVP), localisé, en conservant la sélection.
+    function populateSpecialities() {
+      const sel = document.getElementById('kycSpecialite'); if (!sel) return;
+      const S = window.NazSpecialities; if (!S) return;
+      const lang = (window.NazI18n && NazI18n.getLang() === 'en') ? 'en' : 'fr';
+      const cur = sel.value;
+      const list = S.specialities.filter(x => x.mvp).slice()
+        .sort((a, b) => (a[lang] || a.fr).localeCompare(b[lang] || b.fr, 'fr'));
+      const opts = list.map(x => '<option value="' + x.fr + '">' + (x[lang] || x.fr) + '</option>').join('');
+      sel.innerHTML =
+        '<option value="">' + t('doc.reg.spec_choose', '— Sélectionner —') + '</option>' +
+        opts +
+        '<option value="autre">' + t('doc.reg.spec_autre', 'Autre') + '</option>';
+      if (cur) sel.value = cur;
+    }
     function toggleKycSpecAutre() {
       const isAutre = document.getElementById('kycSpecialite').value === 'autre';
       const inp = document.getElementById('kycSpecAutre');
@@ -436,7 +433,10 @@
       });
       const span = document.querySelector('#submitKyc span');
       span.textContent = revision ? t('doc.kyc.btn_resubmit', 'Renvoyer les pièces corrigées') : t('doc.kyc.submit', 'Soumettre mon dossier');
+      populateSpecialities(); // re-localiser les libellés de spécialité
     });
+    // naz-i18n étant chargé en defer, re-localiser une fois NazI18n prêt (préserve la sélection)
+    document.addEventListener('DOMContentLoaded', populateSpecialities);
 
     ['kycCabinet','kycRegionOther','kycCityOther','kycOrdre','kycNatId','kycSpecAutre'].forEach(id => { const el = document.getElementById(id); if (el) el.addEventListener('input', () => { el.classList.remove('is-err'); clearGlobalIfOk(); }); });
     document.querySelectorAll('.doc-dates input').forEach(i => i.addEventListener('input', () => { i.classList.remove('is-err'); const e = i.closest('.doc-dates').querySelector('.dd-err'); if (e) e.classList.add('d-none'); clearGlobalIfOk(); }));
@@ -444,6 +444,7 @@
 
     initLocation();
     setDocDateBounds();
+    populateSpecialities();
 
     if (correctionMode) {
       // Vue « correction » : pas de parcours d'inscription, on cible les pièces à corriger

@@ -90,8 +90,8 @@
     <a class="nav-link-side active"><i class="fa fa-clock-rotate-left"></i> Journal d'audit</a>
 
     <div class="sidebar-label">Configuration</div>
-    <a class="nav-link-side disabled"><i class="fa fa-th-large"></i> Plans <span class="soon-pill">Bientôt</span></a>
-    <a class="nav-link-side disabled"><i class="fa fa-globe"></i> Tarification <span class="soon-pill">Bientôt</span></a>
+    <a href="23-admin-plans.html" class="nav-link-side"><i class="fa fa-th-large"></i> Plans</a>
+    <a class="nav-link-side disabled"><i class="fa fa-globe"></i> Tarification par pays <span class="soon-pill">Bientôt</span></a>
 
     <div class="sidebar-label">Compte</div>
     <a href="12-login-admin.html" class="nav-link-side"><i class="fa fa-sign-out-alt"></i> Déconnexion</a>
@@ -131,10 +131,6 @@
     </div>
 
     <div class="filter-bar">
-      <div class="search-box"><i class="fa fa-search"></i><input type="text" id="search" placeholder="Rechercher une action, un motif…" oninput="page=1;render()"></div>
-
-      <span class="fb-div"></span>
-
       <select id="catSel" onchange="onCatChange()" title="Catégorie">
         <option value="all">Toutes catégories</option>
         <option value="auth">Authentification</option>
@@ -159,6 +155,8 @@
         <input type="date" id="dateFrom" onchange="page=1;render()">
         <span>–</span>
         <input type="date" id="dateTo" onchange="page=1;render()"></span>
+
+      <div class="search-box" style="margin-left:auto;flex:0 1 300px;max-width:340px;min-width:200px;"><i class="fa fa-search"></i><input type="text" id="search" placeholder="Rechercher une action, un motif…" oninput="page=1;render()"></div>
     </div>
 
     <div class="audit-wrap">

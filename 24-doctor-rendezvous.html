@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FUENI — Rendez-vous</title>
+  <script src="naz-i18n.js" defer></script>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="naz-common.css">
+  <style>
+    body { background: #f0f4f8; font-family: 'Segoe UI', sans-serif; }
+    .sidebar { background: #155e75; min-height: 100vh; width: 240px; position: fixed; top: 0; left: 0; z-index: 100; }
+    .sidebar-brand { padding: 20px 20px 12px; display: flex; align-items: center; gap: 10px; color: white; }
+    .sidebar-user { padding: 12px 20px 18px; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; gap: 10px; }
+    .sidebar-user .avatar { width: 40px; height: 40px; border-radius: 50%; background: #0e7490; display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; flex-shrink: 0; }
+    .nav-section { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: rgba(255,255,255,0.3); padding: 16px 20px 6px; }
+    .nav-link-side { color: rgba(255,255,255,0.72); padding: 10px 20px; display: flex; align-items: center; gap: 10px; font-size: 0.9rem; cursor: pointer; text-decoration: none; }
+    .nav-link-side i:first-child { width: 16px; text-align: center; flex-shrink: 0; }
+    .nav-link-side:hover { color: white; background: rgba(255,255,255,0.1); }
+    .nav-link-side.active { color: white; background: rgba(255,255,255,0.15); border-left: 3px solid #22d3ee; cursor: default; }
+    .main { margin-left: 240px; }
+    .main-topbar { position: fixed; top: 0; left: 240px; right: 0; z-index: 200; background: white; border-bottom: 1px solid #f1f5f9; padding: 14px 28px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 1px 3px rgba(0,0,0,0.03); }
+    .topbar-title { font-size: 1.15rem; font-weight: 700; margin: 0; color: #0f172a; }
+    .topbar-btn { background: #155e75; color: white; padding: 9px 16px; border-radius: 10px; font-size: 0.85rem; font-weight: 600; border:1.5px solid transparent; cursor:pointer; display: inline-flex; align-items: center; gap: 8px; text-decoration:none; }
+    .topbar-btn:hover { background:#0f4858; color:#fff; }
+    .topbar-btn.ghost { background:#fff; color:#155e75; border-color:#cbd5e1; }
+    .topbar-btn.ghost:hover { background:#eef5f7; border-color:#155e75; color:#155e75; }
+    .content-area { padding: 88px 28px 40px; }
+    .page-sub { color:#64748b; font-size:0.9rem; margin:-2px 0 16px; }
+
+    .toolbar { background:#fff; border-radius:14px; padding:12px 16px; display:flex; align-items:center; gap:14px; flex-wrap:wrap; box-shadow:0 2px 8px rgba(0,0,0,0.04); margin-bottom:18px; }
+    .seg { display:inline-flex; background:#f1f5f9; border-radius:10px; padding:4px; gap:2px; }
+    .seg button { background:none; border:0; padding:7px 15px; border-radius:8px; font-size:0.85rem; font-weight:600; color:#64748b; cursor:pointer; display:inline-flex; align-items:center; gap:6px; }
+    .seg button.on { background:#fff; color:#0f172a; box-shadow:0 1px 3px rgba(0,0,0,0.08); }
+    .date-nav { display:inline-flex; align-items:center; gap:6px; }
+    .date-nav .arrow { background:#fff; border:1.5px solid #e2e8f0; width:36px; height:36px; border-radius:8px; color:#475569; cursor:pointer; }
+    .date-nav .arrow:hover { border-color:#155e75; color:#155e75; }
+    .date-nav .today { border:1.5px solid #e2e8f0; background:#fff; border-radius:8px; font-size:0.85rem; font-weight:600; color:#155e75; padding:0 13px; height:36px; cursor:pointer; }
+    .date-nav .today:hover { background:#eef5f7; }
+    .cur-range { font-weight:700; font-size:0.98rem; color:#0f172a; margin:0 6px; text-transform:capitalize; }
+    .filter-select { border:1.5px solid #e2e8f0; border-radius:8px; padding:7px 10px; font-size:0.84rem; color:#475569; background:#fff; }
+
+    .planning-grid { display:grid; grid-template-columns:1fr 300px; gap:18px; align-items:start; }
+    .cal-card, .side-card { background:#fff; border-radius:14px; box-shadow:0 2px 8px rgba(0,0,0,0.04); }
+    .cal-card { padding:0; overflow:hidden; }
+    .side-card { padding:18px; }
+
+    /* Week grid */
+    .wk-head { display:grid; grid-template-columns:56px repeat(7,1fr); border-bottom:1px solid #e2e8f0; }
+    .wk-dh { text-align:center; padding:10px 4px; border-right:1px solid #f1f5f9; }
+    .wk-dh:last-child { border-right:0; }
+    .wk-dh .dn { font-size:0.68rem; text-transform:uppercase; letter-spacing:0.5px; color:#64748b; font-weight:700; }
+    .wk-dh .dd { font-size:1.05rem; font-weight:700; color:#0f172a; }
+    .wk-dh.today { background:#ecfeff; } .wk-dh.today .dd, .wk-dh.today .dn { color:#155e75; }
+    .wk-dh.weekend .dn, .wk-dh.weekend .dd { color:#b6c0cc; }
+    .wk-body { display:grid; grid-template-columns:56px repeat(7,1fr); }
+    .wk-gutter { position:relative; }
+    .wk-hr { position:absolute; right:6px; font-size:0.7rem; color:#94a3b8; transform:translateY(-6px); }
+    .wk-col { position:relative; border-right:1px solid #f1f5f9; background-image:repeating-linear-gradient(to bottom, transparent, transparent 53px, #f1f5f9 53px, #f1f5f9 54px); }
+    .wk-col:last-child { border-right:0; }
+    .wk-col.today { background-color:#fbfeff; }
+    .wk-col.weekend { background-color:#fafbfc; }
+    .rdv-card { position:absolute; left:4px; right:4px; padding:5px 7px; border-radius:6px; font-size:0.72rem; line-height:1.25; cursor:pointer; overflow:hidden; z-index:2; }
+    .rdv-card:hover { box-shadow:0 4px 12px rgba(0,0,0,0.14); z-index:5; }
+    .wk-block { position:absolute; left:4px; right:4px; z-index:1; background:repeating-linear-gradient(45deg,#f1f5f9,#f1f5f9 6px,#e5eaf0 6px,#e5eaf0 12px); border:1px dashed #cbd5e1; border-radius:6px; color:#64748b; font-size:0.68rem; padding:3px 6px; cursor:pointer; overflow:hidden; }
+    .wk-block:hover { border-color:#94a3b8; }
+    .wk-block i { margin-right:4px; }
+    .wk-avail { position:absolute; left:0; right:0; z-index:0; background:#f0fbfc; }
+    .rdv-card.cancelled { opacity:0.5; text-decoration:line-through; }
+    .rdv-card .rt { font-weight:700; }
+    .rdv-card .rs { opacity:0.85; }
+    .nat-consultation { background:#dbeafe; color:#1e40af; border-left:3px solid #2563eb; }
+    .nat-suivi { background:#d1fae5; color:#047857; border-left:3px solid #059669; }
+    .nat-urgence { background:#fee2e2; color:#b91c1c; border-left:3px solid #dc2626; }
+    .nat-teleconsult { background:#ede9fe; color:#6d28d9; border-left:3px solid #7c3aed; }
+    .nat-reunion { background:#fef3c7; color:#92400e; border-left:3px solid #f59e0b; }
+
+    /* Month grid */
+    .cal-pad { padding:16px; }
+    .cal-mhead { display:grid; grid-template-columns:repeat(7,1fr); }
+    .cal-mhead div { text-align:center; font-size:0.7rem; font-weight:700; color:#94a3b8; text-transform:uppercase; padding:4px 0 10px; }
+    .cal-mgrid { display:grid; grid-template-columns:repeat(7,1fr); gap:6px; }
+    .cal-cell { min-height:76px; border:1px solid #eef2f6; border-radius:10px; padding:6px; cursor:pointer; display:flex; flex-direction:column; gap:5px; }
+    .cal-cell:hover { border-color:#155e75; background:#f8fbfc; }
+    .cal-cell.out { opacity:0.38; }
+    .cal-num { font-size:0.82rem; font-weight:700; color:#334155; align-self:flex-start; }
+    .cal-cell.today .cal-num { background:#155e75; color:#fff; border-radius:50%; width:24px; height:24px; display:flex; align-items:center; justify-content:center; }
+    .cal-appts { display:flex; align-items:center; flex-wrap:wrap; gap:3px; margin-top:auto; }
+    .cal-dot { width:7px; height:7px; border-radius:50%; }
+    .cal-more { font-size:0.66rem; color:#155e75; font-weight:700; }
+
+    /* List */
+    .list-pad { padding:6px 18px 14px; }
+    .list-dh { font-size:0.76rem; font-weight:700; color:#475569; text-transform:uppercase; letter-spacing:0.6px; padding:16px 0 8px; border-bottom:1px solid #e2e8f0; }
+    .list-row { padding:12px 0; border-bottom:1px solid #f1f5f9; display:flex; align-items:center; gap:14px; cursor:pointer; }
+    .list-row:hover { background:#f8fafc; }
+    .list-row:last-child { border-bottom:0; }
+    .list-time { font-weight:700; color:#0f172a; min-width:120px; }
+    .list-time .e { color:#64748b; font-weight:500; font-size:0.85rem; }
+    .list-body { flex:1; min-width:0; }
+    .list-t { font-weight:600; color:#0f172a; }
+    .list-m { color:#64748b; font-size:0.85rem; }
+    .nat-tag { display:inline-block; padding:3px 10px; border-radius:14px; font-size:0.72rem; font-weight:700; white-space:nowrap; }
+
+    /* Side */
+    .side-title { font-size:0.72rem; font-weight:800; letter-spacing:0.8px; text-transform:uppercase; color:#475569; margin:0 0 12px; }
+    .today-rdv { padding:11px 13px; background:#f8fafc; border-radius:10px; margin-bottom:8px; border-left:3px solid #155e75; }
+    .today-rdv .tt { font-weight:700; color:#155e75; font-size:0.83rem; }
+    .today-rdv .tn { font-weight:600; color:#0f172a; margin-top:2px; font-size:0.9rem; }
+    .today-rdv .tm { color:#64748b; font-size:0.78rem; margin-top:2px; }
+    .legend-row { display:flex; align-items:center; gap:9px; font-size:0.83rem; padding:5px 0; color:#475569; }
+    .legend-dot { width:12px; height:12px; border-radius:4px; flex-shrink:0; }
+
+    .stat-tile { background:#fff; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.04); padding:12px 14px; display:flex; align-items:center; gap:12px; }
+    .stat-tile .n { font-size:1.3rem; font-weight:800; color:#0f172a; line-height:1; }
+    .stat-tile .l { font-size:0.74rem; color:#94a3b8; font-weight:600; }
+
+    .np { padding:6px 14px; border-radius:20px; font-size:0.82rem; font-weight:600; border:1.5px solid #e2e8f0; background:#fff; color:#475569; cursor:pointer; }
+    .np.sel { background:#eef5f7; color:#155e75; border-color:#155e75; }
+    .toast-ok { position:fixed; bottom:24px; left:50%; transform:translateX(-50%); background:#0f5132; color:#fff; padding:12px 22px; border-radius:10px; font-size:0.9rem; font-weight:600; box-shadow:0 6px 20px rgba(0,0,0,0.25); z-index:3000; display:none; align-items:center; gap:9px; }
+    @media (max-width:1100px){ .planning-grid { grid-template-columns:1fr; } }
+    @media (max-width:820px){ .sidebar{display:none;} .main{margin-left:0;} .main-topbar{left:0;} }
+  </style>
+</head>
+<body data-i18n-pagetitle="docrdv.page_title" data-i18n-toggle>
+
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="sidebar-brand">
+      <a href="01-home.html" class="brand-logo" aria-label="FUENI"><img src="assets/fueni-lockup-horizontal.svg" alt="FUENI" style="height:34px;"></a>
+    </div>
+    <div class="sidebar-user">
+      <div class="avatar">AD</div>
+      <div>
+        <div class="text-white fw-semibold small" data-i18n="doc.dash.greeting">Dr Aboubacar Diallo</div>
+        <div style="color:rgba(255,255,255,0.72); font-size:0.72rem;"><i class="fa fa-circle-check me-1" style="color:#22d3ee;"></i><span data-i18n="doc.dash.validated_status">Profil validé</span></div>
+      </div>
+    </div>
+    <div class="nav-section" data-i18n="doc.dash.sec_main">Principal</div>
+    <a href="17-doctor-dashboard.html?state=active" class="nav-link-side"><i class="fa fa-home"></i><span data-i18n="doc.dash.nav_dashboard">Tableau de bord</span></a>
+    <a href="19-doctor-public-profile.html" class="nav-link-side"><i class="fa fa-id-badge"></i><span data-i18n="doc.dash.nav_public_profile">Mon profil public</span></a>
+    <a href="20-doctor-patients.html" class="nav-link-side"><i class="fa fa-user-injured"></i><span data-i18n="doc.dash.tile_patients">Patients</span></a>
+    <a href="#" class="nav-link-side active"><i class="fa fa-calendar-check"></i><span data-i18n="doc.dash.tile_rdv">Rendez-vous</span></a>
+    <a href="26-doctor-records.html" class="nav-link-side"><i class="fa fa-file-medical"></i><span data-i18n="doc.dash.tile_records">Dossiers médicaux</span></a>
+    <div class="nav-section" data-i18n="doc.dash.sec_account">Compte</div>
+    <a href="18-doctor-abonnement.html" class="nav-link-side"><i class="fa fa-star"></i><span data-i18n="doc.dash.nav_subscription">Mon abonnement</span></a>
+    <a href="#" class="nav-link-side" onclick="event.preventDefault();"><i class="fa fa-cog"></i><span data-i18n="doc.dash.nav_settings">Paramètres</span></a>
+    <a href="10b-login-doctor.html" class="nav-link-side"><i class="fa fa-arrow-right-from-bracket"></i><span data-i18n="doc.dash.logout">Déconnexion</span></a>
+  </div>
+
+  <div class="main">
+    <header class="main-topbar">
+      <h1 class="topbar-title" data-i18n="doc.dash.tile_rdv">Rendez-vous</h1>
+      <div class="d-flex gap-2 flex-wrap">
+        <a href="19-doctor-public-profile.html" class="topbar-btn ghost"><i class="fa fa-clock"></i><span data-i18n="docrdv.avail_edit">Modifier mes horaires</span></a>
+        <button class="topbar-btn ghost" onclick="openBlock()"><i class="fa fa-ban"></i><span data-i18n="docrdv.block_btn">Bloquer un créneau</span></button>
+        <button class="topbar-btn" onclick="openCreate()"><i class="fa fa-calendar-plus"></i><span data-i18n="docrdv.new_rdv">Nouveau rendez-vous</span></button>
+      </div>
+    </header>
+
+    <div class="content-area">
+      <div class="row g-3 mb-3">
+        <div class="col-sm-6 col-lg-4"><div class="stat-tile"><div class="ic" style="width:40px;height:40px;border-radius:11px;background:#e0f2f1;color:#0e7490;display:flex;align-items:center;justify-content:center;"><i class="fa fa-calendar-day"></i></div><div><div class="n" id="stToday">0</div><div class="l" data-i18n="docrdv.stat_today">RDV aujourd'hui</div></div></div></div>
+        <div class="col-sm-6 col-lg-4"><div class="stat-tile"><div class="ic" style="width:40px;height:40px;border-radius:11px;background:#ede9fe;color:#5b21b6;display:flex;align-items:center;justify-content:center;"><i class="fa fa-calendar-week"></i></div><div><div class="n" id="stWeek">0</div><div class="l" data-i18n="docrdv.stat_week">RDV à venir (7 j)</div></div></div></div>
+      </div>
+
+      <div class="toolbar">
+        <div class="seg">
+          <button id="segWeek" class="on" onclick="setView('week')"><i class="fa fa-calendar"></i><span data-i18n="docrdv.view_week">Semaine</span></button>
+          <button id="segMonth" onclick="setView('month')"><i class="fa fa-table-cells"></i><span data-i18n="docrdv.view_month">Mois</span></button>
+          <button id="segList" onclick="setView('list')"><i class="fa fa-list"></i><span data-i18n="docrdv.view_list">Listing</span></button>
+        </div>
+        <div class="date-nav">
+          <button class="today" onclick="goToday()" data-i18n="docrdv.today_btn">Aujourd'hui</button>
+          <button class="arrow" onclick="navPrev()"><i class="fa fa-chevron-left"></i></button>
+          <button class="arrow" onclick="navNext()"><i class="fa fa-chevron-right"></i></button>
+        </div>
+        <div class="cur-range" id="curRange"></div>
+        <div class="ms-auto d-flex gap-2 flex-wrap">
+          <select class="filter-select" id="fltNature" onchange="fNature=this.value;render()"></select>
+          <select class="filter-select" id="fltStatus" onchange="fStatus=this.value;render()"></select>
+        </div>
+      </div>
+
+      <div class="planning-grid">
+        <div class="cal-card" id="calCard"></div>
+        <div class="side-card">
+          <h6 class="side-title" id="sideToday"></h6>
+          <div id="todayList"></div>
+          <h6 class="side-title mt-4"><i class="fa fa-palette me-1"></i><span data-i18n="docrdv.legend">Légende</span></h6>
+          <div id="legend"></div>
+
+          <h6 class="side-title mt-4"><i class="fa fa-sliders me-1"></i><span data-i18n="docrdv.avail_title">Disponibilités</span></h6>
+          <p class="text-muted mb-2" style="font-size:0.8rem;line-height:1.5;" data-i18n="docrdv.avail_source">Les créneaux réservables suivent vos horaires de consultation.</p>
+          <div class="legend-row"><span class="legend-dot" style="background:#eaf7f9;border:1px solid #9fd6de;"></span><span data-i18n="docrdv.avail_hours">Vos horaires (réservables)</span></div>
+          <div class="legend-row"><span class="legend-dot" style="background:repeating-linear-gradient(45deg,#f1f5f9,#f1f5f9 3px,#e5eaf0 3px,#e5eaf0 6px);border:1px dashed #cbd5e1;"></span><span data-i18n="docrdv.unavailable">Indisponible</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Detail modal -->
+  <div class="modal fade" id="rdvDetail" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content" style="border:0;border-radius:16px;">
+        <div class="modal-header border-0 pb-0">
+          <h5 class="modal-title fw-bold" style="font-size:1.05rem;" data-i18n="docrdv.detail_title">Détail du rendez-vous</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body pt-2" id="detailBody"></div>
+        <div class="modal-footer border-0 pt-0" id="detailFoot"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Create modal -->
+  <div class="modal fade" id="rdvCreate" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content" style="border:0;border-radius:16px;">
+        <div class="modal-header border-0 pb-0">
+          <h5 class="modal-title fw-bold" data-i18n="docrdv.new_rdv">Nouveau rendez-vous</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body pt-2">
+          <form id="createForm" onsubmit="event.preventDefault(); submitCreate();">
+            <div class="row g-3">
+              <div class="col-12">
+                <label class="form-label fw-semibold small" data-i18n="docrdv.m_nature">Nature</label>
+                <div class="d-flex gap-2 flex-wrap" id="naturePills"></div>
+              </div>
+              <div class="col-md-8">
+                <label class="form-label fw-semibold small" data-i18n="docrdv.m_patient">Patient</label>
+                <input list="patientList" class="form-control" id="cPatient" data-i18n-placeholder="docrdv.m_patient_ph" placeholder="Rechercher un patient…">
+                <datalist id="patientList">
+                  <option value="Mariam Diallo"><option value="Ousmane Sow"><option value="Awa Faye"><option value="Ibrahima Bâ">
+                  <option value="Fatou Ndiaye"><option value="Modou Cissé"><option value="Rokhaya Diop"><option value="Samba Gueye">
+                </datalist>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label fw-semibold small" data-i18n="docrdv.m_mode">Mode</label>
+                <select class="form-select" id="cMode">
+                  <option value="cab" data-i18n="docrdv.m_presentiel">Présentiel</option>
+                  <option value="tele" data-i18n="docrdv.m_tele">Téléconsultation</option>
+                </select>
+              </div>
+              <div class="col-12">
+                <label class="form-label fw-semibold small" data-i18n="docrdv.m_titlef">Motif</label>
+                <input type="text" class="form-control" id="cMotif" data-i18n-placeholder="docrdv.m_motif_ph" placeholder="Ex : Consultation générale">
+              </div>
+              <div class="col-md-4">
+                <label class="form-label fw-semibold small" data-i18n="docrdv.m_date">Date</label>
+                <input type="date" class="form-control" id="cDate" value="2026-07-10">
+              </div>
+              <div class="col-md-4">
+                <label class="form-label fw-semibold small" data-i18n="docrdv.m_start">Début</label>
+                <input type="time" class="form-control" id="cStart" value="09:00" step="900">
+              </div>
+              <div class="col-md-4">
+                <label class="form-label fw-semibold small" data-i18n="docrdv.m_end">Fin</label>
+                <input type="time" class="form-control" id="cEnd" value="09:30" step="900">
+              </div>
+              <div class="col-12">
+                <div class="alert py-2 small mb-0" style="background:#ecfeff;color:#155e75;border:1px solid #a5f3fc;border-radius:10px;">
+                  <i class="fa fa-bell me-1"></i><span data-i18n="docrdv.m_notif">Notifications automatiques : SMS + e-mail envoyés au patient à la création, puis rappels avant le rendez-vous.</span>
+                </div>
+              </div>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer border-0 pt-0">
+          <button type="button" class="btn btn-light" data-bs-dismiss="modal" data-i18n="docrdv.act_cancel">Annuler</button>
+          <button type="submit" form="createForm" class="topbar-btn"><i class="fa fa-check"></i><span data-i18n="docrdv.m_create">Créer le rendez-vous</span></button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Block modal -->
+  <div class="modal fade" id="blockModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content" style="border:0;border-radius:16px;">
+        <div class="modal-header border-0 pb-0">
+          <h5 class="modal-title fw-bold" data-i18n="docrdv.block_btn">Bloquer un créneau</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body pt-2">
+          <div class="row g-3">
+            <div class="col-12"><label class="form-label fw-semibold small" data-i18n="docrdv.m_date">Date</label><input type="date" class="form-control" id="bDate"></div>
+            <div class="col-6"><label class="form-label fw-semibold small" data-i18n="docrdv.m_start">Début</label><input type="time" class="form-control" id="bStart" value="12:00" step="900"></div>
+            <div class="col-6"><label class="form-label fw-semibold small" data-i18n="docrdv.m_end">Fin</label><input type="time" class="form-control" id="bEnd" value="14:00" step="900"></div>
+            <div class="col-12"><label class="form-label fw-semibold small" data-i18n="docrdv.block_reason">Motif (facultatif)</label><input type="text" class="form-control" id="bReason" data-i18n-placeholder="docrdv.block_reason_ph" placeholder="Ex : congé, formation, déjeuner…"></div>
+            <div class="col-12"><label class="d-flex align-items-center gap-2 small text-muted mb-0"><input type="checkbox" id="bAllDay" onchange="onAllDay(this.checked)"> <span data-i18n="docrdv.block_allday">Journée entière</span></label></div>
+          </div>
+        </div>
+        <div class="modal-footer border-0 pt-0">
+          <button type="button" class="btn btn-light" data-bs-dismiss="modal" data-i18n="docrdv.act_cancel">Annuler</button>
+          <button type="button" class="topbar-btn" onclick="submitBlock()"><i class="fa fa-ban"></i><span data-i18n="docrdv.block_confirm">Bloquer</span></button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast-ok" id="rdvToast"><i class="fa fa-circle-check"></i><span id="rdvToastMsg"></span></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    const T = k => (window.NazI18n ? NazI18n.t(k) : k);
+    const TODAY = '2026-07-10';
+    let cur = TODAY, view = 'week', fNature = 'all', fStatus = 'all';
+
+    const NATURES = ['consultation', 'suivi', 'urgence', 'teleconsult', 'reunion'];
+    const NAT_COLOR = { consultation:'#2563eb', suivi:'#059669', urgence:'#dc2626', teleconsult:'#7c3aed', reunion:'#f59e0b' };
+
+    // Rendez-vous de démo (semaine du 6 au 12 juillet 2026 ; aujourd'hui = ven. 10)
+    const RDV = [
+      { date:'2026-07-06', start:'09:00', end:'10:30', ini:'AD', name:'Aïssatou Diop',  motif:'Consultation générale', nature:'consultation', status:'confirmed' },
+      { date:'2026-07-06', start:'15:00', end:'16:00', ini:'AR', name:'Antoine Rousseau', motif:'Bilan lipidique',      nature:'suivi',        status:'confirmed' },
+      { date:'2026-07-07', start:'08:00', end:'09:00', ini:'FM', name:'François Moreau', motif:'Suivi cardio',          nature:'suivi',        status:'confirmed' },
+      { date:'2026-07-07', start:'11:00', end:'12:00', ini:'FN', name:'Fatou Ndiaye',    motif:'Asthme',                nature:'consultation', status:'confirmed' },
+      { date:'2026-07-08', start:'10:00', end:'10:30', ini:'AF', name:'Awa Faye',        motif:'Téléconsultation',      nature:'teleconsult',  status:'confirmed' },
+      { date:'2026-07-09', start:'14:00', end:'15:00', ini:'IS', name:'Ibrahima Sow',    motif:'Drépanocytose',         nature:'consultation', status:'confirmed' },
+      { date:'2026-07-10', start:'09:00', end:'10:00', ini:'MD', name:'Mamadou Diallo',  motif:'Décompensation diabétique', nature:'urgence',  status:'confirmed' },
+      { date:'2026-07-10', start:'11:00', end:'12:00', ini:'ST', name:'Staff cabinet',   motif:'Réunion hebdomadaire',  nature:'reunion',      status:'confirmed' },
+      { date:'2026-07-10', start:'14:00', end:'15:00', ini:'RD', name:'Rokhaya Diop',    motif:'Suivi grossesse',       nature:'suivi',        status:'confirmed' },
+      { date:'2026-07-14', start:'10:00', end:'10:30', ini:'MC', name:'Modou Cissé',     motif:'Renouvellement',        nature:'teleconsult',  status:'confirmed' }
+    ];
+
+    // Créneaux bloqués (congés, absences…) — exceptions par-dessus les horaires
+    const BLOCKS = [
+      { date:'2026-07-08', start:'13:00', end:'19:00', reason:'Formation' },
+      { date:'2026-07-10', start:'12:00', end:'14:00', reason:'Déjeuner' }
+    ];
+    const DAY_KEYS = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
+    // Horaires par défaut — miroir du profil (source des créneaux réservables)
+    const DEFAULT_HOURS = { mon:[['09:00','13:00'],['15:00','18:00']], tue:[['09:00','13:00'],['15:00','18:00']], wed:[['09:00','13:00']], thu:[['09:00','13:00'],['15:00','18:00']], fri:[['09:00','13:00']], sat:[], sun:[] };
+    function profileHours() {
+      try { const raw = localStorage.getItem('fueni_pubprofile'); if (raw) { const p = JSON.parse(raw); if (p && p.hours) return p.hours; } } catch (e) {}
+      return DEFAULT_HOURS;
+    }
+    function availFor(dk) {
+      const h = profileHours()[dk];
+      if (Array.isArray(h)) return h;
+      if (typeof h === 'string' && h.trim()) { const p = h.split(/[–—-]/).map(s => s.trim()); return (p.length === 2) ? [p] : []; }
+      return [];
+    }
+
+    const dObj = s => new Date(s + 'T00:00:00');
+    const iso = d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+    const toMin = t => (+t.slice(0, 2)) * 60 + (+t.slice(3, 5));
+    const lang = () => (window.NazI18n && NazI18n.getLang() === 'en') ? 'en-GB' : 'fr-FR';
+    const isEn = () => window.NazI18n && NazI18n.getLang() === 'en';
+    const START = 8, END = 19, HH = 54;
+
+    function mondayOf(s) { const d = dObj(s); const off = (d.getDay() + 6) % 7; d.setDate(d.getDate() - off); return d; }
+    function pass(r) { return (fNature === 'all' || r.nature === fNature) && (fStatus === 'all' || r.status === fStatus); }
+
+    function setView(v) {
+      view = v;
+      ['Week', 'Month', 'List'].forEach(x => document.getElementById('seg' + x).classList.toggle('on', v === x.toLowerCase()));
+      render();
+    }
+    function navPrev() { shift(view === 'month' ? 'month' : (view === 'week' ? 'week' : 'day'), -1); }
+    function navNext() { shift(view === 'month' ? 'month' : (view === 'week' ? 'week' : 'day'), 1); }
+    function shift(unit, n) {
+      const d = dObj(cur);
+      if (unit === 'month') { d.setDate(1); d.setMonth(d.getMonth() + n); }
+      else if (unit === 'week') d.setDate(d.getDate() + 7 * n);
+      else d.setDate(d.getDate() + n);
+      cur = iso(d); render();
+    }
+    function goToday() { cur = TODAY; render(); }
+
+    function render() {
+      // range label
+      let range = '';
+      if (view === 'week') {
+        const mo = mondayOf(cur); const su = new Date(mo); su.setDate(su.getDate() + 6);
+        range = T('docrdv.week_prefix') + ' ' + mo.toLocaleDateString(lang(), { day:'numeric', month:'short' }) + ' – ' + su.toLocaleDateString(lang(), { day:'numeric', month:'short', year:'numeric' });
+      } else if (view === 'month') {
+        range = dObj(cur).toLocaleDateString(lang(), { month:'long', year:'numeric' });
+      } else {
+        range = dObj(cur).toLocaleDateString(lang(), { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+      }
+      const rl = document.getElementById('curRange'); rl.textContent = range;
+
+      if (view === 'week') renderWeek();
+      else if (view === 'month') renderMonth();
+      else renderList();
+      renderSide(); renderFilters(); stats();
+    }
+
+    function renderWeek() {
+      const mo = mondayOf(cur);
+      const days = []; for (let i = 0; i < 7; i++) { const d = new Date(mo); d.setDate(d.getDate() + i); days.push(d); }
+      const dn = isEn() ? ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'] : ['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'];
+      let head = '<div class="wk-dh"></div>' + days.map((d, i) => {
+        const ds = iso(d), wknd = i >= 5;
+        return '<div class="wk-dh' + (ds === TODAY ? ' today' : '') + (wknd ? ' weekend' : '') + '"><div class="dn">' + dn[i] + '</div><div class="dd">' + d.getDate() + '</div></div>';
+      }).join('');
+      const H = (END - START) * HH;
+      let gutter = '<div class="wk-gutter" style="height:' + H + 'px">';
+      for (let h = START; h < END; h++) gutter += '<div class="wk-hr" style="top:' + ((h - START) * HH) + 'px">' + String(h).padStart(2, '0') + ':00</div>';
+      gutter += '</div>';
+      const gridH = (END - START) * HH;
+      const cols = days.map((d, i) => {
+        const ds = iso(d), wknd = i >= 5, dk = DAY_KEYS[i];
+        const availHtml = availFor(dk).map(rg => {
+          const top = Math.max(0, (toMin(rg[0]) - START * 60) / 60 * HH);
+          const h = Math.min(gridH - top, (toMin(rg[1]) - toMin(rg[0])) / 60 * HH);
+          return h > 0 ? '<div class="wk-avail" style="top:' + top + 'px;height:' + h + 'px"></div>' : '';
+        }).join('');
+        const blockHtml = BLOCKS.map((b, bi) => ({ b, bi })).filter(o => o.b.date === ds).map(o => {
+          const b = o.b; const top = Math.max(0, (toMin(b.start) - START * 60) / 60 * HH);
+          const h = Math.min(gridH - top, Math.max(20, (toMin(b.end) - toMin(b.start)) / 60 * HH - 2));
+          return '<div class="wk-block" style="top:' + top + 'px;height:' + h + 'px" onclick="openBlockDetail(' + o.bi + ')"><i class="fa fa-ban"></i>' + T('docrdv.unavailable') + (b.reason ? ' · ' + b.reason : '') + '</div>';
+        }).join('');
+        const rdvHtml = RDV.map((r, idx) => ({ r, idx })).filter(o => o.r.date === ds && pass(o.r)).map(o => {
+          const r = o.r; const top = (toMin(r.start) - START * 60) / 60 * HH;
+          const hgt = Math.max(26, (toMin(r.end) - toMin(r.start)) / 60 * HH - 3);
+          return '<div class="rdv-card nat-' + r.nature + (r.status === 'cancelled' ? ' cancelled' : '') + '" style="top:' + top + 'px;height:' + hgt + 'px" onclick="openDetail(' + o.idx + ')">' +
+            '<div class="rt">' + r.start + '</div><div class="rs">' + r.name + '</div></div>';
+        }).join('');
+        return '<div class="wk-col' + (ds === TODAY ? ' today' : '') + (wknd ? ' weekend' : '') + '" style="height:' + H + 'px">' + availHtml + blockHtml + rdvHtml + '</div>';
+      }).join('');
+      document.getElementById('calCard').innerHTML =
+        '<div class="wk-head">' + head + '</div><div class="wk-body">' + gutter + cols + '</div>';
+    }
+
+    function renderMonth() {
+      const dn = isEn() ? ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'] : ['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'];
+      const d = dObj(cur); const year = d.getFullYear(), month = d.getMonth();
+      const startDow = (new Date(year, month, 1).getDay() + 6) % 7;
+      const dim = new Date(year, month + 1, 0).getDate();
+      const byDate = {}; const blk = {};
+      RDV.filter(pass).forEach(r => { (byDate[r.date] = byDate[r.date] || []).push(r); });
+      BLOCKS.forEach(b => { blk[b.date] = true; });
+      const cells = [];
+      for (let i = 0; i < startDow; i++) cells.push({ dt:new Date(year, month, 1 - (startDow - i)), out:true });
+      for (let dd = 1; dd <= dim; dd++) cells.push({ dt:new Date(year, month, dd), out:false });
+      while (cells.length % 7 !== 0 || cells.length < 42) { const l = cells[cells.length - 1].dt; cells.push({ dt:new Date(l.getFullYear(), l.getMonth(), l.getDate() + 1), out:true }); }
+      const grid = cells.map(c => {
+        const ds = iso(c.dt); const items = (byDate[ds] || []);
+        let dots = '';
+        items.slice(0, 4).forEach(r => dots += '<span class="cal-dot" style="background:' + NAT_COLOR[r.nature] + '"></span>');
+        if (items.length > 4) dots += '<span class="cal-more">+' + (items.length - 4) + '</span>';
+        if (blk[ds]) dots += '<span class="cal-dot" style="background:#cbd5e1" title="' + T('docrdv.unavailable') + '"></span>';
+        return '<div class="cal-cell' + (c.out ? ' out' : '') + (ds === TODAY ? ' today' : '') + '" onclick="pickDay(\'' + ds + '\')"><div class="cal-num">' + c.dt.getDate() + '</div><div class="cal-appts">' + dots + '</div></div>';
+      }).join('');
+      document.getElementById('calCard').innerHTML =
+        '<div class="cal-pad"><div class="cal-mhead">' + dn.map(w => '<div>' + w + '</div>').join('') + '</div><div class="cal-mgrid">' + grid + '</div></div>';
+    }
+    function pickDay(ds) { cur = ds; setView('week'); }
+
+    function renderList() {
+      const mon = iso(mondayOf(cur));
+      const items = [];
+      RDV.forEach((r, idx) => { if (pass(r) && r.date >= mon) items.push({ t:'rdv', date:r.date, start:r.start, r, idx }); });
+      BLOCKS.forEach((b, bi) => { if (b.date >= mon) items.push({ t:'blk', date:b.date, start:b.start, b, bi }); });
+      items.sort((a, b) => (a.date + a.start).localeCompare(b.date + b.start));
+      const box = document.getElementById('calCard');
+      if (!items.length) { box.innerHTML = '<div class="list-pad text-center text-muted py-5"><i class="fa fa-calendar-xmark fa-2x mb-2 d-block"></i>' + T('docrdv.empty_list') + '</div>'; return; }
+      let html = '<div class="list-pad">', curD = '';
+      items.forEach(o => {
+        if (o.date !== curD) { curD = o.date; html += '<div class="list-dh">' + dObj(o.date).toLocaleDateString(lang(), { weekday:'long', day:'numeric', month:'long' }) + (o.date === TODAY ? ' · ' + T('docrdv.today_btn') : '') + '</div>'; }
+        if (o.t === 'rdv') {
+          const r = o.r;
+          html += '<div class="list-row" onclick="openDetail(' + o.idx + ')">' +
+            '<div class="list-time">' + r.start + ' <span class="e">→ ' + r.end + '</span></div>' +
+            '<div class="list-body"><div class="list-t">' + r.name + '</div><div class="list-m">' + r.motif + '</div></div>' +
+            '<span class="nat-tag nat-' + r.nature + '">' + T('docrdv.nat_' + r.nature) + '</span></div>';
+        } else {
+          const b = o.b;
+          html += '<div class="list-row" onclick="openBlockDetail(' + o.bi + ')">' +
+            '<div class="list-time">' + b.start + ' <span class="e">→ ' + b.end + '</span></div>' +
+            '<div class="list-body"><div class="list-t text-muted"><i class="fa fa-ban me-1"></i>' + T('docrdv.unavailable') + '</div><div class="list-m">' + (b.reason || '') + '</div></div>' +
+            '<span class="nat-tag" style="background:#eef2f6;color:#64748b;">' + T('docrdv.unavailable') + '</span></div>';
+        }
+      });
+      box.innerHTML = html + '</div>';
+    }
+
+    function renderSide() {
+      document.getElementById('sideToday').innerHTML = '<i class="fa fa-bolt me-1"></i>' + T('docrdv.today_btn') + ' — ' + dObj(TODAY).toLocaleDateString(lang(), { day:'numeric', month:'long' });
+      const today = RDV.filter(r => r.date === TODAY && r.status !== 'cancelled').sort((a, b) => a.start.localeCompare(b.start));
+      document.getElementById('todayList').innerHTML = today.length ? today.map(r =>
+        '<div class="today-rdv" style="border-left-color:' + NAT_COLOR[r.nature] + '"><div class="tt">' + r.start + ' — ' + r.end + '</div><div class="tn">' + r.name + '</div><div class="tm">' + T('docrdv.nat_' + r.nature) + ' · ' + r.motif + '</div></div>'
+      ).join('') : '<div class="text-muted small">' + T('docrdv.empty_day') + '</div>';
+      document.getElementById('legend').innerHTML = NATURES.map(n =>
+        '<div class="legend-row"><span class="legend-dot" style="background:' + NAT_COLOR[n] + '"></span>' + T('docrdv.nat_' + n) + '</div>'
+      ).join('');
+    }
+
+    function renderFilters() {
+      const fn = document.getElementById('fltNature');
+      fn.innerHTML = '<option value="all">' + T('docrdv.filter_nature') + '</option>' + NATURES.map(n => '<option value="' + n + '"' + (fNature === n ? ' selected' : '') + '>' + T('docrdv.nat_' + n) + '</option>').join('');
+      const fs = document.getElementById('fltStatus');
+      fs.innerHTML = '<option value="all">' + T('docrdv.filter_status') + '</option>' +
+        ['confirmed', 'cancelled'].map(s => '<option value="' + s + '"' + (fStatus === s ? ' selected' : '') + '>' + T('docrdv.status_' + s) + '</option>').join('');
+    }
+
+    function stats() {
+      document.getElementById('stToday').textContent = RDV.filter(r => r.date === TODAY && r.status !== 'cancelled').length;
+      const end = dObj(TODAY); end.setDate(end.getDate() + 7);
+      document.getElementById('stWeek').textContent = RDV.filter(r => r.date >= TODAY && r.date <= iso(end) && r.status !== 'cancelled').length;
+    }
+
+    /* ---- Detail modal ---- */
+    let detailModal, createModal;
+    function openDetail(i) {
+      const r = RDV[i];
+      document.getElementById('detailBody').innerHTML =
+        '<div class="d-flex align-items-center gap-2 mb-3"><span class="nat-tag nat-' + r.nature + '">' + T('docrdv.nat_' + r.nature) + '</span>' +
+        '<span class="nat-tag" style="background:#f1f5f9;color:#475569;">' + T('docrdv.status_' + r.status) + '</span></div>' +
+        '<div class="fw-bold" style="font-size:1.1rem;">' + r.name + '</div>' +
+        '<div class="text-muted mb-3">' + r.motif + '</div>' +
+        '<div><i class="fa fa-calendar-day me-2 text-muted"></i>' + dObj(r.date).toLocaleDateString(lang(), { weekday:'long', day:'numeric', month:'long', year:'numeric' }) + '</div>' +
+        '<div class="mt-1"><i class="fa fa-clock me-2 text-muted"></i>' + r.start + ' → ' + r.end + '</div>' +
+        (r.status !== 'cancelled' ? '<div class="text-muted small mt-3"><i class="fa fa-circle-info me-1"></i>' + T('docrdv.cancel_note') + '</div>' +
+          '<div id="reschedPanel" class="d-none mt-3 p-3" style="background:#f8fafc;border-radius:10px;">' +
+            '<div class="fw-semibold small mb-2">' + T('docrdv.resched_title') + '</div>' +
+            '<div class="d-flex gap-2 align-items-center flex-wrap">' +
+              '<input type="date" class="form-control form-control-sm" style="max-width:150px" id="rsDate" value="' + r.date + '">' +
+              '<input type="time" class="form-control form-control-sm" style="max-width:110px" id="rsStart" value="' + r.start + '" step="900">' +
+              '<span class="text-muted">–</span>' +
+              '<input type="time" class="form-control form-control-sm" style="max-width:110px" id="rsEnd" value="' + r.end + '" step="900">' +
+            '</div>' +
+            '<button class="btn btn-sm mt-2" style="background:#155e75;color:#fff;" onclick="doReschedule(' + i + ')"><i class="fa fa-check me-1"></i>' + T('docrdv.resched_confirm') + '</button>' +
+          '</div>' : '');
+      let foot = '';
+      if (r.status !== 'cancelled') {
+        foot += '<a class="btn btn-sm" style="background:#155e75;color:#fff;" href="25-doctor-consultation.html?patient=' + encodeURIComponent(r.name) + '&motif=' + encodeURIComponent(r.motif) + '"><i class="fa fa-notes-medical me-1"></i>' + T('docrdv.document') + '</a>';
+        foot += '<button class="btn btn-outline-secondary btn-sm" onclick="toggleResched()"><i class="fa fa-clock-rotate-left me-1"></i>' + T('docrdv.resched') + '</button>';
+        foot += '<button class="btn btn-outline-danger btn-sm" onclick="setStatus(' + i + ',\'cancelled\')"><i class="fa fa-ban me-1"></i>' + T('docrdv.cancel_appt') + '</button>';
+      }
+      document.getElementById('detailFoot').innerHTML = foot;
+      detailModal = detailModal || new bootstrap.Modal(document.getElementById('rdvDetail'));
+      detailModal.show();
+    }
+    function setStatus(i, s) {
+      RDV[i].status = s;
+      if (detailModal) detailModal.hide();
+      render();
+      toast(T(s === 'confirmed' ? 'docrdv.confirm_toast' : 'docrdv.cancel_toast'));
+    }
+    function toggleResched() { const p = document.getElementById('reschedPanel'); if (p) p.classList.toggle('d-none'); }
+    function doReschedule(i) {
+      const date = document.getElementById('rsDate').value, start = document.getElementById('rsStart').value, end = document.getElementById('rsEnd').value;
+      if (!date || !start || !end) return;
+      RDV[i].date = date; RDV[i].start = start; RDV[i].end = end;
+      if (detailModal) detailModal.hide();
+      cur = date; render();
+      toast(T('docrdv.resched_toast'));
+    }
+
+    /* ---- Create modal ---- */
+    let createNature = 'consultation';
+    function openCreate() {
+      createNature = 'consultation';
+      document.getElementById('naturePills').innerHTML = NATURES.map(n =>
+        '<span class="np' + (n === createNature ? ' sel' : '') + '" onclick="pickNature(\'' + n + '\')">' + T('docrdv.nat_' + n) + '</span>'
+      ).join('');
+      document.getElementById('cDate').value = cur;
+      createModal = createModal || new bootstrap.Modal(document.getElementById('rdvCreate'));
+      createModal.show();
+    }
+    function pickNature(n) {
+      createNature = n;
+      document.querySelectorAll('#naturePills .np').forEach(p => p.classList.toggle('sel', p.textContent === T('docrdv.nat_' + n)));
+    }
+    function submitCreate() {
+      const name = document.getElementById('cPatient').value.trim() || '—';
+      const motif = document.getElementById('cMotif').value.trim() || T('docrdv.nat_' + createNature);
+      const date = document.getElementById('cDate').value, start = document.getElementById('cStart').value, end = document.getElementById('cEnd').value;
+      if (!date || !start || !end) return;
+      RDV.push({ date, start, end, ini:name.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase(), name, motif, nature:createNature, status:'confirmed' });
+      if (createModal) createModal.hide();
+      cur = date; render();
+      toast(T('docrdv.create_toast'));
+      document.getElementById('createForm').reset();
+    }
+
+    /* ---- Bloquer un créneau ---- */
+    let blockModal;
+    function openBlock() {
+      document.getElementById('bDate').value = cur;
+      document.getElementById('bAllDay').checked = false;
+      const s = document.getElementById('bStart'), en = document.getElementById('bEnd');
+      s.value = '12:00'; en.value = '14:00'; s.disabled = false; en.disabled = false;
+      document.getElementById('bReason').value = '';
+      blockModal = blockModal || new bootstrap.Modal(document.getElementById('blockModal'));
+      blockModal.show();
+    }
+    function onAllDay(on) {
+      const s = document.getElementById('bStart'), en = document.getElementById('bEnd');
+      if (on) { s.value = String(START).padStart(2, '0') + ':00'; en.value = String(END).padStart(2, '0') + ':00'; s.disabled = true; en.disabled = true; }
+      else { s.disabled = false; en.disabled = false; }
+    }
+    function submitBlock() {
+      const date = document.getElementById('bDate').value, start = document.getElementById('bStart').value, end = document.getElementById('bEnd').value, reason = document.getElementById('bReason').value.trim();
+      if (!date || !start || !end) return;
+      BLOCKS.push({ date, start, end, reason });
+      if (blockModal) blockModal.hide();
+      cur = date; render();
+      toast(T('docrdv.block_toast'));
+    }
+    function openBlockDetail(bi) {
+      const b = BLOCKS[bi];
+      document.getElementById('detailBody').innerHTML =
+        '<div class="mb-3"><span class="nat-tag" style="background:#eef2f6;color:#64748b;"><i class="fa fa-ban me-1"></i>' + T('docrdv.unavailable') + '</span></div>' +
+        (b.reason ? '<div class="fw-bold" style="font-size:1.05rem;">' + b.reason + '</div>' : '') +
+        '<div class="mt-2"><i class="fa fa-calendar-day me-2 text-muted"></i>' + dObj(b.date).toLocaleDateString(lang(), { weekday:'long', day:'numeric', month:'long', year:'numeric' }) + '</div>' +
+        '<div class="mt-1"><i class="fa fa-clock me-2 text-muted"></i>' + b.start + ' → ' + b.end + '</div>';
+      document.getElementById('detailFoot').innerHTML = '<button class="btn btn-outline-secondary btn-sm" onclick="removeBlock(' + bi + ')"><i class="fa fa-rotate-left me-1"></i>' + T('docrdv.unblock') + '</button>';
+      detailModal = detailModal || new bootstrap.Modal(document.getElementById('rdvDetail'));
+      detailModal.show();
+    }
+    function removeBlock(bi) { BLOCKS.splice(bi, 1); if (detailModal) detailModal.hide(); render(); toast(T('docrdv.unblock_toast')); }
+
+    let tt;
+    function toast(msg) {
+      const t = document.getElementById('rdvToast');
+      document.getElementById('rdvToastMsg').textContent = msg;
+      t.style.display = 'flex'; clearTimeout(tt); tt = setTimeout(() => { t.style.display = 'none'; }, 2400);
+    }
+
+    document.addEventListener('fueni:langchange', render);
+    document.addEventListener('DOMContentLoaded', render);
+  </script>
+<!-- Prototype version badge -->
+<script>(function(){if(window.__pv)return;window.__pv=1;var v=document.createElement('div');v.style.cssText='position:fixed;top:0;left:50%;transform:translateX(-50%);background:#155e75;color:#fff;padding:6px 20px;border-radius:0 0 16px 16px;font:600 12px/1 system-ui,-apple-system,sans-serif;letter-spacing:.6px;z-index:99999;box-shadow:0 3px 10px rgba(0,0,0,.2);text-transform:uppercase;display:flex;align-items:center;gap:8px';v.innerHTML='🧪 Prototype <span style="background:#f59e0b;color:#1a1a1a;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:4px">v1.4.0</span><span style="background:#facc15;color:#1a1a1a;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:4px;text-transform:none;letter-spacing:0">⏳ À valider</span>';document.body.appendChild(v);})();</script>
+</body>
+</html>

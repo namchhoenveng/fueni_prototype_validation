@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FUENI — Dossiers médicaux</title>
+  <script src="naz-i18n.js" defer></script>
+  <script src="naz-patients.js"></script>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="naz-common.css">
+  <style>
+    body { background: #f0f4f8; font-family: 'Segoe UI', sans-serif; }
+    .sidebar { background: #155e75; min-height: 100vh; width: 240px; position: fixed; top: 0; left: 0; z-index: 100; }
+    .sidebar-brand { padding: 20px 20px 12px; display: flex; align-items: center; gap: 10px; color: white; }
+    .sidebar-user { padding: 12px 20px 18px; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; gap: 10px; }
+    .sidebar-user .avatar { width: 40px; height: 40px; border-radius: 50%; background: #0e7490; display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; flex-shrink: 0; }
+    .nav-section { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: rgba(255,255,255,0.3); padding: 16px 20px 6px; }
+    .nav-link-side { color: rgba(255,255,255,0.72); padding: 10px 20px; display: flex; align-items: center; gap: 10px; font-size: 0.9rem; cursor: pointer; text-decoration: none; }
+    .nav-link-side i:first-child { width: 16px; text-align: center; flex-shrink: 0; }
+    .nav-link-side:hover { color: white; background: rgba(255,255,255,0.1); }
+    .nav-link-side.active { color: white; background: rgba(255,255,255,0.15); border-left: 3px solid #22d3ee; cursor: default; }
+    .main { margin-left: 240px; }
+    .main-topbar { position: fixed; top: 0; left: 240px; right: 0; z-index: 200; background: white; border-bottom: 1px solid #f1f5f9; padding: 14px 28px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 1px 3px rgba(0,0,0,0.03); }
+    .topbar-title { font-size: 1.15rem; font-weight: 700; margin: 0; color: #0f172a; }
+    .content-area { padding: 88px 28px 40px; }
+    .records-grid { display:grid; grid-template-columns:320px 1fr; gap:18px; align-items:start; }
+    .card-w { background:#fff; border-radius:14px; box-shadow:0 2px 12px rgba(0,0,0,0.06); }
+    /* Left list */
+    .rec-search { padding:14px; border-bottom:1px solid #f1f5f9; position:relative; }
+    .rec-search input { width:100%; border:1.5px solid #e2e8f0; border-radius:10px; padding:9px 12px 9px 34px; font-size:0.86rem; }
+    .rec-search input:focus { border-color:#155e75; outline:none; }
+    .rec-search .fa { position:absolute; left:26px; top:50%; transform:translateY(-50%); color:#a0aec0; font-size:0.82rem; }
+    .rec-count { padding:9px 16px; font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.6px; color:#94a3b8; border-bottom:1px solid #f1f5f9; }
+    .rec-list { max-height:64vh; overflow-y:auto; padding:6px; }
+    /* Barre de défilement fine */
+    .rec-list { scrollbar-width:thin; scrollbar-color:#cbd5e1 transparent; }
+    .rec-list::-webkit-scrollbar { width:7px; }
+    .rec-list::-webkit-scrollbar-thumb { background:#d7dee6; border-radius:20px; }
+    .rec-list::-webkit-scrollbar-thumb:hover { background:#bcc6d1; }
+    .rec-item { display:flex; align-items:center; gap:11px; padding:10px 12px; cursor:pointer; border-radius:10px; border-left:3px solid transparent; }
+    .rec-item + .rec-item { margin-top:2px; }
+    .rec-item:hover { background:#f5f8fa; }
+    .rec-item.sel { background:#eef5f7; border-left-color:#155e75; }
+    .rec-av { width:38px; height:38px; border-radius:50%; background:#e0f2f1; color:#0e7490; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:0.78rem; flex-shrink:0; }
+    .rec-item.sel .rec-av { background:#155e75; color:#fff; }
+    .rec-item .nm { font-weight:600; color:#1e293b; font-size:0.9rem; }
+    .rec-item .mt { font-size:0.78rem; color:#94a3b8; }
+    /* Right record */
+    .rec-head { display:flex; align-items:center; gap:16px; padding:22px; border-bottom:1px solid #f1f5f9; flex-wrap:wrap; }
+    .rec-head .av { width:56px; height:56px; border-radius:50%; background:#0e7490; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:1.1rem; }
+    .rec-head .nm { font-size:1.2rem; font-weight:800; color:#0f172a; }
+    .rec-head .mt { color:#64748b; font-size:0.86rem; }
+    .rec-cta { background:#155e75; color:#fff; border:0; border-radius:10px; padding:9px 16px; font-weight:600; font-size:0.85rem; text-decoration:none; display:inline-flex; align-items:center; gap:8px; }
+    .rec-cta:hover { background:#114c5f; color:#fff; }
+    .rec-body { padding:22px; }
+    .rec-sec-title { font-size:0.74rem; font-weight:800; text-transform:uppercase; letter-spacing:0.8px; color:#155e75; margin:0 0 12px; }
+    .med-chips { display:flex; flex-wrap:wrap; gap:18px; }
+    .med-chip .k { font-size:0.72rem; color:#94a3b8; text-transform:uppercase; letter-spacing:0.4px; font-weight:600; }
+    .med-chip .v { font-weight:600; color:#334155; }
+    .mr-edit-btn { background:none; border:1.5px solid #e2e8f0; color:#155e75; border-radius:8px; font-size:0.8rem; font-weight:600; padding:5px 12px; cursor:pointer; }
+    .mr-edit-btn:hover { border-color:#155e75; background:#eef5f7; }
+    .me-lbl { font-size:0.76rem; font-weight:700; color:#155e75; text-transform:uppercase; letter-spacing:0.4px; margin:14px 0 6px; }
+    .me-row { display:flex; gap:8px; align-items:center; margin-bottom:7px; }
+    .me-row .form-control, .me-row .form-select { font-size:0.85rem; }
+    .btn-del { background:none; border:0; color:#cbd5e1; font-size:1rem; padding:6px 8px; cursor:pointer; flex-shrink:0; }
+    .btn-del:hover { color:#dc3545; }
+    .mr-add { background:none; border:0; color:#155e75; font-weight:600; font-size:0.82rem; cursor:pointer; padding:2px 0; }
+    .mr-add:hover { text-decoration:underline; }
+    .mr-foot { display:flex; gap:8px; justify-content:flex-end; margin-top:18px; }
+    .btn-teal { background:#155e75; border:0; color:#fff; font-weight:600; }
+    .btn-teal:hover { background:#114c5f; color:#fff; }
+    .btn-ghost { background:#f1f5f9; border:0; color:#475569; font-weight:600; }
+    .tag-an { display:inline-block; background:#eef2f6; color:#475569; border-radius:20px; padding:2px 10px; font-size:0.78rem; font-weight:600; margin:2px 4px 0 0; }
+    .al-sev { display:inline-flex; align-items:center; gap:5px; border-radius:20px; padding:2px 10px; font-size:0.78rem; font-weight:600; margin:2px 4px 0 0; }
+    .al-sev.high { background:#fee2e2; color:#b91c1c; } .al-sev.medium { background:#fef3c7; color:#92400e; } .al-sev.low { background:#eef2f6; color:#475569; }
+    .safety-banner { display:flex; align-items:center; gap:10px; border-radius:12px; padding:12px 16px; font-size:0.88rem; margin-bottom:18px; }
+    .safety-banner.crit { background:#fee2e2; border:1px solid #fca5a5; color:#991b1b; }
+    .safety-banner.warn { background:#fff8f1; border:1px solid #faddc0; color:#9a3412; }
+    .safety-banner i { font-size:1rem; }
+    .cons { border:1px solid #eef2f6; border-radius:12px; padding:14px 16px; margin-bottom:10px; }
+    .cons-head { display:flex; align-items:center; gap:10px; margin-bottom:6px; }
+    .cons-date { font-weight:700; color:#0f172a; }
+    .cons-motif { color:#155e75; font-weight:600; font-size:0.88rem; }
+    .cons-diag { font-size:0.85rem; color:#334155; }
+    .cons-diag .lbl { color:#94a3b8; }
+    .cons-note { font-size:0.85rem; color:#475569; margin-top:4px; white-space:pre-line; }
+    .cons-rx { margin-top:8px; }
+    .rx-pill { display:inline-block; background:#ede9fe; color:#6d28d9; border-radius:8px; padding:3px 9px; font-size:0.78rem; margin:2px 4px 0 0; }
+    .doc-chip { display:flex; align-items:center; gap:10px; padding:10px 12px; border:1px solid #eef2f6; border-radius:10px; margin-bottom:8px; font-size:0.86rem; }
+    .doc-chip .fa-file, .doc-chip .di { color:#155e75; width:18px; text-align:center; }
+    .doc-chip .dl { margin-left:auto; border:1.5px solid #e2e8f0; background:#fff; color:#155e75; border-radius:7px; font-size:0.78rem; font-weight:600; padding:4px 10px; text-decoration:none; }
+    .doc-chip .dl:hover { border-color:#155e75; background:#eef5f7; }
+    .muted { color:#94a3b8; font-size:0.86rem; }
+    /* Bandeau de sécurité épinglé + onglets de contenu */
+    .rec-tabs { display:inline-flex; background:#eef2f6; border-radius:10px; padding:4px; gap:2px; margin:2px 0 18px; flex-wrap:wrap; }
+    .rec-tabs button { background:none; border:0; padding:8px 16px; border-radius:8px; font-size:0.86rem; font-weight:600; color:#64748b; cursor:pointer; display:inline-flex; gap:8px; align-items:center; }
+    .rec-tabs button.on { background:#fff; color:#155e75; box-shadow:0 1px 3px rgba(0,0,0,0.08); }
+    .rec-tabs .cnt { background:#e2e8f0; color:#475569; border-radius:10px; padding:0 7px; font-size:0.72rem; font-weight:700; }
+    .rec-tabs button.on .cnt { background:#d7ecf1; color:#155e75; }
+    .synth-card { background:#f8fafc; border:1px solid #eef2f6; border-radius:12px; padding:18px; }
+    .synth-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
+    .synth-body { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:2px 32px; }
+    .synth-row { padding:11px 0; border-bottom:1px solid #eef2f6; }
+    .synth-row .k { font-size:0.67rem; font-weight:800; text-transform:uppercase; letter-spacing:0.5px; color:#94a3b8; margin-bottom:6px; }
+    .synth-row .v { color:#334155; font-weight:600; font-size:0.9rem; }
+    .synth-row .v.chips { display:flex; flex-wrap:wrap; gap:6px; }
+    .me-row .form-control, .me-row .form-select { min-width:0; }
+    .docs-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:10px; }
+    @media (max-width:900px){ .records-grid { grid-template-columns:1fr; } .sidebar{display:none;} .main{margin-left:0;} .main-topbar{left:0;} }
+  </style>
+</head>
+<body data-i18n-pagetitle="docmr.page_title" data-i18n-toggle>
+
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="sidebar-brand">
+      <a href="01-home.html" class="brand-logo" aria-label="FUENI"><img src="assets/fueni-lockup-horizontal.svg" alt="FUENI" style="height:34px;"></a>
+    </div>
+    <div class="sidebar-user">
+      <div class="avatar">AD</div>
+      <div>
+        <div class="text-white fw-semibold small" data-i18n="doc.dash.greeting">Dr Aboubacar Diallo</div>
+        <div style="color:rgba(255,255,255,0.72); font-size:0.72rem;"><i class="fa fa-circle-check me-1" style="color:#22d3ee;"></i><span data-i18n="doc.dash.validated_status">Profil validé</span></div>
+      </div>
+    </div>
+    <div class="nav-section" data-i18n="doc.dash.sec_main">Principal</div>
+    <a href="17-doctor-dashboard.html?state=active" class="nav-link-side"><i class="fa fa-home"></i><span data-i18n="doc.dash.nav_dashboard">Tableau de bord</span></a>
+    <a href="19-doctor-public-profile.html" class="nav-link-side"><i class="fa fa-id-badge"></i><span data-i18n="doc.dash.nav_public_profile">Mon profil public</span></a>
+    <a href="20-doctor-patients.html" class="nav-link-side"><i class="fa fa-user-injured"></i><span data-i18n="doc.dash.tile_patients">Mes patients</span></a>
+    <a href="24-doctor-rendezvous.html" class="nav-link-side"><i class="fa fa-calendar-check"></i><span data-i18n="doc.dash.tile_rdv">Mon planning</span></a>
+    <a href="#" class="nav-link-side active"><i class="fa fa-file-medical"></i><span data-i18n="doc.dash.tile_records">Dossiers médicaux</span></a>
+    <div class="nav-section" data-i18n="doc.dash.sec_account">Compte</div>
+    <a href="18-doctor-abonnement.html" class="nav-link-side"><i class="fa fa-star"></i><span data-i18n="doc.dash.nav_subscription">Mon abonnement</span></a>
+    <a href="#" class="nav-link-side" onclick="event.preventDefault();"><i class="fa fa-cog"></i><span data-i18n="doc.dash.nav_settings">Paramètres</span></a>
+    <a href="10b-login-doctor.html" class="nav-link-side"><i class="fa fa-arrow-right-from-bracket"></i><span data-i18n="doc.dash.logout">Déconnexion</span></a>
+  </div>
+
+  <div class="main">
+    <header class="main-topbar">
+      <h1 class="topbar-title" data-i18n="doc.dash.tile_records">Dossiers médicaux</h1>
+    </header>
+
+    <div class="content-area">
+      <div class="records-grid">
+        <!-- Patient list -->
+        <div class="card-w">
+          <div class="rec-search"><i class="fa fa-search"></i><input type="text" id="recSearch" data-i18n-placeholder="docmr.search_ph" placeholder="Rechercher un patient…" oninput="renderList()"></div>
+          <div class="rec-count" id="recCount"></div>
+          <div class="rec-list" id="recList"></div>
+        </div>
+        <!-- Record -->
+        <div class="card-w" id="recCard"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast-ok" id="mrToast" style="position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#0f5132;color:#fff;padding:12px 22px;border-radius:10px;font-size:0.9rem;font-weight:600;box-shadow:0 6px 20px rgba(0,0,0,0.25);z-index:3000;display:none;align-items:center;gap:9px;"><i class="fa fa-circle-check"></i><span id="mrToastMsg"></span></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    const T = k => (window.NazI18n ? NazI18n.t(k) : k);
+    const esc = s => (s == null ? '' : String(s)).replace(/[&<>]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;' }[c]));
+    const fmtDate = d => { try { return new Date(d + 'T00:00:00').toLocaleDateString((window.NazI18n && NazI18n.getLang() === 'en') ? 'en-GB' : 'fr-FR', { day:'2-digit', month:'short', year:'numeric' }); } catch (e) { return d; } };
+    const DOC_IC = { rx:'fa-prescription', lab:'fa-flask-vial', img:'fa-x-ray', doc:'fa-file-lines' };
+
+    const PATIENTS = window.NazPatients;
+    const byId = Object.fromEntries(PATIENTS.map(p => [p.id, p]));
+    let sel = PATIENTS[0].id;
+    // Ouverture depuis « Mes patients » : ?patient={nom}
+    (function () { const pn = new URLSearchParams(location.search).get('patient'); if (pn) { const f = PATIENTS.find(p => p.name === decodeURIComponent(pn)); if (f) sel = f.id; } })();
+    let editMed = false, snapMed = null;
+    let recTab = 'history';
+    function setRecTab(t) { recTab = t; renderRecord(); }
+
+    function renderList() {
+      const q = document.getElementById('recSearch').value.trim().toLowerCase();
+      const list = PATIENTS.filter(p => !q || (p.name + ' ' + p.email).toLowerCase().includes(q));
+      document.getElementById('recCount').textContent = list.length + ' ' + T('docmr.patients_count');
+      document.getElementById('recList').innerHTML = list.map(p =>
+        '<div class="rec-item' + (p.id === sel ? ' sel' : '') + '" onclick="select(\'' + p.id + '\')">' +
+          '<div class="rec-av">' + p.ini + '</div>' +
+          '<div><div class="nm">' + esc(p.name) + '</div><div class="mt">' + p.age + ' ' + T('docpat.years') + ' · ' + T('docpat.sex_' + p.sex) + '</div></div>' +
+        '</div>'
+      ).join('') || '<div class="muted p-3">' + T('docpat.empty') + '</div>';
+    }
+    function select(id) { sel = id; editMed = false; snapMed = null; renderList(); renderRecord(); }
+
+    let mrt;
+    function mrToast(msg) { const t = document.getElementById('mrToast'); document.getElementById('mrToastMsg').textContent = msg; t.style.display = 'flex'; clearTimeout(mrt); mrt = setTimeout(() => { t.style.display = 'none'; }, 2400); }
+
+    function editMedInfo() { const p = byId[sel]; snapMed = JSON.parse(JSON.stringify({ blood: p.blood, allergies: p.allergies, ant: p.ant, family: p.family })); editMed = true; renderRecord(); }
+    function cancelMedInfo() { const p = byId[sel]; if (snapMed) { p.blood = snapMed.blood; p.allergies = snapMed.allergies; p.ant = snapMed.ant; p.family = snapMed.family; } snapMed = null; editMed = false; renderRecord(); }
+    function saveMedInfo() { snapMed = null; editMed = false; renderRecord(); mrToast(T('docmr.saved')); }
+    function addAllergy() { (byId[sel].allergies = byId[sel].allergies || []).push({ name: '', sev: 'medium' }); renderRecord(); }
+    function rmAllergy(i) { byId[sel].allergies.splice(i, 1); renderRecord(); }
+    function addAnt() { (byId[sel].ant = byId[sel].ant || []).push(''); renderRecord(); }
+    function rmAnt(i) { byId[sel].ant.splice(i, 1); renderRecord(); }
+    function addFam() { (byId[sel].family = byId[sel].family || []).push({ rel: '', cond: '' }); renderRecord(); }
+    function rmFam(i) { byId[sel].family.splice(i, 1); renderRecord(); }
+
+    function medInfoHtml(p) {
+      if (!editMed) {
+        const al = p.allergies || [];
+        const allergies = al.length ? al.map(a => '<span class="al-sev ' + a.sev + '">' + esc(a.name) + ' · ' + T('docmr.sev_' + a.sev) + '</span>').join('') : '<span class="muted">' + T('docmr.none') + '</span>';
+        const ant = p.ant.length ? p.ant.map(a => '<span class="tag-an">' + esc(a) + '</span>').join('') : '<span class="muted">' + T('docmr.none') + '</span>';
+        const fam = (p.family && p.family.length) ? p.family.map(f => '<span class="tag-an">' + esc(f.rel) + ' · ' + esc(f.cond) + '</span>').join('') : '<span class="muted">' + T('docmr.none') + '</span>';
+        return '<div class="synth-head"><h6 class="rec-sec-title" style="margin-bottom:0">' + T('docmr.med_info') + '</h6>' +
+          '<button class="mr-edit-btn" onclick="editMedInfo()"><i class="fa fa-pen me-1"></i>' + T('docpp.edit') + '</button></div>' +
+          '<div class="synth-body">' +
+            '<div class="synth-row"><div class="k">' + T('docmr.blood') + '</div><div class="v">' + (p.blood || '—') + '</div></div>' +
+            '<div class="synth-row"><div class="k">' + T('docmr.allergies') + '</div><div class="v chips">' + allergies + '</div></div>' +
+            '<div class="synth-row"><div class="k">' + T('docmr.ant_perso') + '</div><div class="v chips">' + ant + '</div></div>' +
+            '<div class="synth-row"><div class="k">' + T('docmr.ant_family') + '</div><div class="v chips">' + fam + '</div></div>' +
+          '</div>';
+      }
+      const bloods = ['O+', 'O-', 'A+', 'A-', 'B+', 'B-', 'AB+', 'AB-'];
+      const bloodSel = '<select class="form-select form-select-sm" style="max-width:130px" onchange="byId[sel].blood=this.value">' + bloods.map(b => '<option' + (p.blood === b ? ' selected' : '') + '>' + b + '</option>').join('') + '</select>';
+      const sevOpts = s => ['high', 'medium', 'low'].map(x => '<option value="' + x + '"' + (s === x ? ' selected' : '') + '>' + T('docmr.sev_' + x) + '</option>').join('');
+      const alRows = (p.allergies || []).map((a, i) => '<div class="me-row"><input type="text" class="form-control form-control-sm" value="' + esc(a.name).replace(/"/g, '&quot;') + '" placeholder="' + T('docmr.al_name_ph') + '" oninput="byId[sel].allergies[' + i + '].name=this.value"><select class="form-select form-select-sm" style="max-width:130px" onchange="byId[sel].allergies[' + i + '].sev=this.value">' + sevOpts(a.sev) + '</select><button class="btn-del" onclick="rmAllergy(' + i + ')"><i class="fa fa-trash-can"></i></button></div>').join('');
+      const antRows = (p.ant || []).map((a, i) => '<div class="me-row"><input type="text" class="form-control form-control-sm" value="' + esc(a).replace(/"/g, '&quot;') + '" placeholder="' + T('docmr.ant_ph') + '" oninput="byId[sel].ant[' + i + ']=this.value"><button class="btn-del" onclick="rmAnt(' + i + ')"><i class="fa fa-trash-can"></i></button></div>').join('');
+      const famRows = (p.family || []).map((f, i) => '<div class="me-row"><input type="text" class="form-control form-control-sm" style="max-width:150px" value="' + esc(f.rel).replace(/"/g, '&quot;') + '" placeholder="' + T('docmr.rel_ph') + '" oninput="byId[sel].family[' + i + '].rel=this.value"><input type="text" class="form-control form-control-sm" value="' + esc(f.cond).replace(/"/g, '&quot;') + '" placeholder="' + T('docmr.cond_ph') + '" oninput="byId[sel].family[' + i + '].cond=this.value"><button class="btn-del" onclick="rmFam(' + i + ')"><i class="fa fa-trash-can"></i></button></div>').join('');
+      return '<h6 class="rec-sec-title">' + T('docmr.med_info') + '</h6>' +
+        '<div class="me-lbl">' + T('docmr.blood') + '</div>' + bloodSel +
+        '<div class="me-lbl">' + T('docmr.allergies') + '</div>' + alRows + '<button class="mr-add" onclick="addAllergy()"><i class="fa fa-plus me-1"></i>' + T('docmr.add') + '</button>' +
+        '<div class="me-lbl">' + T('docmr.ant_perso') + '</div>' + antRows + '<button class="mr-add" onclick="addAnt()"><i class="fa fa-plus me-1"></i>' + T('docmr.add') + '</button>' +
+        '<div class="me-lbl">' + T('docmr.ant_family') + '</div>' + famRows + '<button class="mr-add" onclick="addFam()"><i class="fa fa-plus me-1"></i>' + T('docmr.add') + '</button>' +
+        '<div class="mr-foot"><button class="btn btn-ghost btn-sm" onclick="cancelMedInfo()">' + T('docpp.cancel') + '</button><button class="btn btn-teal btn-sm" onclick="saveMedInfo()"><i class="fa fa-check me-1"></i>' + T('docpp.save_btn') + '</button></div>';
+    }
+
+    function renderRecord() {
+      const p = byId[sel];
+      const box = document.getElementById('recCard');
+      if (!p) { box.innerHTML = '<div class="p-5 text-center muted">' + T('docmr.empty_sel') + '</div>'; return; }
+
+      const al = p.allergies || [];
+      const allergies = al.length ? al.map(a => '<span class="al-sev ' + a.sev + '">' + esc(a.name) + ' · ' + T('docmr.sev_' + a.sev) + '</span>').join('') : '<span class="muted">' + T('docmr.none') + '</span>';
+      const ant = p.ant.length ? p.ant.map(a => '<span class="tag-an">' + esc(a) + '</span>').join('') : '<span class="muted">' + T('docmr.none') + '</span>';
+      const fam = (p.family && p.family.length) ? p.family.map(f => '<span class="tag-an">' + esc(f.rel) + ' · ' + esc(f.cond) + '</span>').join('') : '<span class="muted">' + T('docmr.none') + '</span>';
+      // Bandeau de sécurité allergies (garde-fou prescription)
+      const hi = al.filter(a => a.sev === 'high');
+      let banner = '';
+      if (al.length && hi.length) banner = '<div class="safety-banner crit"><i class="fa fa-triangle-exclamation"></i><div><strong>' + T('docmr.allergy_severe') + ' :</strong> ' + hi.map(a => esc(a.name)).join(', ') + '</div></div>';
+      else if (al.length) banner = '<div class="safety-banner warn"><i class="fa fa-triangle-exclamation"></i>' + T('docmr.allergy_warn') + '</div>';
+
+      const consults = p.consults.length ? p.consults.map(c =>
+        '<div class="cons"><div class="cons-head"><span class="cons-date">' + fmtDate(c.date) + '</span><span class="cons-motif">' + esc(c.motif) + '</span></div>' +
+        '<div class="cons-diag"><span class="lbl">' + T('docmr.diag') + ' :</span> ' + esc(c.diag) + '</div>' +
+        '<div class="cons-note">' + esc(c.note) + '</div>' +
+        (c.rx && c.rx.length ? '<div class="cons-rx"><i class="fa fa-prescription me-1" style="color:#6d28d9;"></i>' + c.rx.map(r => '<span class="rx-pill">' + esc(r) + '</span>').join('') + '</div>' : '') +
+        '</div>'
+      ).join('') : '<div class="muted">' + T('docmr.no_consults') + '</div>';
+
+      const docs = p.docs.length ? '<div class="docs-grid">' + p.docs.map(d =>
+        '<div class="doc-chip"><i class="fa ' + (DOC_IC[d.t] || 'fa-file') + ' di"></i><span>' + esc(d.n) + '</span><span class="muted ms-2" style="font-size:0.78rem;">' + fmtDate(d.date) + '</span><a class="dl" onclick="event.preventDefault();"><i class="fa fa-download"></i></a></div>'
+      ).join('') + '</div>' : '<div class="muted">' + T('docmr.no_docs') + '</div>';
+
+      // Contenu de l'onglet actif
+      let tabBody = '';
+      if (recTab === 'history') tabBody = consults;
+      else if (recTab === 'med') tabBody = '<div class="synth-card">' + medInfoHtml(p) + '</div>';
+      else tabBody = docs;
+
+      const tab = (id, label, count) => '<button class="' + (recTab === id ? 'on' : '') + '" onclick="setRecTab(\'' + id + '\')">' + T(label) + (count != null ? '<span class="cnt">' + count + '</span>' : '') + '</button>';
+
+      box.innerHTML =
+        '<div class="rec-head"><div class="av">' + p.ini + '</div>' +
+          '<div class="flex-grow-1"><div class="nm">' + esc(p.name) + '</div><div class="mt">' + p.age + ' ' + T('docpat.years') + ' · ' + T('docpat.sex_' + p.sex) + ' · ' + esc(p.phone) + '</div></div>' +
+          '<a class="rec-cta" href="25-doctor-consultation.html?patient=' + encodeURIComponent(p.name) + '&from=records"><i class="fa fa-notes-medical"></i>' + T('docmr.doc_action') + '</a>' +
+        '</div>' +
+        '<div class="rec-body">' + banner +
+          '<div class="rec-tabs">' +
+            tab('history', 'docmr.history', p.consults.length) +
+            tab('med', 'docmr.med_info', null) +
+            tab('docs', 'docmr.documents', p.docs.length) +
+          '</div>' +
+          '<div class="rec-tabbody">' + tabBody + '</div>' +
+        '</div>';
+    }
+
+    document.addEventListener('fueni:langchange', () => { renderList(); renderRecord(); });
+    document.addEventListener('DOMContentLoaded', () => { renderList(); renderRecord(); });
+  </script>
+<!-- Prototype version badge -->
+<script>(function(){if(window.__pv)return;window.__pv=1;var v=document.createElement('div');v.style.cssText='position:fixed;top:0;left:50%;transform:translateX(-50%);background:#155e75;color:#fff;padding:6px 20px;border-radius:0 0 16px 16px;font:600 12px/1 system-ui,-apple-system,sans-serif;letter-spacing:.6px;z-index:99999;box-shadow:0 3px 10px rgba(0,0,0,.2);text-transform:uppercase;display:flex;align-items:center;gap:8px';v.innerHTML='🧪 Prototype <span style="background:#f59e0b;color:#1a1a1a;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:4px">v1.4.0</span><span style="background:#facc15;color:#1a1a1a;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:4px;text-transform:none;letter-spacing:0">⏳ À valider</span>';document.body.appendChild(v);})();</script>
+</body>
+</html>
