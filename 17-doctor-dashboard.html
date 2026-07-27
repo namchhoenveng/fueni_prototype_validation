@@ -80,7 +80,7 @@
 
     <div class="nav-section" data-i18n="doc.dash.sec_account">Compte</div>
     <a href="18-doctor-abonnement.html" class="nav-link-side unlocked"><i class="fa fa-star"></i><span data-i18n="doc.dash.nav_subscription">Mon abonnement</span></a>
-    <a href="#" class="nav-link-side unlocked"><i class="fa fa-cog"></i><span data-i18n="doc.dash.nav_settings">Paramètres</span></a>
+    <a href="29-doctor-settings.html" class="nav-link-side unlocked"><i class="fa fa-cog"></i><span data-i18n="doc.dash.nav_settings">Paramètres</span></a>
     <a href="10b-login-doctor.html" class="nav-link-side unlocked"><i class="fa fa-arrow-right-from-bracket"></i><span data-i18n="doc.dash.logout">Déconnexion</span></a>
   </div>
 
@@ -118,11 +118,11 @@
               </div>
               <div class="step-row">
                 <div class="sd ok"><i class="fa fa-check"></i></div>
-                <div><div class="fw-semibold small" data-i18n="doc.dash.s2_title">Plan souscrit</div><div class="text-muted" style="font-size:0.78rem;" id="s2sub" data-i18n="doc.dash.s2_sub_solo">Plan Solo — actif</div></div>
+                <div><div class="fw-semibold small" data-i18n="doc.dash.s2_title">Plan sélectionné</div><div class="text-muted" style="font-size:0.78rem;" id="s2sub" data-i18n="doc.dash.s2_sub_solo">Plan Solo — facturation à la validation</div></div>
               </div>
               <div class="step-row">
                 <div class="sd cur"><div class="spinner-ring"></div></div>
-                <div><div class="fw-semibold small" data-i18n="doc.dash.s3_title">Vérification du profil médecin</div><div class="text-muted" style="font-size:0.78rem;" data-i18n="doc.dash.s3_sub">Contrôle du numéro d'Ordre et des justificatifs</div><div style="font-size:0.75rem;color:#f39c12;font-weight:500;margin-top:2px;"><i class="fa fa-clock me-1"></i><span data-i18n="doc.dash.s3_delay">Délai max : 48 h</span></div></div>
+                <div><div class="fw-semibold small" data-i18n="doc.dash.s3_title">Vérification du profil médecin</div><div class="text-muted" style="font-size:0.78rem;" data-i18n="doc.dash.s3_sub">Contrôle du numéro d'Ordre et des justificatifs</div><div style="font-size:0.75rem;color:#f39c12;font-weight:500;margin-top:2px;"><i class="fa fa-clock me-1"></i><span data-i18n="doc.dash.s3_delay">Délai max : 2 jours ouvrés</span></div></div>
               </div>
             </div>
 
@@ -176,9 +176,10 @@
         </div>
 
         <div class="row g-3 mb-4">
-          <div class="col-sm-6 col-xl-4"><div class="stat-block stat-tile"><div class="stat-ic" style="background:#e8f2f5;color:#155e75;"><i class="fa fa-user-injured"></i></div><div><div class="fs-2 fw-bold" style="color:#155e75;">128</div><div class="small text-muted" data-i18n="doc.dash.bg_patients">Patients</div></div></div></div>
-          <div class="col-sm-6 col-xl-4"><div class="stat-block stat-tile"><div class="stat-ic" style="background:#e6f7ee;color:#0f5132;"><i class="fa fa-calendar-check"></i></div><div><div class="fs-2 fw-bold text-success">6</div><div class="small text-muted" data-i18n="doc.dash.bg_rdv">Rendez-vous du jour</div></div></div></div>
-          <div class="col-sm-6 col-xl-4"><div class="stat-block stat-tile"><div class="stat-ic" style="background:#fdeeee;color:#c0392b;"><i class="fa fa-file-medical"></i></div><div><div class="fs-2 fw-bold text-danger">2</div><div class="small text-muted" data-i18n="doc.dash.bg_docs">Documents en attente</div></div></div></div>
+          <div class="col-sm-6 col-xl-3"><div class="stat-block stat-tile"><div class="stat-ic" style="background:#e8f2f5;color:#155e75;"><i class="fa fa-user-injured"></i></div><div><div class="fs-2 fw-bold" style="color:#155e75;">128</div><div class="small text-muted" data-i18n="doc.dash.bg_patients">Patients</div></div></div></div>
+          <div class="col-sm-6 col-xl-3"><div class="stat-block stat-tile"><div class="stat-ic" style="background:#e6f7ee;color:#0f5132;"><i class="fa fa-calendar-check"></i></div><div><div class="fs-2 fw-bold text-success">6</div><div class="small text-muted" data-i18n="doc.dash.bg_rdv">Rendez-vous du jour</div></div></div></div>
+          <div class="col-sm-6 col-xl-3"><div class="stat-block stat-tile"><div class="stat-ic" style="background:#fef1e7;color:#c2410c;"><i class="fa fa-truck-medical"></i></div><div><div class="fs-2 fw-bold" style="color:#c2410c;">1</div><div class="small text-muted" data-i18n="doc.dash.bg_urgent">Rendez-vous urgents</div></div></div></div>
+          <div class="col-sm-6 col-xl-3"><div class="stat-block stat-tile"><div class="stat-ic" style="background:#fdeeee;color:#c0392b;"><i class="fa fa-file-medical"></i></div><div><div class="fs-2 fw-bold text-danger">2</div><div class="small text-muted" data-i18n="doc.dash.bg_docs">Documents en attente</div></div></div></div>
         </div>
 
         <div class="row g-3">

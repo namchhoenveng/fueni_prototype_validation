@@ -29,6 +29,7 @@
     .doc-format { font-size: 0.74rem; color: #95a5a6; }
     .badge-req { font-size: 0.62rem; background: #fde2e1; color: #c0392b; border-radius: 6px; padding: 1px 7px; font-weight: 700; }
     .badge-opt { font-size: 0.62rem; background: #eef2f6; color: #64748b; border-radius: 6px; padding: 1px 7px; font-weight: 700; }
+    .badge-opt { font-size: 0.62rem; background: #eef2f6; color: #64748b; border-radius: 6px; padding: 1px 7px; font-weight: 700; }
     .btn-upload { white-space: nowrap; border: 1px solid #155e75; color: #155e75; background: white; border-radius: 8px; font-size: 0.82rem; padding: 6px 12px; font-weight: 600; }
     .btn-upload:hover { background: #eaf3f6; }
     .btn-upload.done { border-color: #27ae60; color: #27ae60; background: #eafaf0; }
@@ -74,7 +75,7 @@
     <div class="kyc-card">
       <h5 class="fw-bold mb-1" id="kycTitle" data-i18n="doc.kyc.title">Vérification de votre profil</h5>
       <p class="text-muted small mb-3" id="kycIntro" data-i18n-html="doc.kyc.intro_html">
-        Téléversez vos justificatifs. Notre équipe vérifie votre dossier sous <strong>48 h ouvrées</strong> et vous notifie par e-mail.
+        Téléversez vos justificatifs. Notre équipe vérifie votre dossier sous <strong>2 jours ouvrés</strong> et vous notifie par e-mail.
       </p>
 
       <div id="kyc-banner" class="alert alert-warning small d-none">
@@ -103,7 +104,7 @@
             <div class="small text-muted mt-1"><i class="fa fa-circle-info me-1"></i><span data-i18n="doc.reg.f_ordre_hint">Délivré par votre Ordre des médecins.</span></div>
           </div>
           <div class="col-md-6 mb-2">
-            <label class="form-label small fw-semibold" data-i18n="doc.kyc.f_natid">Numéro d'identifiant national (N° CNI / NIN) *</label>
+            <label class="form-label small fw-semibold" data-i18n="doc.kyc.f_natid">Numéro d'identifiant national (N° CNI / NIN)</label>
             <input type="text" class="form-control" id="kycNatId" data-i18n-placeholder="doc.kyc.f_natid_ph" placeholder="Ex : 1234 5678 90123">
             <div class="small text-muted mt-1"><i class="fa fa-circle-info me-1"></i><span data-i18n="doc.kyc.f_natid_hint">Figure sur votre pièce d'identité nationale.</span></div>
           </div>
@@ -128,11 +129,11 @@
 
       <div class="fw-bold mb-2" style="color:#155e75;font-size:0.95rem;"><i class="fa fa-file-upload me-1"></i><span data-i18n="doc.kyc.sec_docs">Justificatifs</span></div>
       <div id="kyc-list">
-        <div class="kyc-doc" data-required="1">
+        <div class="kyc-doc">
           <i class="fa fa-id-card doc-icon"></i>
           <div class="flex-grow-1">
             <div class="doc-name" data-i18n="doc.kyc.d_id">Pièce d'identité (CNI, passeport ou carte professionnelle)</div>
-            <div class="doc-format"><span class="badge-req" data-i18n="doc.kyc.required">Obligatoire</span> · <span data-i18n="doc.kyc.format">PDF, JPG ou PNG · Max 5 Mo</span></div>
+            <div class="doc-format"><span class="badge-opt" data-i18n="doc.kyc.optional">Facultatif</span> · <span data-i18n="doc.kyc.format">PDF, JPG ou PNG · Max 5 Mo</span></div>
           </div>
           <button type="button" class="btn btn-upload" onclick="toggleDoc(this)"><i class="fa fa-upload me-1"></i><span data-i18n="doc.kyc.btn_upload">Téléverser</span></button>
         </div>
@@ -304,7 +305,7 @@
       if (revision) return docsOk; // correction : seules les pièces signalées comptent
       const g = id => (document.getElementById(id) || {}).value;
       const ck = id => (document.getElementById(id) || {}).checked;
-      return docsOk && allDatesOk() && getSpec() && g('kycOrdre') && g('kycNatId') && getLoc('Region') && getLoc('City') && g('kycCabinet') && ck('decl1') && ck('decl2') && ck('decl3');
+      return docsOk && allDatesOk() && getSpec() && g('kycOrdre') && getLoc('Region') && getLoc('City') && g('kycCabinet') && ck('decl1') && ck('decl2') && ck('decl3');
     }
     // Bouton toujours actif : on valide au clic et on signale les éléments manquants (même logique que l'inscription)
     function clearGlobalIfOk() { if (requiredDone()) document.getElementById('kycError').classList.add('d-none'); }
@@ -327,7 +328,6 @@
       if (!revision) {
         if (!getSpec()) { const el = document.getElementById('kycSpecialite').value === 'autre' ? document.getElementById('kycSpecAutre') : document.getElementById('kycSpecialite'); el.classList.add('is-err'); if (!firstBad) firstBad = el; }
         const ord = document.getElementById('kycOrdre'); if (!ord.value.trim()) { ord.classList.add('is-err'); if (!firstBad) firstBad = ord; }
-        const nat = document.getElementById('kycNatId'); if (!nat.value.trim()) { nat.classList.add('is-err'); if (!firstBad) firstBad = nat; }
         if (!getLoc('Region')) { const el = document.getElementById('kycRegion').value === LOC_OTHER ? document.getElementById('kycRegionOther') : document.getElementById('kycRegion'); el.classList.add('is-err'); if (!firstBad) firstBad = el; }
         if (!getLoc('City')) { const el = document.getElementById('kycCity').value === LOC_OTHER ? document.getElementById('kycCityOther') : document.getElementById('kycCity'); el.classList.add('is-err'); if (!firstBad) firstBad = el; }
         const cab = document.getElementById('kycCabinet'); if (!cab.value.trim()) { cab.classList.add('is-err'); if (!firstBad) firstBad = cab; }

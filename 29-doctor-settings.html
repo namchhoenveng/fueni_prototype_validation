@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title data-i18n-pagetitle="dset.page_title">FUENI — Paramètres</title>
+  <script src="naz-i18n.js" defer></script>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="naz-common.css">
+  <style>
+    body { background: #f0f4f8; font-family: 'Segoe UI', sans-serif; }
+    /* Sidebar (aligné 17-doctor-dashboard) */
+    .sidebar { background: #155e75; min-height: 100vh; width: 240px; position: fixed; top: 0; left: 0; z-index: 100; }
+    .sidebar-brand { padding: 20px 20px 12px; display: flex; align-items: center; gap: 10px; color: white; }
+    .sidebar-user { padding: 12px 20px 18px; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; gap: 10px; }
+    .sidebar-user .avatar { width: 40px; height: 40px; border-radius: 50%; background: #0e7490; display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; flex-shrink: 0; }
+    .nav-section { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: rgba(255,255,255,0.3); padding: 16px 20px 6px; }
+    .nav-link-side { color: rgba(255,255,255,0.72); padding: 10px 20px; display: flex; align-items: center; gap: 10px; font-size: 0.9rem; cursor: pointer; text-decoration: none; }
+    .nav-link-side i:first-child { width: 16px; text-align: center; flex-shrink: 0; }
+    .nav-link-side:hover { color: white; background: rgba(255,255,255,0.1); }
+    .nav-link-side.active { color: white; background: rgba(255,255,255,0.15); border-left: 3px solid #22d3ee; cursor: default; }
+    .main { margin-left: 240px; }
+    .main-topbar { position: fixed; top: 0; left: 240px; right: 0; z-index: 200; background: white; border-bottom: 1px solid #f1f5f9; padding: 14px 28px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 1px 3px rgba(0,0,0,0.03); }
+    .topbar-title { font-size: 1.15rem; font-weight: 700; margin: 0; color: #0f172a; }
+    .topbar-btn { background: #155e75; color: white; padding: 9px 16px; border-radius: 10px; font-size: 0.85rem; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; }
+    .topbar-btn:hover { background: #0f4858; color: white; }
+    .content-area { padding: 92px 28px 40px; max-width: 860px; }
+
+    /* Tabs */
+    .set-tabs { display: flex; gap: 6px; border-bottom: 1px solid #e2e8f0; margin-bottom: 22px; flex-wrap: wrap; }
+    .set-tab { border: 0; background: none; padding: 10px 16px; font-weight: 600; font-size: 0.92rem; color: #64748b; border-bottom: 2px solid transparent; cursor: pointer; margin-bottom: -1px; }
+    .set-tab:hover { color: #155e75; }
+    .set-tab.active { color: #155e75; border-bottom-color: #155e75; }
+
+    .card-sec { background: #fff; border: 1px solid #e9eef3; border-radius: 14px; padding: 20px 22px; margin-bottom: 18px; }
+    .card-sec h6 { font-weight: 700; display: flex; align-items: center; gap: 9px; margin-bottom: 4px; }
+    .card-sec h6 i { color: #155e75; }
+    .card-sec .sec-sub { color: #64748b; font-size: 0.86rem; margin-bottom: 16px; }
+    .row-line { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 12px 0; border-bottom: 1px solid #f1f5f9; }
+    .row-line:last-child { border-bottom: none; }
+    .rl-k { font-weight: 600; font-size: 0.92rem; }
+    .rl-sub { color: #64748b; font-size: 0.82rem; margin-top: 2px; }
+    .chip-ok { background: #dcfce7; color: #15803d; border-radius: 999px; padding: 3px 11px; font-size: 0.76rem; font-weight: 700; }
+    .chip-info { background: #e0f2fe; color: #0369a1; border-radius: 999px; padding: 3px 11px; font-size: 0.76rem; font-weight: 700; }
+
+    .btn-edit { background: #f1f5f9; border: 0; color: #155e75; font-weight: 600; border-radius: 8px; padding: 7px 15px; font-size: 0.85rem; }
+    .btn-edit:hover { background: #e2e8f0; }
+    .btn-save { background: #155e75; border: 0; color: #fff; font-weight: 600; border-radius: 8px; padding: 8px 16px; }
+    .btn-save:hover { background: #114c5f; }
+    .btn-cancel { background: #f1f5f9; border: 0; color: #475569; font-weight: 600; border-radius: 8px; padding: 8px 16px; }
+    .btn-ghost-danger { background: #fff; border: 1px solid #fecaca; color: #dc2626; font-weight: 600; border-radius: 8px; padding: 6px 13px; font-size: 0.83rem; }
+    .btn-ghost-danger:hover { background: #fef2f2; }
+
+    /* Password */
+    .pwd-wrap { position: relative; }
+    .pwd-wrap .pwd-eye { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); border: 0; background: none; color: #94a3b8; }
+    .pwd-strength { height: 6px; background: #e2e8f0; border-radius: 4px; margin: 8px 0 6px; overflow: hidden; }
+    .pwd-strength-fill { height: 100%; width: 0; background: #ef4444; transition: width .2s, background .2s; }
+    .pwd-rules-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 3px 14px; font-size: 0.8rem; }
+    .pwd-rule { color: #94a3b8; }
+    .pwd-rule.ok { color: #16a34a; }
+    .pwd-rule i { margin-right: 5px; }
+
+    /* Toggle switch */
+    .switch { position: relative; width: 44px; height: 24px; flex-shrink: 0; }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .switch .sl { position: absolute; inset: 0; background: #cbd5e1; border-radius: 999px; cursor: pointer; transition: .2s; }
+    .switch .sl::before { content: ''; position: absolute; width: 18px; height: 18px; left: 3px; top: 3px; background: #fff; border-radius: 50%; transition: .2s; }
+    .switch input:checked + .sl { background: #155e75; }
+    .switch input:checked + .sl::before { transform: translateX(20px); }
+
+    .tab-pane { display: none; }
+    .tab-pane.active { display: block; }
+    .hint { color: #64748b; font-size: 0.82rem; }
+    .toast-ok { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: #155e75; color: #fff; padding: 11px 20px; border-radius: 10px; font-weight: 600; font-size: 0.88rem; box-shadow: 0 8px 24px rgba(0,0,0,0.2); opacity: 0; pointer-events: none; transition: opacity .25s, transform .25s; z-index: 1300; }
+    .toast-ok.show { opacity: 1; transform: translateX(-50%) translateY(-4px); }
+  </style>
+</head>
+<body data-i18n-pagetitle="dset.page_title" data-i18n-toggle>
+
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="sidebar-brand">
+      <a href="01-home.html" class="brand-logo" aria-label="FUENI"><img src="assets/fueni-lockup-horizontal.svg" alt="FUENI" style="height:34px;"></a>
+    </div>
+    <div class="sidebar-user">
+      <div class="avatar">AD</div>
+      <div>
+        <div class="text-white fw-semibold small" data-i18n="doc.dash.greeting">Dr Aboubacar Diallo</div>
+        <div style="color:rgba(255,255,255,0.45); font-size:0.72rem;"><i class="fa fa-circle-check me-1"></i><span data-i18n="dset.status_active">Compte actif</span></div>
+      </div>
+    </div>
+    <div class="nav-section" data-i18n="doc.dash.sec_main">Principal</div>
+    <a href="17-doctor-dashboard.html" class="nav-link-side"><i class="fa fa-home"></i><span data-i18n="doc.dash.nav_dashboard">Tableau de bord</span></a>
+    <a href="19-doctor-public-profile.html" class="nav-link-side"><i class="fa fa-id-badge"></i><span data-i18n="doc.dash.nav_public_profile">Mon profil public</span></a>
+    <a href="20-doctor-patients.html" class="nav-link-side"><i class="fa fa-user-injured"></i><span data-i18n="doc.dash.tile_patients">Patients</span></a>
+    <a href="24-doctor-rendezvous.html" class="nav-link-side"><i class="fa fa-calendar-check"></i><span data-i18n="doc.dash.tile_rdv">Rendez-vous</span></a>
+    <a href="26-doctor-records.html" class="nav-link-side"><i class="fa fa-file-medical"></i><span data-i18n="doc.dash.tile_records">Dossiers médicaux</span></a>
+    <div class="nav-section" data-i18n="doc.dash.sec_account">Compte</div>
+    <a href="18-doctor-abonnement.html" class="nav-link-side"><i class="fa fa-star"></i><span data-i18n="doc.dash.nav_subscription">Mon abonnement</span></a>
+    <a class="nav-link-side active"><i class="fa fa-cog"></i><span data-i18n="doc.dash.nav_settings">Paramètres</span></a>
+    <a href="10b-login-doctor.html" class="nav-link-side"><i class="fa fa-arrow-right-from-bracket"></i><span data-i18n="doc.dash.logout">Déconnexion</span></a>
+  </div>
+
+  <div class="main">
+    <header class="main-topbar">
+      <h1 class="topbar-title" data-i18n="doc.dash.nav_settings">Paramètres</h1>
+      <a href="17-doctor-dashboard.html" class="topbar-btn"><i class="fa fa-arrow-left"></i><span data-i18n="dset.back">Tableau de bord</span></a>
+    </header>
+
+    <div class="content-area">
+
+      <!-- Tabs -->
+      <div class="set-tabs">
+        <button class="set-tab active" data-tab="security" onclick="showTab('security')"><i class="fa fa-shield-halved me-2"></i><span data-i18n="dset.tab_security">Connexion & sécurité</span></button>
+        <button class="set-tab" data-tab="lang" onclick="showTab('lang')"><i class="fa fa-language me-2"></i><span data-i18n="dset.tab_lang">Langue du compte</span></button>
+        <button class="set-tab" data-tab="notif" onclick="showTab('notif')"><i class="fa fa-bell me-2"></i><span data-i18n="dset.tab_notif">Notifications</span></button>
+      </div>
+
+      <!-- ============ SECURITY ============ -->
+      <div class="tab-pane active" id="tab-security">
+
+        <!-- Login identifier -->
+        <div class="card-sec">
+          <h6><i class="fa fa-at"></i><span data-i18n="dset.login_title">Identifiant de connexion</span></h6>
+          <div class="sec-sub" data-i18n="dset.login_sub">Vous vous connectez avec votre adresse e-mail professionnelle.</div>
+          <div class="row-line">
+            <div>
+              <div class="rl-k">a.diallo@cabinet-dakar.sn</div>
+              <div class="rl-sub" data-i18n="dset.login_email_lbl">Adresse e-mail (identifiant)</div>
+            </div>
+            <span class="chip-ok"><i class="fa fa-circle-check me-1"></i><span data-i18n="dset.verified">Vérifié</span></span>
+          </div>
+          <div class="hint mt-2"><i class="fa fa-circle-info me-1"></i><span data-i18n="dset.login_note">La modification de l'e-mail de connexion demande votre mot de passe actuel et une confirmation par code envoyé à la nouvelle adresse.</span></div>
+        </div>
+
+        <!-- Password -->
+        <div class="card-sec">
+          <div class="d-flex align-items-start justify-content-between">
+            <div>
+              <h6><i class="fa fa-lock"></i><span data-i18n="dset.pwd_title">Mot de passe</span></h6>
+              <div class="sec-sub mb-0" data-i18n="dset.pwd_sub">Dernière modification il y a 3 mois.</div>
+            </div>
+            <button class="btn-edit" id="pwdEditBtn" onclick="openPwd()" data-i18n="dset.change">Changer</button>
+          </div>
+
+          <div id="pwdEdit" class="d-none mt-3" style="max-width:480px;">
+            <label class="form-label small fw-semibold mb-1" data-i18n="dset.pwd_current">Mot de passe actuel</label>
+            <div class="pwd-wrap mb-1">
+              <input type="password" class="form-control" id="pwdCurrent" autocomplete="current-password" oninput="clearPwdErr()">
+              <button type="button" class="pwd-eye" onclick="toggleEye('pwdCurrent', this)"><i class="fa fa-eye"></i></button>
+            </div>
+            <div class="field-hint text-danger small mb-2 d-none" id="pwdCurrentErr"><i class="fa fa-circle-exclamation me-1"></i><span data-i18n="dset.pwd_current_err">Mot de passe actuel incorrect.</span></div>
+
+            <label class="form-label small fw-semibold mb-1 mt-2" data-i18n="dset.pwd_new">Nouveau mot de passe</label>
+            <div class="pwd-wrap">
+              <input type="password" class="form-control" id="pwdNew" autocomplete="new-password" oninput="checkPwd()">
+              <button type="button" class="pwd-eye" onclick="toggleEye('pwdNew', this)"><i class="fa fa-eye"></i></button>
+            </div>
+            <div class="pwd-strength"><div class="pwd-strength-fill" id="pwdBar"></div></div>
+            <div class="pwd-rules-grid">
+              <div class="pwd-rule" id="pr-len"><i class="fa fa-circle-check"></i><span data-i18n="signup.field.pwd_r_len">Au moins 8 caractères</span></div>
+              <div class="pwd-rule" id="pr-upper"><i class="fa fa-circle-check"></i><span data-i18n="signup.field.pwd_r_upper">Une majuscule</span></div>
+              <div class="pwd-rule" id="pr-lower"><i class="fa fa-circle-check"></i><span data-i18n="signup.field.pwd_r_lower">Une minuscule</span></div>
+              <div class="pwd-rule" id="pr-num"><i class="fa fa-circle-check"></i><span data-i18n="signup.field.pwd_r_num">Un chiffre</span></div>
+              <div class="pwd-rule" id="pr-spe"><i class="fa fa-circle-check"></i><span data-i18n="signup.field.pwd_r_spe">Un caractère spécial</span></div>
+            </div>
+            <div class="d-flex gap-2 mt-3">
+              <button class="btn-save" onclick="savePwd()" data-i18n="dset.save">Enregistrer</button>
+              <button class="btn-cancel" onclick="closePwd()" data-i18n="dset.cancel">Annuler</button>
+            </div>
+            <div class="hint mt-2" data-i18n="dset.demo_pwd">Mot de passe de démo : MotDePasse123!</div>
+          </div>
+        </div>
+
+        <!-- 2FA -->
+        <div class="card-sec">
+          <h6><i class="fa fa-user-shield"></i><span data-i18n="dset.mfa_title">Authentification à deux facteurs (2FA)</span></h6>
+          <div class="sec-sub" data-i18n="dset.mfa_sub">Une étape de vérification supplémentaire à chaque connexion.</div>
+          <div class="row-line">
+            <div>
+              <div class="rl-k"><i class="fa fa-envelope me-2" style="color:#155e75;"></i><span data-i18n="dset.mfa_email">Code par e-mail</span></div>
+              <div class="rl-sub" data-i18n="dset.mfa_email_sub">Méthode active pour les comptes praticiens — non désactivable.</div>
+            </div>
+            <span class="chip-ok"><i class="fa fa-circle-check me-1"></i><span data-i18n="dset.mfa_on">Activée</span></span>
+          </div>
+          <div class="hint mt-2"><i class="fa fa-circle-info me-1"></i><span data-i18n="dset.mfa_note">Pour les praticiens, la 2FA se fait <strong>par e-mail uniquement</strong> (pas par SMS). Elle est obligatoire et ne peut pas être désactivée.</span></div>
+        </div>
+
+        <!-- Trusted devices -->
+        <div class="card-sec">
+          <h6><i class="fa fa-laptop"></i><span data-i18n="dset.dev_title">Appareils de confiance</span></h6>
+          <div class="sec-sub" data-i18n="dset.dev_sub">Appareils sur lesquels vous avez coché « Se souvenir de cet appareil 30 jours » — la 2FA n'y est pas redemandée.</div>
+          <div id="devList">
+            <div class="row-line">
+              <div><div class="rl-k"><i class="fa fa-laptop me-2" style="color:#64748b;"></i>Windows · Chrome <span class="chip-info ms-1" data-i18n="dset.dev_current">Cet appareil</span></div>
+                <div class="rl-sub">Dakar · <span data-i18n="dset.dev_added">Ajouté le</span> 12/07/2026 · <span data-i18n="dset.dev_expires">expire le</span> 11/08/2026</div></div>
+              <button class="btn-ghost-danger" onclick="revoke(this)" data-i18n="dset.dev_revoke">Retirer</button>
+            </div>
+            <div class="row-line">
+              <div><div class="rl-k"><i class="fa fa-mobile-screen me-2" style="color:#64748b;"></i>iPhone · Safari</div>
+                <div class="rl-sub">Dakar · <span data-i18n="dset.dev_added">Ajouté le</span> 03/07/2026 · <span data-i18n="dset.dev_expires">expire le</span> 02/08/2026</div></div>
+              <button class="btn-ghost-danger" onclick="revoke(this)" data-i18n="dset.dev_revoke">Retirer</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Active sessions -->
+        <div class="card-sec">
+          <h6><i class="fa fa-right-to-bracket"></i><span data-i18n="dset.ses_title">Sessions actives</span></h6>
+          <div class="sec-sub" data-i18n="dset.ses_sub">Là où votre compte est actuellement connecté.</div>
+          <div id="sesList">
+            <div class="row-line">
+              <div><div class="rl-k">Windows · Chrome — Dakar <span class="chip-ok ms-1" data-i18n="dset.ses_current">Session actuelle</span></div>
+                <div class="rl-sub" data-i18n="dset.ses_now">Actif maintenant</div></div>
+            </div>
+            <div class="row-line">
+              <div><div class="rl-k">iPhone · Safari — Dakar</div>
+                <div class="rl-sub" data-i18n="dset.ses_ago">Il y a 2 heures</div></div>
+              <button class="btn-ghost-danger" onclick="revoke(this)" data-i18n="dset.ses_disconnect">Déconnecter</button>
+            </div>
+          </div>
+          <div class="mt-3"><button class="btn-cancel" onclick="revokeAll()" data-i18n="dset.ses_disconnect_all">Déconnecter toutes les autres sessions</button></div>
+        </div>
+
+      </div>
+
+      <!-- ============ LANGUAGE ============ -->
+      <div class="tab-pane" id="tab-lang">
+        <div class="card-sec">
+          <h6><i class="fa fa-language"></i><span data-i18n="dset.lang_title">Langue du compte</span></h6>
+          <div class="sec-sub" data-i18n="dset.lang_sub">Cette langue s'applique à l'interface <strong>et</strong> à vos notifications (e-mails, rappels).</div>
+          <div class="row-line">
+            <div>
+              <div class="rl-k" data-i18n="dset.lang_fr">Français</div>
+              <div class="rl-sub" data-i18n="dset.lang_fr_sub">Interface et notifications en français</div>
+            </div>
+            <label class="switch-radio"><input type="radio" name="lang" value="fr" onchange="setLang('fr')"></label>
+          </div>
+          <div class="row-line">
+            <div>
+              <div class="rl-k" data-i18n="dset.lang_en">English</div>
+              <div class="rl-sub" data-i18n="dset.lang_en_sub">Interface and notifications in English</div>
+            </div>
+            <label class="switch-radio"><input type="radio" name="lang" value="en" onchange="setLang('en')"></label>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ NOTIFICATIONS ============ -->
+      <div class="tab-pane" id="tab-notif">
+        <div class="card-sec">
+          <h6><i class="fa fa-bell"></i><span data-i18n="dset.notif_title">Notifications</span></h6>
+          <div class="sec-sub" data-i18n="dset.notif_sub">Choisissez les événements pour lesquels vous souhaitez être notifié.</div>
+
+          <div class="row-line">
+            <div><div class="rl-k" data-i18n="dset.notif_new_rdv">Nouveau rendez-vous</div><div class="rl-sub" data-i18n="dset.notif_new_rdv_sub">Quand un patient réserve un créneau.</div></div>
+            <label class="switch"><input type="checkbox" checked onchange="notifChanged()"><span class="sl"></span></label>
+          </div>
+          <div class="row-line">
+            <div><div class="rl-k" data-i18n="dset.notif_cancel">Annulation de rendez-vous</div><div class="rl-sub" data-i18n="dset.notif_cancel_sub">Quand un patient annule.</div></div>
+            <label class="switch"><input type="checkbox" checked onchange="notifChanged()"><span class="sl"></span></label>
+          </div>
+          <div class="row-line">
+            <div><div class="rl-k" data-i18n="dset.notif_reminder">Rappels du jour</div><div class="rl-sub" data-i18n="dset.notif_reminder_sub">Récapitulatif matinal de vos rendez-vous.</div></div>
+            <label class="switch"><input type="checkbox" onchange="notifChanged()"><span class="sl"></span></label>
+          </div>
+          <div class="row-line">
+            <div><div class="rl-k" data-i18n="dset.notif_product">Actualités FUENI</div><div class="rl-sub" data-i18n="dset.notif_product_sub">Nouveautés et conseils (occasionnel).</div></div>
+            <label class="switch"><input type="checkbox" onchange="notifChanged()"><span class="sl"></span></label>
+          </div>
+          <div class="hint mt-3"><i class="fa fa-envelope me-1"></i><span data-i18n="dset.notif_channel">Ces notifications sont envoyées par e-mail à votre adresse vérifiée, dans la langue du compte.</span></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="toast-ok" id="toast" data-i18n="dset.toast">Modifications enregistrées ✓</div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    const T = k => (window.NazI18n ? NazI18n.t(k) : k);
+
+    /* ---- Tabs ---- */
+    function showTab(id) {
+      document.querySelectorAll('.set-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === id));
+      document.querySelectorAll('.tab-pane').forEach(p => p.classList.toggle('active', p.id === 'tab-' + id));
+    }
+
+    /* ---- Password ---- */
+    function openPwd() {
+      document.getElementById('pwdEdit').classList.remove('d-none');
+      document.getElementById('pwdEditBtn').classList.add('d-none');
+    }
+    function closePwd() {
+      document.getElementById('pwdEdit').classList.add('d-none');
+      document.getElementById('pwdEditBtn').classList.remove('d-none');
+      document.getElementById('pwdCurrent').value = '';
+      document.getElementById('pwdNew').value = '';
+      clearPwdErr(); checkPwd();
+    }
+    function toggleEye(id, btn) {
+      const inp = document.getElementById(id);
+      inp.type = inp.type === 'password' ? 'text' : 'password';
+      btn.querySelector('i').className = inp.type === 'password' ? 'fa fa-eye' : 'fa fa-eye-slash';
+    }
+    function clearPwdErr() { document.getElementById('pwdCurrentErr').classList.add('d-none'); }
+    const pwdRules = v => ({ len: v.length >= 8, upper: /[A-Z]/.test(v), lower: /[a-z]/.test(v), num: /[0-9]/.test(v), spe: /[^A-Za-z0-9]/.test(v) });
+    function checkPwd() {
+      const v = document.getElementById('pwdNew').value;
+      const r = pwdRules(v);
+      const map = { len: 'pr-len', upper: 'pr-upper', lower: 'pr-lower', num: 'pr-num', spe: 'pr-spe' };
+      let n = 0;
+      Object.keys(r).forEach(k => { const ok = r[k]; if (ok) n++; document.getElementById(map[k]).classList.toggle('ok', ok); });
+      const bar = document.getElementById('pwdBar');
+      bar.style.width = (n / 5 * 100) + '%';
+      bar.style.background = n <= 2 ? '#ef4444' : (n <= 4 ? '#f59e0b' : '#16a34a');
+      return n === 5;
+    }
+    function savePwd() {
+      const cur = document.getElementById('pwdCurrent').value;
+      if (cur !== 'MotDePasse123!') { document.getElementById('pwdCurrentErr').classList.remove('d-none'); return; }
+      if (!checkPwd()) return;
+      closePwd(); toast();
+    }
+
+    /* ---- Devices / sessions ---- */
+    function revoke(btn) { btn.closest('.row-line').remove(); toast(); }
+    function revokeAll() {
+      document.querySelectorAll('#sesList .row-line').forEach(r => { if (!r.querySelector('.chip-ok')) r.remove(); });
+      toast();
+    }
+
+    /* ---- Language ---- */
+    function setLang(v) { if (window.NazI18n) NazI18n.setLang(v); syncLangRadios(); toast(); }
+    function syncLangRadios() {
+      const cur = window.NazI18n ? NazI18n.getLang() : 'fr';
+      document.querySelectorAll('input[name="lang"]').forEach(r => r.checked = (r.value === cur));
+    }
+
+    /* ---- Notifications ---- */
+    function notifChanged() { toast(); }
+
+    /* ---- Toast ---- */
+    let toastTimer = null;
+    function toast() {
+      const t = document.getElementById('toast');
+      t.classList.add('show'); clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => t.classList.remove('show'), 2000);
+    }
+
+    document.addEventListener('fueni:langchange', syncLangRadios);
+    function init() { checkPwd(); syncLangRadios(); }
+    if (window.NazI18n) init(); else document.addEventListener('DOMContentLoaded', init);
+  </script>
+
+  <!-- radio style (uses native, styled minimal) -->
+  <style>
+    .switch-radio input { width: 20px; height: 20px; accent-color: #155e75; cursor: pointer; }
+  </style>
+
+  <!-- Prototype version badge -->
+  <script>(function(){if(window.__pv)return;window.__pv=1;var v=document.createElement('div');v.style.cssText='position:fixed;top:0;left:50%;transform:translateX(-50%);background:#155e75;color:#fff;padding:6px 20px;border-radius:0 0 16px 16px;font:600 12px/1 system-ui,-apple-system,sans-serif;letter-spacing:.6px;z-index:99999;box-shadow:0 3px 10px rgba(0,0,0,.2);text-transform:uppercase;display:flex;align-items:center;gap:8px';v.innerHTML='🧪 Prototype <span style="background:#f59e0b;color:#1a1a1a;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:4px">v1.4.0</span><span style="background:#facc15;color:#1a1a1a;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:4px;text-transform:none;letter-spacing:0">⏳ À valider</span>';document.body.appendChild(v);})();</script>
+</body>
+</html>

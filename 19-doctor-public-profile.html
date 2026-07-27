@@ -6,6 +6,7 @@
   <title>FUENI — Mon profil public</title>
   <script src="naz-i18n.js" defer></script>
   <script src="naz-specialities.js"></script>
+  <script src="naz-geo.js"></script>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
   <link rel="stylesheet" href="naz-common.css">
@@ -44,6 +45,10 @@
     .form-label { font-size:0.82rem; font-weight:600; color:#334155; }
     .form-hint { font-size:0.78rem; color:#94a3b8; }
     .pp-avatar { width:84px; height:84px; border-radius:50%; background:#0e7490; color:#fff; display:flex; align-items:center; justify-content:center; font-size:1.7rem; font-weight:700; flex-shrink:0; overflow:hidden; }
+    .pp-avatar-wrap { position:relative; display:inline-block; cursor:pointer; }
+    .pp-avatar-wrap .pp-avatar { transition:filter .15s; }
+    .pp-avatar-wrap:hover .pp-avatar { filter:brightness(0.9); }
+    .pp-avatar-cam { position:absolute; right:-2px; bottom:-2px; width:28px; height:28px; border-radius:50%; background:#155e75; color:#fff; display:flex; align-items:center; justify-content:center; font-size:0.72rem; border:2px solid #fff; }
     .pp-avatar img { width:100%; height:100%; object-fit:cover; }
     .lock-note { font-size:0.76rem; color:#94a3b8; }
     /* Multi-select langues (aligné sur le profil patient) */
@@ -61,10 +66,9 @@
     .ms-opt:hover { background:#f0f4f8; }
     .ms-opt.sel { color:#155e75; font-weight:600; }
     .ms-opt.sel::after { content:'✓'; color:#155e75; }
-    .ms-other { display:flex; gap:6px; border-top:1px solid #eef2f4; margin-top:6px; padding-top:8px; }
-    .ms-other-input { flex:1; min-width:0; border:1.5px solid #e2e8f0; border-radius:8px; padding:6px 9px; font-size:0.85rem; }
-    .ms-other-btn { border:1.5px solid #155e75; background:#fff; color:#155e75; border-radius:8px; padding:4px 12px; font-size:0.82rem; font-weight:600; cursor:pointer; white-space:nowrap; }
-    .ms-other-btn:hover { background:#155e75; color:#fff; }
+    .ms-opt.ms-add { border:1px dashed #94a3b8; color:#155e75; font-weight:600; margin-top:4px; justify-content:flex-start; }
+    .ms-opt.ms-add:hover { background:#ecfeff; }
+    .ms-opt.ms-add::after { content:none; }
     .exp-chip { display:inline-flex; align-items:center; gap:8px; background:#eef5f7; color:#155e75; border-radius:20px; padding:6px 13px; font-size:0.83rem; font-weight:600; margin:0 4px 4px 0; }
     .exp-chip.verified { background:#e0f2f1; color:#00695c; }
     .exp-chip .x { cursor:pointer; opacity:0.55; }
@@ -72,8 +76,60 @@
     .exp-adders { display:flex; flex-wrap:wrap; gap:14px; }
     .exp-adder { flex:1 1 220px; max-width:300px; }
     .exp-adder label { display:block; font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.4px; color:#94a3b8; margin-bottom:5px; }
+    .acte-combo { position:relative; }
+    .acte-combo input { width:100%; padding-left:30px; }
+    .acte-search-ic { position:absolute; left:10px; top:50%; transform:translateY(-50%); color:#94a3b8; font-size:0.8rem; pointer-events:none; z-index:1; }
+    .acte-results { position:absolute; left:0; right:0; top:calc(100% + 4px); z-index:30; background:#fff; border:1px solid #cbd5e1; border-radius:10px; box-shadow:0 8px 24px rgba(15,23,42,.14); max-height:240px; overflow:auto; padding:4px; }
+    .acte-opt { display:flex; align-items:center; gap:8px; width:100%; text-align:left; background:none; border:0; padding:8px 10px; border-radius:8px; font-size:0.9rem; color:#0f172a; cursor:pointer; }
+    .acte-opt:hover { background:#f1f5f9; }
+    .acte-add { border:1px dashed #94a3b8; color:#155e75; font-weight:600; margin-top:2px; }
+    .acte-add:hover { background:#ecfeff; }
+    .req { color:#dc2626; font-weight:700; margin-left:2px; }
+    /* Métriques calées sur .form-control de naz-common.css (padding 11/14, font 0.94rem, bordure 1.5px, radius 10px) */
+    .loc-locked { border:1.5px solid #e2e8f0; border-radius:10px; padding:11px 14px; background:#f8fafc; color:#475569; font-size:0.94rem; line-height:1.5; display:flex; align-items:center; gap:8px; }
+    .loc-locked i { color:#94a3b8; font-size:0.8rem; }
+    /* Combobox Région / Ville (calqué sur le multi-select langues) */
+    .geo-combo { position:relative; }
+    .geo-control { position:relative; border:1.5px solid #9fb0c0; border-radius:10px; padding:11px 32px 11px 14px; background:#fff; cursor:pointer; font-size:0.94rem; line-height:1.5; color:#334155; display:flex; align-items:center; }
+    .geo-control::after { content:'▾'; position:absolute; right:11px; top:50%; transform:translateY(-50%); color:#94a3b8; pointer-events:none; }
+    .geo-control:focus { outline:none; border-color:#155e75; box-shadow:0 0 0 0.15rem rgba(21,94,117,0.15); }
+    .geo-control.placeholder { color:#94a3b8; }
+    .geo-control.disabled { background:#f1f5f9; color:#cbd5e1; cursor:not-allowed; }
+    .geo-control.is-invalid { border-color:#dc2626; }
+    .geo-menu { position:absolute; top:calc(100% + 3px); left:0; right:0; background:#fff; border:1px solid #e2e8f0; border-radius:8px; box-shadow:0 8px 24px rgba(0,0,0,0.14); z-index:60; padding:6px; }
+    .geo-search { width:100%; border:1.5px solid #e2e8f0; border-radius:6px; padding:6px 9px; font-size:0.85rem; margin-bottom:5px; }
+    .geo-list { max-height:190px; overflow-y:auto; }
+    .geo-opt { display:flex; align-items:center; justify-content:space-between; padding:7px 9px; border-radius:6px; cursor:pointer; font-size:0.88rem; color:#334155; }
+    .geo-opt:hover { background:#f0f4f8; }
+    .geo-opt.sel { color:#155e75; font-weight:600; }
+    .geo-opt.sel::after { content:'✓'; color:#155e75; }
+    .geo-add { border:1px dashed #94a3b8; color:#155e75; font-weight:600; margin-top:3px; }
+    .geo-add:hover { background:#ecfeff; }
+    .geo-add::after { content:none !important; }
+    .geo-empty { padding:8px 9px; color:#94a3b8; font-size:0.85rem; }
+    .geo-invalid-msg { display:none; color:#dc2626; font-size:0.8rem; margin-top:3px; }
+    .geo-control.is-invalid ~ .geo-invalid-msg { display:block; }
     .exp-count { font-size:0.75rem; font-weight:700; color:#94a3b8; margin-bottom:10px; }
     .exp-max { color:#b45309; margin:0; }
+    /* Lieux de consultation (multi-lieu) */
+    .loc-edit { border:1px solid #e2e8f0; border-radius:12px; padding:14px; margin-bottom:14px; background:#fbfdfe; }
+    .loc-edit-head { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:10px; }
+    .loc-flags { display:flex; gap:16px; flex-wrap:wrap; }
+    .loc-flag { font-size:0.82rem; color:#475569; font-weight:600; display:inline-flex; align-items:center; gap:6px; margin:0; cursor:pointer; }
+    .loc-sub { font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:0.4px; color:#94a3b8; margin:14px 0 6px; }
+    .loc-view { padding:12px 0; border-bottom:1px solid #f1f5f9; }
+    .loc-view:first-child { padding-top:0; }
+    .loc-view:last-child { border-bottom:0; padding-bottom:0; }
+    .loc-view-head { display:flex; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:6px; }
+    .loc-view-head .loc-type { font-weight:700; color:#0f172a; }
+    .loc-view-head .loc-name { color:#475569; }
+    .loc-tag { font-size:0.66rem; font-weight:700; text-transform:uppercase; letter-spacing:0.4px; border-radius:20px; padding:2px 9px; }
+    .loc-tag.primary { background:#e0f2f1; color:#00695c; }
+    .loc-tag.book { background:#eef5f7; color:#155e75; }
+    .loc-tag.info { background:#f1f5f9; color:#64748b; }
+    .loc-online { color:#155e75; font-weight:600; font-size:0.9rem; }
+    .hv-loc { font-size:0.72rem; font-weight:800; text-transform:uppercase; letter-spacing:0.4px; color:#155e75; margin:16px 0 6px; }
+    .hv-loc:first-child { margin-top:0; }
     .acc-chip { display:inline-flex; align-items:center; gap:8px; border:1.5px solid #e2e8f0; border-radius:20px; padding:7px 14px; font-size:0.83rem; color:#475569; cursor:pointer; user-select:none; }
     .acc-chip i { color:#94a3b8; }
     .acc-chip.on { border-color:#155e75; background:#eef5f7; color:#155e75; font-weight:600; }
@@ -99,6 +155,7 @@
     .hr-range .hr-time { max-width:108px; }
     .hr-sep { color:#94a3b8; }
     .hr-closed { color:#cbd5e1; font-size:0.9rem; padding-top:5px; }
+    .hours-conflict { background:#fff7ed; border:1px solid #fed7aa; color:#9a3412; border-radius:10px; padding:9px 12px; font-size:0.82rem; margin-bottom:10px; }
     .btn-slot { align-self:flex-start; background:none; border:0; color:#155e75; font-weight:600; font-size:0.8rem; cursor:pointer; padding:2px 0; }
     .btn-slot:hover { text-decoration:underline; }
     .hv-row { display:flex; gap:12px; padding:5px 0; }
@@ -107,9 +164,11 @@
     .hv-closed { color:#cbd5e1; }
     .motif-row { display:flex; gap:8px; align-items:center; margin-bottom:8px; }
     .motif-row .m-label { flex:1 1 auto; }
-    .motif-row .m-dur { width:130px; flex:0 0 auto; }
+    .motif-row .m-dur { flex:0 0 auto; display:flex; gap:6px; align-items:center; }
+    .motif-row .m-dur .m-dur-sel { width:110px; }
+    .motif-row .m-dur .m-dur-custom { width:104px; }
     .motif-row .m-price { width:168px; flex:0 0 auto; }
-    .motif-row .m-dur input, .motif-row .m-price input { min-width:0; }
+    .motif-row .m-price input { min-width:0; }
     .mv-row { display:flex; justify-content:space-between; align-items:center; padding:9px 0; border-bottom:1px solid #f4f7fa; }
     .mv-row:last-child { border-bottom:0; }
     .mv-name { font-weight:600; color:#1e293b; }
@@ -158,7 +217,7 @@
 
     <div class="nav-section" data-i18n="doc.dash.sec_account">Compte</div>
     <a href="18-doctor-abonnement.html" class="nav-link-side"><i class="fa fa-star"></i><span data-i18n="doc.dash.nav_subscription">Mon abonnement</span></a>
-    <a href="#" class="nav-link-side" onclick="event.preventDefault();"><i class="fa fa-cog"></i><span data-i18n="doc.dash.nav_settings">Paramètres</span></a>
+    <a href="29-doctor-settings.html" class="nav-link-side"><i class="fa fa-cog"></i><span data-i18n="doc.dash.nav_settings">Paramètres</span></a>
     <a href="10b-login-doctor.html" class="nav-link-side"><i class="fa fa-arrow-right-from-bracket"></i><span data-i18n="doc.dash.logout">Déconnexion</span></a>
   </div>
 
@@ -186,30 +245,8 @@
       <div class="card-pp" data-card="identity">
         <div class="card-head">
           <h6 data-i18n="docpp.sec_identity">Identité affichée</h6>
-          <button class="card-edit-btn" onclick="editCard('identity')"><i class="fa fa-pen me-1"></i><span data-i18n="docpp.edit">Modifier</span></button>
         </div>
         <div class="card-view" id="view-identity"></div>
-        <div class="card-edit">
-          <div class="d-flex align-items-center gap-3 mb-3 flex-wrap">
-            <div class="pp-avatar" id="ppAvatar">AD</div>
-            <div>
-              <label class="btn btn-ghost btn-sm mb-1"><i class="fa fa-camera me-1"></i><span data-i18n="docpp.change_photo">Changer la photo</span>
-                <input type="file" id="ppPhoto" accept="image/*" hidden onchange="onPhoto(event)">
-              </label>
-              <div class="form-hint" data-i18n="docpp.photo_help">JPG ou PNG, portrait professionnel recommandé.</div>
-            </div>
-          </div>
-          <div class="row g-3">
-            <div class="col-sm-3"><label class="form-label" data-i18n="docpp.f_title">Titre</label><input type="text" class="form-control" id="ppTitle" readonly></div>
-            <div class="col-sm-5"><label class="form-label" data-i18n="docpp.f_name">Nom affiché</label><input type="text" class="form-control" id="ppName" readonly></div>
-            <div class="col-sm-4"><label class="form-label" data-i18n="docpp.f_specialty">Spécialité</label><input type="text" class="form-control" id="ppSpec" readonly></div>
-          </div>
-          <p class="lock-note mt-2 mb-0"><i class="fa fa-lock me-1"></i><span data-i18n-html="docpp.identity_locked">Nom et spécialité proviennent de votre dossier vérifié (KYC) et ne sont pas modifiables ici. Pour les corriger, contactez le <a href="mailto:support@fueni.com">support</a>.</span></p>
-        </div>
-        <div class="card-foot">
-          <button class="btn btn-doctor btn-sm" onclick="saveCard('identity')"><i class="fa fa-check me-1"></i><span data-i18n="docpp.save_btn">Enregistrer</span></button>
-          <button class="btn btn-ghost btn-sm" onclick="cancelCard('identity')" data-i18n="docpp.cancel">Annuler</button>
-        </div>
       </div>
 
       <!-- Présentation -->
@@ -220,8 +257,8 @@
         </div>
         <div class="card-view" id="view-bio"></div>
         <div class="card-edit">
-          <textarea class="form-control" id="ppBio" rows="5" maxlength="1200" data-i18n-placeholder="docpp.bio_ph" placeholder="Présentez votre parcours, vos domaines d'expertise, votre approche…" oninput="P.bio=this.value;document.getElementById('ppBioCount').textContent=this.value.length"></textarea>
-          <div class="form-hint mt-1"><span id="ppBioCount">0</span>/1200</div>
+          <textarea class="form-control" id="ppBio" rows="5" maxlength="1500" data-i18n-placeholder="docpp.bio_ph" placeholder="Présentez votre parcours, vos domaines d'expertise, votre approche…" oninput="P.bio=this.value;document.getElementById('ppBioCount').textContent=this.value.length"></textarea>
+          <div class="form-hint mt-1"><span id="ppBioCount">0</span>/1500</div>
         </div>
         <div class="card-foot">
           <button class="btn btn-doctor btn-sm" onclick="saveCard('bio')"><i class="fa fa-check me-1"></i><span data-i18n="docpp.save_btn">Enregistrer</span></button>
@@ -261,12 +298,8 @@
               <span class="ms-placeholder" id="langPlaceholder" data-i18n="docpp.langs_ph">Ajouter une langue…</span>
             </div>
             <div class="ms-menu d-none" id="langMenu" onclick="event.stopPropagation()">
-              <input class="ms-search" id="langSearch" data-i18n-placeholder="docpp.langs_search" placeholder="Rechercher une langue…" oninput="renderLangList()">
+              <input class="ms-search" id="langSearch" data-i18n-placeholder="docpp.langs_search" placeholder="Rechercher une langue…" oninput="renderLangList()" onkeydown="langSearchKey(event)">
               <div class="ms-list" id="langList"></div>
-              <div class="ms-other">
-                <input class="ms-other-input" id="langOther" data-i18n-placeholder="docpp.langs_other_ph" placeholder="Autre langue (préciser)…" onkeydown="if(event.key==='Enter'){event.preventDefault();addOtherLang();}">
-                <button class="ms-other-btn" onclick="addOtherLang()" data-i18n="docpp.langs_other_add">Ajouter</button>
-              </div>
             </div>
           </div>
         </div>
@@ -284,20 +317,9 @@
         </div>
         <div class="card-view" id="view-location"></div>
         <div class="card-edit">
-          <div class="row g-3">
-            <div class="col-12"><label class="form-label" data-i18n="docpp.f_street">Adresse</label><input type="text" class="form-control" id="ppStreet" oninput="P.street=this.value"></div>
-            <div class="col-sm-4"><label class="form-label" data-i18n="docpp.f_city">Ville</label><input type="text" class="form-control" id="ppCity" oninput="P.city=this.value"></div>
-            <div class="col-sm-4"><label class="form-label" data-i18n="docpp.f_region">Région</label><input type="text" class="form-control" id="ppRegion" oninput="P.region=this.value"></div>
-            <div class="col-sm-4"><label class="form-label" data-i18n="docpp.f_country">Pays</label><input type="text" class="form-control" id="ppCountry" onchange="onCountry(this.value)" oninput="P.country=this.value"></div>
-          </div>
-          <hr class="my-3" style="border:0;border-top:1px solid #eef2f6;">
-          <div class="form-label mb-1" data-i18n="docpp.sec_access">Accessibilité</div>
-          <div class="form-hint mb-2" data-i18n="docpp.access_help">Indiquez les facilités d'accès à votre cabinet (déclaratif).</div>
-          <div id="ppAccess" class="d-flex flex-wrap gap-2"></div>
-          <hr class="my-3" style="border:0;border-top:1px solid #eef2f6;">
-          <div class="form-label mb-1" data-i18n="docpp.sec_photos">Photos du cabinet</div>
-          <div class="form-hint mb-2" data-i18n="docpp.photos_help">Façade, entrée, salle d'attente, environs… N'incluez aucun patient ni information confidentielle.</div>
-          <div id="ppPhotos" class="photo-grid"></div>
+          <div class="form-hint mb-3" data-i18n="docpp.loc_help">Ajoutez chaque lieu où vous consultez (cabinet, hôpital, clinique…). Le lieu « principal » est mis en avant ; un lieu « réservable » propose des créneaux — sinon il est affiché à titre informatif.</div>
+          <div id="ppLocations"></div>
+          <button class="btn btn-ghost btn-sm mt-1" onclick="addLocation()"><i class="fa fa-plus me-1"></i><span data-i18n="docpp.loc_add">Ajouter un lieu</span></button>
           <input type="file" id="ppPhotoInput" accept="image/*" hidden onchange="onAddPhoto(event)">
         </div>
         <div class="card-foot">
@@ -315,6 +337,7 @@
         <div class="card-view" id="view-hours"></div>
         <div class="card-edit">
           <div class="form-hint mb-2" data-i18n="docpp.hours_help">Ajoutez un ou plusieurs créneaux par jour ; désactivez un jour pour le marquer « Fermé ».</div>
+          <div id="ppHoursWarn" class="hours-conflict d-none"></div>
           <div id="ppHours"></div>
         </div>
         <div class="card-foot">
@@ -326,7 +349,7 @@
       <!-- Motifs & tarifs -->
       <div class="card-pp" data-card="motifs">
         <div class="card-head">
-          <h6 data-i18n="docpp.sec_motifs">Motifs de consultation & tarifs</h6>
+          <h6 data-i18n="docpp.sec_motifs">Actes, durée et tarifs proposés</h6>
           <button class="card-edit-btn" onclick="editCard('motifs')"><i class="fa fa-pen me-1"></i><span data-i18n="docpp.edit">Modifier</span></button>
         </div>
         <div class="card-view" id="view-motifs"></div>
@@ -337,7 +360,7 @@
             <select class="form-select form-select-sm" id="ppCurrency" style="max-width:120px" onchange="setCurrency(this.value)"></select>
           </div>
           <div id="ppMotifs"></div>
-          <button class="btn btn-ghost btn-sm mt-1" onclick="addMotif()"><i class="fa fa-plus me-1"></i><span data-i18n="docpp.add_motif">Ajouter un motif</span></button>
+          <button class="btn btn-ghost btn-sm mt-1" id="addMotifBtn" onclick="addMotif()"><i class="fa fa-plus me-1"></i><span data-i18n="docpp.add_motif">Ajouter un motif</span></button>
         </div>
         <div class="card-foot">
           <button class="btn btn-doctor btn-sm" onclick="saveCard('motifs')"><i class="fa fa-check me-1"></i><span data-i18n="docpp.save_btn">Enregistrer</span></button>
@@ -417,11 +440,11 @@
     }
     const MAX_PHOTOS = 5;
     const MAX_PHOTO_BYTES = 5 * 1024 * 1024;
-    const MAX_EXP = 10; // domaines d'expertise déclarés (hors spécialité vérifiée)
-    const CURRENCIES = ['XOF', 'XAF', 'CDF'];
+    const MAX_EXP = 10; // total de domaines d'expertise, spécialité vérifiée INCLUSE (donc 9 déclarés max)
+    const CURRENCIES = ['XOF', 'XAF', 'CDF', 'EUR', 'USD'];
     const CURRENCY_BY_COUNTRY = {
       'Sénégal':'XOF', "Côte d'Ivoire":'XOF', 'Mali':'XOF', 'Bénin':'XOF', 'Togo':'XOF', 'Burkina Faso':'XOF', 'Niger':'XOF',
-      'Cameroun':'XAF', 'RD Congo':'CDF', 'RDC':'CDF', 'République démocratique du Congo':'CDF'
+      'Cameroun':'XAF', 'RD Congo':'USD', 'RDC':'USD', 'République démocratique du Congo':'USD'
     };
     const currencyFor = c => CURRENCY_BY_COUNTRY[(c || '').trim()] || 'XOF';
 
@@ -438,19 +461,13 @@
         { year:'2018', label:'Assistant — CHU de Fann, service de cardiologie' },
         { year:'2020', label:'Cabinet privé — Dakar Plateau' }
       ],
-      street: '12, rue Carnot', city: 'Dakar', region: 'Dakar', country: 'Sénégal',
-      access: ['wheelchair', 'parking'],
-      photos: [makePh('Façade', '#dbeafe', '#bfdbfe'), makePh("Salle d'attente", '#e0f2f1', '#c7ece6')],
-      hours: {
-        mon:[['09:00','13:00'],['15:00','18:00']], tue:[['09:00','13:00'],['15:00','18:00']],
-        wed:[['09:00','13:00']], thu:[['09:00','13:00'],['15:00','18:00']], fri:[['09:00','13:00']], sat:[], sun:[]
-      },
-      currency: 'XOF',
-      motifs: [
-        { label:'Consultation générale', dur:30, price:8000 },
-        { label:'Suivi / renouvellement', dur:20, price:6000 },
-        { label:'Téléconsultation', dur:20, price:6000 }
-      ]
+      locations: [
+        { id:'loc1', type:'cabinet', label:'Cabinet Plateau', street:'12, rue Carnot', city:'Dakar', region:'Dakar', country:'Sénégal', primary:true, bookable:true, access:['wheelchair','parking'], photos:[makePh('Façade', '#dbeafe', '#bfdbfe'), makePh("Salle d'attente", '#e0f2f1', '#c7ece6')],
+          hours:{ mon:[['09:00','13:00'],['15:00','18:00']], tue:[['09:00','13:00'],['15:00','18:00']], wed:[['09:00','13:00']], thu:[['09:00','13:00'],['15:00','18:00']], fri:[['09:00','13:00']], sat:[], sun:[] },
+          motifs:[ { label:'Consultation générale', dur:30, price:8000 }, { label:'Suivi / renouvellement', dur:20, price:6000 } ] },
+        { id:'loc2', type:'hopital', label:'Hôpital Principal de Dakar', street:'Avenue Nelson Mandela', city:'Dakar', region:'Dakar', country:'Sénégal', primary:false, bookable:false, access:['wheelchair'], photos:[], hours:{}, motifs:[], service:'Cardiologie interventionnelle', position:'chef' }
+      ],
+      currency: 'XOF'
     };
     const DAYS = [['mon','Lundi'],['tue','Mardi'],['wed','Mercredi'],['thu','Jeudi'],['fri','Vendredi'],['sat','Samedi'],['sun','Dimanche']];
     const T = k => (window.NazI18n ? NazI18n.t(k) : k);
@@ -458,12 +475,33 @@
     const clone = o => JSON.parse(JSON.stringify(o));
     const fmt = n => (n || 0).toLocaleString('fr-FR');
 
+    // Pays d'exercice = hérité du dossier vérifié (éligibilité/KYC), non modifiable ici.
+    const KYC_COUNTRY = localStorage.getItem('naz_doctor_country') || 'Sénégal';
     function load() {
-      try { const raw = localStorage.getItem(STORE_KEY); if (raw) return Object.assign({}, clone(DEFAULT), JSON.parse(raw)); }
-      catch (err) {}
-      return clone(DEFAULT);
+      let p;
+      try { const raw = localStorage.getItem(STORE_KEY); p = raw ? Object.assign({}, clone(DEFAULT), JSON.parse(raw)) : clone(DEFAULT); }
+      catch (err) { p = clone(DEFAULT); }
+      migrateLocations(p);
+      return p;
+    }
+    // Rétrocompat : ancien schéma mono-adresse + horaires/motifs globaux → locations[].
+    function migrateLocations(p) {
+      if (!Array.isArray(p.locations) || !p.locations.length) {
+        p.locations = [{ id:'loc1', type:'cabinet', label:'', street:p.street||'', city:p.city||'', region:p.region||'', country:p.country||'', primary:true, bookable:true, access:p.access||[], photos:p.photos||[], hours:p.hours||{}, motifs:p.motifs||[] }];
+      }
+      // Phase 2 : chaque lieu porte ses propres horaires + motifs
+      p.locations.forEach(L => {
+        if (!L.hours || typeof L.hours !== 'object') L.hours = {};
+        if (!Array.isArray(L.motifs)) L.motifs = [];
+        if (typeof L.bookable !== 'boolean') L.bookable = true;
+        if (typeof L.service !== 'string') L.service = '';
+        if (typeof L.position !== 'string') L.position = '';
+        L.country = KYC_COUNTRY; // pays hérité du KYC, identique pour tous les lieux
+      });
+      delete p.street; delete p.city; delete p.region; delete p.country; delete p.access; delete p.photos; delete p.hours; delete p.motifs;
     }
     let P = load();
+    const primaryLoc = () => (P.locations || []).find(l => l.primary) || P.locations[0];
 
     function initials() { return (P.name || 'D').split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase(); }
     function avatarInner() { return P.photo ? '<img src="' + P.photo + '" alt="">' : initials(); }
@@ -482,21 +520,28 @@
       const el = document.querySelector('[data-card="' + key + '"]'); if (el) el.classList.remove('editing');
     }
     function saveCard(key) {
+      if (key === 'location' && !validateLocations()) return;
       if (!persist()) return;
       snap = null; editing = null;
       const el = document.querySelector('[data-card="' + key + '"]'); if (el) el.classList.remove('editing');
       renderAllViews(); toast();
     }
     function onVisible(on) { P.visible = on; persist(); }
-    function onCountry(v) { P.country = v; P.currency = currencyFor(v); renderCurrency(); renderMotifs(); }
 
     /* ---------- Read-only views ---------- */
     function renderAllViews() {
       const NR = '<span class="view-muted">' + T('docpp.view_empty') + '</span>';
       document.getElementById('view-identity').innerHTML =
-        '<div class="d-flex align-items-center gap-3"><div class="pp-avatar">' + avatarInner() + '</div>' +
-        '<div><div class="fw-bold" style="font-size:1.05rem;color:#0f172a;">' + e(P.title) + ' ' + e(P.name) + '</div>' +
-        '<div style="color:#155e75;font-weight:600;">' + e(P.spec) + '</div></div></div>';
+        '<div class="d-flex align-items-center gap-3">' +
+          '<label class="pp-avatar-wrap" title="' + T('docpp.change_photo') + '">' +
+            '<div class="pp-avatar">' + avatarInner() + '</div>' +
+            '<span class="pp-avatar-cam"><i class="fa fa-camera"></i></span>' +
+            '<input type="file" accept="image/jpeg,image/png" hidden onchange="onPhoto(event)">' +
+          '</label>' +
+          '<div><div class="fw-bold" style="font-size:1.05rem;color:#0f172a;">' + e(P.title) + ' ' + e(P.name) + '</div>' +
+          '<div style="color:#155e75;font-weight:600;">' + e(P.spec) + '</div>' +
+          '<div class="lock-note mt-1"><i class="fa fa-lock me-1"></i>' + T('docpp.identity_locked_short') + '</div></div>' +
+        '</div>';
 
       document.getElementById('view-bio').innerHTML = P.bio ? '<div style="white-space:pre-line;color:#334155;line-height:1.6;">' + e(P.bio) + '</div>' : NR;
 
@@ -507,21 +552,48 @@
       document.getElementById('view-langs').innerHTML = (P.langs && P.langs.length)
         ? P.langs.map(l => '<span class="tag-view">' + e(l) + '</span>').join('') : NR;
 
-      let loc = '<div class="mb-2" style="color:#334155;"><i class="fa fa-location-dot me-1" style="color:#155e75;"></i>' + e([P.street, P.city, P.region, P.country].filter(Boolean).join(', ')) + '</div>';
-      if ((P.access || []).length) loc += '<div class="mb-2">' + P.access.map(k => '<span class="tag-view"><i class="fa ' + (ACCESS_IC[k] || 'fa-check') + '"></i>' + T('docpp.acc_' + k) + '</span>').join('') + '</div>';
-      if ((P.photos || []).length) loc += '<div class="pv-grid">' + P.photos.map(s => '<div class="pv-thumb"><img src="' + s + '" alt=""></div>').join('') + '</div>';
-      document.getElementById('view-location').innerHTML = loc;
-
-      document.getElementById('view-hours').innerHTML = DAYS.map(([k]) => {
-        const r = (P.hours || {})[k] || [];
-        const val = r.length ? r.map(x => x[0] + '–' + x[1]).join(', ') : '<span class="hv-closed">' + T('docppv.closed') + '</span>';
-        return '<div class="hv-row"><div class="hv-day">' + T('docpp.day_' + k) + '</div><div class="hv-val">' + val + '</div></div>';
+      migrateLocations(P);
+      document.getElementById('view-location').innerHTML = P.locations.map(L => {
+        const addr = [L.street, L.city, L.region, L.country].filter(Boolean).join(', ');
+        const tag = L.bookable
+          ? '<span class="loc-tag book">' + T('docpp.loc_bookable_short') + '</span>'
+          : '<span class="loc-tag info">' + T('docpp.loc_info_only') + '</span>';
+        const prim = L.primary ? '<span class="loc-tag primary">' + T('docpp.loc_primary') + '</span>' : '';
+        const isTele = L.type === 'teleconsult';
+        let h = '<div class="loc-view">';
+        h += '<div class="loc-view-head"><span class="loc-type">' + T('docpp.loctype_' + L.type) + '</span>' + (L.label ? '<span class="loc-name">' + e(L.label) + '</span>' : '') + prim + tag + '</div>';
+        h += isTele
+          ? '<div class="mb-1" style="color:#334155;"><i class="fa fa-video me-1" style="color:#155e75;"></i>' + T('docpp.loc_online') + '</div>'
+          : '<div class="mb-1" style="color:#334155;"><i class="fa fa-location-dot me-1" style="color:#155e75;"></i>' + e(addr) + '</div>';
+        if (INSTIT_TYPES.includes(L.type) && (L.service || L.position)) {
+          const sp = [e(L.service || ''), L.position ? T('docpp.pos_' + L.position) : ''].filter(Boolean).join(' · ');
+          h += '<div class="mb-1" style="color:#64748b;font-size:0.86rem;"><i class="fa fa-user-doctor me-1"></i>' + sp + '</div>';
+        }
+        if (!isTele && (L.access || []).length) h += '<div class="mb-1">' + L.access.map(k => '<span class="tag-view"><i class="fa ' + (ACCESS_IC[k] || 'fa-check') + '"></i>' + T('docpp.acc_' + k) + '</span>').join('') + '</div>';
+        if (!isTele && (L.photos || []).length) h += '<div class="pv-grid">' + L.photos.map(s => '<div class="pv-thumb"><img src="' + s + '" alt=""></div>').join('') + '</div>';
+        return h + '</div>';
       }).join('');
 
-      document.getElementById('view-motifs').innerHTML = (P.motifs || []).length ? (P.motifs || []).map(m =>
-        '<div class="mv-row"><div><div class="mv-name">' + e(m.label) + '</div><div class="mv-meta"><i class="fa fa-clock me-1"></i>' + m.dur + ' ' + T('docppv.min') + '</div></div>' +
-        '<div class="mv-price">' + fmt(m.price) + ' ' + (P.currency || 'XOF') + '</div></div>'
-      ).join('') : NR;
+      // Horaires & motifs : par lieu réservable
+      const bl = bookableLocs();
+      document.getElementById('view-hours').innerHTML = bl.length ? bl.map(({ L }) => {
+        const head = bl.length > 1 ? '<div class="hv-loc">' + e(locName(L)) + '</div>' : '';
+        const rows = DAYS.map(([k]) => {
+          const r = (L.hours || {})[k] || [];
+          const val = r.length ? r.map(x => x[0] + '–' + x[1]).join(', ') : '<span class="hv-closed">' + T('docppv.closed') + '</span>';
+          return '<div class="hv-row"><div class="hv-day">' + T('docpp.day_' + k) + '</div><div class="hv-val">' + val + '</div></div>';
+        }).join('');
+        return head + rows;
+      }).join('') : NR;
+
+      document.getElementById('view-motifs').innerHTML = bl.length ? bl.map(({ L }) => {
+        const head = bl.length > 1 ? '<div class="hv-loc">' + e(locName(L)) + '</div>' : '';
+        const rows = (L.motifs || []).length ? L.motifs.map(m =>
+          '<div class="mv-row"><div><div class="mv-name">' + e(m.label) + '</div><div class="mv-meta"><i class="fa fa-clock me-1"></i>' + m.dur + ' ' + T('docppv.min') + '</div></div>' +
+          '<div class="mv-price">' + fmt(m.price) + ' ' + (P.currency || 'XOF') + '</div></div>'
+        ).join('') : '<div class="view-muted mb-2">' + T('docpp.view_empty') + '</div>';
+        return head + rows;
+      }).join('') : NR;
 
       document.getElementById('view-training').innerHTML = (P.training || []).length
         ? P.training.map(t => '<div class="tv-row"><div class="tv-year">' + e(t.year) + '</div><div class="tv-label">' + e(t.label) + '</div></div>').join('') : NR;
@@ -550,43 +622,240 @@
     }
     function renderLangList() {
       const list = document.getElementById('langList'); if (!list) return;
-      const q = (document.getElementById('langSearch').value || '').toLowerCase();
+      const raw = (document.getElementById('langSearch').value || '').trim();
+      const q = raw.toLowerCase();
       list.innerHTML = '';
       LANGS.filter(l => l.toLowerCase().includes(q)).forEach(l => {
         const o = document.createElement('div'); o.className = 'ms-opt' + (P.langs.includes(l) ? ' sel' : ''); o.textContent = l;
         o.onclick = () => { P.langs.includes(l) ? (P.langs = P.langs.filter(x => x !== l)) : P.langs.push(l); renderLangTags(); renderLangList(); };
         list.appendChild(o);
       });
+      // Ajout en texte libre (même logique que les Actes) : proposé si la saisie n'existe pas déjà.
+      const exact = raw && LANGS.some(l => l.toLowerCase() === q);
+      const dup = raw && P.langs.some(l => l.toLowerCase() === q);
+      if (raw && !exact && !dup) {
+        const add = document.createElement('div');
+        add.className = 'ms-opt ms-add';
+        add.innerHTML = '<i class="fa fa-circle-plus me-1"></i>' + T('docpp.langs_add').replace('{q}', e(raw));
+        add.onclick = addOtherLang;
+        list.appendChild(add);
+      }
     }
     function addOtherLang() {
-      const inp = document.getElementById('langOther');
+      const inp = document.getElementById('langSearch');
       const v = (inp.value || '').trim();
       if (!v) return;
-      if (!P.langs.includes(v)) P.langs.push(v);
+      if (!P.langs.some(l => l.toLowerCase() === v.toLowerCase())) P.langs.push(v);
       inp.value = '';
-      renderLangTags(); renderLangList();
+      renderLangTags(); renderLangList(); inp.focus();
+    }
+    function langSearchKey(ev) {
+      if (ev.key !== 'Enter') return;
+      ev.preventDefault();
+      const raw = (document.getElementById('langSearch').value || '').trim();
+      if (!raw) return;
+      // Correspondance exacte dans la liste → on utilise le libellé canonique ; sinon ajout libre.
+      const canon = LANGS.find(l => l.toLowerCase() === raw.toLowerCase());
+      if (canon) {
+        if (!P.langs.includes(canon)) P.langs.push(canon);
+        document.getElementById('langSearch').value = '';
+        renderLangTags(); renderLangList();
+      } else addOtherLang();
     }
     document.addEventListener('click', closeLangMenu);
 
-    /* ---------- Accessibilité ---------- */
-    function renderAccess() {
-      const box = document.getElementById('ppAccess'); if (!box) return;
-      if (!Array.isArray(P.access)) P.access = [];
+    /* ---------- Lieux de consultation (multi-lieu) ---------- */
+    // Téléconsultation retirée du MVP (post-MVP) — type non proposé pour l'instant.
+    const LOC_TYPES = ['cabinet', 'hopital', 'clinique', 'centre'];
+    const INSTIT_TYPES = ['hopital', 'clinique', 'centre'];  // Service / Fonction pertinents pour ces lieux
+    const POSITIONS = ['chef', 'ph', 'assistant', 'consultant', 'vacataire'];
+    const posOpts = sel => '<option value="">' + T('docpp.pos_none') + '</option>' + POSITIONS.map(k => '<option value="' + k + '"' + (sel === k ? ' selected' : '') + '>' + T('docpp.pos_' + k) + '</option>').join('');
+    let photoTargetLoc = 0, hoursLoc = 0, motifsLoc = 0;
+    const bookableLocs = () => P.locations.map((L, i) => ({ L, i })).filter(o => o.L.bookable);
+    // Nom affiché d'un lieu : libellé si renseigné ; sinon type · ville, avec un numéro si doublon (évite deux « Cabinet » identiques).
+    function locName(L) {
+      if (L.label && L.label.trim()) return L.label;
+      const base = x => T('docpp.loctype_' + x.type) + (x.type !== 'teleconsult' && x.city ? ' · ' + x.city : '');
+      const b = base(L);
+      const grp = P.locations.filter(x => !(x.label && x.label.trim()) && base(x) === b);
+      return grp.length > 1 ? b + ' (' + (grp.indexOf(L) + 1) + ')' : b;
+    }
+    function ensureLocIdx() {
+      const bl = bookableLocs();
+      if (!bl.length) return;
+      if (!P.locations[hoursLoc] || !P.locations[hoursLoc].bookable) hoursLoc = bl[0].i;
+      if (!P.locations[motifsLoc] || !P.locations[motifsLoc].bookable) motifsLoc = bl[0].i;
+    }
+    function locPicker(sel, fn) {
+      const bl = bookableLocs();
+      if (bl.length <= 1) return '';
+      return '<label class="form-label mb-1">' + T('docpp.loc_picker') + '</label>' +
+        '<select class="form-select form-select-sm mb-3" style="max-width:320px" onchange="' + fn + '(+this.value)">' +
+        bl.map(o => '<option value="' + o.i + '"' + (o.i === sel ? ' selected' : '') + '>' + e(locName(o.L)) + '</option>').join('') + '</select>';
+    }
+
+    // Champs obligatoires du lieu : type (toujours renseigné) + adresse, ville, région, pays.
+    // Validation inline : chaque champ vide reçoit .is-invalid → son message .invalid-feedback s'affiche.
+    function validateLocations() {
+      let ok = true, first = null;
+      // Rue (champ texte)
+      document.querySelectorAll('#ppLocations .loc-req').forEach(inp => {
+        const bad = !inp.value.trim();
+        inp.classList.toggle('is-invalid', bad);
+        if (bad) { ok = false; if (!first) first = inp; }
+      });
+      // Région & Ville (combobox) : validation depuis les données
+      P.locations.forEach((L, i) => {
+        if (L.type === 'teleconsult') return;
+        ['region', 'city'].forEach(field => {
+          const bad = !String(geoValOf(L, field) || '').trim();
+          const ctl = document.getElementById('geoctl-' + i + '-' + field);
+          if (ctl) ctl.classList.toggle('is-invalid', bad);
+          if (bad) { ok = false; if (!first) first = ctl; }
+        });
+      });
+      if (first && first.focus) first.focus();
+      if (first && first.scrollIntoView) first.scrollIntoView({ block: 'center', behavior: 'smooth' });
+      return ok;
+    }
+    /* ---------- Géo : Pays → Région → Ville (référentiel naz-geo.js) ---------- */
+    const GEO_FB = '<div class="invalid-feedback" data-i18n="docpp.field_required">Ce champ est obligatoire.</div>';
+    function geoRegionsOf(c) { return (window.NazGeo && NazGeo.regions[c]) || []; }
+    function geoCitiesOf(c, r) { return (window.NazGeo && NazGeo.cities[c] && NazGeo.cities[c][r]) || []; }
+    // Pays : hérité du KYC → champ verrouillé (lecture seule), identique pour tous les lieux.
+    function geoPaysSel(i, L) {
+      return '<div class="loc-locked" title="' + T('docpp.country_kyc') + '"><i class="fa fa-lock"></i> ' + e(L.country || KYC_COUNTRY) + '</div>';
+    }
+    // Région & Ville : combobox recherchable (même principe que les langues) + ajout libre.
+    const geoNorm = s => (s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
+    function geoOptionsFor(i, field) {
+      const L = P.locations[i];
+      return field === 'region' ? geoRegionsOf(L.country) : geoCitiesOf(L.country, L.region);
+    }
+    function geoValOf(L, field) { return field === 'region' ? L.region : L.city; }
+    function geoComboHtml(i, field, L, ph, disabled) {
+      const val = geoValOf(L, field), id = 'geoctl-' + i + '-' + field;
+      const cls = 'geo-control' + (val ? '' : ' placeholder') + (disabled ? ' disabled' : '');
+      const click = disabled ? '' : ' onclick="geoOpen(this)" tabindex="0"';
+      return '<div class="geo-combo" data-i="' + i + '" data-field="' + field + '">' +
+        '<div class="' + cls + '" id="' + id + '"' + click + '>' + (val ? e(val) : T(ph)) + '</div>' +
+        '<div class="geo-menu d-none"><input class="geo-search" oninput="geoFilter(this)" onkeydown="geoKey(event,this)" placeholder="' + T('docpp.geo_search_ph') + '"><div class="geo-list"></div></div>' +
+        '<div class="geo-invalid-msg" data-i18n="docpp.field_required">Ce champ est obligatoire.</div>' +
+        '</div>';
+    }
+    function geoRegionSel(i, L) { return geoComboHtml(i, 'region', L, 'docpp.geo_select', false); }
+    function geoVilleSel(i, L) { return geoComboHtml(i, 'city', L, L.region ? 'docpp.geo_select' : 'docpp.geo_pick_region', !L.region); }
+    function closeGeoMenus() { document.querySelectorAll('#ppLocations .geo-menu').forEach(m => m.classList.add('d-none')); }
+    function geoOpen(ctl) {
+      closeGeoMenus();
+      const combo = ctl.closest('.geo-combo'), menu = combo.querySelector('.geo-menu');
+      menu.classList.remove('d-none');
+      const inp = menu.querySelector('.geo-search'); inp.value = '';
+      geoRenderList(combo, ''); inp.focus();
+    }
+    function geoFilter(inp) { geoRenderList(inp.closest('.geo-combo'), inp.value); }
+    function geoRenderList(combo, query) {
+      const i = +combo.dataset.i, field = combo.dataset.field, L = P.locations[i];
+      const options = geoOptionsFor(i, field), cur = geoValOf(L, field);
+      const nq = geoNorm(query), q = query.trim(), esc2 = s => s.replace(/'/g, "\\'");
+      let h = options.filter(o => !nq || geoNorm(o).includes(nq)).map(o =>
+        '<div class="geo-opt' + (o === cur ? ' sel' : '') + '" onmousedown="event.preventDefault()" onclick="geoPick(' + i + ',\'' + field + '\',\'' + esc2(o) + '\')">' + e(o) + '</div>').join('');
+      const exact = q && options.some(o => geoNorm(o) === nq), dup = q && geoNorm(cur) === nq;
+      if (q && !exact && !dup)
+        h += '<div class="geo-opt geo-add" onmousedown="event.preventDefault()" onclick="geoPick(' + i + ',\'' + field + '\',\'' + esc2(q) + '\')"><i class="fa fa-circle-plus me-1"></i>' + T('docpp.geo_add').replace('{q}', e(q)) + '</div>';
+      if (!h) h = '<div class="geo-empty">' + T('docpp.geo_none') + '</div>';
+      combo.querySelector('.geo-list').innerHTML = h;
+    }
+    function geoKey(ev, inp) {
+      if (ev.key === 'Escape') { closeGeoMenus(); return; }
+      if (ev.key !== 'Enter') return;
+      ev.preventDefault();
+      const combo = inp.closest('.geo-combo'), i = +combo.dataset.i, field = combo.dataset.field;
+      const q = inp.value.trim(); if (!q) return;
+      const canon = geoOptionsFor(i, field).find(o => geoNorm(o) === geoNorm(q));
+      geoPick(i, field, canon || q);
+    }
+    function geoPick(i, field, value) {
+      const L = P.locations[i];
+      if (field === 'region') { L.region = value; L.city = ''; } else { L.city = value; }
+      closeGeoMenus(); renderLocations();
+    }
+    document.addEventListener('click', function (e) { if (!e.target.closest('.geo-combo')) closeGeoMenus(); });
+    function renderLocations() {
+      migrateLocations(P);
+      const box = document.getElementById('ppLocations'); if (!box) return;
+      box.innerHTML = P.locations.map((L, i) => locEditor(L, i)).join('');
+      P.locations.forEach((L, i) => { renderLocAccess(i); renderLocPhotos(i); });
+    }
+    function locEditor(L, i) {
+      const isTele = L.type === 'teleconsult';
+      const isInstit = INSTIT_TYPES.includes(L.type);
+      const types = LOC_TYPES.map(v => '<option value="' + v + '"' + (L.type === v ? ' selected' : '') + '>' + T('docpp.loctype_' + v) + '</option>').join('');
+      return '<div class="loc-edit">' +
+        '<div class="loc-edit-head">' +
+          '<div class="loc-flags">' +
+            '<label class="loc-flag"><input type="radio" name="locPrim" ' + (L.primary ? 'checked' : '') + ' onclick="setPrimary(' + i + ')"> ' + T('docpp.loc_primary') + '</label>' +
+            '<label class="loc-flag"><input type="checkbox" ' + (L.bookable ? 'checked' : '') + ' onchange="setBookable(' + i + ',this.checked)"> ' + T('docpp.loc_bookable') + '</label>' +
+          '</div>' +
+          (P.locations.length > 1 ? '<button class="btn-del" title="' + T('docpp.loc_remove') + '" onclick="removeLocation(' + i + ')"><i class="fa fa-trash-can"></i></button>' : '') +
+        '</div>' +
+        '<div class="form-hint mb-2" style="margin-top:-4px"><i class="fa fa-circle-info me-1"></i>' + T('docpp.loc_bookable_hint') + '</div>' +
+        '<div class="row g-2">' +
+          '<div class="col-sm-5"><label class="form-label">' + T('docpp.loc_type') + '<span class="req">*</span></label><select class="form-select form-select-sm" onchange="setLocType(' + i + ',this.value)">' + types + '</select></div>' +
+          '<div class="col-sm-7"><label class="form-label">' + T('docpp.loc_label') + '</label><input class="form-control form-control-sm" value="' + e(L.label) + '" oninput="setLocField(' + i + ',\'label\',this.value)" placeholder="' + T('docpp.loc_label_ph') + '"></div>' +
+          (isTele ? '' :
+            '<div class="col-12"><label class="form-label"><span data-i18n="docpp.f_street">Adresse</span><span class="req">*</span></label><input class="form-control form-control-sm loc-req" value="' + e(L.street) + '" oninput="setLocField(' + i + ',\'street\',this.value);this.classList.remove(\'is-invalid\')"><div class="invalid-feedback" data-i18n="docpp.field_required">Ce champ est obligatoire.</div></div>' +
+            '<div class="col-sm-4"><label class="form-label"><span data-i18n="docpp.f_country">Pays</span></label>' + geoPaysSel(i, L) + '</div>' +
+            '<div class="col-sm-4"><label class="form-label"><span data-i18n="docpp.f_region">Région</span><span class="req">*</span></label>' + geoRegionSel(i, L) + '</div>' +
+            '<div class="col-sm-4"><label class="form-label"><span data-i18n="docpp.f_city">Ville</span><span class="req">*</span></label>' + geoVilleSel(i, L) + '</div>') +
+          (isInstit ?
+            '<div class="col-sm-6"><label class="form-label">' + T('docpp.loc_service') + '</label><input class="form-control form-control-sm" value="' + e(L.service || '') + '" oninput="setLocField(' + i + ',\'service\',this.value)" placeholder="' + T('docpp.loc_service_ph') + '"></div>' +
+            '<div class="col-sm-6"><label class="form-label">' + T('docpp.loc_position') + '</label><select class="form-select form-select-sm" onchange="setLocField(' + i + ',\'position\',this.value)">' + posOpts(L.position) + '</select></div>'
+          : '') +
+          (isTele ? '<div class="col-12"><div class="loc-online"><i class="fa fa-video me-1"></i>' + T('docpp.loc_online') + '</div></div>' : '') +
+        '</div>' +
+        (isTele ? '' : '<div class="loc-sub" data-i18n="docpp.sec_access">Accessibilité</div><div id="locAccess' + i + '" class="d-flex flex-wrap gap-2"></div>' +
+        '<div class="loc-sub" data-i18n="docpp.sec_photos">Photos du lieu</div><div id="locPhotos' + i + '" class="photo-grid"></div>') +
+      '</div>';
+    }
+    function setLocField(i, k, v) { P.locations[i][k] = v; }
+    // Changement de type : défaut de réservabilité (hôpital = info seule ; autres = réservable)
+    function setLocType(i, type) { P.locations[i].type = type; P.locations[i].bookable = (type !== 'hopital'); renderLocations(); renderHours(); renderMotifs(); }
+    function setPrimary(i) { P.locations.forEach((L, idx) => L.primary = (idx === i)); onLocCountry(i); }
+    function setBookable(i, on) { P.locations[i].bookable = on; renderHours(); renderMotifs(); }
+    function onLocCountry(i) { if (P.locations[i].primary) { P.currency = currencyFor(P.locations[i].country); renderCurrency(); renderMotifs(); } }
+    function addLocation() {
+      const base = primaryLoc() || {};
+      P.locations.push({ id: 'loc' + (P.locations.length + 1), type: 'cabinet', label: '', street: '', city: '', region: '', country: base.country || '', primary: false, bookable: true, access: [], photos: [], hours: {}, motifs: [], service: '', position: '' });
+      renderLocations();
+    }
+    function removeLocation(i) {
+      if (P.locations.length <= 1) return;
+      const wasPrimary = P.locations[i].primary;
+      P.locations.splice(i, 1);
+      if (wasPrimary) P.locations[0].primary = true;
+      renderLocations();
+    }
+    function renderLocAccess(i) {
+      const box = document.getElementById('locAccess' + i); if (!box) return;
+      const L = P.locations[i]; if (!Array.isArray(L.access)) L.access = [];
       box.innerHTML = ACCESS.map(a =>
-        '<span class="acc-chip ' + (P.access.includes(a.key) ? 'on' : '') + '" onclick="toggleAccess(\'' + a.key + '\')"><i class="fa ' + a.icon + '"></i>' + T('docpp.acc_' + a.key) + '</span>'
+        '<span class="acc-chip ' + (L.access.includes(a.key) ? 'on' : '') + '" onclick="toggleLocAccess(' + i + ',\'' + a.key + '\')"><i class="fa ' + a.icon + '"></i>' + T('docpp.acc_' + a.key) + '</span>'
       ).join('');
     }
-    function toggleAccess(key) { P.access.includes(key) ? (P.access = P.access.filter(x => x !== key)) : P.access.push(key); renderAccess(); }
-
-    /* ---------- Photos ---------- */
-    function renderPhotos() {
-      const box = document.getElementById('ppPhotos'); if (!box) return;
-      if (!Array.isArray(P.photos)) P.photos = [];
-      let h = P.photos.map((src, i) =>
-        '<div class="photo-thumb"><img src="' + src + '" alt=""><button class="rm" title="' + T('docrdv.act_cancel') + '" onclick="removePhoto(' + i + ')"><i class="fa fa-xmark"></i></button></div>'
+    function toggleLocAccess(i, key) {
+      const L = P.locations[i]; L.access = L.access || [];
+      L.access.includes(key) ? (L.access = L.access.filter(x => x !== key)) : L.access.push(key);
+      renderLocAccess(i);
+    }
+    function renderLocPhotos(i) {
+      const box = document.getElementById('locPhotos' + i); if (!box) return;
+      const L = P.locations[i]; if (!Array.isArray(L.photos)) L.photos = [];
+      let h = L.photos.map((src, pi) =>
+        '<div class="photo-thumb"><img src="' + src + '" alt=""><button class="rm" title="' + T('docrdv.act_cancel') + '" onclick="removeLocPhoto(' + i + ',' + pi + ')"><i class="fa fa-xmark"></i></button></div>'
       ).join('');
-      if (P.photos.length < MAX_PHOTOS)
-        h += '<div class="photo-add" onclick="document.getElementById(\'ppPhotoInput\').click()"><i class="fa fa-camera"></i><span>' + T('docpp.photos_add') + '</span></div>';
+      if (L.photos.length < MAX_PHOTOS)
+        h += '<div class="photo-add" onclick="photoTargetLoc=' + i + ';document.getElementById(\'ppPhotoInput\').click()"><i class="fa fa-camera"></i><span>' + T('docpp.photos_add') + '</span></div>';
       box.innerHTML = h;
     }
     function onAddPhoto(ev) {
@@ -594,10 +863,10 @@
       if (!f) return;
       if (f.size > MAX_PHOTO_BYTES) { alert(T('docpp.photo_too_big')); return; }
       const r = new FileReader();
-      r.onload = () => { P.photos.push(r.result); renderPhotos(); };
+      r.onload = () => { const L = P.locations[photoTargetLoc]; (L.photos = L.photos || []).push(r.result); renderLocPhotos(photoTargetLoc); };
       r.readAsDataURL(f);
     }
-    function removePhoto(i) { P.photos.splice(i, 1); renderPhotos(); }
+    function removeLocPhoto(i, pi) { P.locations[i].photos.splice(pi, 1); renderLocPhotos(i); }
 
     /* ---------- Expertise ---------- */
     function renderExpertise() {
@@ -607,14 +876,26 @@
       const chips = P.expertise.map(x => '<span class="exp-chip">' + e(x) + '<i class="fa fa-xmark x" title="' + T('docrdv.act_cancel') + '" onclick="removeExpertise(\'' + esc(x) + '\')"></i></span>').join('');
       document.getElementById('ppExpertise').innerHTML = verified + chips;
       // Compteur + plafond : 10 domaines déclarés maximum (hors spécialité vérifiée).
-      const counter = '<div class="exp-count">' + P.expertise.length + ' / ' + MAX_EXP + '</div>';
+      // La spécialité vérifiée compte pour 1 dans le total.
+      const counter = '<div class="exp-count">' + (P.expertise.length + 1) + ' / ' + MAX_EXP + '</div>';
       let adders;
-      if (P.expertise.length >= MAX_EXP) {
+      if (P.expertise.length + 1 >= MAX_EXP) {
         adders = '<div class="form-hint exp-max">' + T('docpp.exp_max') + '</div>';
       } else {
         // Trois sélecteurs distincts : sous-spécialités · hyper-spécialités · actes.
         // Un sélecteur n'apparaît que si sa liste comporte des options restantes.
         adders = '<div class="exp-adders">' + taxoGroups(P.spec).map(g => {
+          // Actes : combobox — on cherche dans la liste, sinon on ajoute la saisie libre.
+          if (g.key === 'actes') {
+            const inner = '<div class="acte-combo">' +
+              '<i class="fa fa-magnifying-glass acte-search-ic"></i>' +
+              '<input type="text" class="form-control form-control-sm" id="acteSearch" maxlength="60" autocomplete="off"' +
+              ' placeholder="' + T('docpp.acte_search_ph') + '"' +
+              ' oninput="renderActeResults()" onfocus="renderActeResults()"' +
+              ' onblur="setTimeout(hideActeResults,150)" onkeydown="acteKey(event)">' +
+              '<div id="acteResults" class="acte-results" hidden></div></div>';
+            return '<div class="exp-adder"><label>' + e(g.label) + '</label>' + inner + '</div>';
+          }
           const items = g.items.filter(o => !P.expertise.includes(o));
           if (!items.length) return '';
           const opts = '<option value="" disabled selected>' + T('docpp.exp_add_simple') + '</option>' +
@@ -625,7 +906,42 @@
       }
       document.getElementById('ppExpAdders').innerHTML = counter + adders;
     }
-    function addExpertise(v) { if (v && P.expertise.length < MAX_EXP && !P.expertise.includes(v)) { P.expertise.push(v); renderExpertise(); } }
+    function addExpertise(v) { if (v && P.expertise.length + 1 < MAX_EXP && !P.expertise.includes(v)) { P.expertise.push(v); renderExpertise(); } }
+    const acteNorm = s => (s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
+    function acteItems() {
+      const g = taxoGroups(P.spec).find(x => x.key === 'actes');
+      return (g ? g.items : []).filter(o => !P.expertise.includes(o));
+    }
+    function renderActeResults() {
+      const inp = document.getElementById('acteSearch'), box = document.getElementById('acteResults');
+      if (!inp || !box) return;
+      const q = inp.value.trim(), nq = acteNorm(q), esc = s => s.replace(/'/g, "\\'");
+      let items = acteItems();
+      if (nq) items = items.filter(o => acteNorm(o).includes(nq));
+      let h = items.slice(0, 8).map(o =>
+        '<button type="button" class="acte-opt" onmousedown="event.preventDefault()" onclick="chooseActe(\'' + esc(o) + '\')">' + e(o) + '</button>'
+      ).join('');
+      const exact = q && acteItems().some(o => acteNorm(o) === nq);
+      const dup = q && P.expertise.some(x => acteNorm(x) === nq);
+      if (q && !exact && !dup)
+        h += '<button type="button" class="acte-opt acte-add" onmousedown="event.preventDefault()" onclick="addCustomActe()">' +
+          '<i class="fa fa-circle-plus"></i> ' + T('docpp.acte_search_add').replace('{q}', e(q)) + '</button>';
+      if (!h) { box.hidden = true; box.innerHTML = ''; return; }
+      box.innerHTML = h; box.hidden = false;
+    }
+    function hideActeResults() { const box = document.getElementById('acteResults'); if (box) box.hidden = true; }
+    function chooseActe(v) { addExpertise(v); } // re-render recrée le champ vide
+    function addCustomActe() {
+      const inp = document.getElementById('acteSearch'); if (!inp) return;
+      const v = inp.value.trim(); if (!v) return;
+      addExpertise(v); // dédoublonnage + plafond gérés par addExpertise
+    }
+    function acteKey(ev) {
+      if (ev.key === 'Escape') { hideActeResults(); return; }
+      if (ev.key !== 'Enter') return;
+      ev.preventDefault();
+      addCustomActe(); // ajoute la saisie (identique à un acte de la liste si le libellé correspond)
+    }
     function removeExpertise(v) { P.expertise = P.expertise.filter(x => x !== v); renderExpertise(); }
 
     /* ---------- Horaires ---------- */
@@ -636,20 +952,25 @@
       if (sel && !TIMES.includes(sel)) opts = '<option selected>' + sel + '</option>' + opts;
       return opts;
     }
-    function normalizeHours() {
-      if (!P.hours || typeof P.hours !== 'object') P.hours = {};
+    function normalizeHours(L) {
+      if (!L.hours || typeof L.hours !== 'object') L.hours = {};
       DAYS.forEach(([k]) => {
-        let v = P.hours[k];
+        let v = L.hours[k];
         if (Array.isArray(v)) return;
-        if (typeof v === 'string' && v.trim()) { const p = v.split(/[–—-]/).map(s => s.trim()); P.hours[k] = (p.length === 2 && p[0] && p[1]) ? [[p[0], p[1]]] : []; }
-        else { P.hours[k] = []; }
+        if (typeof v === 'string' && v.trim()) { const p = v.split(/[–—-]/).map(s => s.trim()); L.hours[k] = (p.length === 2 && p[0] && p[1]) ? [[p[0], p[1]]] : []; }
+        else { L.hours[k] = []; }
       });
     }
+    function setHoursLoc(i) { hoursLoc = i; renderHours(); }
     function renderHours() {
       const box = document.getElementById('ppHours'); if (!box) return;
-      normalizeHours();
-      box.innerHTML = DAYS.map(([k]) => {
-        const ranges = P.hours[k] || [];
+      ensureLocIdx();
+      const bl = bookableLocs();
+      if (!bl.length) { box.innerHTML = '<div class="form-hint">' + T('docpp.no_bookable') + '</div>'; return; }
+      const L = P.locations[hoursLoc];
+      normalizeHours(L);
+      box.innerHTML = locPicker(hoursLoc, 'setHoursLoc') + DAYS.map(([k]) => {
+        const ranges = L.hours[k] || [];
         const open = ranges.length > 0;
         let body;
         if (open) {
@@ -667,26 +988,74 @@
           '<label class="switch hr-switch"><input type="checkbox" ' + (open ? 'checked' : '') + ' onchange="toggleDay(\'' + k + '\',this.checked)"><span class="slider"></span></label>' +
           '<div class="hr-body">' + body + '</div></div>';
       }).join('');
+      renderHoursWarn();
     }
-    function setHour(k, ri, idx, val) { P.hours[k][ri][idx] = val; }
-    function addRange(k) { P.hours[k].push(['14:00', '18:00']); renderHours(); }
-    function removeRange(k, ri) { P.hours[k].splice(ri, 1); renderHours(); }
-    function toggleDay(k, on) { P.hours[k] = on ? [['09:00', '17:00']] : []; renderHours(); }
+    // Un praticien = une seule disponibilité : deux lieux ne peuvent pas se chevaucher sur le même jour.
+    const hMin = t => (+t.slice(0, 2)) * 60 + (+t.slice(3, 5));
+    function hoursConflicts(li) {
+      const L = P.locations[li]; const out = [];
+      DAYS.forEach(([k]) => (L.hours[k] || []).forEach(r => {
+        const a1 = hMin(r[0]), a2 = hMin(r[1]); if (!(a2 > a1)) return;
+        P.locations.forEach((O, oi) => {
+          if (oi === li || !O.bookable) return;
+          (O.hours && O.hours[k] || []).forEach(or => {
+            if (a1 < hMin(or[1]) && hMin(or[0]) < a2) out.push({ k, r, other: locName(O), or });
+          });
+        });
+      }));
+      return out;
+    }
+    function renderHoursWarn() {
+      const box = document.getElementById('ppHoursWarn'); if (!box) return;
+      const c = hoursConflicts(hoursLoc);
+      if (!c.length) { box.classList.add('d-none'); box.innerHTML = ''; return; }
+      const items = c.slice(0, 4).map(x => T('docpp.day_' + x.k) + ' ' + x.r[0] + '–' + x.r[1] + ' ↔ ' + e(x.other) + ' ' + x.or[0] + '–' + x.or[1]).join(' · ');
+      box.classList.remove('d-none');
+      box.innerHTML = '<i class="fa fa-triangle-exclamation me-1"></i><strong>' + T('docpp.hours_conflict') + '</strong> ' + items;
+    }
+    function setHour(k, ri, idx, val) { P.locations[hoursLoc].hours[k][ri][idx] = val; renderHoursWarn(); }
+    function addRange(k) { P.locations[hoursLoc].hours[k].push(['14:00', '18:00']); renderHours(); }
+    function removeRange(k, ri) { P.locations[hoursLoc].hours[k].splice(ri, 1); renderHours(); }
+    function toggleDay(k, on) { P.locations[hoursLoc].hours[k] = on ? [['09:00', '17:00']] : []; renderHours(); }
 
     /* ---------- Motifs & devise ---------- */
+    function setMotifsLoc(i) { motifsLoc = i; renderMotifs(); }
     function renderMotifs() {
       const box = document.getElementById('ppMotifs'); if (!box) return;
-      box.innerHTML = P.motifs.map((m, i) =>
+      ensureLocIdx();
+      const addBtn = document.getElementById('addMotifBtn');
+      const bl = bookableLocs();
+      if (!bl.length) { box.innerHTML = '<div class="form-hint">' + T('docpp.no_bookable') + '</div>'; if (addBtn) addBtn.style.display = 'none'; return; }
+      if (addBtn) addBtn.style.display = '';
+      const L = P.locations[motifsLoc];
+      box.innerHTML = locPicker(motifsLoc, 'setMotifsLoc') + L.motifs.map((m, i) =>
         '<div class="motif-row">' +
-          '<input type="text" class="form-control form-control-sm m-label" value="' + e(m.label) + '" oninput="P.motifs[' + i + '].label=this.value" placeholder="Motif">' +
-          '<div class="input-group input-group-sm m-dur"><input type="number" class="form-control" value="' + m.dur + '" min="5" step="5" oninput="P.motifs[' + i + '].dur=+this.value"><span class="input-group-text">min</span></div>' +
-          '<div class="input-group input-group-sm m-price"><input type="number" class="form-control" value="' + m.price + '" min="0" step="500" oninput="P.motifs[' + i + '].price=+this.value"><span class="input-group-text">' + (P.currency || 'XOF') + '</span></div>' +
+          '<input type="text" class="form-control form-control-sm m-label" value="' + e(m.label) + '" oninput="P.locations[' + motifsLoc + '].motifs[' + i + '].label=this.value" placeholder="Motif">' +
+          durField(i, m) +
+          '<div class="input-group input-group-sm m-price"><input type="number" class="form-control" value="' + m.price + '" min="0" step="500" oninput="P.locations[' + motifsLoc + '].motifs[' + i + '].price=+this.value"><span class="input-group-text">' + (P.currency || 'XOF') + '</span></div>' +
           '<button class="btn-del" title="' + T('docrdv.act_cancel') + '" onclick="removeMotif(' + i + ')"><i class="fa fa-trash-can"></i></button>' +
         '</div>'
       ).join('');
     }
-    function addMotif() { P.motifs.push({ label:'', dur:30, price:0 }); renderMotifs(); }
-    function removeMotif(i) { P.motifs.splice(i, 1); renderMotifs(); }
+    // Durée = intervalle entre créneaux à la réservation. Presets courants + saisie libre.
+    const DUR_PRESETS = [15, 20, 30, 45, 60];
+    function durField(i, m) {
+      const isPreset = DUR_PRESETS.includes(m.dur);
+      const opts = DUR_PRESETS.map(v => '<option value="' + v + '"' + (m.dur === v ? ' selected' : '') + '>' + v + ' min</option>').join('') +
+        '<option value="custom"' + (!isPreset ? ' selected' : '') + '>' + T('docpp.dur_other') + '</option>';
+      return '<div class="m-dur">' +
+        '<select class="form-select form-select-sm m-dur-sel" onchange="setMotifDur(' + i + ',this.value)">' + opts + '</select>' +
+        (isPreset ? '' :
+          '<div class="input-group input-group-sm m-dur-custom"><input type="number" class="form-control" value="' + m.dur + '" min="5" step="5" oninput="P.locations[' + motifsLoc + '].motifs[' + i + '].dur=+this.value"><span class="input-group-text">min</span></div>') +
+        '</div>';
+    }
+    function setMotifDur(i, v) {
+      const m = P.locations[motifsLoc].motifs[i];
+      m.dur = (v === 'custom') ? (DUR_PRESETS.includes(m.dur) ? 25 : m.dur) : +v;
+      renderMotifs();
+    }
+    function addMotif() { P.locations[motifsLoc].motifs.push({ label:'', dur:30, price:0 }); renderMotifs(); }
+    function removeMotif(i) { P.locations[motifsLoc].motifs.splice(i, 1); renderMotifs(); }
     function renderCurrency() {
       const sel = document.getElementById('ppCurrency'); if (!sel) return;
       if (!P.currency) P.currency = 'XOF';
@@ -713,7 +1082,7 @@
       if (!f) return;
       if (f.size > MAX_PHOTO_BYTES) { alert(T('docpp.photo_too_big')); return; }
       const r = new FileReader();
-      r.onload = () => { P.photo = r.result; document.getElementById('ppAvatar').innerHTML = avatarInner(); };
+      r.onload = () => { P.photo = r.result; persist(); renderAllViews(); toast(); };
       r.readAsDataURL(f);
     }
 
@@ -732,19 +1101,11 @@
     /* ---------- Init ---------- */
     function fillEditControls() {
       document.getElementById('ppVisible').checked = P.visible;
-      document.getElementById('ppTitle').value = P.title;
-      document.getElementById('ppName').value = P.name;
-      document.getElementById('ppSpec').value = P.spec;
       document.getElementById('ppOrdre').value = P.ordre;
       document.getElementById('ppOrdreBody').value = P.ordreBody;
       document.getElementById('ppBio').value = P.bio;
       document.getElementById('ppBioCount').textContent = (P.bio || '').length;
-      document.getElementById('ppStreet').value = P.street;
-      document.getElementById('ppCity').value = P.city;
-      document.getElementById('ppRegion').value = P.region;
-      document.getElementById('ppCountry').value = P.country;
-      document.getElementById('ppAvatar').innerHTML = avatarInner();
-      renderCurrency(); renderLangTags(); renderExpertise(); renderTraining(); renderHours(); renderMotifs(); renderAccess(); renderPhotos();
+      renderCurrency(); renderLangTags(); renderExpertise(); renderTraining(); renderHours(); renderMotifs(); renderLocations();
     }
     function relocalise() { fillEditControls(); renderAllViews(); }
     document.addEventListener('fueni:langchange', relocalise);

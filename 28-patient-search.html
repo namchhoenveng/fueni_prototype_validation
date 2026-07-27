@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title data-i18n-pagetitle="psearch.page_title">FUENI — Prendre rendez-vous</title>
+  <script src="naz-i18n.js" defer></script>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="naz-common.css">
+  <style>
+    body { background: #f0f4f8; }
+    /* Sidebar (aligné 05-patient-dashboard) */
+    .sidebar { background: #16a085; min-height: 100vh; padding: 0; width: 240px; position: fixed; top: 0; left: 0; z-index: 100; }
+    .sidebar-brand { padding: 20px 20px 10px; font-size: 1.3rem; font-weight: 700; color: white; }
+    .sidebar-brand small { display: block; font-size: 0.65rem; font-weight: 500; opacity: 0.75; letter-spacing: 0.5px; text-transform: uppercase; margin-top: 2px; }
+    .sidebar-user { padding: 14px 20px 20px; border-bottom: 1px solid rgba(255,255,255,0.15); }
+    .sidebar-user .avatar { width: 40px; height: 40px; border-radius: 50%; background: #fff; color: #16a085; display: flex; align-items: center; justify-content: center; font-weight: 700; }
+    .nav-link-side { color: rgba(255,255,255,0.85) !important; padding: 10px 20px; display: flex; align-items: center; gap: 10px; font-size: 0.9rem; cursor: pointer; text-decoration: none; transition: background 0.15s; }
+    .nav-link-side:hover { background: rgba(255,255,255,0.1); color: white !important; }
+    .nav-link-side.active { background: rgba(255,255,255,0.2); border-left: 3px solid white; color: white !important; }
+    .nav-section { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: rgba(255,255,255,0.45); padding: 16px 20px 6px; }
+    .nav-link-side i { width: 18px; text-align: center; }
+    .main { margin-left: 240px; }
+    .proto-bar { background: #fff3cd; border: 1px solid #ffc107; border-top: none; padding: 6px 14px; font-size: 0.82rem; position: fixed; top: 0; right: 200px; z-index: 300; border-radius: 0 0 8px 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+    #fueni-lang-toggle { top: 8px !important; right: 20px !important; }
+    .content-area { padding: 48px 28px 40px; }
+
+    .page-head h4 { font-weight: 800; }
+    .page-head p { color: #7f8c8d; }
+
+    /* Search bar */
+    .search-card { background: #fff; border-radius: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); padding: 16px; margin-bottom: 20px; }
+    .search-card .field { display: flex; align-items: center; gap: 8px; background: #f8fafc; border: 1px solid #e5e7eb; border-radius: 10px; padding: 0 12px; height: 46px; }
+    .search-card .field i { color: #94a3b8; }
+    .search-card .field input, .search-card .field select { border: 0; background: transparent; outline: none; width: 100%; font-size: 0.92rem; }
+    .btn-patient { background: #16a085; border-color: #16a085; color: white; font-weight: 600; }
+    .btn-patient:hover { background: #138d75; border-color: #138d75; color: white; }
+
+    .results-count { font-size: 0.85rem; color: #7f8c8d; margin: 0 2px 12px; }
+
+    /* Doctor card */
+    .doc-result { background: #fff; border-radius: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); padding: 18px; margin-bottom: 14px; display: flex; gap: 16px; align-items: flex-start; transition: box-shadow .15s, transform .12s; cursor: pointer; }
+    .doc-result:hover { box-shadow: 0 6px 20px rgba(0,0,0,0.10); transform: translateY(-1px); }
+    .doc-result .av { width: 62px; height: 62px; border-radius: 14px; background: #d1f2eb; color: #117a65; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1.1rem; overflow: hidden; flex-shrink: 0; }
+    .doc-result .av img { width: 100%; height: 100%; object-fit: cover; }
+    .doc-result .dn { font-weight: 700; font-size: 1.05rem; }
+    .doc-result .dspec { color: #16a085; font-weight: 600; font-size: 0.9rem; }
+    .doc-result .dmeta { color: #64748b; font-size: 0.85rem; margin-top: 4px; display: flex; flex-wrap: wrap; gap: 4px 14px; }
+    .doc-result .tag { display: inline-flex; align-items: center; gap: 5px; background: #e8f8f5; color: #117a65; border-radius: 999px; padding: 2px 10px; font-size: 0.76rem; font-weight: 600; margin-top: 6px; }
+    .doc-result .side { text-align: right; margin-left: auto; display: flex; flex-direction: column; align-items: flex-end; gap: 8px; min-width: 150px; }
+    .doc-result .from { font-size: 0.8rem; color: #64748b; }
+    .doc-result .from b { color: #0f172a; font-size: 0.98rem; }
+    .doc-result .next { font-size: 0.8rem; color: #117a65; font-weight: 600; }
+    @media (max-width: 720px) {
+      .main { margin-left: 0; } .sidebar { position: static; width: 100%; min-height: auto; }
+      .doc-result { flex-wrap: wrap; } .doc-result .side { align-items: flex-start; text-align: left; min-width: 0; width: 100%; }
+    }
+    .empty { background: #fff; border-radius: 14px; padding: 40px; text-align: center; color: #94a3b8; }
+  </style>
+</head>
+<body data-i18n-pagetitle="psearch.page_title" data-i18n-toggle>
+
+  <div class="proto-bar d-flex align-items-center gap-3">
+    <span><i class="fa fa-eye me-1"></i> Espace Patient · <span data-i18n="psearch.title">Prendre rendez-vous</span> · <a href="01-home.html" class="text-decoration-none">← <span data-i18n="dash.proto_home">Retour à l'accueil</span></a></span>
+  </div>
+
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="sidebar-brand">
+      <img src="assets/fueni-lockup-white.svg" alt="FUENI" style="height:30px;width:auto;display:block;margin-bottom:6px">
+      <small data-i18n="dash.sidebar.area">Espace Patient</small>
+    </div>
+    <div class="sidebar-user d-flex align-items-center gap-2">
+      <div class="avatar" id="userAvatar">AD</div>
+      <div>
+        <div class="text-white fw-semibold small" id="userFullName">Aïssatou Diop</div>
+        <div style="color:rgba(255,255,255,0.65); font-size:0.72rem;">
+          <i class="fa fa-circle-check me-1"></i><span data-i18n="dash.sidebar.verified">Compte vérifié</span>
+        </div>
+      </div>
+    </div>
+    <div class="nav-section" data-i18n="dash.sidebar.section_my_space">Mon espace</div>
+    <a href="05-patient-dashboard.html" class="nav-link-side"><i class="fa fa-home"></i><span data-i18n="dash.sidebar.dashboard">Tableau de bord</span></a>
+    <a href="05-patient-dashboard.html" class="nav-link-side"><i class="fa fa-calendar-check"></i><span data-i18n="dash.sidebar.my_appts">Mes RDV</span></a>
+    <a class="nav-link-side active"><i class="fa fa-plus-circle"></i><span data-i18n="dash.sidebar.book">Prendre RDV</span></a>
+    <a href="09-patient-documents.html" class="nav-link-side"><i class="fa fa-folder"></i><span data-i18n="dash.sidebar.my_docs">Mes documents</span></a>
+    <div class="nav-section" data-i18n="dash.sidebar.section_account">Mon compte</div>
+    <a href="06-patient-profile.html" class="nav-link-side"><i class="fa fa-user"></i><span data-i18n="dash.sidebar.my_profile">Mon profil</span></a>
+    <a href="07-account-security.html" class="nav-link-side"><i class="fa fa-shield-halved"></i><span data-i18n="dash.sidebar.security">Connexion & sécurité</span></a>
+    <div class="nav-section" data-i18n="dash.sidebar.section_help">Aide</div>
+    <a class="nav-link-side"><i class="fa fa-circle-question"></i><span data-i18n="dash.sidebar.faq">FAQ</span></a>
+    <a class="nav-link-side"><i class="fa fa-headset"></i><span data-i18n="dash.sidebar.support">Contacter le support</span></a>
+    <a href="10-login.html" class="nav-link-side" onclick="try{sessionStorage.setItem('fueni_logout','1')}catch(e){}"><i class="fa fa-right-from-bracket"></i><span data-i18n="dash.sidebar.logout">Se déconnecter</span></a>
+  </div>
+
+  <!-- Main -->
+  <div class="main">
+    <div class="content-area">
+
+      <div class="page-head mb-3">
+        <h4 data-i18n="psearch.title">Prendre rendez-vous</h4>
+        <p class="mb-0" data-i18n="psearch.subtitle">Recherchez un praticien par nom, spécialité ou ville.</p>
+      </div>
+
+      <!-- Search -->
+      <div class="search-card">
+        <div class="row g-2">
+          <div class="col-md-5">
+            <div class="field"><i class="fa fa-search"></i>
+              <input id="qName" type="text" data-i18n-placeholder="psearch.search_name_ph" placeholder="Nom ou spécialité…" oninput="renderResults()">
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="field"><i class="fa fa-location-dot"></i>
+              <input id="qCity" type="text" data-i18n-placeholder="psearch.search_city_ph" placeholder="Ville, pays…" oninput="renderResults()">
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="field"><i class="fa fa-stethoscope"></i>
+              <select id="qSpec" onchange="renderResults()"><option value="" data-i18n="psearch.spec_all">Toutes spécialités</option></select>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="results-count" id="count"></div>
+      <div id="results"></div>
+
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    const STORE_KEY = 'fueni_pubprofile_v2';
+    const DAYS = [['mon',1],['tue',2],['wed',3],['thu',4],['fri',5],['sat',6],['sun',0]];
+    const T = k => (window.NazI18n ? NazI18n.t(k) : k);
+    const lang = () => (window.NazI18n ? NazI18n.getLang() : 'fr');
+    const fmt = n => (n || 0).toLocaleString(lang() === 'en' ? 'en-US' : 'fr-FR');
+    const esc = s => (s == null ? '' : String(s)).replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
+    const initials = n => (n || 'D').replace(/^Dr\.?\s*/i, '').split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
+
+    // ---- Doctor #1 : reflète le profil réellement configuré (écran 19) ----
+    function realDoctor() {
+      let P = null;
+      try { const raw = localStorage.getItem(STORE_KEY); if (raw) P = JSON.parse(raw); } catch (e) {}
+      const name = 'Dr Aboubacar Diallo', spec = 'Cardiologie', city = 'Dakar', country = 'Sénégal';
+      const d = {
+        id: 'real', name: name, spec: spec, city: city, country: country,
+        photo: null, from: 8000, currency: 'XOF', tele: false, next: T('psearch.next_tomorrow'),
+        href: '19b-doctor-public-preview.html'
+      };
+      if (P) {
+        d.name = (P.title ? P.title + ' ' : '') + (P.name || name);
+        d.spec = P.spec || spec;
+        d.photo = P.photo || null;
+        d.currency = P.currency || 'XOF';
+        const locs = Array.isArray(P.locations) && P.locations.length ? P.locations : [{ city: P.city, country: P.country, bookable: true, type: 'cabinet', motifs: P.motifs }];
+        const book = locs.filter(l => l.bookable !== false);
+        const primary = (book.find(l => l.primary) || book[0] || locs[0]) || {};
+        d.city = primary.city || P.city || city;
+        d.country = primary.country || P.country || country;
+        d.tele = book.some(l => l.type === 'teleconsult');
+        let min = null;
+        book.forEach(l => (l.motifs || []).forEach(m => { if (m.price != null && (min == null || m.price < min)) min = m.price; }));
+        if (min != null) d.from = min;
+      }
+      return d;
+    }
+
+    // ---- Praticiens de démonstration (annuaire) ----
+    const MOCK = [
+      { id:'m2', name:'Dr Fatou Ndiaye', spec:'Médecine générale', city:'Dakar', country:'Sénégal', from:6000, currency:'XOF', tele:true, next:T('psearch.next_tomorrow') },
+      { id:'m3', name:'Dr Mamadou Sow', spec:'Cardiologie', city:'Dakar', country:'Sénégal', from:10000, currency:'XOF', tele:false, next:T('psearch.next_2days') },
+      { id:'m4', name:'Dr Aïcha Traoré', spec:'Pédiatrie', city:'Abidjan', country:"Côte d'Ivoire", from:7000, currency:'XOF', tele:true, next:T('psearch.next_tomorrow') },
+      { id:'m5', name:'Dr Jean-Paul Kabongo', spec:'Médecine générale', city:'Kinshasa', country:'RDC', from:25, currency:'USD', tele:false, next:T('psearch.next_week') }
+    ];
+
+    let DOCTORS = [];
+    function buildDoctors() { DOCTORS = [realDoctor()].concat(MOCK); }
+
+    function fillSpecFilter() {
+      const sel = document.getElementById('qSpec');
+      const specs = Array.from(new Set(DOCTORS.map(d => d.spec))).sort();
+      const cur = sel.value;
+      sel.innerHTML = '<option value="">' + T('psearch.spec_all') + '</option>' +
+        specs.map(s => '<option value="' + esc(s) + '"' + (s === cur ? ' selected' : '') + '>' + esc(s) + '</option>').join('');
+    }
+
+    const norm = s => (s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
+    function renderResults() {
+      const qn = norm(document.getElementById('qName').value);
+      const qc = norm(document.getElementById('qCity').value);
+      const qs = document.getElementById('qSpec').value;
+      const list = DOCTORS.filter(d =>
+        (!qn || norm(d.name).includes(qn) || norm(d.spec).includes(qn)) &&
+        (!qc || norm(d.city).includes(qc) || norm(d.country).includes(qc)) &&
+        (!qs || d.spec === qs)
+      );
+      document.getElementById('count').textContent = T('psearch.results_count').replace('{n}', list.length);
+      const box = document.getElementById('results');
+      if (!list.length) { box.innerHTML = '<div class="empty"><i class="fa fa-user-slash mb-2" style="font-size:1.6rem;"></i><div>' + T('psearch.none') + '</div></div>'; return; }
+      box.innerHTML = list.map(d => {
+        const av = d.photo ? '<img src="' + d.photo + '" alt="">' : initials(d.name);
+        const tele = d.tele ? '<span class="tag"><i class="fa fa-video"></i>' + T('psearch.tele') + '</span>' : '';
+        return '<div class="doc-result" onclick="openDoctor(\'' + d.id + '\')">' +
+          '<div class="av">' + av + '</div>' +
+          '<div class="flex-grow-1 min-w-0">' +
+            '<div class="dn">' + esc(d.name) + '</div>' +
+            '<div class="dspec">' + esc(d.spec) + '</div>' +
+            '<div class="dmeta"><span><i class="fa fa-location-dot me-1"></i>' + esc(d.city) + ', ' + esc(d.country) + '</span></div>' +
+            tele +
+          '</div>' +
+          '<div class="side">' +
+            '<div class="from">' + T('psearch.from') + ' <b>' + fmt(d.from) + ' ' + esc(d.currency) + '</b></div>' +
+            '<div class="next"><i class="fa fa-clock me-1"></i>' + esc(d.next) + '</div>' +
+            '<button class="btn btn-patient btn-sm" onclick="event.stopPropagation();openDoctor(\'' + d.id + '\')" data-i18n="psearch.book">Prendre rendez-vous</button>' +
+          '</div>' +
+        '</div>';
+      }).join('');
+    }
+    // Prototype : une seule fiche publique fonctionnelle (profil configuré à l'écran 19).
+    function openDoctor(id) { window.location.href = '19b-doctor-public-preview.html'; }
+
+    function applyUserDisplay() {
+      try {
+        const u = JSON.parse(sessionStorage.getItem('fueni_user') || '{}');
+        const first = (u.firstName || '').trim(), last = (u.lastName || '').trim();
+        if (!first && !last) return;
+        const full = (first + ' ' + last).trim();
+        document.getElementById('userFullName').textContent = full;
+        document.getElementById('userAvatar').textContent = ((first[0] || '') + (last[0] || '')).toUpperCase() || 'P';
+      } catch (e) {}
+    }
+
+    function init() {
+      buildDoctors();
+      fillSpecFilter();
+      applyUserDisplay();
+      renderResults();
+    }
+    document.addEventListener('fueni:langchange', () => { buildDoctors(); fillSpecFilter(); renderResults(); });
+    if (window.NazI18n) init(); else document.addEventListener('DOMContentLoaded', init);
+  </script>
+
+  <!-- Prototype version badge -->
+  <script>(function(){if(window.__pv)return;window.__pv=1;var v=document.createElement('div');v.style.cssText='position:fixed;top:0;left:50%;transform:translateX(-50%);background:#155e75;color:#fff;padding:6px 20px;border-radius:0 0 16px 16px;font:600 12px/1 system-ui,-apple-system,sans-serif;letter-spacing:.6px;z-index:99999;box-shadow:0 3px 10px rgba(0,0,0,.2);text-transform:uppercase;display:flex;align-items:center;gap:8px';v.innerHTML='🧪 Prototype <span style="background:#f59e0b;color:#1a1a1a;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:4px">v1.4.0</span><span style="background:#facc15;color:#1a1a1a;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:4px;text-transform:none;letter-spacing:0">⏳ À valider</span>';document.body.appendChild(v);})();</script>
+</body>
+</html>

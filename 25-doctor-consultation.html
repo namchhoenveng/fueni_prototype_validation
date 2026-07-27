@@ -6,6 +6,7 @@
   <title>FUENI — Consultation</title>
   <script src="naz-i18n.js" defer></script>
   <script src="naz-patients.js"></script>
+  <script src="naz-specialities.js"></script>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
   <link rel="stylesheet" href="naz-common.css">
@@ -45,6 +46,19 @@
     .form-label { font-size:0.82rem; font-weight:600; color:#334155; }
     .rx-row { display:flex; gap:8px; align-items:center; margin-bottom:8px; }
     .rx-row .rx-med { flex:1 1 auto; } .rx-row .rx-p { width:150px; } .rx-row .rx-d { width:120px; }
+    .presc-sec { border:1px solid #e2e8f0; border-radius:12px; margin-bottom:10px; overflow:hidden; }
+    .presc-head { width:100%; display:flex; align-items:center; gap:10px; background:#f8fafc; border:0; padding:12px 14px; font-weight:700; color:#0f172a; font-size:0.9rem; cursor:pointer; text-align:left; }
+    .presc-head > i:first-child { color:#155e75; width:18px; text-align:center; }
+    .presc-head .presc-count { margin-left:auto; background:#e0f2f1; color:#0e7490; border-radius:20px; padding:1px 9px; font-size:0.72rem; font-weight:700; }
+    .presc-head .chev { color:#94a3b8; transition:transform .15s; margin-left:8px; }
+    .presc-head.open .chev { transform:rotate(180deg); }
+    .presc-body { padding:14px; border-top:1px solid #eef2f6; }
+    .lab-row { display:flex; gap:8px; align-items:center; margin-bottom:8px; }
+    .lab-row .lab-main, .lab-row .ref-reason { flex:1 1 auto; min-width:0; }
+    .lab-row .lab-region { width:180px; } .lab-row .ref-spec { width:220px; }
+    .doc-sep { border-top:2px dashed #e2e8f0; margin:26px 0; }
+    .doc-list { margin:0; padding-left:20px; } .doc-list li { padding:3px 0; }
+    @media print { .doc-sep { border:0; page-break-before:always; margin:0; } }
     .btn-del { background:none; border:0; color:#cbd5e1; font-size:1rem; padding:6px 8px; cursor:pointer; }
     .btn-del:hover { color:#dc3545; }
     .btn-ghost { background:#f1f5f9; border:0; color:#475569; font-weight:600; }
@@ -121,7 +135,7 @@
     <a href="26-doctor-records.html" class="nav-link-side active"><i class="fa fa-file-medical"></i><span data-i18n="doc.dash.tile_records">Dossiers médicaux</span></a>
     <div class="nav-section" data-i18n="doc.dash.sec_account">Compte</div>
     <a href="18-doctor-abonnement.html" class="nav-link-side"><i class="fa fa-star"></i><span data-i18n="doc.dash.nav_subscription">Mon abonnement</span></a>
-    <a href="#" class="nav-link-side" onclick="event.preventDefault();"><i class="fa fa-cog"></i><span data-i18n="doc.dash.nav_settings">Paramètres</span></a>
+    <a href="29-doctor-settings.html" class="nav-link-side"><i class="fa fa-cog"></i><span data-i18n="doc.dash.nav_settings">Paramètres</span></a>
     <a href="10b-login-doctor.html" class="nav-link-side"><i class="fa fa-arrow-right-from-bracket"></i><span data-i18n="doc.dash.logout">Déconnexion</span></a>
   </div>
 
@@ -147,7 +161,7 @@
       <!-- Tabs -->
       <div class="seg">
         <button id="tabNote" class="on" onclick="setTab('note')"><i class="fa fa-notes-medical"></i><span data-i18n="docc.tab_note">Note de consultation</span></button>
-        <button id="tabRx" onclick="setTab('rx')"><i class="fa fa-prescription"></i><span data-i18n="docc.tab_rx">Ordonnance</span></button>
+        <button id="tabRx" onclick="setTab('rx')"><i class="fa fa-prescription"></i><span data-i18n="docc.tab_presc">Prescription</span></button>
       </div>
 
       <div class="work">
@@ -177,13 +191,47 @@
             </div>
             <div class="mb-1"><label class="form-label" data-i18n="docc.n_cat">Conduite à tenir</label><textarea class="form-control" id="nCat" rows="3" oninput="C.note.cat=this.value;renderPreview()"></textarea></div>
           </div>
-          <!-- Rx editor -->
+          <!-- Prescription editor : 4 types, chacun génère un document distinct -->
           <div id="rxEditor" style="display:none;">
-            <h6 data-i18n="docc.tab_rx">Ordonnance</h6>
-            <div class="form-hint text-muted" style="font-size:0.8rem;" data-i18n="docc.rx_hint">Une ligne par médicament (nom, posologie, durée).</div>
-            <div class="diag-ref mb-2" data-i18n="docc.rx_ref">Prescription en DCI · référentiel officiel — OMS (DCI/ATC) / SNOMED CT (à confirmer)</div>
-            <div id="rxLines"></div>
-            <button class="btn btn-ghost btn-sm mt-1" onclick="addRx()"><i class="fa fa-plus me-1"></i><span data-i18n="docc.rx_add">Ajouter un médicament</span></button>
+            <div class="diag-ref mb-3" data-i18n="docc.presc_intro">Chaque type de prescription génère un document distinct, partagé au patient.</div>
+
+            <div class="presc-sec">
+              <button type="button" class="presc-head open" onclick="togglePresc('meds')"><i class="fa fa-pills"></i><span data-i18n="docc.ps_meds">Médicaments</span><span class="presc-count" id="pcMeds"></span><i class="fa fa-chevron-down chev"></i></button>
+              <div class="presc-body" id="body-meds">
+                <div class="diag-ref mb-2" data-i18n="docc.rx_ref">Prescription en DCI · référentiel officiel — OMS (DCI/ATC) / SNOMED CT (à confirmer)</div>
+                <div id="rxLines"></div>
+                <button class="btn btn-ghost btn-sm mt-1" onclick="addRx()"><i class="fa fa-plus me-1"></i><span data-i18n="docc.rx_add">Ajouter un médicament</span></button>
+              </div>
+            </div>
+
+            <div class="presc-sec">
+              <button type="button" class="presc-head" onclick="togglePresc('labo')"><i class="fa fa-flask-vial"></i><span data-i18n="docc.ps_labo">Examens de laboratoire</span><span class="presc-count" id="pcLabo"></span><i class="fa fa-chevron-down chev"></i></button>
+              <div class="presc-body d-none" id="body-labo">
+                <div class="diag-ref mb-2" data-i18n="docc.labo_ref">Référentiel officiel — LOINC (à confirmer)</div>
+                <div id="laboLines"></div>
+                <button class="btn btn-ghost btn-sm mt-1" onclick="addLabo()"><i class="fa fa-plus me-1"></i><span data-i18n="docc.labo_add">Ajouter un examen</span></button>
+                <datalist id="laboList"></datalist>
+              </div>
+            </div>
+
+            <div class="presc-sec">
+              <button type="button" class="presc-head" onclick="togglePresc('img')"><i class="fa fa-x-ray"></i><span data-i18n="docc.ps_img">Imagerie médicale</span><span class="presc-count" id="pcImg"></span><i class="fa fa-chevron-down chev"></i></button>
+              <div class="presc-body d-none" id="body-img">
+                <div class="diag-ref mb-2" data-i18n="docc.img_ref">Référentiel officiel — à confirmer</div>
+                <div id="imgLines"></div>
+                <button class="btn btn-ghost btn-sm mt-1" onclick="addImg()"><i class="fa fa-plus me-1"></i><span data-i18n="docc.img_add">Ajouter un examen</span></button>
+                <datalist id="imgList"></datalist>
+              </div>
+            </div>
+
+            <div class="presc-sec">
+              <button type="button" class="presc-head" onclick="togglePresc('ref')"><i class="fa fa-user-doctor"></i><span data-i18n="docc.ps_ref">Examens spécialisés</span><span class="presc-count" id="pcRef"></span><i class="fa fa-chevron-down chev"></i></button>
+              <div class="presc-body d-none" id="body-ref">
+                <div class="diag-ref mb-2" data-i18n="docc.ref_ref">Adressage à un spécialiste · spécialité issue du référentiel FUENI</div>
+                <div id="refLines"></div>
+                <button class="btn btn-ghost btn-sm mt-1" onclick="addRef()"><i class="fa fa-plus me-1"></i><span data-i18n="docc.ref_add">Ajouter un adressage</span></button>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -219,7 +267,10 @@
     const patient = params.get('patient') || 'Mariam Diallo';
     const rdvMotif = params.get('motif') || 'Consultation générale';
     let tab = 'note';
-    const C = { note: { motif: rdvMotif, exam: '', diags: [], cat: '' }, vitals: { temp: '', ta: '', pouls: '', spo2: '', poids: '' }, rx: [{ med: '', poso: '', duree: '' }] };
+    const C = { note: { motif: rdvMotif, exam: '', diags: [], cat: '' }, vitals: { temp: '', ta: '', pouls: '', spo2: '', poids: '' }, rx: [{ med: '', poso: '', duree: '' }], labo: [], img: [], ref: [] };
+    // Référentiels de démonstration (V2 : LOINC pour la biologie, référentiel imagerie à confirmer)
+    const LAB_REF = ['Numération formule sanguine (NFS)', 'Glycémie à jeun', 'Hémoglobine glyquée (HbA1c)', 'Bilan lipidique', 'Ionogramme sanguin', 'Créatininémie (DFG)', 'Bilan hépatique (ASAT/ALAT)', 'CRP', 'TSH', 'ECBU', 'Sérologie VIH', 'β-hCG (test de grossesse)', 'Groupe sanguin — Rhésus', 'TP / INR', 'Ferritinémie'];
+    const IMG_REF = ['Radiographie thoracique', 'Radiographie osseuse', 'Échographie abdominale', 'Échographie pelvienne', 'Échographie obstétricale', 'Échographie cardiaque (ETT)', 'Scanner (TDM) cérébral', 'Scanner thoraco-abdomino-pelvien', 'IRM cérébrale', 'IRM du rachis', 'Mammographie'];
     // Référentiel de diagnostics codifiés (sous-ensemble de démo).
     // V2 : appel à une API officielle — WHO ICD (CIM-10/11) ou SNOMED CT — choix en attente de validation client.
     const DIAG_REF = [
@@ -283,6 +334,60 @@
     function addRx() { C.rx.push({ med:'', poso:'', duree:'' }); renderRx(); }
     function removeRx(i) { C.rx.splice(i, 1); if (!C.rx.length) C.rx.push({ med:'', poso:'', duree:'' }); renderRx(); renderPreview(); }
 
+    /* ---------- Sections de prescription (labo / imagerie / adressage) ---------- */
+    function togglePresc(key) {
+      const body = document.getElementById('body-' + key);
+      const head = body.previousElementSibling;
+      body.classList.toggle('d-none');
+      head.classList.toggle('open', !body.classList.contains('d-none'));
+    }
+    function renderPresc() { renderRx(); renderLabo(); renderImg(); renderRef(); }
+
+    function renderLabo() {
+      const box = document.getElementById('laboLines'); if (!box) return;
+      box.innerHTML = C.labo.map((r, i) =>
+        '<div class="lab-row"><input type="text" list="laboList" class="form-control form-control-sm lab-main" value="' + esc(r.name).replace(/"/g,'&quot;') + '" placeholder="' + T('docc.labo_ph') + '" oninput="C.labo[' + i + '].name=this.value;renderPreview()">' +
+        '<button class="btn-del" onclick="removeLabo(' + i + ')"><i class="fa fa-trash-can"></i></button></div>'
+      ).join('');
+      const dl = document.getElementById('laboList'); if (dl) dl.innerHTML = LAB_REF.map(x => '<option value="' + esc(x).replace(/"/g,'&quot;') + '">').join('');
+    }
+    function addLabo() { C.labo.push({ name:'' }); renderLabo(); renderPreview(); }
+    function removeLabo(i) { C.labo.splice(i, 1); renderLabo(); renderPreview(); }
+
+    function renderImg() {
+      const box = document.getElementById('imgLines'); if (!box) return;
+      box.innerHTML = C.img.map((r, i) =>
+        '<div class="lab-row"><input type="text" list="imgList" class="form-control form-control-sm lab-main" value="' + esc(r.name).replace(/"/g,'&quot;') + '" placeholder="' + T('docc.img_ph') + '" oninput="C.img[' + i + '].name=this.value;renderPreview()">' +
+        '<input type="text" class="form-control form-control-sm lab-region" value="' + esc(r.region || '').replace(/"/g,'&quot;') + '" placeholder="' + T('docc.img_region_ph') + '" oninput="C.img[' + i + '].region=this.value;renderPreview()">' +
+        '<button class="btn-del" onclick="removeImg(' + i + ')"><i class="fa fa-trash-can"></i></button></div>'
+      ).join('');
+      const dl = document.getElementById('imgList'); if (dl) dl.innerHTML = IMG_REF.map(x => '<option value="' + esc(x).replace(/"/g,'&quot;') + '">').join('');
+    }
+    function addImg() { C.img.push({ name:'', region:'' }); renderImg(); renderPreview(); }
+    function removeImg(i) { C.img.splice(i, 1); renderImg(); renderPreview(); }
+
+    function renderRef() {
+      const box = document.getElementById('refLines'); if (!box) return;
+      const specs = (window.NazSpecialities ? window.NazSpecialities.specialities.filter(s => s.mvp) : []);
+      const lang = (window.NazI18n && NazI18n.getLang() === 'en') ? 'en' : 'fr';
+      const opts = sel => '<option value="">' + T('docc.ref_spec_ph') + '</option>' + specs.map(x => '<option value="' + esc(x.fr) + '"' + (sel === x.fr ? ' selected' : '') + '>' + esc(x[lang] || x.fr) + '</option>').join('');
+      box.innerHTML = C.ref.map((r, i) =>
+        '<div class="lab-row"><select class="form-select form-select-sm ref-spec" onchange="C.ref[' + i + '].spec=this.value;renderPreview()">' + opts(r.spec) + '</select>' +
+        '<input type="text" class="form-control form-control-sm ref-reason" value="' + esc(r.reason || '').replace(/"/g,'&quot;') + '" placeholder="' + T('docc.ref_reason_ph') + '" oninput="C.ref[' + i + '].reason=this.value;renderPreview()">' +
+        '<button class="btn-del" onclick="removeRef(' + i + ')"><i class="fa fa-trash-can"></i></button></div>'
+      ).join('');
+    }
+    function addRef() { C.ref.push({ spec:'', reason:'' }); renderRef(); renderPreview(); }
+    function removeRef(i) { C.ref.splice(i, 1); renderRef(); renderPreview(); }
+
+    function updateCounts() {
+      const set = (id, n) => { const e = document.getElementById(id); if (e) { e.textContent = n; e.style.display = n ? '' : 'none'; } };
+      set('pcMeds', C.rx.filter(r => r.med.trim()).length);
+      set('pcLabo', C.labo.filter(r => r.name.trim()).length);
+      set('pcImg', C.img.filter(r => r.name.trim()).length);
+      set('pcRef', C.ref.filter(r => r.spec).length);
+    }
+
     function letterhead() {
       return '<div class="doc-head"><div><div class="doc-dr">' + DR.title + ' ' + esc(DR.name) + '</div>' +
         '<small>' + esc(DR.spec) + ' · ' + T('docc.ordre_no') + ' ' + esc(DR.ordre) + '</small>' +
@@ -295,6 +400,8 @@
       const box = document.getElementById('docPreview');
       const meta = '<div class="doc-meta"><div><strong>' + T('docc.patient') + '</strong> ' + esc(patient) + '</div><div>' + fmtLong(TODAY) + '</div></div>';
       const sign = '<div class="doc-sign"><div class="s-name">' + DR.title + ' ' + esc(DR.name) + '</div><div class="s-note">' + T('docc.generated') + '</div></div>';
+      const buildDoc = (title, content) => letterhead() + '<div class="doc-title">' + title + '</div>' + meta + content + sign;
+      updateCounts();
       if (tab === 'note') {
         const v = C.vitals;
         const vParts = [];
@@ -312,19 +419,28 @@
           '<div class="doc-sec"><div class="lbl">' + T('docc.n_diag') + '</div><div class="val">' + (C.note.diags.length ? C.note.diags.map(d => '<strong style="color:#155e75">' + d.code + '</strong> — ' + esc(d.label)).join('<br>') : ph('')) + '</div></div>' +
           '<div class="doc-sec"><div class="lbl">' + T('docc.n_cat') + '</div><div class="val">' + ph(C.note.cat) + '</div></div>' + sign;
       } else {
-        const lines = C.rx.filter(r => r.med.trim());
-        const rxHtml = lines.length ? lines.map(r =>
+        // Un document distinct par type de prescription renseigné
+        const docs = [];
+        const meds = C.rx.filter(r => r.med.trim());
+        if (meds.length) docs.push(buildDoc(T('docc.doc_rx'), meds.map(r =>
           '<div class="doc-rx-line"><div class="m">' + esc(r.med) + '</div><div class="s">' + [esc(r.poso), esc(r.duree)].filter(Boolean).join(' · ') + '</div></div>'
-        ).join('') : '<div class="muted-ph">' + T('docc.rx_empty') + '</div>';
-        box.innerHTML = letterhead() +
-          '<div class="doc-title">' + T('docc.doc_rx') + '</div>' + meta + rxHtml + sign;
+        ).join('')));
+        const labo = C.labo.filter(r => r.name.trim());
+        if (labo.length) docs.push(buildDoc(T('docc.doc_labo'), '<ul class="doc-list">' + labo.map(r => '<li>' + esc(r.name) + '</li>').join('') + '</ul>'));
+        const img = C.img.filter(r => r.name.trim());
+        if (img.length) docs.push(buildDoc(T('docc.doc_img'), '<ul class="doc-list">' + img.map(r => '<li>' + esc(r.name) + (r.region && r.region.trim() ? ' — ' + esc(r.region) : '') + '</li>').join('') + '</ul>'));
+        const ref = C.ref.filter(r => r.spec);
+        if (ref.length) docs.push(buildDoc(T('docc.doc_ref'), ref.map(r =>
+          '<div class="doc-sec"><div class="lbl">' + esc(r.spec) + '</div><div class="val">' + ph(r.reason) + '</div></div>'
+        ).join('')));
+        box.innerHTML = docs.length ? docs.join('<div class="doc-sep"></div>') : '<div class="muted-ph">' + T('docc.presc_empty') + '</div>';
       }
     }
 
     let ct;
     function share() {
       const t = document.getElementById('cToast');
-      document.getElementById('cToastMsg').textContent = T(tab === 'note' ? 'docc.share_note_toast' : 'docc.share_rx_toast');
+      document.getElementById('cToastMsg').textContent = T(tab === 'note' ? 'docc.share_note_toast' : 'docc.share_presc_toast');
       t.style.display = 'flex'; clearTimeout(ct); ct = setTimeout(() => { t.style.display = 'none'; }, 2800);
     }
 
@@ -430,9 +546,9 @@
       document.getElementById('pbName').textContent = patient;
       document.getElementById('pbMeta').textContent = rdvMotif + ' · ' + fmtLong(TODAY);
       document.getElementById('nMotif').value = C.note.motif;
-      setBack(); renderDiagChips(); renderAllergy(); renderRx(); renderPreview();
+      setBack(); renderDiagChips(); renderAllergy(); renderPresc(); renderPreview();
     }
-    document.addEventListener('fueni:langchange', () => { document.getElementById('pbMeta').textContent = rdvMotif + ' · ' + fmtLong(TODAY); setBack(); renderAllergy(); renderRx(); renderPreview(); });
+    document.addEventListener('fueni:langchange', () => { document.getElementById('pbMeta').textContent = rdvMotif + ' · ' + fmtLong(TODAY); setBack(); renderAllergy(); renderPresc(); renderPreview(); });
     document.addEventListener('DOMContentLoaded', hydrate);
   </script>
 <!-- Prototype version badge -->

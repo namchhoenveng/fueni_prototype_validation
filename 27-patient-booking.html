@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title data-i18n-pagetitle="book.page_title">FUENI — Prendre rendez-vous</title>
+  <script src="naz-i18n.js" defer></script>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="naz-common.css">
+  <style>
+    :root { --teal:#155e75; --teal-d:#0e7490; --teal-l:#ecfeff; }
+    body { background:#f1f5f9; color:#0f172a; }
+    .topbar { background:#fff; border-bottom:1px solid #e2e8f0; padding:12px 20px; display:flex; align-items:center; justify-content:space-between; }
+    .wrap { max-width:920px; margin:0 auto; padding:22px 16px 80px; }
+
+    /* Stepper */
+    .stepper { display:flex; align-items:center; gap:8px; margin:6px 0 22px; }
+    .stepper .st { display:flex; align-items:center; gap:8px; color:#94a3b8; font-weight:600; font-size:0.86rem; }
+    .stepper .st .num { width:26px; height:26px; border-radius:50%; background:#e2e8f0; color:#64748b; display:flex; align-items:center; justify-content:center; font-size:0.8rem; font-weight:700; }
+    .stepper .st.active { color:var(--teal); }
+    .stepper .st.active .num { background:var(--teal); color:#fff; }
+    .stepper .st.done .num { background:#16a34a; color:#fff; }
+    .stepper .bar { flex:1; height:2px; background:#e2e8f0; min-width:12px; }
+
+    /* Doctor summary */
+    .doc-card { background:#fff; border:1px solid #e2e8f0; border-radius:14px; padding:16px 18px; display:flex; align-items:center; gap:14px; margin-bottom:18px; }
+    .doc-card .av { width:52px; height:52px; border-radius:12px; background:var(--teal-d); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:800; overflow:hidden; flex-shrink:0; }
+    .doc-card .av img { width:100%; height:100%; object-fit:cover; }
+    .doc-card .dn { font-weight:700; font-size:1.05rem; }
+    .doc-card .ds { color:var(--teal); font-weight:600; font-size:0.9rem; }
+    .doc-card .dl { color:#64748b; font-size:0.85rem; margin-top:2px; }
+
+    .panel { background:#fff; border:1px solid #e2e8f0; border-radius:14px; padding:20px 20px 22px; }
+    .panel h5 { font-weight:700; font-size:1.05rem; margin-bottom:4px; }
+    .panel .sub { color:#64748b; font-size:0.88rem; margin-bottom:16px; }
+
+    /* Location chips */
+    .loc-chips { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:16px; }
+    .loc-chip { border:1px solid #cbd5e1; background:#fff; border-radius:999px; padding:7px 14px; font-size:0.85rem; font-weight:600; color:#334155; cursor:pointer; }
+    .loc-chip.active { background:var(--teal); border-color:var(--teal); color:#fff; }
+
+    /* Motif cards */
+    .motif { border:1.5px solid #e2e8f0; border-radius:12px; padding:14px 16px; display:flex; align-items:center; justify-content:space-between; gap:12px; cursor:pointer; margin-bottom:10px; transition:border-color .12s, background .12s; }
+    .motif:hover { border-color:var(--teal-d); }
+    .motif.sel { border-color:var(--teal); background:var(--teal-l); }
+    .motif .m-name { font-weight:700; }
+    .motif .m-meta { font-size:0.82rem; color:#64748b; margin-top:2px; }
+    .motif .m-price { font-weight:700; color:var(--teal); white-space:nowrap; }
+    .motif .m-radio { width:20px; height:20px; border-radius:50%; border:2px solid #cbd5e1; flex-shrink:0; display:flex; align-items:center; justify-content:center; }
+    .motif.sel .m-radio { border-color:var(--teal); }
+    .motif.sel .m-radio::after { content:''; width:10px; height:10px; border-radius:50%; background:var(--teal); }
+
+    /* Date strip */
+    .date-strip { display:flex; gap:8px; overflow-x:auto; padding-bottom:8px; margin-bottom:16px; }
+    .date-cell { flex:0 0 auto; width:64px; border:1.5px solid #e2e8f0; border-radius:12px; padding:10px 6px; text-align:center; cursor:pointer; background:#fff; }
+    .date-cell:hover:not(.disabled) { border-color:var(--teal-d); }
+    .date-cell.sel { border-color:var(--teal); background:var(--teal-l); }
+    .date-cell.disabled { opacity:0.4; cursor:not-allowed; }
+    .date-cell .dow { font-size:0.7rem; text-transform:uppercase; color:#64748b; font-weight:700; letter-spacing:.3px; }
+    .date-cell .dnum { font-size:1.25rem; font-weight:800; line-height:1.1; }
+    .date-cell .dmon { font-size:0.68rem; color:#94a3b8; text-transform:uppercase; }
+    .date-cell.sel .dow, .date-cell.sel .dmon { color:var(--teal); }
+
+    /* Time slots */
+    .slots { display:grid; grid-template-columns:repeat(auto-fill, minmax(88px, 1fr)); gap:8px; }
+    .slot { border:1.5px solid #e2e8f0; border-radius:9px; padding:9px 0; text-align:center; font-weight:600; font-size:0.9rem; cursor:pointer; background:#fff; }
+    .slot:hover:not(.taken) { border-color:var(--teal-d); }
+    .slot.sel { border-color:var(--teal); background:var(--teal); color:#fff; }
+    .slot.taken { color:#cbd5e1; text-decoration:line-through; cursor:not-allowed; background:#f8fafc; }
+    .no-slots { color:#94a3b8; font-size:0.9rem; padding:8px 0; }
+
+    /* Summary rows */
+    .sum-row { display:flex; justify-content:space-between; gap:14px; padding:10px 0; border-bottom:1px solid #f1f5f9; font-size:0.92rem; }
+    .sum-row:last-child { border-bottom:none; }
+    .sum-row .k { color:#64748b; }
+    .sum-row .v { font-weight:600; text-align:right; }
+    .price-line { display:flex; justify-content:space-between; align-items:center; background:var(--teal-l); border-radius:10px; padding:14px 16px; margin-top:14px; }
+    .price-line .pl-k { font-weight:700; }
+    .price-line .pl-v { font-weight:800; font-size:1.2rem; color:var(--teal); }
+
+    .pay-note { background:#fff8e1; border:1px solid #ffd54f; border-radius:10px; padding:12px 14px; font-size:0.84rem; color:#6d4c00; margin-top:14px; display:flex; gap:10px; }
+    .pay-note i { color:#f59e0b; margin-top:2px; }
+
+    .foot { display:flex; justify-content:space-between; gap:12px; margin-top:20px; }
+    .btn-teal { background:var(--teal); border:0; color:#fff; font-weight:700; border-radius:10px; padding:11px 22px; }
+    .btn-teal:hover { background:#114c5f; color:#fff; }
+    .btn-teal:disabled { background:#cbd5e1; color:#f8fafc; cursor:not-allowed; }
+    .btn-ghost { background:#f1f5f9; border:0; color:#475569; font-weight:600; border-radius:10px; padding:11px 20px; }
+    .btn-ghost:hover { background:#e2e8f0; }
+
+    /* Success */
+    .success { text-align:center; padding:12px 10px 4px; }
+    .success .ok { width:74px; height:74px; border-radius:50%; background:#dcfce7; color:#16a34a; display:flex; align-items:center; justify-content:center; font-size:2.1rem; margin:0 auto 14px; }
+    .success h4 { font-weight:800; }
+    .recap { text-align:left; border:1px solid #e2e8f0; border-radius:12px; padding:16px 18px; margin:18px 0; }
+    .hide { display:none !important; }
+  </style>
+</head>
+<body data-i18n-pagetitle="book.page_title" data-i18n-toggle>
+
+  <div class="topbar">
+    <a href="01-home.html" class="brand-logo" aria-label="FUENI"><img src="assets/fueni-lockup-horizontal.svg" alt="FUENI" style="height:28px;"></a>
+    <a id="backLink" href="19b-doctor-public-preview.html" class="text-decoration-none text-muted small"><i class="fa fa-arrow-left me-1"></i><span data-i18n="book.back">Retour à la fiche</span></a>
+  </div>
+
+  <div class="wrap">
+
+    <!-- Stepper -->
+    <div class="stepper" id="stepper">
+      <div class="st" data-step="1"><span class="num">1</span><span data-i18n="book.step_motif">Motif</span></div>
+      <div class="bar"></div>
+      <div class="st" data-step="2"><span class="num">2</span><span data-i18n="book.step_slot">Créneau</span></div>
+      <div class="bar"></div>
+      <div class="st" data-step="3"><span class="num">3</span><span data-i18n="book.step_confirm">Confirmation</span></div>
+    </div>
+
+    <!-- Doctor summary -->
+    <div class="doc-card" id="docCard">
+      <div class="av" id="dcAvatar">D</div>
+      <div class="flex-grow-1 min-w-0">
+        <div class="dn" id="dcName">—</div>
+        <div class="ds" id="dcSpec">—</div>
+        <div class="dl" id="dcLoc">—</div>
+      </div>
+    </div>
+
+    <!-- STEP 1 — Motif & lieu -->
+    <div class="panel" id="step1">
+      <h5 data-i18n="book.s1_title">Choisissez le motif</h5>
+      <div class="sub" data-i18n="book.s1_sub">Sélectionnez le lieu puis l'acte souhaité.</div>
+      <div class="loc-chips" id="locChips"></div>
+      <div id="motifList"></div>
+      <div class="foot">
+        <span></span>
+        <button class="btn-teal" id="s1Next" onclick="goStep(2)" disabled data-i18n="book.continue">Continuer</button>
+      </div>
+    </div>
+
+    <!-- STEP 2 — Créneau -->
+    <div class="panel hide" id="step2">
+      <h5 data-i18n="book.s2_title">Choisissez un créneau</h5>
+      <div class="sub" id="s2Sub"></div>
+      <div class="date-strip" id="dateStrip"></div>
+      <div id="slotsWrap"><div class="slots" id="slots"></div></div>
+      <div class="foot">
+        <button class="btn-ghost" onclick="goStep(1)" data-i18n="book.back_btn">Retour</button>
+        <button class="btn-teal" id="s2Next" onclick="goStep(3)" disabled data-i18n="book.continue">Continuer</button>
+      </div>
+    </div>
+
+    <!-- STEP 3 — Confirmation & prépaiement -->
+    <div class="panel hide" id="step3">
+      <h5 data-i18n="book.s3_title">Confirmez votre rendez-vous</h5>
+      <div class="sub" data-i18n="book.s3_sub">Vérifiez les informations avant de confirmer.</div>
+
+      <div id="sumBox"></div>
+
+      <div class="mt-3">
+        <label class="form-label small fw-semibold" data-i18n="book.reason_label">Motif de la visite (facultatif)</label>
+        <textarea class="form-control" id="reason" rows="2" maxlength="300" data-i18n-placeholder="book.reason_ph" placeholder="Précisez brièvement la raison de votre venue…"></textarea>
+      </div>
+
+      <div class="price-line">
+        <span class="pl-k" data-i18n="book.prepay">Prépaiement de la consultation</span>
+        <span class="pl-v" id="priceVal">—</span>
+      </div>
+
+      <div class="pay-note" data-i18n-html="book.pay_gate_html">
+        <i class="fa fa-triangle-exclamation"></i>
+        <span><strong>Prépaiement en ligne à venir.</strong> Le paiement sécurisé (Flutterwave — carte / Mobile&nbsp;Money) sera activé après validation. En démonstration, le rendez-vous est confirmé sans paiement réel.</span>
+      </div>
+
+      <div class="foot">
+        <button class="btn-ghost" onclick="goStep(2)" data-i18n="book.back_btn">Retour</button>
+        <button class="btn-teal" id="confirmBtn" onclick="confirmBooking()" data-i18n="book.confirm">Confirmer le rendez-vous</button>
+      </div>
+    </div>
+
+    <!-- SUCCESS -->
+    <div class="panel hide" id="stepDone">
+      <div class="success">
+        <div class="ok"><i class="fa fa-check"></i></div>
+        <h4 data-i18n="book.done_title">Rendez-vous confirmé</h4>
+        <p class="text-muted" data-i18n="book.done_sub">Votre rendez-vous est confirmé automatiquement. Un rappel vous sera envoyé.</p>
+        <div class="recap" id="recap"></div>
+        <div class="d-flex gap-2 justify-content-center flex-wrap">
+          <a href="05-patient-dashboard.html" class="btn-teal text-decoration-none" data-i18n="book.done_myrdv">Voir mes rendez-vous</a>
+          <a href="01-home.html" class="btn-ghost text-decoration-none" data-i18n="book.done_home">Retour à l'annuaire</a>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    const STORE_KEY = 'fueni_pubprofile_v2';
+    const APPT_KEY = 'fueni_appointments';
+    const DAYS = [['mon',1],['tue',2],['wed',3],['thu',4],['fri',5],['sat',6],['sun',0]];
+    const DOW_KEY = { 0:'sun', 1:'mon', 2:'tue', 3:'wed', 4:'thu', 5:'fri', 6:'sat' };
+    const DEFAULT = {
+      title:'Dr', name:'Aboubacar Diallo', spec:'Cardiologie', photo:null, currency:'XOF',
+      street:'12, rue Carnot', city:'Dakar', region:'Dakar', country:'Sénégal',
+      hours:{ mon:[['09:00','13:00'],['15:00','18:00']], tue:[['09:00','13:00'],['15:00','18:00']], wed:[['09:00','13:00']], thu:[['09:00','13:00'],['15:00','18:00']], fri:[['09:00','13:00']], sat:[], sun:[] },
+      motifs:[ {label:'Consultation générale',dur:30,price:8000}, {label:'Suivi / renouvellement',dur:20,price:6000} ]
+    };
+
+    function loadProfile() {
+      try { const raw = localStorage.getItem(STORE_KEY); if (raw) return Object.assign({}, DEFAULT, JSON.parse(raw)); } catch (e) {}
+      return JSON.parse(JSON.stringify(DEFAULT));
+    }
+    const P = loadProfile();
+    (function ensureLocations() {
+      if (!Array.isArray(P.locations) || !P.locations.length) {
+        P.locations = [{ id:'loc1', type:'cabinet', label:'', street:P.street||'', city:P.city||'', region:P.region||'', country:P.country||'', primary:true, bookable:true, access:P.access||[], photos:P.photos||[], hours:P.hours||{}, motifs:P.motifs||[] }];
+      }
+      P.locations.forEach(L => {
+        if (!L.hours || typeof L.hours !== 'object') L.hours = {};
+        if (!Array.isArray(L.motifs)) L.motifs = [];
+        if (typeof L.bookable !== 'boolean') L.bookable = true;
+        DAYS.forEach(([k]) => {
+          let v = L.hours[k];
+          if (Array.isArray(v)) return;
+          if (typeof v === 'string' && v.trim()) { const p = v.split(/[–—-]/).map(s => s.trim()); L.hours[k] = (p.length === 2 && p[0] && p[1]) ? [[p[0], p[1]]] : []; }
+          else L.hours[k] = [];
+        });
+      });
+    })();
+
+    const T = k => (window.NazI18n ? NazI18n.t(k) : k);
+    const lang = () => (window.NazI18n ? NazI18n.getLang() : 'fr');
+    const fmt = n => (n || 0).toLocaleString(lang() === 'en' ? 'en-US' : 'fr-FR');
+    const esc = s => (s == null ? '' : String(s)).replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
+
+    // Bookable locations only (patient can only book those)
+    const bookableIdx = P.locations.map((L, i) => i).filter(i => P.locations[i].bookable);
+    // Selected location from ?loc= (falls back to first bookable)
+    let locIdx = (() => {
+      const q = parseInt(new URLSearchParams(location.search).get('loc'), 10);
+      if (!isNaN(q) && P.locations[q] && P.locations[q].bookable) return q;
+      return bookableIdx.length ? bookableIdx[0] : 0;
+    })();
+    let motifIdx = -1, selDate = null, selTime = null;
+
+    function locName(L) {
+      if (L.label && L.label.trim()) return L.label;
+      const base = x => T('docpp.loctype_' + x.type) + (x.type !== 'teleconsult' && x.city ? ' · ' + x.city : '');
+      const b = base(L);
+      const grp = P.locations.filter(x => !(x.label && x.label.trim()) && base(x) === b);
+      return grp.length > 1 ? b + ' (' + (grp.indexOf(L) + 1) + ')' : b;
+    }
+    function locAddr(L) {
+      if (L.type === 'teleconsult') return T('book.online');
+      return [L.street, L.city, L.region, L.country].filter(Boolean).join(', ');
+    }
+
+    /* ---------- Doctor summary ---------- */
+    function renderDocCard() {
+      const fullName = (P.title ? P.title + ' ' : '') + P.name;
+      document.getElementById('dcName').textContent = fullName;
+      document.getElementById('dcSpec').textContent = P.spec;
+      const L = P.locations[locIdx];
+      const isTele = L.type === 'teleconsult';
+      document.getElementById('dcLoc').innerHTML =
+        '<i class="fa ' + (isTele ? 'fa-video' : 'fa-location-dot') + ' me-1"></i>' + esc(locName(L));
+      const av = document.getElementById('dcAvatar');
+      if (P.photo) av.innerHTML = '<img src="' + P.photo + '" alt="">';
+      else av.textContent = (P.name || 'D').split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
+    }
+
+    /* ---------- Step 1 : location + motif ---------- */
+    function renderStep1() {
+      const chips = document.getElementById('locChips');
+      if (bookableIdx.length <= 1) { chips.style.display = 'none'; }
+      else {
+        chips.style.display = '';
+        chips.innerHTML = bookableIdx.map(i => {
+          const L = P.locations[i];
+          const icon = L.type === 'teleconsult' ? 'fa-video' : 'fa-location-dot';
+          return '<button class="loc-chip' + (i === locIdx ? ' active' : '') + '" onclick="setLoc(' + i + ')"><i class="fa ' + icon + ' me-1"></i>' + esc(locName(L)) + '</button>';
+        }).join('');
+      }
+      const L = P.locations[locIdx];
+      const box = document.getElementById('motifList');
+      const motifs = L.motifs || [];
+      if (!motifs.length) { box.innerHTML = '<div class="no-slots">' + T('book.no_motif') + '</div>'; }
+      else {
+        box.innerHTML = motifs.map((m, i) =>
+          '<div class="motif' + (i === motifIdx ? ' sel' : '') + '" onclick="setMotif(' + i + ')">' +
+            '<div><div class="m-name">' + esc(m.label) + '</div>' +
+            '<div class="m-meta"><i class="fa fa-clock me-1"></i>' + m.dur + ' ' + T('book.min') + '</div></div>' +
+            '<div class="d-flex align-items-center gap-3">' +
+              '<div class="m-price">' + fmt(m.price) + ' ' + esc(P.currency || 'XOF') + '</div>' +
+              '<div class="m-radio"></div></div>' +
+          '</div>'
+        ).join('');
+      }
+      document.getElementById('s1Next').disabled = motifIdx < 0;
+    }
+    function setLoc(i) { locIdx = i; motifIdx = -1; selDate = null; selTime = null; renderDocCard(); renderStep1(); }
+    function setMotif(i) { motifIdx = i; renderStep1(); }
+
+    /* ---------- Step 2 : dates + slots ---------- */
+    const DAY_COUNT = 14;
+    function upcomingDates() {
+      const out = [];
+      const base = new Date(); base.setHours(0, 0, 0, 0);
+      for (let d = 1; d <= DAY_COUNT; d++) { const dt = new Date(base); dt.setDate(base.getDate() + d); out.push(dt); }
+      return out;
+    }
+    function rangesFor(dt) {
+      const L = P.locations[locIdx];
+      return (L.hours || {})[DOW_KEY[dt.getDay()]] || [];
+    }
+    const toMin = t => { const [h, m] = t.split(':').map(Number); return h * 60 + m; };
+    const toHHMM = m => String(Math.floor(m / 60)).padStart(2, '0') + ':' + String(m % 60).padStart(2, '0');
+    function slotsFor(dt) {
+      const dur = P.locations[locIdx].motifs[motifIdx].dur || 30;
+      const out = [];
+      rangesFor(dt).forEach(r => { for (let t = toMin(r[0]); t + dur <= toMin(r[1]); t += dur) out.push(toHHMM(t)); });
+      return out;
+    }
+    // Deterministic "already booked" mock so the grid feels realistic and is stable across renders.
+    function isTaken(dt, t) {
+      const seed = dt.getDate() * 37 + toMin(t);
+      return seed % 5 === 0; // ~1 in 5 slots shown as taken
+    }
+    function dateHasSlots(dt) { return slotsFor(dt).some(t => !isTaken(dt, t)); }
+
+    function renderStep2() {
+      const L = P.locations[locIdx];
+      const m = L.motifs[motifIdx];
+      document.getElementById('s2Sub').textContent =
+        esc(m.label) + ' · ' + m.dur + ' ' + T('book.min') + ' · ' + esc(locName(L));
+      const dates = upcomingDates();
+      if (!selDate || !dates.some(d => sameDay(d, selDate))) {
+        const first = dates.find(dateHasSlots); selDate = first || null; selTime = null;
+      }
+      document.getElementById('dateStrip').innerHTML = dates.map((dt, i) => {
+        const has = dateHasSlots(dt);
+        const sel = selDate && sameDay(dt, selDate);
+        return '<div class="date-cell' + (sel ? ' sel' : '') + (has ? '' : ' disabled') + '"' +
+          (has ? ' onclick="setDate(' + i + ')"' : '') + '>' +
+          '<div class="dow">' + dt.toLocaleDateString(lang(), { weekday: 'short' }) + '</div>' +
+          '<div class="dnum">' + dt.getDate() + '</div>' +
+          '<div class="dmon">' + dt.toLocaleDateString(lang(), { month: 'short' }) + '</div></div>';
+      }).join('');
+      renderSlots();
+      document.getElementById('s2Next').disabled = !selTime;
+    }
+    function setDate(i) { selDate = upcomingDates()[i]; selTime = null; renderStep2(); }
+    function renderSlots() {
+      const box = document.getElementById('slots');
+      if (!selDate) { box.innerHTML = '<div class="no-slots">' + T('book.no_slot') + '</div>'; return; }
+      const list = slotsFor(selDate);
+      if (!list.length) { box.innerHTML = '<div class="no-slots">' + T('book.no_slot') + '</div>'; return; }
+      box.innerHTML = list.map(t => {
+        const taken = isTaken(selDate, t);
+        const sel = selTime === t;
+        return '<div class="slot' + (taken ? ' taken' : '') + (sel ? ' sel' : '') + '"' +
+          (taken ? '' : ' onclick="setTime(\'' + t + '\')"') + '>' + t + '</div>';
+      }).join('');
+    }
+    function setTime(t) { selTime = t; renderSlots(); document.getElementById('s2Next').disabled = false; }
+    function sameDay(a, b) { return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate(); }
+
+    /* ---------- Step 3 : summary ---------- */
+    function patientName() {
+      try { const u = JSON.parse(sessionStorage.getItem('fueni_user') || '{}'); const n = ((u.firstName || '') + ' ' + (u.lastName || '')).trim(); if (n) return n; } catch (e) {}
+      return 'Aïssatou Diop';
+    }
+    function fmtDate(dt) { return dt.toLocaleDateString(lang(), { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }); }
+    function renderStep3() {
+      const L = P.locations[locIdx];
+      const m = L.motifs[motifIdx];
+      const rows = [
+        [T('book.sum_doctor'), (P.title ? P.title + ' ' : '') + P.name + ' — ' + P.spec],
+        [T('book.sum_loc'), locName(L) + (L.type === 'teleconsult' ? '' : (locAddr(L) ? ' · ' + locAddr(L) : ''))],
+        [T('book.sum_motif'), esc(m.label) + ' (' + m.dur + ' ' + T('book.min') + ')'],
+        [T('book.sum_when'), fmtDate(selDate) + ' · ' + selTime],
+        [T('book.sum_patient'), patientName()]
+      ];
+      document.getElementById('sumBox').innerHTML = rows.map(r =>
+        '<div class="sum-row"><span class="k">' + r[0] + '</span><span class="v">' + esc(r[1]) + '</span></div>'
+      ).join('');
+      document.getElementById('priceVal').textContent = fmt(m.price) + ' ' + (P.currency || 'XOF');
+    }
+
+    /* ---------- Confirm ---------- */
+    function confirmBooking() {
+      const L = P.locations[locIdx], m = L.motifs[motifIdx];
+      const appt = {
+        id: 'apt_' + selDate.getFullYear() + pad(selDate.getMonth() + 1) + pad(selDate.getDate()) + '_' + selTime.replace(':', ''),
+        doctor: (P.title ? P.title + ' ' : '') + P.name, spec: P.spec,
+        locationName: locName(L), locationAddr: locAddr(L), teleconsult: L.type === 'teleconsult',
+        motif: m.label, duration: m.dur, price: m.price, currency: P.currency || 'XOF',
+        dateISO: selDate.getFullYear() + '-' + pad(selDate.getMonth() + 1) + '-' + pad(selDate.getDate()),
+        time: selTime, reason: (document.getElementById('reason').value || '').trim(),
+        status: 'CONFIRMED', payment: 'PENDING_PAYMENT'
+      };
+      try {
+        const arr = JSON.parse(localStorage.getItem(APPT_KEY) || '[]');
+        arr.push(appt); localStorage.setItem(APPT_KEY, JSON.stringify(arr));
+      } catch (e) {}
+      renderRecap(appt);
+      showStep('done');
+    }
+    function pad(n) { return String(n).padStart(2, '0'); }
+    function renderRecap(a) {
+      const rows = [
+        [T('book.sum_doctor'), a.doctor + ' — ' + a.spec],
+        [T('book.sum_loc'), a.locationName + (a.teleconsult ? '' : (a.locationAddr ? ' · ' + a.locationAddr : ''))],
+        [T('book.sum_motif'), a.motif],
+        [T('book.sum_when'), fmtDate(selDate) + ' · ' + a.time],
+        [T('book.prepay'), fmt(a.price) + ' ' + a.currency]
+      ];
+      document.getElementById('recap').innerHTML = rows.map(r =>
+        '<div class="sum-row"><span class="k">' + r[0] + '</span><span class="v">' + esc(r[1]) + '</span></div>'
+      ).join('');
+    }
+
+    /* ---------- Navigation ---------- */
+    let step = 1;
+    function showStep(s) {
+      ['step1', 'step2', 'step3', 'stepDone'].forEach(id => document.getElementById(id).classList.add('hide'));
+      const map = { 1: 'step1', 2: 'step2', 3: 'step3', done: 'stepDone' };
+      document.getElementById(map[s]).classList.remove('hide');
+      document.getElementById('stepper').style.display = (s === 'done') ? 'none' : '';
+      if (typeof s === 'number') step = s;
+      updateStepper();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    function updateStepper() {
+      document.querySelectorAll('#stepper .st').forEach(el => {
+        const n = +el.dataset.step;
+        el.classList.toggle('active', n === step);
+        el.classList.toggle('done', n < step);
+        const num = el.querySelector('.num');
+        num.innerHTML = (n < step) ? '<i class="fa fa-check"></i>' : n;
+      });
+    }
+    function goStep(s) {
+      if (s === 2) { if (motifIdx < 0) return; renderStep2(); }
+      if (s === 3) { if (!selTime) return; renderStep3(); }
+      showStep(s);
+    }
+
+    /* ---------- Init ---------- */
+    function initBooking() {
+      // Back link returns to the doctor's public preview
+      document.getElementById('backLink').href = '19b-doctor-public-preview.html';
+      renderDocCard();
+      renderStep1();
+      showStep(1);
+    }
+    document.addEventListener('fueni:langchange', () => {
+      renderDocCard();
+      if (step === 1) renderStep1(); else if (step === 2) renderStep2(); else if (step === 3) renderStep3();
+    });
+    if (window.NazI18n) initBooking(); else document.addEventListener('DOMContentLoaded', initBooking);
+  </script>
+
+  <!-- Prototype version badge -->
+  <script>(function(){if(window.__pv)return;window.__pv=1;var v=document.createElement('div');v.style.cssText='position:fixed;top:0;left:50%;transform:translateX(-50%);background:#155e75;color:#fff;padding:6px 20px;border-radius:0 0 16px 16px;font:600 12px/1 system-ui,-apple-system,sans-serif;letter-spacing:.6px;z-index:99999;box-shadow:0 3px 10px rgba(0,0,0,.2);text-transform:uppercase;display:flex;align-items:center;gap:8px';v.innerHTML='🧪 Prototype <span style="background:#f59e0b;color:#1a1a1a;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:4px">v1.4.0</span><span style="background:#facc15;color:#1a1a1a;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:4px;text-transform:none;letter-spacing:0">⏳ À valider</span>';document.body.appendChild(v);})();</script>
+</body>
+</html>

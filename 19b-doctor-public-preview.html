@@ -34,6 +34,12 @@
     .exp-tag.verified { background:#e0f2f1; color:#00695c; }
     .book-cta { background:#155e75; border:0; color:#fff; font-weight:700; border-radius:12px; padding:12px 22px; font-size:0.95rem; }
     .book-cta:hover { background:#114c5f; color:#fff; }
+    .book-cta.is-disabled { background:#e2e8f0; color:#64748b; cursor:not-allowed; pointer-events:none; }
+    .loc-switch { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:14px; }
+    .loc-chip { display:inline-flex; align-items:center; border:1.5px solid #e2e8f0; background:#fff; color:#475569; border-radius:20px; padding:7px 14px; font-size:0.84rem; font-weight:600; cursor:pointer; }
+    .loc-chip:hover { border-color:#155e75; color:#155e75; }
+    .loc-chip.active { background:#155e75; border-color:#155e75; color:#fff; }
+    .loc-ext-note { background:#f1f5f9; color:#475569; border-radius:10px; padding:12px 14px; font-size:0.86rem; }
     .sect { padding:22px 26px; border-bottom:1px solid #e2e8f0; }
     .sect:last-child { border-bottom:0; }
     .sect h5 { font-size:0.85rem; text-transform:uppercase; letter-spacing:0.6px; color:#0f172a; font-weight:800; margin-bottom:12px; }
@@ -139,8 +145,9 @@
     <div class="fiche">
       <div class="sect">
         <h5 data-i18n="docppv.cabinet">Localisation</h5>
+        <div id="fLocSwitch" class="loc-switch"></div>
         <div id="fAddress" class="text-slate"></div>
-        <div class="map-ph"><i class="fa fa-map-location-dot me-2"></i><span data-i18n="docppv.map_ph">Carte du cabinet</span></div>
+        <div class="map-ph" id="fMap"><i class="fa fa-map-location-dot me-2"></i><span data-i18n="docppv.map_ph">Carte du cabinet</span></div>
         <div id="fAccessWrap">
           <div class="acc-sub" data-i18n="docpp.sec_access">Accessibilité</div>
           <div id="fAccess"></div>
@@ -157,12 +164,14 @@
       <!-- Hours -->
       <div class="sect">
         <h5 data-i18n="docppv.hours">Horaires de consultation</h5>
-        <table class="hours"><tbody id="fHours"></tbody></table>
+        <div id="fHoursNote" class="loc-ext-note d-none"></div>
+        <table class="hours" id="fHoursTable"><tbody id="fHours"></tbody></table>
       </div>
 
       <!-- Motifs / tarifs -->
       <div class="sect">
         <h5 data-i18n="docppv.motifs">Tarifs des consultations</h5>
+        <div id="fMotifsNote" class="loc-ext-note d-none"></div>
         <div id="fMotifs"></div>
       </div>
     </div>
@@ -223,18 +232,24 @@
       return JSON.parse(JSON.stringify(DEFAULT));
     }
     const P = load();
-    // Compat : convertit l'ancien format texte des horaires en créneaux [[from,to]]
-    (function normalizeHours() {
-      if (!P.hours || typeof P.hours !== 'object') { P.hours = {}; return; }
-      DAYS.forEach(([k]) => {
-        let v = P.hours[k];
-        if (Array.isArray(v)) return;
-        if (typeof v === 'string' && v.trim()) {
-          const p = v.split(/[–—-]/).map(s => s.trim());
-          P.hours[k] = (p.length === 2 && p[0] && p[1]) ? [[p[0], p[1]]] : [];
-        } else { P.hours[k] = []; }
+    // Multi-lieu : garantir P.locations[] (rétrocompat ancien schéma mono-adresse + horaires texte)
+    (function ensureLocations() {
+      if (!Array.isArray(P.locations) || !P.locations.length) {
+        P.locations = [{ id:'loc1', type:'cabinet', label:'', street:P.street||'', city:P.city||'', region:P.region||'', country:P.country||'', primary:true, bookable:true, access:P.access||[], photos:P.photos||[], hours:P.hours||{}, motifs:P.motifs||[] }];
+      }
+      P.locations.forEach(L => {
+        if (!L.hours || typeof L.hours !== 'object') L.hours = {};
+        if (!Array.isArray(L.motifs)) L.motifs = [];
+        if (typeof L.bookable !== 'boolean') L.bookable = true;
+        DAYS.forEach(([k]) => {
+          let v = L.hours[k];
+          if (Array.isArray(v)) return;
+          if (typeof v === 'string' && v.trim()) { const p = v.split(/[–—-]/).map(s => s.trim()); L.hours[k] = (p.length === 2 && p[0] && p[1]) ? [[p[0], p[1]]] : []; }
+          else L.hours[k] = [];
+        });
       });
     })();
+    let activeLoc = Math.max(0, P.locations.findIndex(l => l.primary));
     const isPreview = new URLSearchParams(location.search).get('preview') === '1';
     const fmt = n => (n || 0).toLocaleString('fr-FR');
     const T = k => (window.NazI18n ? NazI18n.t(k) : k);
@@ -255,35 +270,65 @@
       document.getElementById('sbAvatar').innerHTML = P.photo
         ? '<img src="' + P.photo + '" alt="">'
         : (P.name || 'D').split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
-      document.getElementById('fLoc').textContent = [P.city, P.country].filter(Boolean).join(', ');
+      // ----- Lieu actif (multi-lieu) -----
+      if (activeLoc < 0 || activeLoc >= P.locations.length) activeLoc = Math.max(0, P.locations.findIndex(l => l.primary));
+      const L = P.locations[activeLoc];
+      const isTele = L.type === 'teleconsult';
+      const bookable = !!L.bookable;
+      renderLocSwitch();
+
+      document.getElementById('fLoc').textContent = isTele
+        ? T('docppv.online_short')
+        : [L.city, L.country].filter(Boolean).join(', ');
       document.getElementById('fLangs').innerHTML = (P.langs || []).map(l => '<span class="lang-tag">' + l + '</span>').join('');
       document.getElementById('fExpertise').innerHTML =
         '<span class="exp-tag verified"><i class="fa fa-circle-check"></i>' + P.spec + '</span>' +
         (P.expertise || []).map(x => '<span class="exp-tag">' + x + '</span>').join('');
       document.getElementById('fBio').textContent = P.bio || '';
-      document.getElementById('fAddress').innerHTML =
-        '<i class="fa fa-location-dot me-1" style="color:#155e75;"></i>' +
-        [P.street, P.city, P.region, P.country].filter(Boolean).join(', ');
+
+      // ----- Adresse / service / accès / photos du lieu actif -----
+      let addrHtml = isTele
+        ? '<i class="fa fa-video me-1" style="color:#155e75;"></i>' + T('docpp.loc_online')
+        : '<i class="fa fa-location-dot me-1" style="color:#155e75;"></i>' + [L.street, L.city, L.region, L.country].filter(Boolean).join(', ');
+      if (['hopital', 'clinique', 'centre'].includes(L.type) && (L.service || L.position)) {
+        const esc = s => (s == null ? '' : String(s)).replace(/[&<>]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;' }[c]));
+        const sp = [esc(L.service || ''), L.position ? T('docpp.pos_' + L.position) : ''].filter(Boolean).join(' · ');
+        addrHtml += '<div class="mt-1" style="color:#64748b;font-size:0.88rem;"><i class="fa fa-user-doctor me-1"></i>' + sp + '</div>';
+      }
+      document.getElementById('fAddress').innerHTML = addrHtml;
+      document.getElementById('fMap').style.display = isTele ? 'none' : '';
 
       const ACCESS_IC = { wheelchair:'fa-wheelchair', stepfree:'fa-person-walking', elevator:'fa-elevator', parking:'fa-square-parking', transit:'fa-bus' };
-      const acc = P.access || [];
+      const acc = isTele ? [] : (L.access || []);
       document.getElementById('fAccessWrap').style.display = acc.length ? '' : 'none';
       document.getElementById('fAccess').innerHTML = acc.map(k =>
         '<span class="acc-tag"><i class="fa ' + (ACCESS_IC[k] || 'fa-check') + '"></i>' + T('docpp.acc_' + k) + '</span>'
       ).join('');
 
-      const photos = P.photos || [];
+      const photos = isTele ? [] : (L.photos || []);
       document.getElementById('fPhotosWrap').style.display = photos.length ? '' : 'none';
       document.getElementById('fPhotos').innerHTML = photos.map(src =>
         '<a href="' + src + '" target="_blank" rel="noopener"><img src="' + src + '" alt=""></a>'
       ).join('');
 
-      document.getElementById('fHours').innerHTML = DAYS.map(([k]) => {
-        const ranges = (P.hours || {})[k] || [];
-        const label = T('docpp.day_' + k);
-        const txt = ranges.length ? ranges.map(r => r[0] + '–' + r[1]).join(', ') : null;
-        return '<tr><td>' + label + '</td>' + (txt ? '<td>' + txt + '</td>' : '<td class="closed">' + T('docppv.closed') + '</td>') + '</tr>';
-      }).join('');
+      // ----- Horaires du lieu actif (ou note « réservation externe ») -----
+      const hoursTable = document.getElementById('fHoursTable'), hoursNote = document.getElementById('fHoursNote');
+      const motifsNote = document.getElementById('fMotifsNote'), motifsBox = document.getElementById('fMotifs');
+      if (!bookable) {
+        hoursTable.classList.add('d-none'); hoursNote.classList.remove('d-none');
+        hoursNote.innerHTML = '<i class="fa fa-circle-info me-1"></i>' + T('docppv.ext_booking');
+        motifsNote.classList.remove('d-none'); motifsBox.classList.add('d-none');
+        motifsNote.innerHTML = '<i class="fa fa-circle-info me-1"></i>' + T('docppv.ext_booking');
+      } else {
+        hoursTable.classList.remove('d-none'); hoursNote.classList.add('d-none');
+        motifsNote.classList.add('d-none'); motifsBox.classList.remove('d-none');
+        document.getElementById('fHours').innerHTML = DAYS.map(([k]) => {
+          const ranges = (L.hours || {})[k] || [];
+          const label = T('docpp.day_' + k);
+          const txt = ranges.length ? ranges.map(r => r[0] + '–' + r[1]).join(', ') : null;
+          return '<tr><td>' + label + '</td>' + (txt ? '<td>' + txt + '</td>' : '<td class="closed">' + T('docppv.closed') + '</td>') + '</tr>';
+        }).join('');
+      }
 
       const training = P.training || [];
       document.getElementById('fTrainingSect').style.display = training.length ? '' : 'none';
@@ -294,14 +339,44 @@
       document.getElementById('fOrdre').textContent = P.ordre || '—';
       document.getElementById('fOrdreBody').textContent = P.ordreBody || '—';
 
-      const motifs = P.motifs || [];
+      const motifs = bookable ? (L.motifs || []) : [];
       document.getElementById('fMotifs').innerHTML = motifs.length ? motifs.map(m =>
         '<div class="motif-card"><div><div class="m-name">' + (m.label || '') + '</div>' +
         '<div class="m-meta"><i class="fa fa-clock me-1"></i>' + m.dur + ' ' + T('docppv.min') + '</div></div>' +
         '<div class="m-price">' + fmt(m.price) + ' ' + (P.currency || 'XOF') + '</div></div>'
       ).join('') : '<div class="text-muted small">—</div>';
+
+      // ----- CTA de réservation : dépend de la réservabilité du lieu actif -----
+      document.querySelectorAll('.book-cta').forEach(btn => {
+        btn.classList.toggle('is-disabled', !bookable);
+        const span = btn.querySelector('span');
+        if (span) span.textContent = bookable ? T('docppv.book_btn') : T('docppv.ext_booking');
+      });
     }
-    function book() { alert(T('docppv.book_alert')); }
+    // Nom affiché d'un lieu : libellé si renseigné ; sinon type · ville, numéroté si doublon (évite deux « Cabinet » identiques).
+    function locChipName(L) {
+      if (L.label && L.label.trim()) return L.label;
+      const base = x => T('docpp.loctype_' + x.type) + (x.type !== 'teleconsult' && x.city ? ' · ' + x.city : '');
+      const b = base(L);
+      const grp = P.locations.filter(x => !(x.label && x.label.trim()) && base(x) === b);
+      return grp.length > 1 ? b + ' (' + (grp.indexOf(L) + 1) + ')' : b;
+    }
+    function renderLocSwitch() {
+      const box = document.getElementById('fLocSwitch');
+      if (!box) return;
+      if (P.locations.length <= 1) { box.style.display = 'none'; return; }
+      box.style.display = '';
+      box.innerHTML = P.locations.map((L, i) => {
+        const icon = L.type === 'teleconsult' ? '<i class="fa fa-video me-1"></i>' : '<i class="fa fa-location-dot me-1"></i>';
+        return '<button class="loc-chip' + (i === activeLoc ? ' active' : '') + '" onclick="setActiveLoc(' + i + ')">' + icon + locChipName(L) + '</button>';
+      }).join('');
+    }
+    function setActiveLoc(i) { activeLoc = i; render(); }
+    function book() {
+      const L = P.locations[activeLoc];
+      if (!L.bookable) { alert(T('docppv.ext_booking')); return; }
+      window.location.href = '27-patient-booking.html?loc=' + activeLoc;
+    }
 
     document.addEventListener('fueni:langchange', render);
     if (window.NazI18n) render(); else document.addEventListener('DOMContentLoaded', render);
