@@ -37,11 +37,37 @@
     .card-sec h6 { font-weight: 700; display: flex; align-items: center; gap: 9px; margin-bottom: 4px; }
     .card-sec h6 i { color: #155e75; }
     .card-sec .sec-sub { color: #64748b; font-size: 0.86rem; margin-bottom: 16px; }
+    .mfa-card { display: flex; align-items: center; gap: 14px; }
+    .mfa-ic { color: #155e75; font-size: 1.15rem; }
+    .mfa-body { flex: 1; }
+    .mfa-title { font-weight: 700; }
+    .mfa-sub { color: #64748b; font-size: 0.84rem; margin-top: 1px; }
+    .sec-div { border: 0; border-top: 1px solid #e2e8f0; opacity: 1; margin: 20px 0; }
+    .sub-h { font-weight: 700; font-size: 1rem; display: flex; align-items: center; gap: 9px; margin-bottom: 4px; }
+    .sub-h i { color: #155e75; font-size: 0.95rem; }
     .row-line { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 12px 0; border-bottom: 1px solid #f1f5f9; }
     .row-line:last-child { border-bottom: none; }
+    .id-row { display: flex; align-items: flex-start; gap: 14px; padding: 14px 0; }
+    .id-row + .id-row { border-top: 1px solid #f1f5f9; }
+    .id-label { flex: 0 0 160px; color: #64748b; font-size: 0.88rem; padding-top: 3px; }
+    .id-right { flex: 1 1 auto; min-width: 0; }
+    .id-view { display: flex; align-items: center; gap: 12px; min-height: 26px; }
+    .id-val-text { font-weight: 700; color: #0f172a; }
+    .id-actions { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+    .id-edit { padding-top: 4px; }
+    .id-edit input { max-width: 380px; }
+    @media (max-width: 600px) { .id-row { flex-wrap: wrap; } .id-label { flex: 0 0 100%; padding-top: 0; } }
     .rl-k { font-weight: 600; font-size: 0.92rem; }
     .rl-sub { color: #64748b; font-size: 0.82rem; margin-top: 2px; }
     .chip-ok { background: #dcfce7; color: #15803d; border-radius: 999px; padding: 3px 11px; font-size: 0.76rem; font-weight: 700; }
+    .chip-no { background: #fef3c7; color: #b45309; border-radius: 999px; padding: 3px 11px; font-size: 0.76rem; font-weight: 700; }
+    .btn-link-verify { border: 0; background: none; color: #155e75; font-weight: 600; font-size: 0.85rem; cursor: pointer; text-decoration: underline; }
+    .btn-link-verify:hover { color: #0e7490; }
+    .verify-banner { display: flex; align-items: center; gap: 12px; background: #fff8e1; border: 1px solid #ffd54f; border-radius: 10px; padding: 10px 14px; margin: 6px 0 4px; }
+    .verify-banner i { color: #f59e0b; font-size: 1.1rem; }
+    .verify-banner .vb-text { flex: 1; font-size: 0.85rem; color: #6d4c00; }
+    .verify-banner .vb-btn { background: #f57c00; border: 0; color: #fff; font-weight: 600; padding: 6px 13px; border-radius: 8px; font-size: 0.82rem; white-space: nowrap; }
+    .verify-banner .vb-btn:hover { background: #e65100; }
     .chip-info { background: #e0f2fe; color: #0369a1; border-radius: 999px; padding: 3px 11px; font-size: 0.76rem; font-weight: 700; }
 
     .btn-edit { background: #f1f5f9; border: 0; color: #155e75; font-weight: 600; border-radius: 8px; padding: 7px 15px; font-size: 0.85rem; }
@@ -75,6 +101,17 @@
     .hint { color: #64748b; font-size: 0.82rem; }
     .toast-ok { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: #155e75; color: #fff; padding: 11px 20px; border-radius: 10px; font-weight: 600; font-size: 0.88rem; box-shadow: 0 8px 24px rgba(0,0,0,0.2); opacity: 0; pointer-events: none; transition: opacity .25s, transform .25s; z-index: 1300; }
     .toast-ok.show { opacity: 1; transform: translateX(-50%) translateY(-4px); }
+    .field-hint { font-size: 0.82rem; }
+    /* Modals (ré-auth + OTP) — portés du profil patient */
+    .ov { position: fixed; inset: 0; background: rgba(15,23,42,0.5); display: none; align-items: center; justify-content: center; z-index: 1200; padding: 20px; }
+    .ov.show { display: flex; }
+    .ov-card { background: #fff; border-radius: 14px; padding: 26px; width: 100%; max-width: 420px; box-shadow: 0 18px 50px rgba(0,0,0,0.22); }
+    .ov-card h5 { font-weight: 700; margin-bottom: 6px; }
+    .otp-row { display: flex; gap: 8px; justify-content: center; margin: 18px 0 10px; }
+    .otp-input { width: 44px; height: 54px; text-align: center; font-size: 1.4rem; font-weight: 700; border-radius: 8px; border: 2px solid #dee2e6; }
+    .otp-input:focus { border-color: #155e75; outline: none; box-shadow: 0 0 0 0.2rem rgba(21,94,117,0.18); }
+    .reauth-target { display: flex; align-items: center; justify-content: space-between; gap: 10px; background: #f1f5f9; border-radius: 8px; padding: 8px 12px; margin-bottom: 10px; font-size: 0.88rem; }
+    .rt-edit { border: 0; background: none; color: #155e75; font-weight: 600; cursor: pointer; }
   </style>
 </head>
 <body data-i18n-pagetitle="dset.page_title" data-i18n-toggle>
@@ -125,33 +162,68 @@
         <div class="card-sec">
           <h6><i class="fa fa-at"></i><span data-i18n="dset.login_title">Identifiant de connexion</span></h6>
           <div class="sec-sub" data-i18n="dset.login_sub">Vous vous connectez avec votre adresse e-mail professionnelle.</div>
-          <div class="row-line">
-            <div>
-              <div class="rl-k">a.diallo@cabinet-dakar.sn</div>
-              <div class="rl-sub" data-i18n="dset.login_email_lbl">Adresse e-mail (identifiant)</div>
+          <!-- E-mail (identifiant) -->
+          <div class="id-row" id="idrow-email">
+            <div class="id-label" data-i18n="dset.login_email_lbl">Adresse e-mail</div>
+            <div class="id-right">
+              <div class="id-view">
+                <div class="id-val-text" id="emailVal">a.diallo@cabinet-dakar.sn</div>
+                <span class="chip-ok"><i class="fa fa-circle-check me-1"></i><span data-i18n="dset.verified">Vérifié</span></span>
+                <div class="id-actions"><button class="btn-edit" onclick="idEdit('email')" data-i18n="dset.modify">Modifier</button></div>
+              </div>
+              <div class="id-edit d-none">
+                <input type="email" class="form-control form-control-sm" id="emailInput" autocomplete="email" oninput="checkDocEmail(false)">
+                <div class="field-hint text-danger mt-1 d-none" id="emailErr"><i class="fa fa-circle-exclamation me-1"></i><span data-i18n="prof.coord.email_err_format">Adresse e-mail invalide.</span></div>
+                <div class="hint mt-2" id="emailHelp"><i class="fa fa-circle-info me-1"></i><span data-i18n="dset.login_note">La modification de l'e-mail de connexion demande votre mot de passe actuel et une confirmation par code envoyé à la nouvelle adresse.</span></div>
+                <div class="d-flex gap-2 mt-2"><button class="btn-save" onclick="saveEmailDoc()" data-i18n="dset.save">Enregistrer</button><button class="btn-cancel" onclick="idCancel('email')" data-i18n="dset.cancel">Annuler</button></div>
+              </div>
             </div>
-            <span class="chip-ok"><i class="fa fa-circle-check me-1"></i><span data-i18n="dset.verified">Vérifié</span></span>
           </div>
-          <div class="hint mt-2"><i class="fa fa-circle-info me-1"></i><span data-i18n="dset.login_note">La modification de l'e-mail de connexion demande votre mot de passe actuel et une confirmation par code envoyé à la nouvelle adresse.</span></div>
+          <!-- Téléphone (contact) -->
+          <div class="id-row" id="idrow-phone">
+            <div class="id-label" data-i18n="dset.phone_lbl">Téléphone</div>
+            <div class="id-right">
+              <div class="id-view">
+                <div class="id-val-text" id="phoneVal">+221 77 123 45 67</div>
+                <span class="chip-no" id="phoneChip"><i class="fa fa-circle-exclamation me-1"></i><span data-i18n="dset.unverified">Non vérifié</span></span>
+                <button class="btn-link-verify" id="phoneVerifyLink" onclick="verifyPhone()" data-i18n="dset.verify">Vérifier</button>
+                <div class="id-actions"><button class="btn-edit" onclick="idEdit('phone')" data-i18n="dset.modify">Modifier</button></div>
+              </div>
+              <div class="id-edit d-none">
+                <input type="tel" class="form-control form-control-sm" id="phoneInput" autocomplete="tel" oninput="document.getElementById('phoneErr').classList.add('d-none')">
+                <div class="field-hint text-danger mt-1 d-none" id="phoneErr"><i class="fa fa-circle-exclamation me-1"></i><span></span></div>
+                <div class="hint mt-2" id="phoneHelp"><i class="fa fa-circle-info me-1"></i><span data-i18n="dset.phone_note">La modification du numéro demande votre mot de passe actuel et une confirmation par code envoyé au nouveau numéro (SMS).</span></div>
+                <div class="d-flex gap-2 mt-2"><button class="btn-save" onclick="savePhoneDoc()" data-i18n="dset.save">Enregistrer</button><button class="btn-cancel" onclick="idCancel('phone')" data-i18n="dset.cancel">Annuler</button></div>
+              </div>
+            </div>
+          </div>
+          <!-- Bannière : téléphone non vérifié (miroir de l'e-mail non vérifié côté patient) -->
+          <div class="verify-banner" id="phoneBanner">
+            <i class="fa fa-comment-sms"></i>
+            <div class="vb-text" data-i18n="dset.phone_verify_reason">Vérifiez votre numéro pour recevoir vos rappels de rendez-vous par SMS.</div>
+            <button class="vb-btn" onclick="verifyPhone()" data-i18n="dset.verify_now">Vérifier maintenant</button>
+          </div>
+          <div class="hint mt-2 d-none" id="coordSecNote"><i class="fa fa-shield-halved me-1"></i><span data-i18n="prof.coord.secnote">Pour votre sécurité : la modification de l'e-mail ou du téléphone demande votre mot de passe actuel, envoie un code au nouveau contact, et notifie votre contact actuel.</span></div>
         </div>
 
         <!-- Password -->
         <div class="card-sec">
-          <div class="d-flex align-items-start justify-content-between">
-            <div>
-              <h6><i class="fa fa-lock"></i><span data-i18n="dset.pwd_title">Mot de passe</span></h6>
-              <div class="sec-sub mb-0" data-i18n="dset.pwd_sub">Dernière modification il y a 3 mois.</div>
-            </div>
-            <button class="btn-edit" id="pwdEditBtn" onclick="openPwd()" data-i18n="dset.change">Changer</button>
-          </div>
-
-          <div id="pwdEdit" class="d-none mt-3" style="max-width:480px;">
+          <h6 class="mb-2"><i class="fa fa-lock"></i><span data-i18n="dset.pwd_title">Mot de passe</span></h6>
+          <div class="id-row" id="idrow-pwd">
+            <div class="id-label" data-i18n="dset.pwd_label">Mot de passe</div>
+            <div class="id-right">
+              <div class="id-view" id="pwdView">
+                <div class="id-val-text">••••••••••••</div>
+                <div class="id-actions"><button class="btn-edit" id="pwdEditBtn" onclick="openPwd()" data-i18n="dset.change">Changer</button></div>
+              </div>
+              <div id="pwdEdit" class="id-edit d-none" style="max-width:480px;">
             <label class="form-label small fw-semibold mb-1" data-i18n="dset.pwd_current">Mot de passe actuel</label>
             <div class="pwd-wrap mb-1">
               <input type="password" class="form-control" id="pwdCurrent" autocomplete="current-password" oninput="clearPwdErr()">
               <button type="button" class="pwd-eye" onclick="toggleEye('pwdCurrent', this)"><i class="fa fa-eye"></i></button>
             </div>
-            <div class="field-hint text-danger small mb-2 d-none" id="pwdCurrentErr"><i class="fa fa-circle-exclamation me-1"></i><span data-i18n="dset.pwd_current_err">Mot de passe actuel incorrect.</span></div>
+            <div class="field-hint text-danger small mb-2 d-none" id="pwdCurrentErr"><i class="fa fa-circle-exclamation me-1"></i><span data-i18n="prof.pwd.current_err">Mot de passe actuel incorrect.</span></div>
+            <div class="field-hint text-danger small mb-2 d-none pwd-throttle" id="pwdThrottle"><i class="fa fa-lock me-1"></i><span data-i18n-html="prof.pwd.locked_html">Trop de tentatives. Réessayez dans quelques minutes ou <a href="11-password-reset.html" style="color:#155e75;font-weight:600;text-decoration:none">réinitialisez votre mot de passe</a>.</span></div>
 
             <label class="form-label small fw-semibold mb-1 mt-2" data-i18n="dset.pwd_new">Nouveau mot de passe</label>
             <div class="pwd-wrap">
@@ -166,31 +238,35 @@
               <div class="pwd-rule" id="pr-num"><i class="fa fa-circle-check"></i><span data-i18n="signup.field.pwd_r_num">Un chiffre</span></div>
               <div class="pwd-rule" id="pr-spe"><i class="fa fa-circle-check"></i><span data-i18n="signup.field.pwd_r_spe">Un caractère spécial</span></div>
             </div>
+            <div class="field-hint text-danger small mt-2 d-none" id="pwdNewErr"><i class="fa fa-circle-exclamation me-1"></i><span data-i18n="prof.pwd.new_err">Le nouveau mot de passe ne respecte pas les critères.</span></div>
+            <div class="hint mt-2"><i class="fa fa-circle-info me-1"></i><span data-i18n="prof.pwd.help">Pour changer votre mot de passe, saisissez d’abord votre mot de passe actuel.</span></div>
             <div class="d-flex gap-2 mt-3">
               <button class="btn-save" onclick="savePwd()" data-i18n="dset.save">Enregistrer</button>
               <button class="btn-cancel" onclick="closePwd()" data-i18n="dset.cancel">Annuler</button>
             </div>
-            <div class="hint mt-2" data-i18n="dset.demo_pwd">Mot de passe de démo : MotDePasse123!</div>
+            <div class="hint mt-2" data-i18n="prof.reauth.demo">Mot de passe de démo : MotDePasse123!</div>
+              </div>
+            </div>
           </div>
         </div>
 
-        <!-- 2FA -->
+        <!-- Sécurité de connexion : 2FA + appareils + sessions (regroupés) -->
         <div class="card-sec">
-          <h6><i class="fa fa-user-shield"></i><span data-i18n="dset.mfa_title">Authentification à deux facteurs (2FA)</span></h6>
-          <div class="sec-sub" data-i18n="dset.mfa_sub">Une étape de vérification supplémentaire à chaque connexion.</div>
-          <div class="row-line">
-            <div>
-              <div class="rl-k"><i class="fa fa-envelope me-2" style="color:#155e75;"></i><span data-i18n="dset.mfa_email">Code par e-mail</span></div>
-              <div class="rl-sub" data-i18n="dset.mfa_email_sub">Méthode active pour les comptes praticiens — non désactivable.</div>
+          <h6 style="margin-bottom:16px;"><i class="fa fa-shield-halved"></i><span data-i18n="dset.sec_title">Sécurité de connexion</span></h6>
+
+          <!-- 2FA (statut compact) -->
+          <div class="mfa-card">
+            <div class="mfa-body">
+              <div class="sub-h"><i class="fa fa-user-shield"></i><span data-i18n="dset.mfa_title">Authentification à deux facteurs (2FA)</span></div>
+              <div class="mfa-sub" data-i18n="dset.mfa_compact">Par e-mail · obligatoire · non désactivable.</div>
             </div>
             <span class="chip-ok"><i class="fa fa-circle-check me-1"></i><span data-i18n="dset.mfa_on">Activée</span></span>
           </div>
-          <div class="hint mt-2"><i class="fa fa-circle-info me-1"></i><span data-i18n="dset.mfa_note">Pour les praticiens, la 2FA se fait <strong>par e-mail uniquement</strong> (pas par SMS). Elle est obligatoire et ne peut pas être désactivée.</span></div>
-        </div>
 
-        <!-- Trusted devices -->
-        <div class="card-sec">
-          <h6><i class="fa fa-laptop"></i><span data-i18n="dset.dev_title">Appareils de confiance</span></h6>
+          <hr class="sec-div">
+
+          <!-- Appareils de confiance -->
+          <div class="sub-h"><i class="fa fa-laptop"></i><span data-i18n="dset.dev_title">Appareils de confiance</span></div>
           <div class="sec-sub" data-i18n="dset.dev_sub">Appareils sur lesquels vous avez coché « Se souvenir de cet appareil 30 jours » — la 2FA n'y est pas redemandée.</div>
           <div id="devList">
             <div class="row-line">
@@ -204,11 +280,11 @@
               <button class="btn-ghost-danger" onclick="revoke(this)" data-i18n="dset.dev_revoke">Retirer</button>
             </div>
           </div>
-        </div>
 
-        <!-- Active sessions -->
-        <div class="card-sec">
-          <h6><i class="fa fa-right-to-bracket"></i><span data-i18n="dset.ses_title">Sessions actives</span></h6>
+          <hr class="sec-div">
+
+          <!-- Sessions actives -->
+          <div class="sub-h"><i class="fa fa-right-to-bracket"></i><span data-i18n="dset.ses_title">Sessions actives</span></div>
           <div class="sec-sub" data-i18n="dset.ses_sub">Là où votre compte est actuellement connecté.</div>
           <div id="sesList">
             <div class="row-line">
@@ -222,6 +298,22 @@
             </div>
           </div>
           <div class="mt-3"><button class="btn-cancel" onclick="revokeAll()" data-i18n="dset.ses_disconnect_all">Déconnecter toutes les autres sessions</button></div>
+        </div>
+
+        <!-- Mon compte & mes données (RGPD) -->
+        <div class="card-sec">
+          <h6><i class="fa fa-shield-halved"></i><span data-i18n="prof.rgpd.title">Mon compte & mes données</span></h6>
+          <div class="d-flex flex-wrap gap-3 align-items-center justify-content-between">
+            <div class="hint" style="max-width:520px;" data-i18n-html="prof.rgpd.note">Vous pouvez exporter une copie de vos données personnelles (format <strong>JSON</strong>, portabilité RGPD) à tout moment. Cet export <strong>n'efface pas</strong> votre compte.</div>
+            <button class="btn-edit" onclick="exportData()" data-i18n="prof.rgpd.export"><i class="fa fa-download me-1"></i>Exporter mes données</button>
+          </div>
+          <hr class="my-3" style="border-color:#eef2f4;">
+          <div class="d-flex flex-wrap gap-3 align-items-center justify-content-between">
+            <div class="hint" style="max-width:520px;" data-i18n-html="prof.rgpd.delete_note">Pour supprimer votre compte, écrivez à notre support. <span style="color:#b0b8bf;">(La suppression en libre-service sera disponible ultérieurement.)</span></div>
+            <a class="btn-edit text-decoration-none" href="mailto:support@fueni.com?subject=Suppression%20de%20mon%20compte%20FUENI"><i class="fa fa-envelope me-1"></i>support@fueni.com</a>
+          </div>
+          <hr class="my-3" style="border-color:#eef2f4;">
+          <div class="hint"><i class="fa fa-file-shield me-1" style="color:#155e75;"></i><a href="#" style="color:#155e75;text-decoration:none" data-i18n="prof.rgpd.privacy">Politique de confidentialité</a> · <a href="#" style="color:#155e75;text-decoration:none" data-i18n="prof.rgpd.terms">Conditions générales (CGU)</a></div>
         </div>
 
       </div>
@@ -277,6 +369,48 @@
     </div>
   </div>
 
+  <!-- OTP modal (code envoyé au nouveau contact) — porté du profil patient -->
+  <div class="ov" id="otpModal">
+    <div class="ov-card text-center">
+      <h5 data-i18n="prof.otp.title">Confirmez par code</h5>
+      <p class="text-muted small mb-1" id="otpDesc" data-i18n="prof.otp.desc">Un code à 6 chiffres a été envoyé pour confirmer cette modification.</p>
+      <p class="small mb-0" style="color:#94a3b8;" data-i18n="prof.otp.demo">Code de démonstration : 123456</p>
+      <div class="otp-row">
+        <input class="otp-input" inputmode="numeric" maxlength="1"><input class="otp-input" inputmode="numeric" maxlength="1"><input class="otp-input" inputmode="numeric" maxlength="1"><input class="otp-input" inputmode="numeric" maxlength="1"><input class="otp-input" inputmode="numeric" maxlength="1"><input class="otp-input" inputmode="numeric" maxlength="1">
+      </div>
+      <div class="text-danger small d-none mb-2" id="otpErr" data-i18n="prof.otp.err">Code incorrect. Réessayez.</div>
+      <p class="small mb-2" style="color:#7f8c8d;">
+        <span data-i18n="prof.otp.resend_q">Pas reçu ?</span>
+        <span id="otpResendLink" onclick="resendOtp()" style="font-weight:600;" data-i18n="prof.otp.resend">Renvoyer le code</span>
+        <span id="otpResendWrap" style="color:#94a3b8;">· <span data-i18n="prof.otp.resend_in">disponible dans</span> <strong id="otpResendTimer">01:00</strong></span>
+      </p>
+      <div class="d-flex gap-2 justify-content-center mt-2">
+        <button class="btn-save" onclick="confirmOtp()" data-i18n="prof.otp.confirm">Confirmer</button>
+        <button class="btn-cancel" onclick="closeOtp()" data-i18n="prof.btn.cancel">Annuler</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step-up : ré-authentification (mot de passe actuel) avant un changement d'e-mail/téléphone -->
+  <div class="ov" id="reauthModal">
+    <div class="ov-card">
+      <h5 data-i18n="prof.reauth.title">Confirmez votre identité</h5>
+      <div class="reauth-target d-none" id="reauthTarget"><span class="rt-text"><span id="reauthTargetLabel"></span> <strong id="reauthTargetVal"></strong></span><button type="button" class="rt-edit" onclick="editFromReauth()" data-i18n="prof.reauth.edit">Modifier</button></div>
+      <p class="text-muted small mb-1" data-i18n="prof.reauth.desc">Pour des raisons de sécurité, confirmez votre identité avec votre mot de passe actuel.</p>
+      <p class="small mb-0" style="color:#94a3b8;" data-i18n="prof.reauth.demo">Mot de passe de démo : MotDePasse123!</p>
+      <div class="pwd-wrap mt-2">
+        <input type="password" class="form-control" id="reauthPwd" autocomplete="current-password" placeholder="Mot de passe actuel">
+        <button type="button" class="pwd-eye" onclick="toggleEye('reauthPwd', this)" aria-label="Afficher le mot de passe"><i class="fa fa-eye"></i></button>
+      </div>
+      <div class="field-hint text-danger mt-1 d-none" id="reauthErr"><i class="fa fa-circle-exclamation me-1"></i><span data-i18n="prof.reauth.err">Mot de passe incorrect.</span></div>
+      <div class="field-hint text-danger mt-1 d-none pwd-throttle" id="reauthThrottle"><i class="fa fa-lock me-1"></i><span data-i18n-html="prof.pwd.locked_html">Trop de tentatives. Réessayez dans quelques minutes ou <a href="11-password-reset.html" style="color:#155e75;font-weight:600;text-decoration:none">réinitialisez votre mot de passe</a>.</span></div>
+      <div class="d-flex gap-2 justify-content-end mt-3">
+        <button class="btn-cancel" onclick="closeReauth()" data-i18n="prof.btn.cancel">Annuler</button>
+        <button class="btn-save" onclick="confirmReauth()" data-i18n="prof.reauth.confirm">Continuer</button>
+      </div>
+    </div>
+  </div>
+
   <div class="toast-ok" id="toast" data-i18n="dset.toast">Modifications enregistrées ✓</div>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
@@ -289,17 +423,170 @@
       document.querySelectorAll('.tab-pane').forEach(p => p.classList.toggle('active', p.id === 'tab-' + id));
     }
 
-    /* ---- Password ---- */
+    const MOCK_CURRENT_PWD = 'MotDePasse123!';
+    const profT = (k, fb) => (window.NazI18n ? NazI18n.t(k) : '') || fb;
+
+    /* ---- Identifiant / contact (e-mail, téléphone) ---- */
+    // Procédure alignée sur le profil patient (SF §6.2) :
+    //   validation format (inline) → ré-auth mot de passe → OTP au NOUVEAU contact → contrôle d'unicité.
+    function idEdit(f) {
+      const row = document.getElementById('idrow-' + f);
+      document.getElementById(f + 'Input').value = document.getElementById(f + 'Val').textContent.trim();
+      row.querySelector('.id-view').classList.add('d-none');
+      row.querySelector('.id-edit').classList.remove('d-none');
+      document.getElementById(f + 'Err').classList.add('d-none');
+      document.getElementById(f + 'Help').classList.remove('d-none');
+      document.getElementById('coordSecNote').classList.remove('d-none');
+      document.getElementById(f + 'Input').focus();
+    }
+    function idCancel(f) {
+      const row = document.getElementById('idrow-' + f);
+      row.querySelector('.id-edit').classList.add('d-none');
+      row.querySelector('.id-view').classList.remove('d-none');
+      document.getElementById('coordSecNote').classList.add('d-none');
+    }
+    function isEmail(v) { return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v); }
+    function checkDocEmail(force) {
+      const inp = document.getElementById('emailInput'), err = document.getElementById('emailErr');
+      const v = inp.value.trim();
+      if (!v) { err.classList.add('d-none'); return false; }
+      if (!isEmail(v)) {
+        if (force) { err.querySelector('span').textContent = profT('prof.coord.email_err_format', 'Adresse e-mail invalide.'); err.classList.remove('d-none'); }
+        return false;
+      }
+      err.classList.add('d-none'); return true;
+    }
+    // Unicité vérifiée APRÈS l'OTP (anti-énumération, cf. SF §6.2 / P17). Démo :
+    const TAKEN_EMAILS = ['admin@nazounki.com', 'test@example.com'];
+    const TAKEN_PHONES = ['771234567'];
+    function saveEmailDoc() {
+      const inp = document.getElementById('emailInput');
+      if (!checkDocEmail(true)) { inp.focus(); return; }
+      if (inp.value.trim().toLowerCase() === document.getElementById('emailVal').textContent.trim().toLowerCase()) { idCancel('email'); return; }
+      pendingApply = () => {
+        if (TAKEN_EMAILS.includes(inp.value.trim().toLowerCase())) {
+          document.getElementById('emailHelp').classList.add('d-none');
+          const err = document.getElementById('emailErr'); err.querySelector('span').textContent = profT('prof.coord.email_err_taken', 'Code vérifié, mais cette adresse est déjà associée à un compte FUENI.'); err.classList.remove('d-none'); inp.focus(); return;
+        }
+        document.getElementById('emailVal').textContent = inp.value.trim();
+        idCancel('email'); toast('prof.coord.changed_email_alert');
+      };
+      openReauth(() => openOtp('prof.otp.desc_new_email'), { label: profT('prof.reauth.new_email', 'Nouvel e-mail :'), value: inp.value.trim(), field: 'email' });
+    }
+    function savePhoneDoc() {
+      const inp = document.getElementById('phoneInput'), err = document.getElementById('phoneErr');
+      const digits = inp.value.replace(/\D/g, '');
+      document.getElementById('phoneHelp').classList.remove('d-none'); err.classList.add('d-none');
+      if (!digits || digits.length < 8) { err.querySelector('span').textContent = profT('signup.field.phone_hint', 'Numéro invalide.'); err.classList.remove('d-none'); inp.focus(); return; }
+      if (digits === document.getElementById('phoneVal').textContent.replace(/\D/g, '')) { idCancel('phone'); return; }
+      pendingApply = () => {
+        if (TAKEN_PHONES.includes(digits.slice(-9))) {
+          document.getElementById('phoneHelp').classList.add('d-none');
+          err.querySelector('span').textContent = profT('prof.coord.phone_err_taken', 'Code vérifié, mais ce numéro est déjà associé à un compte FUENI.'); err.classList.remove('d-none'); inp.focus(); return;
+        }
+        document.getElementById('phoneVal').textContent = inp.value.trim();
+        idCancel('phone'); toast('prof.coord.changed_phone_alert');
+      };
+      openReauth(() => openOtp('prof.otp.desc_new_phone'), { label: profT('prof.reauth.new_phone', 'Nouveau numéro :'), value: inp.value.trim(), field: 'phone' });
+    }
+
+    /* ---- Step-up : ré-authentification par mot de passe ---- */
+    let pendingApply = null, afterReauth = null, reauthField = null;
+    function openReauth(next, target) {
+      afterReauth = next; reauthField = (target && target.field) || null;
+      const wrap = document.getElementById('reauthTarget');
+      if (target && target.value) { document.getElementById('reauthTargetLabel').textContent = target.label; document.getElementById('reauthTargetVal').textContent = target.value; wrap.classList.remove('d-none'); }
+      else wrap.classList.add('d-none');
+      const p = document.getElementById('reauthPwd'); p.value = ''; p.type = 'password';
+      document.getElementById('reauthErr').classList.add('d-none');
+      document.getElementById('reauthThrottle').classList.toggle('d-none', !pwdLocked);
+      document.querySelectorAll('#reauthModal .pwd-eye i').forEach(i => i.className = 'fa fa-eye');
+      document.getElementById('reauthModal').classList.add('show');
+      setTimeout(() => p.focus(), 50);
+    }
+    function closeReauth() { document.getElementById('reauthModal').classList.remove('show'); document.getElementById('reauthTarget').classList.add('d-none'); afterReauth = null; pendingApply = null; }
+    function editFromReauth() { const f = reauthField; closeReauth(); const inp = document.getElementById((f === 'phone' ? 'phone' : 'email') + 'Input'); if (inp) inp.focus(); }
+    function confirmReauth() {
+      if (pwdLocked) { document.getElementById('reauthThrottle').classList.remove('d-none'); return; }
+      if (document.getElementById('reauthPwd').value !== MOCK_CURRENT_PWD) {
+        if (pwdRegisterFail('reauthThrottle')) document.getElementById('reauthErr').classList.add('d-none');
+        else document.getElementById('reauthErr').classList.remove('d-none');
+        return;
+      }
+      pwdClearThrottle();
+      document.getElementById('reauthModal').classList.remove('show');
+      const next = afterReauth; afterReauth = null; if (next) next();
+    }
+
+    /* ---- OTP (code envoyé au nouveau contact) ---- */
+    function openOtp(descKey) {
+      const d = document.getElementById('otpDesc'); if (window.NazI18n && descKey) d.textContent = NazI18n.t(descKey);
+      document.getElementById('otpErr').classList.add('d-none');
+      document.querySelectorAll('#otpModal .otp-input').forEach(i => i.value = '');
+      document.getElementById('otpModal').classList.add('show');
+      startOtpResendTimer();
+      const f = document.querySelector('#otpModal .otp-input'); if (f) f.focus();
+    }
+    function closeOtp() { document.getElementById('otpModal').classList.remove('show'); clearInterval(otpResendTimer); pendingApply = null; }
+    function confirmOtp() {
+      const code = Array.from(document.querySelectorAll('#otpModal .otp-input')).map(i => i.value).join('');
+      if (code === '123456') { document.getElementById('otpModal').classList.remove('show'); if (pendingApply) { const a = pendingApply; pendingApply = null; a(); } }
+      else document.getElementById('otpErr').classList.remove('d-none');
+    }
+    let otpResendSeconds = 60, otpResendTimer = null;
+    function setOtpResendEnabled(on) { const link = document.getElementById('otpResendLink'), wrap = document.getElementById('otpResendWrap'); if (!link) return; link.style.pointerEvents = on ? 'auto' : 'none'; link.style.cursor = on ? 'pointer' : 'default'; link.style.color = on ? '#155e75' : '#b0b8bf'; if (wrap) wrap.style.display = on ? 'none' : ''; }
+    function startOtpResendTimer() { clearInterval(otpResendTimer); otpResendSeconds = 60; setOtpResendEnabled(false); const t = document.getElementById('otpResendTimer'); const tick = () => { const mm = String(Math.floor(otpResendSeconds / 60)).padStart(2, '0'), ss = String(otpResendSeconds % 60).padStart(2, '0'); if (t) t.textContent = mm + ':' + ss; if (otpResendSeconds <= 0) { clearInterval(otpResendTimer); setOtpResendEnabled(true); return; } otpResendSeconds--; }; tick(); otpResendTimer = setInterval(tick, 1000); }
+    function resendOtp() { const link = document.getElementById('otpResendLink'); if (!link || link.style.pointerEvents === 'none') return; document.querySelectorAll('#otpModal .otp-input').forEach(i => i.value = ''); document.getElementById('otpErr').classList.add('d-none'); const f = document.querySelector('#otpModal .otp-input'); if (f) f.focus(); startOtpResendTimer(); }
+    document.querySelectorAll('#otpModal .otp-input').forEach((inp, i, arr) => {
+      inp.addEventListener('input', e => { e.target.value = e.target.value.replace(/\D/g, ''); if (e.target.value && i < arr.length - 1) arr[i + 1].focus(); });
+      inp.addEventListener('keydown', e => { if (e.key === 'Backspace' && !e.target.value && i > 0) arr[i - 1].focus(); });
+    });
+
+    /* ---- Throttle mot de passe (ré-auth) ---- */
+    const MAX_PWD_ATTEMPTS = 5;
+    let pwdFails = 0, pwdLocked = false, pwdUnlockTimer = null;
+    function pwdRegisterFail(throttleId) { pwdFails++; if (pwdFails >= MAX_PWD_ATTEMPTS) { pwdLocked = true; const t = document.getElementById(throttleId); if (t) t.classList.remove('d-none'); clearTimeout(pwdUnlockTimer); pwdUnlockTimer = setTimeout(pwdClearThrottle, 30000); return true; } return false; }
+    function pwdClearThrottle() { pwdFails = 0; pwdLocked = false; clearTimeout(pwdUnlockTimer); document.querySelectorAll('.pwd-throttle').forEach(e => e.classList.add('d-none')); }
+
+    function verifyPhone() {
+      const chip = document.getElementById('phoneChip');
+      if (chip) { chip.className = 'chip-ok'; chip.innerHTML = '<i class="fa fa-circle-check me-1"></i>' + T('dset.verified'); }
+      const link = document.getElementById('phoneVerifyLink'); if (link) link.style.display = 'none';
+      const banner = document.getElementById('phoneBanner'); if (banner) banner.style.display = 'none';
+      toast();
+    }
+
+    /* ---- Export données (RGPD) ---- */
+    function exportData() {
+      const data = {
+        type: 'doctor',
+        email: (document.getElementById('emailVal') || {}).textContent && document.getElementById('emailVal').textContent.trim(),
+        phone: (document.getElementById('phoneVal') || {}).textContent && document.getElementById('phoneVal').textContent.trim(),
+        exportedFrom: 'FUENI'
+      };
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob); a.download = 'fueni-mes-donnees.json';
+      document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(a.href);
+      toast();
+    }
+
+    /* ---- Password (vérification par mot de passe actuel + throttle) ---- */
     function openPwd() {
       document.getElementById('pwdEdit').classList.remove('d-none');
       document.getElementById('pwdEditBtn').classList.add('d-none');
+      document.getElementById('pwdView').classList.add('d-none');
+      document.getElementById('pwdThrottle').classList.toggle('d-none', !pwdLocked);
     }
     function closePwd() {
       document.getElementById('pwdEdit').classList.add('d-none');
       document.getElementById('pwdEditBtn').classList.remove('d-none');
+      document.getElementById('pwdView').classList.remove('d-none');
       document.getElementById('pwdCurrent').value = '';
       document.getElementById('pwdNew').value = '';
-      clearPwdErr(); checkPwd();
+      document.getElementById('pwdCurrentErr').classList.add('d-none');
+      document.getElementById('pwdNewErr').classList.add('d-none');
+      checkPwd();
     }
     function toggleEye(id, btn) {
       const inp = document.getElementById(id);
@@ -307,23 +594,28 @@
       btn.querySelector('i').className = inp.type === 'password' ? 'fa fa-eye' : 'fa fa-eye-slash';
     }
     function clearPwdErr() { document.getElementById('pwdCurrentErr').classList.add('d-none'); }
-    const pwdRules = v => ({ len: v.length >= 8, upper: /[A-Z]/.test(v), lower: /[a-z]/.test(v), num: /[0-9]/.test(v), spe: /[^A-Za-z0-9]/.test(v) });
+    const pwdRules = v => ({ 'pr-len': v.length >= 8, 'pr-upper': /[A-Z]/.test(v), 'pr-lower': /[a-z]/.test(v), 'pr-num': /\d/.test(v), 'pr-spe': /[^A-Za-z0-9\s]/.test(v) });
     function checkPwd() {
       const v = document.getElementById('pwdNew').value;
-      const r = pwdRules(v);
-      const map = { len: 'pr-len', upper: 'pr-upper', lower: 'pr-lower', num: 'pr-num', spe: 'pr-spe' };
-      let n = 0;
-      Object.keys(r).forEach(k => { const ok = r[k]; if (ok) n++; document.getElementById(map[k]).classList.toggle('ok', ok); });
+      const r = pwdRules(v); let n = 0;
+      for (const id in r) { document.getElementById(id).classList.toggle('ok', r[id]); if (r[id]) n++; }
       const bar = document.getElementById('pwdBar');
-      bar.style.width = (n / 5 * 100) + '%';
-      bar.style.background = n <= 2 ? '#ef4444' : (n <= 4 ? '#f59e0b' : '#16a34a');
+      bar.style.width = (n * 20) + '%';
+      bar.style.background = n < 3 ? '#ef4444' : n < 5 ? '#f59e0b' : '#16a34a';
+      if (v) document.getElementById('pwdNewErr').classList.add('d-none');
       return n === 5;
     }
     function savePwd() {
-      const cur = document.getElementById('pwdCurrent').value;
-      if (cur !== 'MotDePasse123!') { document.getElementById('pwdCurrentErr').classList.remove('d-none'); return; }
-      if (!checkPwd()) return;
-      closePwd(); toast();
+      const cur = document.getElementById('pwdCurrent').value, neu = document.getElementById('pwdNew').value;
+      const curErr = document.getElementById('pwdCurrentErr'), newErr = document.getElementById('pwdNewErr');
+      if (pwdLocked) { document.getElementById('pwdThrottle').classList.remove('d-none'); return; }
+      let ok = true;
+      if (!cur || cur !== MOCK_CURRENT_PWD) { if (pwdRegisterFail('pwdThrottle')) curErr.classList.add('d-none'); else { curErr.classList.remove('d-none'); document.getElementById('pwdCurrent').focus(); } ok = false; }
+      else curErr.classList.add('d-none');
+      if (!Object.values(pwdRules(neu)).every(Boolean)) { newErr.classList.remove('d-none'); if (ok) document.getElementById('pwdNew').focus(); ok = false; }
+      else newErr.classList.add('d-none');
+      if (!ok) return;
+      pwdClearThrottle(); closePwd(); toast('prof.pwd.toast');
     }
 
     /* ---- Devices / sessions ---- */
@@ -345,10 +637,11 @@
 
     /* ---- Toast ---- */
     let toastTimer = null;
-    function toast() {
+    function toast(key) {
       const t = document.getElementById('toast');
+      if (window.NazI18n) t.textContent = NazI18n.t(key || 'dset.toast');
       t.classList.add('show'); clearTimeout(toastTimer);
-      toastTimer = setTimeout(() => t.classList.remove('show'), 2000);
+      toastTimer = setTimeout(() => t.classList.remove('show'), 2200);
     }
 
     document.addEventListener('fueni:langchange', syncLangRadios);
