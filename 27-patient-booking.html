@@ -162,13 +162,13 @@
       </div>
 
       <div class="price-line">
-        <span class="pl-k" data-i18n="book.prepay">Prépaiement de la consultation</span>
+        <span class="pl-k" data-i18n="book.prepay">Tarif de la consultation</span>
         <span class="pl-v" id="priceVal">—</span>
       </div>
 
       <div class="pay-note" data-i18n-html="book.pay_gate_html">
-        <i class="fa fa-triangle-exclamation"></i>
-        <span><strong>Prépaiement en ligne à venir.</strong> Le paiement sécurisé (Flutterwave — carte / Mobile&nbsp;Money) sera activé après validation. En démonstration, le rendez-vous est confirmé sans paiement réel.</span>
+        <i class="fa fa-circle-info"></i>
+        <span><strong>Aucun paiement en ligne au MVP.</strong> Le tarif est affiché à titre indicatif et se règle directement auprès du médecin. Le prépaiement en ligne (Flutterwave — carte / Mobile&nbsp;Money) est prévu ultérieurement.</span>
       </div>
 
       <div class="foot">
@@ -185,7 +185,7 @@
         <p class="text-muted" data-i18n="book.done_sub">Votre rendez-vous est confirmé automatiquement. Un rappel vous sera envoyé.</p>
         <div class="recap" id="recap"></div>
         <div class="d-flex gap-2 justify-content-center flex-wrap">
-          <a href="05-patient-dashboard.html" class="btn-teal text-decoration-none" data-i18n="book.done_myrdv">Voir mes rendez-vous</a>
+          <a href="08-patient-mes-rdv.html" class="btn-teal text-decoration-none" data-i18n="book.done_myrdv">Voir mes rendez-vous</a>
           <a href="01-home.html" class="btn-ghost text-decoration-none" data-i18n="book.done_home">Retour à l'annuaire</a>
         </div>
       </div>
@@ -251,7 +251,6 @@
       return grp.length > 1 ? b + ' (' + (grp.indexOf(L) + 1) + ')' : b;
     }
     function locAddr(L) {
-      if (L.type === 'teleconsult') return T('book.online');
       return [L.street, L.city, L.region, L.country].filter(Boolean).join(', ');
     }
 
@@ -261,9 +260,8 @@
       document.getElementById('dcName').textContent = fullName;
       document.getElementById('dcSpec').textContent = P.spec;
       const L = P.locations[locIdx];
-      const isTele = L.type === 'teleconsult';
       document.getElementById('dcLoc').innerHTML =
-        '<i class="fa ' + (isTele ? 'fa-video' : 'fa-location-dot') + ' me-1"></i>' + esc(locName(L));
+        '<i class="fa fa-location-dot me-1"></i>' + esc(locName(L));
       const av = document.getElementById('dcAvatar');
       if (P.photo) av.innerHTML = '<img src="' + P.photo + '" alt="">';
       else av.textContent = (P.name || 'D').split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
@@ -277,8 +275,7 @@
         chips.style.display = '';
         chips.innerHTML = bookableIdx.map(i => {
           const L = P.locations[i];
-          const icon = L.type === 'teleconsult' ? 'fa-video' : 'fa-location-dot';
-          return '<button class="loc-chip' + (i === locIdx ? ' active' : '') + '" onclick="setLoc(' + i + ')"><i class="fa ' + icon + ' me-1"></i>' + esc(locName(L)) + '</button>';
+          return '<button class="loc-chip' + (i === locIdx ? ' active' : '') + '" onclick="setLoc(' + i + ')"><i class="fa fa-location-dot me-1"></i>' + esc(locName(L)) + '</button>';
         }).join('');
       }
       const L = P.locations[locIdx];
@@ -376,7 +373,7 @@
       const m = L.motifs[motifIdx];
       const rows = [
         [T('book.sum_doctor'), (P.title ? P.title + ' ' : '') + P.name + ' — ' + P.spec],
-        [T('book.sum_loc'), locName(L) + (L.type === 'teleconsult' ? '' : (locAddr(L) ? ' · ' + locAddr(L) : ''))],
+        [T('book.sum_loc'), locName(L) + (locAddr(L) ? ' · ' + locAddr(L) : '')],
         [T('book.sum_motif'), esc(m.label) + ' (' + m.dur + ' ' + T('book.min') + ')'],
         [T('book.sum_when'), fmtDate(selDate) + ' · ' + selTime],
         [T('book.sum_patient'), patientName()]
@@ -388,16 +385,30 @@
     }
 
     /* ---------- Confirm ---------- */
+    function isAuthed() { try { return sessionStorage.getItem('fueni_auth') === '1' || !!sessionStorage.getItem('fueni_user'); } catch (e) { return false; } }
     function confirmBooking() {
+      // Parcours Doctolib : consultation + créneau publics ; connexion requise uniquement pour confirmer.
+      if (!isAuthed()) {
+        try {
+          sessionStorage.setItem('fueni_pending_booking', JSON.stringify({
+            loc: locIdx, motif: motifIdx,
+            dateISO: selDate.getFullYear() + '-' + pad(selDate.getMonth() + 1) + '-' + pad(selDate.getDate()),
+            time: selTime, reason: (document.getElementById('reason').value || '').trim()
+          }));
+        } catch (e) {}
+        const ret = encodeURIComponent(location.pathname.split('/').pop() + location.search);
+        window.location.href = '10-login.html?return=' + ret;
+        return;
+      }
       const L = P.locations[locIdx], m = L.motifs[motifIdx];
       const appt = {
         id: 'apt_' + selDate.getFullYear() + pad(selDate.getMonth() + 1) + pad(selDate.getDate()) + '_' + selTime.replace(':', ''),
         doctor: (P.title ? P.title + ' ' : '') + P.name, spec: P.spec,
-        locationName: locName(L), locationAddr: locAddr(L), teleconsult: L.type === 'teleconsult',
+        locationName: locName(L), locationAddr: locAddr(L), teleconsult: false,
         motif: m.label, duration: m.dur, price: m.price, currency: P.currency || 'XOF',
         dateISO: selDate.getFullYear() + '-' + pad(selDate.getMonth() + 1) + '-' + pad(selDate.getDate()),
         time: selTime, reason: (document.getElementById('reason').value || '').trim(),
-        status: 'CONFIRMED', payment: 'PENDING_PAYMENT'
+        status: 'CONFIRMED', payment: 'NONE'
       };
       try {
         const arr = JSON.parse(localStorage.getItem(APPT_KEY) || '[]');
@@ -410,7 +421,7 @@
     function renderRecap(a) {
       const rows = [
         [T('book.sum_doctor'), a.doctor + ' — ' + a.spec],
-        [T('book.sum_loc'), a.locationName + (a.teleconsult ? '' : (a.locationAddr ? ' · ' + a.locationAddr : ''))],
+        [T('book.sum_loc'), a.locationName + (a.locationAddr ? ' · ' + a.locationAddr : '')],
         [T('book.sum_motif'), a.motif],
         [T('book.sum_when'), fmtDate(selDate) + ' · ' + a.time],
         [T('book.prepay'), fmt(a.price) + ' ' + a.currency]
@@ -447,11 +458,30 @@
     }
 
     /* ---------- Init ---------- */
+    // Reprise après connexion : le visiteur revient de la page login avec sa sélection intacte → étape 3.
+    function resumePending() {
+      if (!isAuthed()) return;
+      let pend = null;
+      try { pend = JSON.parse(sessionStorage.getItem('fueni_pending_booking') || 'null'); } catch (e) {}
+      if (!pend) return;
+      try { sessionStorage.removeItem('fueni_pending_booking'); } catch (e) {}
+      if (P.locations[pend.loc] && P.locations[pend.loc].bookable !== false) locIdx = pend.loc;
+      motifIdx = (typeof pend.motif === 'number') ? pend.motif : -1;
+      if (motifIdx < 0 || !pend.dateISO || !pend.time) return;
+      const parts = pend.dateISO.split('-').map(Number);
+      selDate = new Date(parts[0], parts[1] - 1, parts[2]);
+      selTime = pend.time;
+      renderDocCard(); renderStep1(); renderStep2(); renderStep3();
+      if (pend.reason) document.getElementById('reason').value = pend.reason;
+      showStep(3);
+      return true;
+    }
     function initBooking() {
       // Back link returns to the doctor's public preview
       document.getElementById('backLink').href = '19b-doctor-public-preview.html';
       renderDocCard();
       renderStep1();
+      if (resumePending()) return;
       showStep(1);
     }
     document.addEventListener('fueni:langchange', () => {

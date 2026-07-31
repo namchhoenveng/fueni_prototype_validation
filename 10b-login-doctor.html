@@ -218,6 +218,7 @@
             Pas reçu ? <span id="mfaResendLink" class="mfa-resend disabled">Renvoyer le code</span>
             <span id="mfaResendWrap">· disponible dans <strong id="mfaResendTimer">01:00</strong></span>
           </p>
+          <p class="text-center mt-2 mb-0" style="font-size:0.84rem;"><span id="mfaSwitch" class="mfa-resend" style="display:none;" onclick="switchMfaMethod()"></span></p>
           <div class="text-center mt-3">
             <button type="button" class="btn btn-link btn-sm text-muted" onclick="backToStep1()"><i class="fa fa-arrow-left me-1"></i><span data-i18n="doclogin.mfa.back">Retour</span></button>
           </div>
@@ -367,9 +368,9 @@
         errMsg.textContent = t('login.err.invalid') || 'Identifiant ou mot de passe incorrect.';
         errBox.classList.remove('d-none'); return false;
       }
-      // Mot de passe validé → MFA. L'OTP est TOUJOURS envoyé par e-mail (canal vérifié à
-      // l'inscription), que la connexion se fasse par e-mail ou par téléphone : le téléphone n'est
-      // qu'un identifiant, pas un canal de second facteur (décision — e-mail unique pour l'OTP).
+      // Mot de passe validé → MFA. Le code (OTP) est envoyé au **canal préféré** du médecin,
+      // configuré dans « Connexion & sécurité » (2FA) : e-mail par défaut, SMS s'il l'a activé.
+      // L'e-mail reste toujours disponible en secours (« Recevoir le code autrement »).
       goToMfa(true);
       return false;
     }
@@ -378,14 +379,23 @@
     const DEMO_MFA = '000000';
     const MAX_MFA_TRIES = 5;
     const DEMO_PHONE_MASKED = '•• •• •• 00 00';
-    let mfaMethod = 'email', mfaTries = 0, mfaLocked = false, mfaCodeSent = true;
+    let mfaMethod = 'email', mfaPref = 'email', mfaSmsEnabled = false, mfaTries = 0, mfaLocked = false, mfaCodeSent = true;
+
+    // Reprend la config 2FA du médecin (persistée par l'écran Paramètres → 2FA).
+    function loadMfaConfig() {
+      try {
+        mfaSmsEnabled = localStorage.getItem('naz_doctor_mfa_sms') === '1';
+        const p = localStorage.getItem('naz_doctor_mfa_pref');
+        mfaPref = (p === 'sms' && mfaSmsEnabled) ? 'sms' : 'email';
+      } catch (e) { mfaSmsEnabled = false; mfaPref = 'email'; }
+    }
 
     function goToMfa(codeSent) {
-      mfaCodeSent = codeSent !== false; // téléphone non vérifié → on avance mais aucun code n'est envoyé
+      mfaCodeSent = codeSent !== false;
+      loadMfaConfig();
       document.getElementById('step1').style.display = 'none';
       document.getElementById('step2').style.display = '';
-      // Le facteur MFA hérite de l'identifiant utilisé : téléphone → SMS, e-mail → e-mail
-      mfaTries = 0; mfaLocked = false; setMfaMethod('email'); clearOtp(); startMfaResendTimer();
+      mfaTries = 0; mfaLocked = false; setMfaMethod(mfaPref); clearOtp(); startMfaResendTimer();
       document.getElementById('mfaError').classList.remove('show');
       setTimeout(() => document.querySelector('#otpRow input').focus(), 100);
     }
@@ -394,17 +404,34 @@
       document.getElementById('step1').style.display = '';
       clearOtp(); document.getElementById('mfaError').classList.remove('show');
     }
-    // OTP toujours par e-mail — le téléphone n'est qu'un identifiant, jamais un canal de second facteur.
     function maskEmail(e) { const p = String(e).split('@'); if (p.length < 2) return e; const u = p[0]; return (u.length <= 2 ? u : u.slice(0, 2) + '•••') + '@' + p[1]; }
     function setMfaMethod(m) {
-      mfaMethod = 'email';
-      const t = k => (window.NazI18n ? NazI18n.t(k) : '');
-      const lead = t('doclogin.mfa.sub_email') || 'Saisissez le code à 6 chiffres envoyé par e-mail à';
-      const idv = document.getElementById('identField').value.trim();
-      const email = idv.includes('@') ? idv : (DEMO_LOGIN.ids.find(x => x.includes('@')) || idv);
-      document.getElementById('mfaSub').innerHTML = lead + ' <strong style="color:#0f172a;">' + maskEmail(email) + '</strong>.';
+      mfaMethod = (m === 'sms' && mfaSmsEnabled) ? 'sms' : 'email';
+      const tk = k => (window.NazI18n ? NazI18n.t(k) : '');
+      if (mfaMethod === 'sms') {
+        const lead = tk('doclogin.mfa.sub_sms') || 'Saisissez le code à 6 chiffres envoyé par SMS au';
+        document.getElementById('mfaSub').innerHTML = lead + ' <strong style="color:#0f172a;">' + DEMO_PHONE_MASKED + '</strong>.';
+      } else {
+        const lead = tk('doclogin.mfa.sub_email') || 'Saisissez le code à 6 chiffres envoyé par e-mail à';
+        const idv = document.getElementById('identField').value.trim();
+        const email = idv.includes('@') ? idv : (DEMO_LOGIN.ids.find(x => x.includes('@')) || idv);
+        document.getElementById('mfaSub').innerHTML = lead + ' <strong style="color:#0f172a;">' + maskEmail(email) + '</strong>.';
+      }
+      updateMfaSwitch();
       document.getElementById('mfaError').classList.remove('show');
       clearOtp();
+    }
+    // « Recevoir le code autrement » : bascule e-mail ⇄ SMS (e-mail = secours toujours dispo).
+    function updateMfaSwitch() {
+      const el = document.getElementById('mfaSwitch'); if (!el) return;
+      const tk = k => (window.NazI18n ? NazI18n.t(k) : '');
+      if (mfaMethod === 'sms') { el.textContent = tk('doclogin.mfa.switch_email') || 'Recevoir le code par e-mail'; el.style.display = ''; }
+      else if (mfaSmsEnabled) { el.textContent = tk('doclogin.mfa.switch_sms') || 'Recevoir le code par SMS'; el.style.display = ''; }
+      else { el.style.display = 'none'; }
+    }
+    function switchMfaMethod() {
+      setMfaMethod(mfaMethod === 'sms' ? 'email' : 'sms');
+      startMfaResendTimer();
     }
     function clearOtp() {
       document.querySelectorAll('#otpRow input').forEach(i => { i.value = ''; i.disabled = false; });

@@ -386,14 +386,14 @@
           moderne et sécurisée. Pensée pour vous garantir une tranquillité d'esprit, vous assister et
           vous servir là où vous voulez, quand vous en avez besoin.
         </p>
-        <form class="hero-search" onsubmit="event.preventDefault();">
+        <form class="hero-search" onsubmit="event.preventDefault();var q=(document.getElementById('heroQ').value||'').trim(),c=(document.getElementById('heroCity').value||'').trim(),p=[];if(q)p.push('q='+encodeURIComponent(q));if(c)p.push('city='+encodeURIComponent(c));window.location.href='28-patient-search.html'+(p.length?'?'+p.join('&'):'');return false;">
           <div class="field">
             <i class="fa fa-search"></i>
-            <input type="text" data-i18n-placeholder="home.hero.search_ph" placeholder="Nom, spécialité, établissement…" data-i18n-aria="home.hero.search_aria" aria-label="Rechercher">
+            <input id="heroQ" type="text" data-i18n-placeholder="home.hero.search_ph" placeholder="Nom, spécialité, établissement…" data-i18n-aria="home.hero.search_aria" aria-label="Rechercher">
           </div>
           <div class="field">
             <i class="fa fa-location-dot"></i>
-            <input type="text" data-i18n-placeholder="home.hero.location_ph" placeholder="Ville, pays…" data-i18n-aria="home.hero.location_aria" aria-label="Localisation">
+            <input id="heroCity" type="text" data-i18n-placeholder="home.hero.location_ph" placeholder="Ville, pays…" data-i18n-aria="home.hero.location_aria" aria-label="Localisation">
           </div>
           <button type="submit" class="btn-search">
             <i class="fa fa-search"></i>

@@ -42,6 +42,13 @@
     .mfa-body { flex: 1; }
     .mfa-title { font-weight: 700; }
     .mfa-sub { color: #64748b; font-size: 0.84rem; margin-top: 1px; }
+    .mfa-opt { display: flex; align-items: flex-start; gap: 12px; padding: 12px 0; border-bottom: 1px solid #f1f5f9; cursor: pointer; margin: 0; }
+    .mfa-opt:last-of-type { border-bottom: none; }
+    .mfa-opt > input[type=radio] { margin-top: 3px; width: 17px; height: 17px; accent-color: #155e75; cursor: pointer; }
+    .mfa-opt > input[type=radio]:disabled { cursor: not-allowed; opacity: .45; }
+    .mfa-opt-body { flex: 1; min-width: 0; }
+    .mfa-opt .btn-edit { align-self: center; white-space: nowrap; }
+    .mfa-opt .btn-edit:disabled { opacity: .5; cursor: not-allowed; }
     .sec-div { border: 0; border-top: 1px solid #e2e8f0; opacity: 1; margin: 20px 0; }
     .sub-h { font-weight: 700; font-size: 1rem; display: flex; align-items: center; gap: 9px; margin-bottom: 4px; }
     .sub-h i { color: #155e75; font-size: 0.95rem; }
@@ -61,6 +68,9 @@
     .rl-sub { color: #64748b; font-size: 0.82rem; margin-top: 2px; }
     .chip-ok { background: #dcfce7; color: #15803d; border-radius: 999px; padding: 3px 11px; font-size: 0.76rem; font-weight: 700; }
     .chip-no { background: #fef3c7; color: #b45309; border-radius: 999px; padding: 3px 11px; font-size: 0.76rem; font-weight: 700; }
+    .chip-lock { background: #eef2f6; color: #64748b; border-radius: 999px; padding: 3px 11px; font-size: 0.76rem; font-weight: 700; white-space: nowrap; }
+    .chan-row { display: flex; align-items: center; gap: 12px; }
+    .chan-chip { display: inline-flex; align-items: center; gap: 5px; background: #eef2f6; color: #64748b; border-radius: 999px; padding: 3px 10px; font-size: 0.72rem; font-weight: 700; white-space: nowrap; }
     .btn-link-verify { border: 0; background: none; color: #155e75; font-weight: 600; font-size: 0.85rem; cursor: pointer; text-decoration: underline; }
     .btn-link-verify:hover { color: #0e7490; }
     .verify-banner { display: flex; align-items: center; gap: 12px; background: #fff8e1; border: 1px solid #ffd54f; border-radius: 10px; padding: 10px 14px; margin: 6px 0 4px; }
@@ -112,6 +122,7 @@
     .otp-input:focus { border-color: #155e75; outline: none; box-shadow: 0 0 0 0.2rem rgba(21,94,117,0.18); }
     .reauth-target { display: flex; align-items: center; justify-content: space-between; gap: 10px; background: #f1f5f9; border-radius: 8px; padding: 8px 12px; margin-bottom: 10px; font-size: 0.88rem; }
     .rt-edit { border: 0; background: none; color: #155e75; font-weight: 600; cursor: pointer; }
+    .stepup-note { display: flex; align-items: flex-start; gap: 6px; background: #ecfeff; border: 1px solid #a5f3fc; border-radius: 8px; padding: 9px 12px; font-size: 0.82rem; color: #155e75; margin-top: 8px; }
   </style>
 </head>
 <body data-i18n-pagetitle="dset.page_title" data-i18n-toggle>
@@ -161,7 +172,6 @@
         <!-- Login identifier -->
         <div class="card-sec">
           <h6><i class="fa fa-at"></i><span data-i18n="dset.login_title">Identifiant de connexion</span></h6>
-          <div class="sec-sub" data-i18n="dset.login_sub">Vous vous connectez avec votre adresse e-mail professionnelle.</div>
           <!-- E-mail (identifiant) -->
           <div class="id-row" id="idrow-email">
             <div class="id-label" data-i18n="dset.login_email_lbl">Adresse e-mail</div>
@@ -203,7 +213,7 @@
             <div class="vb-text" data-i18n="dset.phone_verify_reason">Vérifiez votre numéro pour recevoir vos rappels de rendez-vous par SMS.</div>
             <button class="vb-btn" onclick="verifyPhone()" data-i18n="dset.verify_now">Vérifier maintenant</button>
           </div>
-          <div class="hint mt-2 d-none" id="coordSecNote"><i class="fa fa-shield-halved me-1"></i><span data-i18n="prof.coord.secnote">Pour votre sécurité : la modification de l'e-mail ou du téléphone demande votre mot de passe actuel, envoie un code au nouveau contact, et notifie votre contact actuel.</span></div>
+          <div class="hint mt-2 d-none" id="coordSecNote"><i class="fa fa-shield-halved me-1"></i><span data-i18n="dset.coord_secnote">Pour votre sécurité : la modification de l'e-mail ou du téléphone demande une confirmation d'identité (redirection sécurisée), envoie un code au nouveau contact, et notifie votre contact actuel.</span></div>
         </div>
 
         <!-- Password -->
@@ -216,35 +226,33 @@
                 <div class="id-val-text">••••••••••••</div>
                 <div class="id-actions"><button class="btn-edit" id="pwdEditBtn" onclick="openPwd()" data-i18n="dset.change">Changer</button></div>
               </div>
-              <div id="pwdEdit" class="id-edit d-none" style="max-width:480px;">
-            <label class="form-label small fw-semibold mb-1" data-i18n="dset.pwd_current">Mot de passe actuel</label>
-            <div class="pwd-wrap mb-1">
-              <input type="password" class="form-control" id="pwdCurrent" autocomplete="current-password" oninput="clearPwdErr()">
-              <button type="button" class="pwd-eye" onclick="toggleEye('pwdCurrent', this)"><i class="fa fa-eye"></i></button>
-            </div>
-            <div class="field-hint text-danger small mb-2 d-none" id="pwdCurrentErr"><i class="fa fa-circle-exclamation me-1"></i><span data-i18n="prof.pwd.current_err">Mot de passe actuel incorrect.</span></div>
-            <div class="field-hint text-danger small mb-2 d-none pwd-throttle" id="pwdThrottle"><i class="fa fa-lock me-1"></i><span data-i18n-html="prof.pwd.locked_html">Trop de tentatives. Réessayez dans quelques minutes ou <a href="11-password-reset.html" style="color:#155e75;font-weight:600;text-decoration:none">réinitialisez votre mot de passe</a>.</span></div>
-
-            <label class="form-label small fw-semibold mb-1 mt-2" data-i18n="dset.pwd_new">Nouveau mot de passe</label>
-            <div class="pwd-wrap">
-              <input type="password" class="form-control" id="pwdNew" autocomplete="new-password" oninput="checkPwd()">
-              <button type="button" class="pwd-eye" onclick="toggleEye('pwdNew', this)"><i class="fa fa-eye"></i></button>
-            </div>
-            <div class="pwd-strength"><div class="pwd-strength-fill" id="pwdBar"></div></div>
-            <div class="pwd-rules-grid">
-              <div class="pwd-rule" id="pr-len"><i class="fa fa-circle-check"></i><span data-i18n="signup.field.pwd_r_len">Au moins 8 caractères</span></div>
-              <div class="pwd-rule" id="pr-upper"><i class="fa fa-circle-check"></i><span data-i18n="signup.field.pwd_r_upper">Une majuscule</span></div>
-              <div class="pwd-rule" id="pr-lower"><i class="fa fa-circle-check"></i><span data-i18n="signup.field.pwd_r_lower">Une minuscule</span></div>
-              <div class="pwd-rule" id="pr-num"><i class="fa fa-circle-check"></i><span data-i18n="signup.field.pwd_r_num">Un chiffre</span></div>
-              <div class="pwd-rule" id="pr-spe"><i class="fa fa-circle-check"></i><span data-i18n="signup.field.pwd_r_spe">Un caractère spécial</span></div>
-            </div>
-            <div class="field-hint text-danger small mt-2 d-none" id="pwdNewErr"><i class="fa fa-circle-exclamation me-1"></i><span data-i18n="prof.pwd.new_err">Le nouveau mot de passe ne respecte pas les critères.</span></div>
-            <div class="hint mt-2"><i class="fa fa-circle-info me-1"></i><span data-i18n="prof.pwd.help">Pour changer votre mot de passe, saisissez d’abord votre mot de passe actuel.</span></div>
-            <div class="d-flex gap-2 mt-3">
-              <button class="btn-save" onclick="savePwd()" data-i18n="dset.save">Enregistrer</button>
-              <button class="btn-cancel" onclick="closePwd()" data-i18n="dset.cancel">Annuler</button>
-            </div>
-            <div class="hint mt-2" data-i18n="prof.reauth.demo">Mot de passe de démo : MotDePasse123!</div>
+              <div id="pwdEdit" class="id-edit d-none" style="max-width:520px;">
+                <label class="form-label small fw-semibold mb-1" for="pwdCurrent" data-i18n="prof.pwd.current">Mot de passe actuel</label>
+                <div class="pwd-wrap mb-1">
+                  <input type="password" class="form-control" id="pwdCurrent" autocomplete="current-password" oninput="clearPwdErr()">
+                  <button type="button" class="pwd-eye" onclick="togglePwdField('pwdCurrent', this)" aria-label="Afficher le mot de passe"><i class="fa fa-eye"></i></button>
+                </div>
+                <div class="hint text-danger mb-2 d-none" id="pwdCurrentErr"><i class="fa fa-circle-exclamation me-1"></i><span data-i18n="prof.pwd.current_err">Mot de passe actuel incorrect.</span></div>
+                <div class="hint text-danger mb-2 d-none pwd-throttle" id="pwdThrottle"><i class="fa fa-lock me-1"></i><span data-i18n-html="prof.pwd.locked_html">Trop de tentatives. Réessayez dans quelques minutes ou <a href="11-password-reset.html" style="color:#155e75;font-weight:600;text-decoration:none">réinitialisez votre mot de passe</a>.</span></div>
+                <label class="form-label small fw-semibold mb-1 mt-2" for="pwdNew" data-i18n="prof.pwd.new">Nouveau mot de passe</label>
+                <div class="pwd-wrap">
+                  <input type="password" class="form-control" id="pwdNew" autocomplete="new-password" oninput="checkPwd()">
+                  <button type="button" class="pwd-eye" onclick="togglePwdField('pwdNew', this)" aria-label="Afficher le mot de passe"><i class="fa fa-eye"></i></button>
+                </div>
+                <div class="pwd-strength"><div class="pwd-strength-fill" id="pwdBar"></div></div>
+                <div class="pwd-rules-grid">
+                  <div class="pwd-rule" id="pr-len"><i class="fa fa-circle-check"></i><span data-i18n="signup.field.pwd_r_len">Au moins 8 caractères</span></div>
+                  <div class="pwd-rule" id="pr-upper"><i class="fa fa-circle-check"></i><span data-i18n="signup.field.pwd_r_upper">Une majuscule</span></div>
+                  <div class="pwd-rule" id="pr-lower"><i class="fa fa-circle-check"></i><span data-i18n="signup.field.pwd_r_lower">Une minuscule</span></div>
+                  <div class="pwd-rule" id="pr-num"><i class="fa fa-circle-check"></i><span data-i18n="signup.field.pwd_r_num">Un chiffre</span></div>
+                  <div class="pwd-rule" id="pr-spe"><i class="fa fa-circle-check"></i><span data-i18n="signup.field.pwd_r_spe">Un caractère spécial (ex : ! ? @ # $ % & * …)</span></div>
+                </div>
+                <div class="hint text-danger mt-2 d-none" id="pwdNewErr"><i class="fa fa-circle-exclamation me-1"></i><span data-i18n="prof.pwd.new_err">Le nouveau mot de passe ne respecte pas les critères.</span></div>
+                <div class="hint mt-2"><i class="fa fa-circle-info me-1"></i><span data-i18n="prof.pwd.help">Pour changer votre mot de passe, saisissez d'abord votre mot de passe actuel.</span></div>
+                <div class="d-flex gap-2 mt-3">
+                  <button class="btn-save" onclick="savePwd()" data-i18n="dset.save">Enregistrer</button>
+                  <button class="btn-cancel" onclick="closePwd()" data-i18n="dset.cancel">Annuler</button>
+                </div>
               </div>
             </div>
           </div>
@@ -254,14 +262,26 @@
         <div class="card-sec">
           <h6 style="margin-bottom:16px;"><i class="fa fa-shield-halved"></i><span data-i18n="dset.sec_title">Sécurité de connexion</span></h6>
 
-          <!-- 2FA (statut compact) -->
-          <div class="mfa-card">
-            <div class="mfa-body">
-              <div class="sub-h"><i class="fa fa-user-shield"></i><span data-i18n="dset.mfa_title">Authentification à deux facteurs (2FA)</span></div>
-              <div class="mfa-sub" data-i18n="dset.mfa_compact">Par e-mail · obligatoire · non désactivable.</div>
+          <!-- 2FA : e-mail par défaut (toujours actif) + SMS optionnel sur numéro vérifié -->
+          <div class="sub-h"><i class="fa fa-user-shield"></i><span data-i18n="dset.mfa_title">Authentification à deux facteurs (2FA)</span></div>
+          <div class="sec-sub" data-i18n="dset.mfa_sub2">Obligatoire — un code de vérification à chaque connexion. Choisissez votre méthode préférée ; l'e-mail reste toujours actif comme secours.</div>
+
+          <label class="mfa-opt">
+            <input type="radio" name="mfaPref" value="email" checked onchange="setMfaPref('email')">
+            <div class="mfa-opt-body">
+              <div class="rl-k"><i class="fa fa-envelope me-2" style="color:#155e75;"></i><span data-i18n="dset.mfa_email">Code par e-mail</span> <span class="chip-ok ms-1" data-i18n="dset.mfa_default">Par défaut</span></div>
+              <div class="rl-sub" data-i18n="dset.mfa_email_desc">Code envoyé à votre adresse vérifiée. Toujours actif (méthode de secours).</div>
             </div>
-            <span class="chip-ok"><i class="fa fa-circle-check me-1"></i><span data-i18n="dset.mfa_on">Activée</span></span>
-          </div>
+          </label>
+
+          <label class="mfa-opt" id="mfaSmsOpt">
+            <input type="radio" name="mfaPref" value="sms" id="mfaSmsRadio" disabled onchange="setMfaPref('sms')">
+            <div class="mfa-opt-body">
+              <div class="rl-k"><i class="fa fa-comment-sms me-2" style="color:#64748b;"></i><span data-i18n="dset.mfa_sms">Code par SMS</span> <span class="chip-no ms-1" id="mfaSmsChip" data-i18n="dset.mfa_off">Non activé</span></div>
+              <div class="rl-sub" id="mfaSmsSub" data-i18n="dset.mfa_sms_locked">Vérifiez votre numéro de téléphone pour activer la 2FA par SMS.</div>
+            </div>
+            <button class="btn-edit" id="mfaSmsBtn" onclick="toggleSms()" disabled data-i18n="dset.mfa_activate">Activer</button>
+          </label>
 
           <hr class="sec-div">
 
@@ -281,23 +301,7 @@
             </div>
           </div>
 
-          <hr class="sec-div">
-
-          <!-- Sessions actives -->
-          <div class="sub-h"><i class="fa fa-right-to-bracket"></i><span data-i18n="dset.ses_title">Sessions actives</span></div>
-          <div class="sec-sub" data-i18n="dset.ses_sub">Là où votre compte est actuellement connecté.</div>
-          <div id="sesList">
-            <div class="row-line">
-              <div><div class="rl-k">Windows · Chrome — Dakar <span class="chip-ok ms-1" data-i18n="dset.ses_current">Session actuelle</span></div>
-                <div class="rl-sub" data-i18n="dset.ses_now">Actif maintenant</div></div>
-            </div>
-            <div class="row-line">
-              <div><div class="rl-k">iPhone · Safari — Dakar</div>
-                <div class="rl-sub" data-i18n="dset.ses_ago">Il y a 2 heures</div></div>
-              <button class="btn-ghost-danger" onclick="revoke(this)" data-i18n="dset.ses_disconnect">Déconnecter</button>
-            </div>
-          </div>
-          <div class="mt-3"><button class="btn-cancel" onclick="revokeAll()" data-i18n="dset.ses_disconnect_all">Déconnecter toutes les autres sessions</button></div>
+          <!-- Sessions actives : reporté post-MVP (décision 2026-07-31) -->
         </div>
 
         <!-- Mon compte & mes données (RGPD) -->
@@ -322,7 +326,7 @@
       <div class="tab-pane" id="tab-lang">
         <div class="card-sec">
           <h6><i class="fa fa-language"></i><span data-i18n="dset.lang_title">Langue du compte</span></h6>
-          <div class="sec-sub" data-i18n="dset.lang_sub">Cette langue s'applique à l'interface <strong>et</strong> à vos notifications (e-mails, rappels).</div>
+          <div class="sec-sub" data-i18n="dset.lang_sub">Cette langue s'applique à l'interface et à vos notifications (e-mails, rappels).</div>
           <div class="row-line">
             <div>
               <div class="rl-k" data-i18n="dset.lang_fr">Français</div>
@@ -346,22 +350,43 @@
           <h6><i class="fa fa-bell"></i><span data-i18n="dset.notif_title">Notifications</span></h6>
           <div class="sec-sub" data-i18n="dset.notif_sub">Choisissez les événements pour lesquels vous souhaitez être notifié.</div>
 
+          <!-- Préférences (activables) -->
+          <div class="sub-h"><i class="fa fa-sliders"></i><span data-i18n="dset.notif_prefs">Préférences</span></div>
           <div class="row-line">
             <div><div class="rl-k" data-i18n="dset.notif_new_rdv">Nouveau rendez-vous</div><div class="rl-sub" data-i18n="dset.notif_new_rdv_sub">Quand un patient réserve un créneau.</div></div>
-            <label class="switch"><input type="checkbox" checked onchange="notifChanged()"><span class="sl"></span></label>
+            <div class="chan-row"><span class="chan-chip"><i class="fa fa-envelope"></i><span data-i18n="dset.chan_email">E-mail</span></span><label class="switch"><input type="checkbox" checked onchange="notifChanged()"><span class="sl"></span></label></div>
           </div>
           <div class="row-line">
             <div><div class="rl-k" data-i18n="dset.notif_cancel">Annulation de rendez-vous</div><div class="rl-sub" data-i18n="dset.notif_cancel_sub">Quand un patient annule.</div></div>
-            <label class="switch"><input type="checkbox" checked onchange="notifChanged()"><span class="sl"></span></label>
+            <div class="chan-row"><span class="chan-chip"><i class="fa fa-envelope"></i><span data-i18n="dset.chan_email">E-mail</span></span><label class="switch"><input type="checkbox" checked onchange="notifChanged()"><span class="sl"></span></label></div>
+          </div>
+          <div class="row-line">
+            <div><div class="rl-k" data-i18n="dset.notif_reschedule">Rendez-vous modifié / reporté</div><div class="rl-sub" data-i18n="dset.notif_reschedule_sub">Quand un rendez-vous change d'horaire.</div></div>
+            <div class="chan-row"><span class="chan-chip"><i class="fa fa-envelope"></i><span data-i18n="dset.chan_email">E-mail</span></span><label class="switch"><input type="checkbox" checked onchange="notifChanged()"><span class="sl"></span></label></div>
           </div>
           <div class="row-line">
             <div><div class="rl-k" data-i18n="dset.notif_reminder">Rappels du jour</div><div class="rl-sub" data-i18n="dset.notif_reminder_sub">Récapitulatif matinal de vos rendez-vous.</div></div>
-            <label class="switch"><input type="checkbox" onchange="notifChanged()"><span class="sl"></span></label>
+            <div class="chan-row"><span class="chan-chip"><i class="fa fa-envelope"></i><span data-i18n="dset.chan_email">E-mail</span></span><label class="switch"><input type="checkbox" onchange="notifChanged()"><span class="sl"></span></label></div>
           </div>
           <div class="row-line">
             <div><div class="rl-k" data-i18n="dset.notif_product">Actualités FUENI</div><div class="rl-sub" data-i18n="dset.notif_product_sub">Nouveautés et conseils (occasionnel).</div></div>
-            <label class="switch"><input type="checkbox" onchange="notifChanged()"><span class="sl"></span></label>
+            <div class="chan-row"><span class="chan-chip"><i class="fa fa-envelope"></i><span data-i18n="dset.chan_email">E-mail</span></span><label class="switch"><input type="checkbox" onchange="notifChanged()"><span class="sl"></span></label></div>
           </div>
+
+          <hr class="sec-div">
+
+          <!-- Toujours activées (transactionnelles, non désactivables) -->
+          <div class="sub-h"><i class="fa fa-shield-halved"></i><span data-i18n="dset.notif_always">Toujours activées</span></div>
+          <div class="sec-sub" data-i18n="dset.notif_always_sub">Notifications essentielles de sécurité et de compte — envoyées systématiquement.</div>
+          <div class="row-line">
+            <div><div class="rl-k" data-i18n="dset.notif_security">Sécurité du compte</div><div class="rl-sub" data-i18n="dset.notif_security_sub">Nouvelle connexion, changement de mot de passe / e-mail / téléphone.</div></div>
+            <span class="chip-lock"><i class="fa fa-lock me-1"></i><span data-i18n="dset.notif_lock">Toujours</span></span>
+          </div>
+          <div class="row-line">
+            <div><div class="rl-k" data-i18n="dset.notif_billing">Reçus & paiements</div><div class="rl-sub" data-i18n="dset.notif_billing_sub">Confirmations d'abonnement et de versement.</div></div>
+            <span class="chip-lock"><i class="fa fa-lock me-1"></i><span data-i18n="dset.notif_lock">Toujours</span></span>
+          </div>
+
           <div class="hint mt-3"><i class="fa fa-envelope me-1"></i><span data-i18n="dset.notif_channel">Ces notifications sont envoyées par e-mail à votre adresse vérifiée, dans la langue du compte.</span></div>
         </div>
       </div>
@@ -391,7 +416,7 @@
     </div>
   </div>
 
-  <!-- Step-up : ré-authentification (mot de passe actuel) avant un changement d'e-mail/téléphone -->
+  <!-- Step-up : ré-authentification par mot de passe actuel (flux MVP ; OAuth 2.1 / redirection OIDC = post-MVP) -->
   <div class="ov" id="reauthModal">
     <div class="ov-card">
       <h5 data-i18n="prof.reauth.title">Confirmez votre identité</h5>
@@ -400,10 +425,10 @@
       <p class="small mb-0" style="color:#94a3b8;" data-i18n="prof.reauth.demo">Mot de passe de démo : MotDePasse123!</p>
       <div class="pwd-wrap mt-2">
         <input type="password" class="form-control" id="reauthPwd" autocomplete="current-password" placeholder="Mot de passe actuel">
-        <button type="button" class="pwd-eye" onclick="toggleEye('reauthPwd', this)" aria-label="Afficher le mot de passe"><i class="fa fa-eye"></i></button>
+        <button type="button" class="pwd-eye" onclick="togglePwdField('reauthPwd', this)" aria-label="Afficher le mot de passe"><i class="fa fa-eye"></i></button>
       </div>
-      <div class="field-hint text-danger mt-1 d-none" id="reauthErr"><i class="fa fa-circle-exclamation me-1"></i><span data-i18n="prof.reauth.err">Mot de passe incorrect.</span></div>
-      <div class="field-hint text-danger mt-1 d-none pwd-throttle" id="reauthThrottle"><i class="fa fa-lock me-1"></i><span data-i18n-html="prof.pwd.locked_html">Trop de tentatives. Réessayez dans quelques minutes ou <a href="11-password-reset.html" style="color:#155e75;font-weight:600;text-decoration:none">réinitialisez votre mot de passe</a>.</span></div>
+      <div class="hint text-danger mt-1 d-none" id="reauthErr"><i class="fa fa-circle-exclamation me-1"></i><span data-i18n="prof.reauth.err">Mot de passe incorrect.</span></div>
+      <div class="hint text-danger mt-1 d-none pwd-throttle" id="reauthThrottle"><i class="fa fa-lock me-1"></i><span data-i18n-html="prof.pwd.locked_html">Trop de tentatives. Réessayez dans quelques minutes ou <a href="11-password-reset.html" style="color:#155e75;font-weight:600;text-decoration:none">réinitialisez votre mot de passe</a>.</span></div>
       <div class="d-flex gap-2 justify-content-end mt-3">
         <button class="btn-cancel" onclick="closeReauth()" data-i18n="prof.btn.cancel">Annuler</button>
         <button class="btn-save" onclick="confirmReauth()" data-i18n="prof.reauth.confirm">Continuer</button>
@@ -423,7 +448,6 @@
       document.querySelectorAll('.tab-pane').forEach(p => p.classList.toggle('active', p.id === 'tab-' + id));
     }
 
-    const MOCK_CURRENT_PWD = 'MotDePasse123!';
     const profT = (k, fb) => (window.NazI18n ? NazI18n.t(k) : '') || fb;
 
     /* ---- Identifiant / contact (e-mail, téléphone) ---- */
@@ -490,25 +514,47 @@
       openReauth(() => openOtp('prof.otp.desc_new_phone'), { label: profT('prof.reauth.new_phone', 'Nouveau numéro :'), value: inp.value.trim(), field: 'phone' });
     }
 
-    /* ---- Step-up : ré-authentification par mot de passe ---- */
+    /* ---- Step-up : ré-authentification par mot de passe actuel (flux MVP) ---- */
+    const MOCK_CURRENT_PWD = 'MotDePasse123!';
+    const MAX_PWD_ATTEMPTS = 5;
+    let pwdFails = 0, pwdLocked = false, pwdUnlockTimer = null;
+    // Throttle des tentatives (même secret que le login) : verrouillage TEMPORAIRE auto-expirant ; échappatoire = reset OTP.
+    function pwdRegisterFail(throttleId) {
+      pwdFails++;
+      if (pwdFails >= MAX_PWD_ATTEMPTS) {
+        pwdLocked = true;
+        document.getElementById(throttleId).classList.remove('d-none');
+        clearTimeout(pwdUnlockTimer); pwdUnlockTimer = setTimeout(pwdClearThrottle, 30000);
+        return true;
+      }
+      return false;
+    }
+    function pwdClearThrottle() { pwdFails = 0; pwdLocked = false; clearTimeout(pwdUnlockTimer); document.querySelectorAll('.pwd-throttle').forEach(e => e.classList.add('d-none')); }
+    function togglePwdField(id, btn) {
+      const f = document.getElementById(id), icon = btn.querySelector('i');
+      const hidden = f.type === 'password';
+      f.type = hidden ? 'text' : 'password';
+      icon.className = hidden ? 'fa fa-eye-slash' : 'fa fa-eye';
+    }
+
     let pendingApply = null, afterReauth = null, reauthField = null;
     function openReauth(next, target) {
       afterReauth = next; reauthField = (target && target.field) || null;
       const wrap = document.getElementById('reauthTarget');
       if (target && target.value) { document.getElementById('reauthTargetLabel').textContent = target.label; document.getElementById('reauthTargetVal').textContent = target.value; wrap.classList.remove('d-none'); }
       else wrap.classList.add('d-none');
-      const p = document.getElementById('reauthPwd'); p.value = ''; p.type = 'password';
+      const p = document.getElementById('reauthPwd'); if (p) { p.value = ''; p.type = 'password'; }
       document.getElementById('reauthErr').classList.add('d-none');
       document.getElementById('reauthThrottle').classList.toggle('d-none', !pwdLocked);
       document.querySelectorAll('#reauthModal .pwd-eye i').forEach(i => i.className = 'fa fa-eye');
       document.getElementById('reauthModal').classList.add('show');
-      setTimeout(() => p.focus(), 50);
     }
     function closeReauth() { document.getElementById('reauthModal').classList.remove('show'); document.getElementById('reauthTarget').classList.add('d-none'); afterReauth = null; pendingApply = null; }
     function editFromReauth() { const f = reauthField; closeReauth(); const inp = document.getElementById((f === 'phone' ? 'phone' : 'email') + 'Input'); if (inp) inp.focus(); }
     function confirmReauth() {
       if (pwdLocked) { document.getElementById('reauthThrottle').classList.remove('d-none'); return; }
-      if (document.getElementById('reauthPwd').value !== MOCK_CURRENT_PWD) {
+      const v = document.getElementById('reauthPwd').value;
+      if (v !== MOCK_CURRENT_PWD) {
         if (pwdRegisterFail('reauthThrottle')) document.getElementById('reauthErr').classList.add('d-none');
         else document.getElementById('reauthErr').classList.remove('d-none');
         return;
@@ -542,19 +588,44 @@
       inp.addEventListener('keydown', e => { if (e.key === 'Backspace' && !e.target.value && i > 0) arr[i - 1].focus(); });
     });
 
-    /* ---- Throttle mot de passe (ré-auth) ---- */
-    const MAX_PWD_ATTEMPTS = 5;
-    let pwdFails = 0, pwdLocked = false, pwdUnlockTimer = null;
-    function pwdRegisterFail(throttleId) { pwdFails++; if (pwdFails >= MAX_PWD_ATTEMPTS) { pwdLocked = true; const t = document.getElementById(throttleId); if (t) t.classList.remove('d-none'); clearTimeout(pwdUnlockTimer); pwdUnlockTimer = setTimeout(pwdClearThrottle, 30000); return true; } return false; }
-    function pwdClearThrottle() { pwdFails = 0; pwdLocked = false; clearTimeout(pwdUnlockTimer); document.querySelectorAll('.pwd-throttle').forEach(e => e.classList.add('d-none')); }
-
     function verifyPhone() {
       const chip = document.getElementById('phoneChip');
       if (chip) { chip.className = 'chip-ok'; chip.innerHTML = '<i class="fa fa-circle-check me-1"></i>' + T('dset.verified'); }
       const link = document.getElementById('phoneVerifyLink'); if (link) link.style.display = 'none';
       const banner = document.getElementById('phoneBanner'); if (banner) banner.style.display = 'none';
+      phoneVerified2fa = true; refreshMfaSms(); // numéro vérifié → 2FA par SMS activable
       toast();
     }
+
+    /* ---- 2FA : e-mail (défaut, toujours actif) + SMS optionnel (numéro vérifié) ---- */
+    let phoneVerified2fa = false, smsEnrolled = false;
+    function refreshMfaSms() {
+      const radio = document.getElementById('mfaSmsRadio'), chip = document.getElementById('mfaSmsChip');
+      const sub = document.getElementById('mfaSmsSub'), btn = document.getElementById('mfaSmsBtn');
+      if (!radio) return;
+      if (!phoneVerified2fa) {
+        radio.disabled = true; btn.disabled = true; btn.textContent = T('dset.mfa_activate');
+        chip.className = 'chip-no ms-1'; chip.textContent = T('dset.mfa_off'); sub.textContent = T('dset.mfa_sms_locked');
+      } else if (!smsEnrolled) {
+        radio.disabled = true; btn.disabled = false; btn.textContent = T('dset.mfa_activate');
+        chip.className = 'chip-no ms-1'; chip.textContent = T('dset.mfa_off'); sub.textContent = T('dset.mfa_sms_ready');
+      } else {
+        radio.disabled = false; btn.disabled = false; btn.textContent = T('dset.mfa_deactivate');
+        chip.className = 'chip-ok ms-1'; chip.textContent = T('dset.mfa_active'); sub.textContent = T('dset.mfa_sms_on');
+      }
+    }
+    function toggleSms() {
+      if (!phoneVerified2fa) return;
+      smsEnrolled = !smsEnrolled;
+      try { if (smsEnrolled) localStorage.setItem('naz_doctor_mfa_sms', '1'); else localStorage.removeItem('naz_doctor_mfa_sms'); } catch (e) {}
+      if (!smsEnrolled) { // désactivation → si SMS était préféré, on repasse à l'e-mail (toujours actif)
+        const e = document.querySelector('input[name="mfaPref"][value="email"]'); if (e) e.checked = true;
+        try { localStorage.setItem('naz_doctor_mfa_pref', 'email'); } catch (e2) {}
+      }
+      refreshMfaSms(); toast();
+    }
+    // Méthode préférée persistée → reprise à la connexion (OTP envoyé au canal préféré, e-mail = secours).
+    function setMfaPref(m) { try { localStorage.setItem('naz_doctor_mfa_pref', m); } catch (e) {} toast(); }
 
     /* ---- Export données (RGPD) ---- */
     function exportData() {
@@ -571,51 +642,57 @@
       toast();
     }
 
-    /* ---- Password (vérification par mot de passe actuel + throttle) ---- */
+    /* ---- Mot de passe : vérification par mot de passe actuel (flux MVP ; pas d'OTP) ---- */
+    function pwdRules(v) {
+      return { 'pr-len': v.length >= 8, 'pr-upper': /[A-Z]/.test(v), 'pr-lower': /[a-z]/.test(v), 'pr-num': /\d/.test(v), 'pr-spe': /[^A-Za-z0-9\s]/.test(v) };
+    }
+    function checkPwd() {
+      const v = document.getElementById('pwdNew').value;
+      const rules = pwdRules(v);
+      let score = 0;
+      for (const id in rules) { document.getElementById(id).classList.toggle('ok', rules[id]); if (rules[id]) score++; }
+      const bar = document.getElementById('pwdBar');
+      bar.style.width = (score * 20) + '%';
+      bar.style.background = score < 3 ? '#ef4444' : score < 5 ? '#f59e0b' : '#16a34a';
+      if (v) document.getElementById('pwdNewErr').classList.add('d-none');
+    }
+    function clearPwdErr() { document.getElementById('pwdCurrentErr').classList.add('d-none'); }
     function openPwd() {
       document.getElementById('pwdEdit').classList.remove('d-none');
       document.getElementById('pwdEditBtn').classList.add('d-none');
       document.getElementById('pwdView').classList.add('d-none');
+      ['pwdCurrent', 'pwdNew'].forEach(id => { const e = document.getElementById(id); if (e) { e.value = ''; e.type = 'password'; } });
+      document.querySelectorAll('#pwdEdit .pwd-eye i').forEach(i => i.className = 'fa fa-eye');
+      ['pwdCurrentErr', 'pwdNewErr'].forEach(id => document.getElementById(id).classList.add('d-none'));
       document.getElementById('pwdThrottle').classList.toggle('d-none', !pwdLocked);
+      checkPwd();
     }
     function closePwd() {
       document.getElementById('pwdEdit').classList.add('d-none');
       document.getElementById('pwdEditBtn').classList.remove('d-none');
       document.getElementById('pwdView').classList.remove('d-none');
-      document.getElementById('pwdCurrent').value = '';
-      document.getElementById('pwdNew').value = '';
-      document.getElementById('pwdCurrentErr').classList.add('d-none');
-      document.getElementById('pwdNewErr').classList.add('d-none');
-      checkPwd();
-    }
-    function toggleEye(id, btn) {
-      const inp = document.getElementById(id);
-      inp.type = inp.type === 'password' ? 'text' : 'password';
-      btn.querySelector('i').className = inp.type === 'password' ? 'fa fa-eye' : 'fa fa-eye-slash';
-    }
-    function clearPwdErr() { document.getElementById('pwdCurrentErr').classList.add('d-none'); }
-    const pwdRules = v => ({ 'pr-len': v.length >= 8, 'pr-upper': /[A-Z]/.test(v), 'pr-lower': /[a-z]/.test(v), 'pr-num': /\d/.test(v), 'pr-spe': /[^A-Za-z0-9\s]/.test(v) });
-    function checkPwd() {
-      const v = document.getElementById('pwdNew').value;
-      const r = pwdRules(v); let n = 0;
-      for (const id in r) { document.getElementById(id).classList.toggle('ok', r[id]); if (r[id]) n++; }
-      const bar = document.getElementById('pwdBar');
-      bar.style.width = (n * 20) + '%';
-      bar.style.background = n < 3 ? '#ef4444' : n < 5 ? '#f59e0b' : '#16a34a';
-      if (v) document.getElementById('pwdNewErr').classList.add('d-none');
-      return n === 5;
     }
     function savePwd() {
-      const cur = document.getElementById('pwdCurrent').value, neu = document.getElementById('pwdNew').value;
-      const curErr = document.getElementById('pwdCurrentErr'), newErr = document.getElementById('pwdNewErr');
+      const cur = document.getElementById('pwdCurrent').value;
+      const neu = document.getElementById('pwdNew').value;
+      const curErr = document.getElementById('pwdCurrentErr');
+      const newErr = document.getElementById('pwdNewErr');
       if (pwdLocked) { document.getElementById('pwdThrottle').classList.remove('d-none'); return; }
       let ok = true;
-      if (!cur || cur !== MOCK_CURRENT_PWD) { if (pwdRegisterFail('pwdThrottle')) curErr.classList.add('d-none'); else { curErr.classList.remove('d-none'); document.getElementById('pwdCurrent').focus(); } ok = false; }
-      else curErr.classList.add('d-none');
-      if (!Object.values(pwdRules(neu)).every(Boolean)) { newErr.classList.remove('d-none'); if (ok) document.getElementById('pwdNew').focus(); ok = false; }
+      // 1) mot de passe actuel requis et correct (throttle après trop d'échecs)
+      if (!cur || cur !== MOCK_CURRENT_PWD) {
+        if (pwdRegisterFail('pwdThrottle')) curErr.classList.add('d-none');
+        else { curErr.classList.remove('d-none'); document.getElementById('pwdCurrent').focus(); }
+        ok = false;
+      } else curErr.classList.add('d-none');
+      // 2) nouveau mot de passe conforme
+      const rules = pwdRules(neu);
+      const allOk = Object.values(rules).every(Boolean);
+      if (!allOk) { newErr.classList.remove('d-none'); if (ok) document.getElementById('pwdNew').focus(); ok = false; }
       else newErr.classList.add('d-none');
       if (!ok) return;
-      pwdClearThrottle(); closePwd(); toast('prof.pwd.toast');
+      // succès — pas d'OTP : la preuve est le mot de passe actuel
+      pwdClearThrottle(); closePwd(); toast('dset.pwd_toast');
     }
 
     /* ---- Devices / sessions ---- */
@@ -645,7 +722,7 @@
     }
 
     document.addEventListener('fueni:langchange', syncLangRadios);
-    function init() { checkPwd(); syncLangRadios(); }
+    function init() { syncLangRadios(); refreshMfaSms(); }
     if (window.NazI18n) init(); else document.addEventListener('DOMContentLoaded', init);
   </script>
 

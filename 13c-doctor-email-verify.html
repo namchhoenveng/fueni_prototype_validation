@@ -131,7 +131,14 @@
     });
 
     function verifyCode() {
-      if (code() === CORRECT_CODE) { window.location = '14-doctor-plans.html'; return; }
+      if (code() === CORRECT_CODE) {
+        // Compte créé (PENDING_KYC). Flux principal = écran « Choix du plan » (14).
+        // On marque l'onboarding en cours (sans plan) : si le médecin quitte ici et se reconnecte,
+        // le tableau de bord verrouillé reprend sur les cartes de plan (cf. 17 — reprise).
+        try { localStorage.setItem('naz_onboarding', '1'); localStorage.removeItem('naz_plan'); localStorage.removeItem('naz_kyc'); } catch (e) {}
+        window.location = '14-doctor-plans.html';
+        return;
+      }
       inputs.forEach(x => x.classList.add('error'));
       errorMsg.classList.remove('d-none');
       setTimeout(() => { inputs.forEach(x => { x.value = ''; x.classList.remove('error'); }); inputs[0].focus(); updateBtn(); }, 600);

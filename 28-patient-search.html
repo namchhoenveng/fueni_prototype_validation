@@ -47,16 +47,30 @@
     .doc-result .dn { font-weight: 700; font-size: 1.05rem; }
     .doc-result .dspec { color: #16a085; font-weight: 600; font-size: 0.9rem; }
     .doc-result .dmeta { color: #64748b; font-size: 0.85rem; margin-top: 4px; display: flex; flex-wrap: wrap; gap: 4px 14px; }
-    .doc-result .tag { display: inline-flex; align-items: center; gap: 5px; background: #e8f8f5; color: #117a65; border-radius: 999px; padding: 2px 10px; font-size: 0.76rem; font-weight: 600; margin-top: 6px; }
+    .doc-result .langs { margin-top: 6px; }
+    .doc-result .lang { display: inline-flex; align-items: center; background: #f1f5f9; color: #475569; border-radius: 8px; padding: 2px 8px; font-size: 0.74rem; font-weight: 600; margin: 0 6px 4px 0; }
+    .doc-result .slots { margin-top: 8px; display: flex; flex-wrap: wrap; align-items: center; }
+    .doc-result .slots-label { font-size: 0.78rem; color: #64748b; margin: 0 8px 5px 0; }
+    .doc-result .slot { display: inline-block; background: #e8f8f5; color: #117a65; border-radius: 8px; padding: 3px 9px; font-size: 0.78rem; font-weight: 600; margin: 0 5px 5px 0; }
+    .doc-result .slot.more { background: #f1f5f9; color: #64748b; }
     .doc-result .side { text-align: right; margin-left: auto; display: flex; flex-direction: column; align-items: flex-end; gap: 8px; min-width: 150px; }
     .doc-result .from { font-size: 0.8rem; color: #64748b; }
     .doc-result .from b { color: #0f172a; font-size: 0.98rem; }
-    .doc-result .next { font-size: 0.8rem; color: #117a65; font-weight: 600; }
     @media (max-width: 720px) {
       .main { margin-left: 0; } .sidebar { position: static; width: 100%; min-height: auto; }
       .doc-result { flex-wrap: wrap; } .doc-result .side { align-items: flex-start; text-align: left; min-width: 0; width: 100%; }
     }
     .empty { background: #fff; border-radius: 14px; padding: 40px; text-align: center; color: #94a3b8; }
+    /* En-tête public (visiteur non connecté — parcours Doctolib) */
+    .pub-header { display: none; align-items: center; justify-content: space-between; background: #fff; border-bottom: 1px solid #e5e7eb; padding: 12px 130px 12px 28px; position: sticky; top: 0; z-index: 90; }
+    .pub-header .ph-actions { display: flex; align-items: center; gap: 12px; }
+    .pub-header .ph-login { color: #155e75; font-weight: 600; text-decoration: none; font-size: 0.9rem; }
+    .pub-header .ph-login:hover { text-decoration: underline; }
+    .pub-header .ph-signup { background: #16a085; color: #fff; font-weight: 600; text-decoration: none; font-size: 0.9rem; border-radius: 9px; padding: 8px 15px; }
+    .pub-header .ph-signup:hover { background: #138d75; }
+    body.public .sidebar { display: none; }
+    body.public .main { margin-left: 0; }
+    body.public .pub-header { display: flex; }
   </style>
 </head>
 <body data-i18n-pagetitle="psearch.page_title" data-i18n-toggle>
@@ -82,7 +96,7 @@
     </div>
     <div class="nav-section" data-i18n="dash.sidebar.section_my_space">Mon espace</div>
     <a href="05-patient-dashboard.html" class="nav-link-side"><i class="fa fa-home"></i><span data-i18n="dash.sidebar.dashboard">Tableau de bord</span></a>
-    <a href="05-patient-dashboard.html" class="nav-link-side"><i class="fa fa-calendar-check"></i><span data-i18n="dash.sidebar.my_appts">Mes RDV</span></a>
+    <a href="08-patient-mes-rdv.html" class="nav-link-side"><i class="fa fa-calendar-check"></i><span data-i18n="dash.sidebar.my_appts">Mes RDV</span></a>
     <a class="nav-link-side active"><i class="fa fa-plus-circle"></i><span data-i18n="dash.sidebar.book">Prendre RDV</span></a>
     <a href="09-patient-documents.html" class="nav-link-side"><i class="fa fa-folder"></i><span data-i18n="dash.sidebar.my_docs">Mes documents</span></a>
     <div class="nav-section" data-i18n="dash.sidebar.section_account">Mon compte</div>
@@ -91,11 +105,19 @@
     <div class="nav-section" data-i18n="dash.sidebar.section_help">Aide</div>
     <a class="nav-link-side"><i class="fa fa-circle-question"></i><span data-i18n="dash.sidebar.faq">FAQ</span></a>
     <a class="nav-link-side"><i class="fa fa-headset"></i><span data-i18n="dash.sidebar.support">Contacter le support</span></a>
-    <a href="10-login.html" class="nav-link-side" onclick="try{sessionStorage.setItem('fueni_logout','1')}catch(e){}"><i class="fa fa-right-from-bracket"></i><span data-i18n="dash.sidebar.logout">Se déconnecter</span></a>
+    <a href="10-login.html" class="nav-link-side" onclick="try{sessionStorage.setItem('fueni_logout','1');sessionStorage.removeItem('fueni_auth');sessionStorage.removeItem('fueni_user')}catch(e){}"><i class="fa fa-right-from-bracket"></i><span data-i18n="dash.sidebar.logout">Se déconnecter</span></a>
   </div>
 
   <!-- Main -->
   <div class="main">
+    <!-- En-tête visiteur non connecté (masqué si connecté → sidebar patient) -->
+    <header class="pub-header">
+      <a href="01-home.html" aria-label="FUENI"><img src="assets/fueni-lockup-horizontal.svg" alt="FUENI" style="height:28px;width:auto;display:block"></a>
+      <div class="ph-actions">
+        <a class="ph-login" href="10-login.html"><i class="fa fa-right-to-bracket me-1"></i><span data-i18n="pubnav.login">Se connecter</span></a>
+        <a class="ph-signup" href="02-patient-signup.html"><span data-i18n="pubnav.signup">Créer un compte</span></a>
+      </div>
+    </header>
     <div class="content-area">
 
       <div class="page-head mb-3">
@@ -147,7 +169,8 @@
       const name = 'Dr Aboubacar Diallo', spec = 'Cardiologie', city = 'Dakar', country = 'Sénégal';
       const d = {
         id: 'real', name: name, spec: spec, city: city, country: country,
-        photo: null, from: 8000, currency: 'XOF', tele: false, next: T('psearch.next_tomorrow'),
+        photo: null, from: 8000, currency: 'XOF',
+        langs: ['Français'], slots: [{ d:'tomorrow', t:'09:30' }, { d:'tomorrow', t:'14:00' }, { d:'thisweek', t:'10:15' }], more: 9,
         href: '19b-doctor-public-preview.html'
       };
       if (P) {
@@ -155,12 +178,12 @@
         d.spec = P.spec || spec;
         d.photo = P.photo || null;
         d.currency = P.currency || 'XOF';
+        if (Array.isArray(P.langs) && P.langs.length) d.langs = P.langs;
         const locs = Array.isArray(P.locations) && P.locations.length ? P.locations : [{ city: P.city, country: P.country, bookable: true, type: 'cabinet', motifs: P.motifs }];
         const book = locs.filter(l => l.bookable !== false);
         const primary = (book.find(l => l.primary) || book[0] || locs[0]) || {};
         d.city = primary.city || P.city || city;
         d.country = primary.country || P.country || country;
-        d.tele = book.some(l => l.type === 'teleconsult');
         let min = null;
         book.forEach(l => (l.motifs || []).forEach(m => { if (m.price != null && (min == null || m.price < min)) min = m.price; }));
         if (min != null) d.from = min;
@@ -168,12 +191,12 @@
       return d;
     }
 
-    // ---- Praticiens de démonstration (annuaire) ----
+    // ---- Médecins de démonstration (annuaire) ----
     const MOCK = [
-      { id:'m2', name:'Dr Fatou Ndiaye', spec:'Médecine générale', city:'Dakar', country:'Sénégal', from:6000, currency:'XOF', tele:true, next:T('psearch.next_tomorrow') },
-      { id:'m3', name:'Dr Mamadou Sow', spec:'Cardiologie', city:'Dakar', country:'Sénégal', from:10000, currency:'XOF', tele:false, next:T('psearch.next_2days') },
-      { id:'m4', name:'Dr Aïcha Traoré', spec:'Pédiatrie', city:'Abidjan', country:"Côte d'Ivoire", from:7000, currency:'XOF', tele:true, next:T('psearch.next_tomorrow') },
-      { id:'m5', name:'Dr Jean-Paul Kabongo', spec:'Médecine générale', city:'Kinshasa', country:'RDC', from:25, currency:'USD', tele:false, next:T('psearch.next_week') }
+      { id:'m2', name:'Dr Fatou Ndiaye', spec:'Médecine générale', city:'Dakar', country:'Sénégal', from:6000, currency:'XOF', langs:['Français','Wolof'], slots:[{d:'today',t:'16:00'},{d:'tomorrow',t:'09:30'},{d:'tomorrow',t:'11:00'}], more:12 },
+      { id:'m3', name:'Dr Mamadou Sow', spec:'Cardiologie', city:'Dakar', country:'Sénégal', from:10000, currency:'XOF', langs:['Français','English','Wolof'], slots:[{d:'tomorrow',t:'08:30'},{d:'thisweek',t:'15:00'}], more:6 },
+      { id:'m4', name:'Dr Aïcha Traoré', spec:'Pédiatrie', city:'Abidjan', country:"Côte d'Ivoire", from:7000, currency:'XOF', langs:['Français','English'], slots:[{d:'today',t:'17:30'},{d:'tomorrow',t:'08:00'}], more:15 },
+      { id:'m5', name:'Dr Jean-Paul Kabongo', spec:'Médecine générale', city:'Kinshasa', country:'RDC', from:25, currency:'USD', langs:['Français','Lingala'], slots:[{d:'thisweek',t:'10:00'},{d:'thisweek',t:'14:30'}], more:3 }
     ];
 
     let DOCTORS = [];
@@ -202,18 +225,23 @@
       if (!list.length) { box.innerHTML = '<div class="empty"><i class="fa fa-user-slash mb-2" style="font-size:1.6rem;"></i><div>' + T('psearch.none') + '</div></div>'; return; }
       box.innerHTML = list.map(d => {
         const av = d.photo ? '<img src="' + d.photo + '" alt="">' : initials(d.name);
-        const tele = d.tele ? '<span class="tag"><i class="fa fa-video"></i>' + T('psearch.tele') + '</span>' : '';
+        const langs = (d.langs && d.langs.length)
+          ? '<div class="langs">' + d.langs.map(l => '<span class="lang">' + esc(l) + '</span>').join('') + '</div>' : '';
+        const slots = (d.slots && d.slots.length)
+          ? '<div class="slots"><span class="slots-label">' + T('psearch.slots_label') + '</span>' +
+            d.slots.map(s => '<span class="slot">' + T('psearch.day_' + s.d) + ' ' + esc(s.t) + '</span>').join('') +
+            (d.more ? '<span class="slot more">' + T('psearch.more').replace('{n}', d.more) + '</span>' : '') + '</div>' : '';
         return '<div class="doc-result" onclick="openDoctor(\'' + d.id + '\')">' +
           '<div class="av">' + av + '</div>' +
           '<div class="flex-grow-1 min-w-0">' +
             '<div class="dn">' + esc(d.name) + '</div>' +
             '<div class="dspec">' + esc(d.spec) + '</div>' +
             '<div class="dmeta"><span><i class="fa fa-location-dot me-1"></i>' + esc(d.city) + ', ' + esc(d.country) + '</span></div>' +
-            tele +
+            langs +
+            slots +
           '</div>' +
           '<div class="side">' +
             '<div class="from">' + T('psearch.from') + ' <b>' + fmt(d.from) + ' ' + esc(d.currency) + '</b></div>' +
-            '<div class="next"><i class="fa fa-clock me-1"></i>' + esc(d.next) + '</div>' +
             '<button class="btn btn-patient btn-sm" onclick="event.stopPropagation();openDoctor(\'' + d.id + '\')" data-i18n="psearch.book">Prendre rendez-vous</button>' +
           '</div>' +
         '</div>';
@@ -233,10 +261,20 @@
       } catch (e) {}
     }
 
+    function isAuthed() { try { return sessionStorage.getItem('fueni_auth') === '1' || !!sessionStorage.getItem('fueni_user'); } catch (e) { return false; } }
+    function applyPublicChrome() { if (!isAuthed()) document.body.classList.add('public'); }
+    function applyQueryParams() {
+      const p = new URLSearchParams(location.search);
+      const q = (p.get('q') || '').trim(), c = (p.get('city') || '').trim();
+      if (q) document.getElementById('qName').value = q;
+      if (c) document.getElementById('qCity').value = c;
+    }
     function init() {
+      applyPublicChrome();
       buildDoctors();
       fillSpecFilter();
       applyUserDisplay();
+      applyQueryParams();
       renderResults();
     }
     document.addEventListener('fueni:langchange', () => { buildDoctors(); fillSpecFilter(); renderResults(); });

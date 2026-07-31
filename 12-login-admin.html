@@ -67,6 +67,13 @@
     .otp-hint { text-align: center; font-size: 0.84rem; color: #64748b; margin-top: 6px; }
     .otp-hint code { background: #fef9e7; color: #b7950b; padding: 2px 8px; border-radius: 6px; font-size: 0.78rem; }
 
+    /* Première connexion : politique de mot de passe + enrôlement TOTP */
+    .pwd-check { list-style: none; padding: 0; margin: 8px 0 4px; font-size: 0.8rem; display: grid; grid-template-columns: 1fr 1fr; gap: 2px 16px; }
+    .pwd-check li { display: flex; align-items: center; gap: 8px; padding: 2px 0; color: #94a3b8; }
+    @media (max-width: 480px) { .pwd-check { grid-template-columns: 1fr; } }
+    .pwd-check li i { font-size: 0.72rem; }
+    .pwd-check li.ok { color: #1e8449; }
+    .pwd-check li.ok i { color: #27ae60; }
     @media (max-width: 860px) { .brand-panel { display: none; } }
   </style>
 </head>
@@ -87,8 +94,8 @@
 
       <div class="trust-list">
         <div class="trust-item">
-          <div class="ic"><i class="fa fa-mobile-screen-button"></i></div>
-          <div><div class="t">MFA TOTP obligatoire</div><div class="d">Double authentification à chaque connexion.</div></div>
+          <div class="ic"><i class="fa fa-envelope-circle-check"></i></div>
+          <div><div class="t">Double authentification obligatoire</div><div class="d">Code à usage unique par e-mail à chaque connexion.</div></div>
         </div>
         <div class="trust-item">
           <div class="ic"><i class="fa fa-key"></i></div>
@@ -111,7 +118,7 @@
 
           <div class="demo-banner">
             <i class="fa fa-flask"></i>
-            <span>Mode démo — <code>admin@fueni.com</code> · mot de passe <code>Admin2026!</code></span>
+            <span>Mode démo — <code>admin@fueni.com</code> · 1ʳᵉ connexion (mot de passe temporaire) <code>Temporaire2026!</code> · connexion habituelle <code>Admin2026!</code></span>
           </div>
 
           <div class="step-error" id="step1Error"><i class="fa fa-circle-exclamation"></i><span id="step1ErrorMsg"></span></div>
@@ -138,11 +145,43 @@
           <div class="footer-mention">Toutes les actions admin sont auditées · Conservation logs 20 ans</div>
         </div>
 
-        <!-- Step 2 — MFA TOTP -->
+        <!-- Step 1b — Première connexion : définir un nouveau mot de passe -->
+        <div id="stepPwd" style="display:none;">
+          <div class="admin-chip"><i class="fa fa-key"></i>Première connexion</div>
+          <h1 class="mb-1">Définissez votre mot de passe</h1>
+          <p class="sub">Pour votre sécurité, choisissez un mot de passe personnel.</p>
+
+          <div class="step-error" id="pwdError"><i class="fa fa-circle-exclamation"></i><span id="pwdErrorMsg"></span></div>
+
+          <form onsubmit="event.preventDefault(); submitNewPwd();">
+            <div class="mb-1">
+              <label class="form-label" for="newPwd">Nouveau mot de passe</label>
+              <div class="pwd-wrap">
+                <input type="password" id="newPwd" class="form-control" oninput="checkPwdPolicy()" autocomplete="new-password" required>
+                <button type="button" class="eye" onclick="togglePwd('newPwd', this)" aria-label="Afficher le mot de passe"><i class="fa fa-eye"></i></button>
+              </div>
+            </div>
+            <ul class="pwd-check" id="pwdCheck">
+              <li data-rule="len"><i class="fa fa-circle"></i>Au moins 12 caractères</li>
+              <li data-rule="upper"><i class="fa fa-circle"></i>Une lettre majuscule</li>
+              <li data-rule="lower"><i class="fa fa-circle"></i>Une lettre minuscule</li>
+              <li data-rule="digit"><i class="fa fa-circle"></i>Un chiffre</li>
+              <li data-rule="special"><i class="fa fa-circle"></i>Un caractère spécial</li>
+              <li data-rule="nottemp"><i class="fa fa-circle"></i>Différent du mot de passe temporaire</li>
+            </ul>
+            <button type="submit" class="btn-admin mt-2" id="newPwdBtn" disabled><i class="fa fa-arrow-right"></i>Continuer</button>
+            <div class="mt-3">
+              <button type="button" class="btn-back-step" onclick="backToStep1()"><i class="fa fa-arrow-left"></i>Retour</button>
+            </div>
+          </form>
+          <div class="footer-mention">Étape 1 sur 2 · Mot de passe personnel, puis code e-mail</div>
+        </div>
+
+        <!-- Step 2 — MFA par code e-mail (OTP). TOTP (application d'authentification) = post-MVP. -->
         <div id="step2" style="display:none;">
-          <div class="mfa-icon-box"><i class="fa fa-mobile-screen-button"></i></div>
-          <h1 style="text-align:center; font-size:1.4rem;">Vérification à deux facteurs</h1>
-          <p class="sub" style="text-align:center;">Saisissez le code à 6 chiffres de votre application d'authentification associé à <strong style="color:var(--slate);" id="step2Email">—</strong>.</p>
+          <div class="mfa-icon-box"><i class="fa fa-envelope"></i></div>
+          <h1 style="text-align:center; font-size:1.4rem;">Vérification en deux étapes</h1>
+          <p class="sub" style="text-align:center;">Un code à 6 chiffres a été envoyé à <strong style="color:var(--slate);" id="step2Email">—</strong>. Saisissez-le pour continuer.</p>
 
           <div class="step-error" id="step2Error"><i class="fa fa-circle-exclamation"></i><span id="step2ErrorMsg"></span></div>
 
@@ -157,11 +196,12 @@
             </div>
             <p class="otp-hint">Prototype — utilisez <code>000000</code> pour simuler une connexion réussie.</p>
             <button type="submit" class="btn-admin mt-2"><i class="fa fa-check"></i>Valider et accéder</button>
-            <div class="mt-3">
+            <div class="mt-3 d-flex align-items-center justify-content-between">
               <button type="button" class="btn-back-step" onclick="backToStep1()"><i class="fa fa-arrow-left"></i>Retour</button>
+              <button type="button" onclick="resendOtp()" style="background:none;border:0;color:var(--purple);font-weight:700;font-size:0.85rem;cursor:pointer;"><i class="fa fa-rotate-right me-1"></i>Renvoyer le code</button>
             </div>
           </form>
-          <div class="footer-mention"><i class="fa fa-shield-halved me-1"></i>Code valable 30 s · 5 essais max avant blocage 15 min</div>
+          <div class="footer-mention"><i class="fa fa-shield-halved me-1"></i>Code valable 10 min · 5 essais max avant blocage 15 min</div>
         </div>
 
       </div>
@@ -171,7 +211,7 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script>
     // Compte de démonstration (prototype) — validation réelle des deux étapes
-    const DEMO_ADMIN = { email: 'admin@fueni.com', pwd: 'Admin2026!', totp: '000000' };
+    const DEMO_ADMIN = { email: 'admin@fueni.com', pwd: 'Admin2026!', temp: 'Temporaire2026!', totp: '000000' };
     const MAX_OTP_TRIES = 5;
     let otpTries = 0;
     let otpLocked = false;
@@ -195,12 +235,66 @@
       const pwd = document.getElementById('adminPwd').value;
       if (!email || !pwd) { showErr('step1Error', 'step1ErrorMsg', 'Veuillez saisir votre e-mail et votre mot de passe.'); return; }
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showErr('step1Error', 'step1ErrorMsg', 'Adresse e-mail invalide.'); return; }
+      // Première connexion : mot de passe temporaire → changement obligatoire + enrôlement TOTP
+      if (email === DEMO_ADMIN.email && pwd === DEMO_ADMIN.temp) { goToSetPassword(); return; }
       // Message générique en cas d'échec (anti-énumération)
       if (email !== DEMO_ADMIN.email || pwd !== DEMO_ADMIN.pwd) {
         showErr('step1Error', 'step1ErrorMsg', 'E-mail ou mot de passe incorrect.');
         return;
       }
       goToStep2();
+    }
+
+    // ── Première connexion : nouveau mot de passe personnel ───────────────
+    function goToSetPassword() {
+      document.getElementById('step1').style.display = 'none';
+      document.getElementById('stepPwd').style.display = '';
+      document.getElementById('newPwd').value = '';
+      hideErr('pwdError');
+      checkPwdPolicy();
+      setTimeout(() => document.getElementById('newPwd').focus(), 100);
+    }
+    function pwdRules(p) {
+      return {
+        len: p.length >= 12,
+        upper: /[A-Z]/.test(p),
+        lower: /[a-z]/.test(p),
+        digit: /[0-9]/.test(p),
+        special: /[^A-Za-z0-9]/.test(p),
+        nottemp: p.length > 0 && p !== DEMO_ADMIN.temp
+      };
+    }
+    function checkPwdPolicy() {
+      const p = document.getElementById('newPwd').value;
+      const r = pwdRules(p);
+      let allOk = true;
+      document.querySelectorAll('#pwdCheck li').forEach(li => {
+        const ok = !!r[li.dataset.rule];
+        li.classList.toggle('ok', ok);
+        li.querySelector('i').className = ok ? 'fa fa-circle-check' : 'fa fa-circle';
+        if (!ok) allOk = false;
+      });
+      document.getElementById('newPwdBtn').disabled = !allOk;
+      return allOk;
+    }
+    function submitNewPwd() {
+      if (!checkPwdPolicy()) { showErr('pwdError', 'pwdErrorMsg', 'Le mot de passe ne respecte pas tous les critères requis.'); return; }
+      hideErr('pwdError');
+      // MVP : MFA = code e-mail (OTP). Après le nouveau mot de passe → même étape OTP que la connexion habituelle.
+      document.getElementById('stepPwd').style.display = 'none';
+      goToStep2();
+    }
+
+    // Renvoi du code e-mail (démo : simple confirmation visuelle)
+    function resendOtp() {
+      hideErr('step2Error');
+      clearOtp();
+      setTimeout(() => document.querySelector('#step2 .otp-inputs input').focus(), 50);
+      const toast = document.createElement('div');
+      toast.style.cssText = 'position:fixed; top:30px; right:30px; background:#334155; color:white; padding:12px 18px; border-radius:12px; box-shadow:0 8px 24px rgba(0,0,0,0.2); font-weight:600; z-index:9999;';
+      toast.innerHTML = '<i class="fa fa-envelope me-2"></i>Un nouveau code a été envoyé.';
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 2200);
     }
 
     function goToStep2() {
@@ -212,9 +306,9 @@
       setTimeout(() => document.querySelector('#step2 .otp-inputs input').focus(), 100);
     }
     function backToStep1() {
-      document.getElementById('step2').style.display = 'none';
+      ['step2', 'stepPwd'].forEach(id => document.getElementById(id).style.display = 'none');
       document.getElementById('step1').style.display = '';
-      clearOtp(); hideErr('step2Error');
+      clearOtp(); hideErr('step2Error'); hideErr('pwdError');
     }
 
     function clearOtp() {

@@ -54,6 +54,20 @@
     .dash-time { background: #e8f2f5; color: #155e75; border-radius: 8px; padding: 6px 8px; font-weight: 700; font-size: 0.82rem; min-width: 52px; text-align: center; }
     .dash-av { width: 36px; height: 36px; border-radius: 50%; background: #dbeafe; color: #1e40af; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.78rem; flex-shrink: 0; }
     .pill { font-size: 0.68rem; font-weight: 700; padding: 3px 9px; border-radius: 20px; white-space: nowrap; }
+    /* Étape « Choix de la formule » dans le tableau de bord verrouillé */
+    .lock-card.wide { max-width: 720px; }
+    .btn-outline-doctor { border: 1px solid #155e75; color: #155e75; background: #fff; }
+    .btn-outline-doctor:hover { background: #eaf3f6; color: #114c5f; }
+    .hub-plans { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .hub-plan { position: relative; border: 2px solid #e9ecef; border-radius: 14px; padding: 20px 16px; text-align: center; cursor: pointer; transition: border-color .15s, box-shadow .15s; }
+    .hub-plan:hover { border-color: #155e75; }
+    .hub-plan.popular { border-color: #155e75; box-shadow: 0 4px 16px rgba(21,94,117,0.15); }
+    .hub-plan .hp-badge { position: absolute; top: -11px; left: 50%; transform: translateX(-50%); background: #155e75; color: #fff; font-size: 0.68rem; font-weight: 700; padding: 2px 12px; border-radius: 20px; white-space: nowrap; }
+    .hub-plan .hp-name { font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; color: #155e75; }
+    .hub-plan .hp-price { font-size: 1.8rem; font-weight: 800; color: #155e75; line-height: 1.1; margin-top: 4px; }
+    .hub-plan .hp-per { font-size: 0.8rem; font-weight: 500; color: #7f8c8d; }
+    .hub-plan .hp-tag { font-size: 0.8rem; color: #64748b; margin-top: 6px; min-height: 34px; }
+    @media (max-width: 560px) { .hub-plans { grid-template-columns: 1fr; } }
   </style>
 </head>
 <body data-i18n-pagetitle="doc.dash.page_title" data-i18n-toggle>
@@ -95,6 +109,32 @@
       <!-- Overlay verrouillé -->
       <div class="locked-overlay" id="lockedOverlay">
         <div class="lock-card">
+
+          <!-- État : choix de la formule (première étape après vérification e-mail) -->
+          <div id="cardPlan" class="d-none">
+            <div class="lock-ic" style="background:#e8f2f5;color:#155e75;"><i class="fa fa-star"></i></div>
+            <h4 class="fw-bold mb-1" data-i18n="doc.dash.plan_title">Choisissez votre formule</h4>
+            <p class="text-muted mb-4" data-i18n="doc.dash.plan_sub">Vous pourrez changer à tout moment. Aucun paiement à cette étape.</p>
+            <div class="hub-plans">
+              <div class="hub-plan" onclick="choosePlanHub('gratuit')">
+                <div class="hp-name" data-i18n="doc.plans.free_name">Free</div>
+                <div class="hp-price">0 €</div>
+                <div class="hp-tag" data-i18n="doc.dash.plan_free_tag">Profil public &amp; connexion</div>
+                <button class="btn btn-outline-doctor w-100 mt-2" onclick="event.stopPropagation();choosePlanHub('gratuit')" data-i18n="doc.dash.plan_free_cta">Choisir Free</button>
+              </div>
+              <div class="hub-plan popular" onclick="choosePlanHub('solo')">
+                <div class="hp-badge"><i class="fa fa-star me-1"></i><span data-i18n="doc.plans.recommended">Recommandé</span></div>
+                <div class="hp-name" data-i18n="doc.plans.solo_name">Solo</div>
+                <div class="hp-price">15 € <span class="hp-per" data-i18n="doc.plans.per_month">/mois</span></div>
+                <div class="hp-tag" data-i18n="doc.dash.plan_solo_tag">RDV illimités &amp; analytics</div>
+                <button class="btn btn-doctor w-100 mt-2" onclick="event.stopPropagation();choosePlanHub('solo')" data-i18n="doc.dash.plan_solo_cta">Choisir Solo</button>
+              </div>
+            </div>
+            <div class="alert d-flex align-items-start gap-2 py-2 px-3 mt-3 mb-0 text-start" style="background:#e6f2f5;border:1px solid #bcdfe7;color:#0e4456;border-radius:10px;font-size:0.82rem;">
+              <i class="fa fa-circle-info mt-1" style="color:#155e75;"></i>
+              <span data-i18n-html="doc.plans.pay_notice">Aucun paiement à cette étape. Pour le plan <strong>Solo</strong>, le premier prélèvement n'intervient <strong>qu'après la validation de votre dossier</strong>. Le plan <strong>Free</strong> reste gratuit.</span>
+            </div>
+          </div>
 
           <!-- État : KYC à compléter (arrivée juste après l'inscription) -->
           <div id="cardTodo" class="d-none">
@@ -178,7 +218,7 @@
         <div class="row g-3 mb-4">
           <div class="col-sm-6 col-xl-3"><div class="stat-block stat-tile"><div class="stat-ic" style="background:#e8f2f5;color:#155e75;"><i class="fa fa-user-injured"></i></div><div><div class="fs-2 fw-bold" style="color:#155e75;">128</div><div class="small text-muted" data-i18n="doc.dash.bg_patients">Patients</div></div></div></div>
           <div class="col-sm-6 col-xl-3"><div class="stat-block stat-tile"><div class="stat-ic" style="background:#e6f7ee;color:#0f5132;"><i class="fa fa-calendar-check"></i></div><div><div class="fs-2 fw-bold text-success">6</div><div class="small text-muted" data-i18n="doc.dash.bg_rdv">Rendez-vous du jour</div></div></div></div>
-          <div class="col-sm-6 col-xl-3"><div class="stat-block stat-tile"><div class="stat-ic" style="background:#fef1e7;color:#c2410c;"><i class="fa fa-truck-medical"></i></div><div><div class="fs-2 fw-bold" style="color:#c2410c;">1</div><div class="small text-muted" data-i18n="doc.dash.bg_urgent">Rendez-vous urgents</div></div></div></div>
+          <div class="col-sm-6 col-xl-3"><div class="stat-block stat-tile"><div class="stat-ic" style="background:#e0f2fe;color:#0369a1;"><i class="fa fa-calendar-week"></i></div><div><div class="fs-2 fw-bold" style="color:#0369a1;">24</div><div class="small text-muted" data-i18n="doc.dash.bg_week">Rendez-vous cette semaine</div></div></div></div>
           <div class="col-sm-6 col-xl-3"><div class="stat-block stat-tile"><div class="stat-ic" style="background:#fdeeee;color:#c0392b;"><i class="fa fa-file-medical"></i></div><div><div class="fs-2 fw-bold text-danger">2</div><div class="small text-muted" data-i18n="doc.dash.bg_docs">Documents en attente</div></div></div></div>
         </div>
 
@@ -219,10 +259,28 @@
     const t = (k, fb) => (window.NazI18n ? NazI18n.t(k) : '') || fb;
 
     function setState(s) {
+      document.getElementById('cardPlan').classList.toggle('d-none', s !== 'plan');
       document.getElementById('cardTodo').classList.toggle('d-none', s !== 'todo');
       document.getElementById('cardAttente').classList.toggle('d-none', s !== 'wait');
       document.getElementById('cardFix').classList.toggle('d-none', s !== 'fix');
       document.getElementById('cardPay').classList.toggle('d-none', s !== 'pay');
+      document.querySelector('.lock-card').classList.toggle('wide', s === 'plan');
+    }
+
+    // Sous-libellé « Plan sélectionné » de la carte « en attente », d'après le plan stocké.
+    function applyPlanLabel() {
+      const s2 = document.getElementById('s2sub'); if (!s2) return;
+      const free = localStorage.getItem('naz_plan') === 'gratuit';
+      const key = free ? 'doc.dash.s2_sub_free' : 'doc.dash.s2_sub_solo';
+      s2.setAttribute('data-i18n', key);
+      s2.textContent = t(key, free ? 'Plan Free — gratuit' : 'Plan Solo — facturation à la validation');
+    }
+
+    // Choix de la formule depuis le tableau de bord verrouillé → passe à l'étape KYC (sans navigation).
+    function choosePlanHub(plan) {
+      try { localStorage.setItem('naz_plan', plan); } catch (e) {}
+      applyPlanLabel();
+      setState('todo');
     }
 
     // Validation du dossier : Solo → paiement requis (après validation) ; Free → déverrouillage direct
@@ -231,23 +289,36 @@
       if (free) simulateUnlock(); else setState('pay');
     }
 
-    // État initial : ?kyc=todo (juste inscrit) · ?kyc=submitted (dossier envoyé) · ?state=active (retour du paiement → débloqué)
+    // État initial. Params directs : ?kyc=todo · ?kyc=submitted · ?state=active.
+    // Sinon reprise depuis l'état d'onboarding stocké (plan choisi ? KYC soumis ?).
     (function () {
       const params = new URLSearchParams(location.search);
       // Téléphone vérifié plus tard (email-first) : masque la bannière une fois le n° vérifié
       if (params.get('phone') === 'verified') {
         const pb = document.getElementById('phoneBanner'); if (pb) pb.style.display = 'none';
       }
+      applyPlanLabel();
       if (params.get('state') === 'active') { simulateUnlock(); return; }
       const p = params.get('kyc');
-      if (p === 'todo') setState('todo');
-      else if (p === 'submitted') setState('wait');
+      if (p === 'todo') { setState('todo'); return; }
+      if (p === 'submitted') { try { localStorage.setItem('naz_kyc', 'submitted'); } catch (e) {} setState('wait'); return; }
+      // Reprise (connexion en cours d'onboarding, ou abandon puis retour)
+      const kyc = localStorage.getItem('naz_kyc');
+      const plan = localStorage.getItem('naz_plan');
+      const onboarding = localStorage.getItem('naz_onboarding') === '1';
+      if (kyc === 'validated') { simulateUnlock(); return; }
+      if (!onboarding) { simulateUnlock(); return; } // pas d'onboarding en cours → compte actif (démo)
+      if (kyc === 'submitted') setState('wait');
+      else if (kyc === 'fix') setState('fix');
+      else if (plan) setState('todo');
+      else setState('plan');
     })();
 
     // Liens Principal verrouillés tant que le compte n'est pas activé (KYC validé)
     function lockedNav(e, el) { if (el.classList.contains('js-locked')) e.preventDefault(); }
 
     function simulateUnlock() {
+      try { localStorage.setItem('naz_kyc', 'validated'); localStorage.removeItem('naz_onboarding'); } catch (e) {}
       document.getElementById('lockedOverlay').style.display = 'none';
       const bg = document.querySelector('.bg-content');
       bg.style.filter = 'none';

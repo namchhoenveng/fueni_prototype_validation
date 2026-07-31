@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title data-i18n-pagetitle="mesrdv.page_title">FUENI — Mes rendez-vous</title>
+  <script src="naz-i18n.js" defer></script>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="naz-common.css">
+  <style>
+    body { background: #f0f4f8; }
+    /* Sidebar (aligné 05-patient-dashboard / 28) */
+    .sidebar { background: #16a085; min-height: 100vh; padding: 0; width: 240px; position: fixed; top: 0; left: 0; z-index: 100; }
+    .sidebar-brand { padding: 20px 20px 10px; font-size: 1.3rem; font-weight: 700; color: white; }
+    .sidebar-brand small { display: block; font-size: 0.65rem; font-weight: 500; opacity: 0.75; letter-spacing: 0.5px; text-transform: uppercase; margin-top: 2px; }
+    .sidebar-user { padding: 14px 20px 20px; border-bottom: 1px solid rgba(255,255,255,0.15); }
+    .sidebar-user .avatar { width: 40px; height: 40px; border-radius: 50%; background: #fff; color: #16a085; display: flex; align-items: center; justify-content: center; font-weight: 700; }
+    .nav-link-side { color: rgba(255,255,255,0.85) !important; padding: 10px 20px; display: flex; align-items: center; gap: 10px; font-size: 0.9rem; cursor: pointer; text-decoration: none; transition: background 0.15s; }
+    .nav-link-side:hover { background: rgba(255,255,255,0.1); color: white !important; }
+    .nav-link-side.active { background: rgba(255,255,255,0.2); border-left: 3px solid white; color: white !important; }
+    .nav-section { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: rgba(255,255,255,0.45); padding: 16px 20px 6px; }
+    .nav-link-side i { width: 18px; text-align: center; }
+    .main { margin-left: 240px; }
+    .proto-bar { background: #fff3cd; border: 1px solid #ffc107; border-top: none; padding: 6px 14px; font-size: 0.82rem; position: fixed; top: 0; right: 200px; z-index: 300; border-radius: 0 0 8px 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+    #fueni-lang-toggle { top: 8px !important; right: 20px !important; }
+    .content-area { padding: 48px 28px 40px; }
+
+    .page-head { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 18px; }
+    .page-head h4 { font-weight: 800; margin: 0; }
+    .page-head p { color: #7f8c8d; margin: 2px 0 0; }
+    .btn-patient { background: #16a085; border-color: #16a085; color: white; font-weight: 600; }
+    .btn-patient:hover { background: #138d75; border-color: #138d75; color: white; }
+
+    /* Tabs */
+    .rdv-tabs { display: flex; gap: 4px; border-bottom: 2px solid #e5e7eb; margin-bottom: 16px; flex-wrap: wrap; }
+    .rdv-tab { background: transparent; border: 0; color: #64748b; padding: 10px 18px; font-weight: 600; font-size: 0.92rem; cursor: pointer; border-bottom: 3px solid transparent; margin-bottom: -2px; }
+    .rdv-tab.active { color: #16a085; border-bottom-color: #16a085; }
+    .rdv-tab .cnt { display: inline-block; background: #eef2f6; color: #475569; border-radius: 20px; font-size: 0.72rem; font-weight: 700; padding: 1px 8px; margin-left: 6px; }
+    .rdv-tab.active .cnt { background: #d1f2eb; color: #117a65; }
+
+    .rdv-search { display: flex; align-items: center; gap: 8px; background: #fff; border: 1px solid #e5e7eb; border-radius: 10px; padding: 0 12px; height: 42px; max-width: 320px; margin-bottom: 16px; }
+    .rdv-search i { color: #94a3b8; }
+    .rdv-search input { border: 0; outline: none; width: 100%; font-size: 0.9rem; background: transparent; }
+
+    /* Card */
+    .rdv-card { background: #fff; border-radius: 14px; padding: 18px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 14px; display: flex; gap: 16px; align-items: center; }
+    .rdv-card.past { background: #fafbfc; }
+    .rdv-datebox { border-radius: 12px; padding: 12px 14px; text-align: center; min-width: 88px; color: #fff; background: linear-gradient(135deg, #16a085, #48c9b0); flex-shrink: 0; }
+    .rdv-datebox.grey { background: linear-gradient(135deg, #94a3b8, #cbd5e1); }
+    .rdv-datebox.red { background: linear-gradient(135deg, #e57373, #ef9a9a); }
+    .rdv-datebox .day { font-size: 1.7rem; font-weight: 800; line-height: 1; }
+    .rdv-datebox .mon { font-size: 0.74rem; text-transform: uppercase; letter-spacing: 1px; margin-top: 3px; }
+    .rdv-datebox .yr { font-size: 0.68rem; opacity: 0.85; }
+    .rdv-datebox .time { background: rgba(255,255,255,0.22); margin-top: 8px; padding: 3px 8px; border-radius: 6px; font-size: 0.82rem; font-weight: 700; }
+    .rdv-av { width: 50px; height: 50px; border-radius: 50%; background: #d1f2eb; color: #117a65; display: flex; align-items: center; justify-content: center; font-weight: 800; flex-shrink: 0; }
+    .rdv-info { flex: 1; min-width: 0; }
+    .rdv-info .doc { font-weight: 700; font-size: 1.05rem; }
+    .rdv-info .spec { font-size: 0.85rem; color: #16a085; font-weight: 600; }
+    .rdv-info .meta { font-size: 0.82rem; color: #64748b; margin-top: 5px; }
+    .rdv-info .meta i { color: #16a085; width: 15px; }
+    .rdv-side { display: flex; flex-direction: column; gap: 10px; align-items: flex-end; }
+    .rdv-status { padding: 4px 12px; border-radius: 20px; font-size: 0.76rem; font-weight: 700; white-space: nowrap; }
+    .st-confirmed { background: #e8f8f5; color: #117a65; }
+    .st-completed { background: #eef2f6; color: #5d6d7e; }
+    .st-cancelled { background: #fdedec; color: #c0392b; }
+    .rdv-actions { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+    .btn-act { background: #fff; border: 1px solid #e2e8f0; color: #334155; padding: 6px 12px; border-radius: 8px; font-size: 0.78rem; cursor: pointer; text-decoration: none; white-space: nowrap; }
+    .btn-act:hover { background: #e8f8f5; border-color: #16a085; color: #117a65; }
+    .btn-act.danger:hover { background: #fdedec; border-color: #c0392b; color: #c0392b; }
+
+    .empty { background: #fff; border-radius: 14px; padding: 56px 20px; text-align: center; color: #94a3b8; }
+    .empty i { font-size: 2.6rem; color: #d5dbdb; margin-bottom: 12px; }
+
+    /* Detail offcanvas */
+    .offcanvas-end { width: 400px; max-width: 92vw; }
+    .kv { display: flex; gap: 14px; padding: 11px 0; border-bottom: 1px solid #f1f5f9; }
+    .kv:last-child { border-bottom: 0; }
+    .kv .k { color: #94a3b8; font-size: 0.85rem; flex: 0 0 96px; }
+    .kv .v { color: #1e293b; font-weight: 600; font-size: 0.9rem; }
+    .price-info { background: #f1f5f9; border-radius: 10px; padding: 10px 12px; font-size: 0.8rem; color: #475569; margin-top: 14px; }
+
+    @media (max-width: 720px) {
+      .main { margin-left: 0; } .sidebar { position: static; width: 100%; min-height: auto; }
+      .rdv-card { flex-wrap: wrap; } .rdv-side { align-items: flex-start; width: 100%; }
+    }
+  </style>
+</head>
+<body data-i18n-pagetitle="mesrdv.page_title" data-i18n-toggle>
+
+  <div class="proto-bar d-flex align-items-center gap-3">
+    <span><i class="fa fa-eye me-1"></i> Espace Patient · <span data-i18n="mesrdv.title">Mes rendez-vous</span> · <a href="01-home.html" class="text-decoration-none">← <span data-i18n="dash.proto_home">Retour à l'accueil</span></a></span>
+  </div>
+
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="sidebar-brand">
+      <img src="assets/fueni-lockup-white.svg" alt="FUENI" style="height:30px;width:auto;display:block;margin-bottom:6px">
+      <small data-i18n="dash.sidebar.area">Espace Patient</small>
+    </div>
+    <div class="sidebar-user d-flex align-items-center gap-2">
+      <div class="avatar" id="userAvatar">AD</div>
+      <div>
+        <div class="text-white fw-semibold small" id="userFullName">Aïssatou Diop</div>
+        <div style="color:rgba(255,255,255,0.65); font-size:0.72rem;">
+          <i class="fa fa-circle-check me-1"></i><span data-i18n="dash.sidebar.verified">Compte vérifié</span>
+        </div>
+      </div>
+    </div>
+    <div class="nav-section" data-i18n="dash.sidebar.section_my_space">Mon espace</div>
+    <a href="05-patient-dashboard.html" class="nav-link-side"><i class="fa fa-home"></i><span data-i18n="dash.sidebar.dashboard">Tableau de bord</span></a>
+    <a class="nav-link-side active"><i class="fa fa-calendar-check"></i><span data-i18n="dash.sidebar.my_appts">Mes RDV</span></a>
+    <a href="28-patient-search.html" class="nav-link-side"><i class="fa fa-plus-circle"></i><span data-i18n="dash.sidebar.book">Prendre RDV</span></a>
+    <a href="09-patient-documents.html" class="nav-link-side"><i class="fa fa-folder"></i><span data-i18n="dash.sidebar.my_docs">Mes documents</span></a>
+    <div class="nav-section" data-i18n="dash.sidebar.section_account">Mon compte</div>
+    <a href="06-patient-profile.html" class="nav-link-side"><i class="fa fa-user"></i><span data-i18n="dash.sidebar.my_profile">Mon profil</span></a>
+    <a href="07-account-security.html" class="nav-link-side"><i class="fa fa-shield-halved"></i><span data-i18n="dash.sidebar.security">Connexion & sécurité</span></a>
+    <div class="nav-section" data-i18n="dash.sidebar.section_help">Aide</div>
+    <a class="nav-link-side"><i class="fa fa-circle-question"></i><span data-i18n="dash.sidebar.faq">FAQ</span></a>
+    <a class="nav-link-side"><i class="fa fa-headset"></i><span data-i18n="dash.sidebar.support">Contacter le support</span></a>
+    <a href="10-login.html" class="nav-link-side" onclick="try{sessionStorage.setItem('fueni_logout','1');sessionStorage.removeItem('fueni_auth');sessionStorage.removeItem('fueni_user')}catch(e){}"><i class="fa fa-right-from-bracket"></i><span data-i18n="dash.sidebar.logout">Se déconnecter</span></a>
+  </div>
+
+  <!-- Main -->
+  <div class="main">
+    <div class="content-area">
+
+      <div class="page-head">
+        <div>
+          <h4 data-i18n="mesrdv.title">Mes rendez-vous</h4>
+          <p data-i18n="mesrdv.subtitle">Vos rendez-vous à venir, passés et annulés.</p>
+        </div>
+        <a href="28-patient-search.html" class="btn btn-patient"><i class="fa fa-plus me-2"></i><span data-i18n="mesrdv.new_btn">Prendre un RDV</span></a>
+      </div>
+
+      <div class="rdv-tabs" id="tabs">
+        <button class="rdv-tab active" data-tab="upcoming" onclick="setTab('upcoming')"><span data-i18n="mesrdv.tab_upcoming">À venir</span><span class="cnt" id="cUpcoming">0</span></button>
+        <button class="rdv-tab" data-tab="past" onclick="setTab('past')"><span data-i18n="mesrdv.tab_past">Passés</span><span class="cnt" id="cPast">0</span></button>
+        <button class="rdv-tab" data-tab="cancelled" onclick="setTab('cancelled')"><span data-i18n="mesrdv.tab_cancelled">Annulés</span><span class="cnt" id="cCancelled">0</span></button>
+      </div>
+
+      <div class="rdv-search">
+        <i class="fa fa-search"></i>
+        <input id="q" type="text" data-i18n-placeholder="mesrdv.search_ph" placeholder="Rechercher (médecin, spécialité, motif)…" oninput="render()">
+      </div>
+
+      <div id="list"></div>
+
+    </div>
+  </div>
+
+  <!-- Detail offcanvas -->
+  <div class="offcanvas offcanvas-end" tabindex="-1" id="rdvDetail" aria-labelledby="rdvDetailTitle">
+    <div class="offcanvas-header">
+      <h5 class="offcanvas-title fw-bold" id="rdvDetailTitle" data-i18n="mesrdv.detail_title">Détail du rendez-vous</h5>
+      <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body">
+      <div id="detailBody"></div>
+      <div class="d-grid gap-2 mt-3" id="detailFoot"></div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="position-fixed bottom-0 end-0 p-3" style="z-index:1100">
+    <div id="toast" class="toast align-items-center text-bg-dark border-0" role="alert">
+      <div class="d-flex"><div class="toast-body" id="toastMsg"></div>
+        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    const APPT_KEY = 'fueni_appointments';
+    const T = k => (window.NazI18n ? NazI18n.t(k) : k);
+    const lang = () => (window.NazI18n ? NazI18n.getLang() : 'fr');
+    const locale = () => (lang() === 'en' ? 'en-US' : 'fr-FR');
+    const fmt = n => (n || 0).toLocaleString(locale());
+    const esc = s => (s == null ? '' : String(s)).replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
+    const initials = n => (n || 'D').replace(/^Dr\.?\s*/i, '').split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
+
+    // Rendez-vous de démonstration (fusionnés avec les réservations réelles du parcours 27).
+    const DEMO = [
+      { id:'demo_u1', doctor:'Dr Mamadou Sow', spec:'Cardiologie', locationName:'Cabinet Médical Plateau', locationAddr:'Av. Senghor, Dakar', motif:'Consultation générale', duration:30, price:10000, currency:'XOF', dateISO:'2026-08-04', time:'15:30', reason:'Palpitations depuis 2 semaines', status:'CONFIRMED' },
+      { id:'demo_u2', doctor:'Dr Fatou Ndiaye', spec:'Médecine générale', locationName:'Clinique Pasteur', locationAddr:'Médina, Dakar', motif:'Suivi / renouvellement', duration:20, price:6000, currency:'XOF', dateISO:'2026-08-11', time:'10:00', reason:'', status:'CONFIRMED' },
+      { id:'demo_p1', doctor:'Dr Cheikh Diop', spec:'Médecine générale', locationName:'Polyclinique Hâtim', locationAddr:'Ouakam, Dakar', motif:'Suivi', duration:30, price:8000, currency:'XOF', dateISO:'2026-07-20', time:'09:30', reason:'', status:'COMPLETED' },
+      { id:'demo_p2', doctor:'Dr Aminata Mbaye', spec:'Dermatologie', locationName:'Cabinet Le Patio', locationAddr:'Sacré-Cœur, Dakar', motif:'Consultation', duration:20, price:12000, currency:'XOF', dateISO:'2026-07-06', time:'14:00', reason:'', status:'COMPLETED' },
+      { id:'demo_c1', doctor:'Dr Ousmane Ba', spec:'Ophtalmologie', locationName:'Centre Vision', locationAddr:'Plateau, Dakar', motif:'Bilan visuel', duration:30, price:15000, currency:'XOF', dateISO:'2026-07-27', time:'11:00', reason:'', status:'CANCELLED' }
+    ];
+
+    let APPTS = [];
+    let curTab = 'upcoming';
+
+    function load() {
+      let stored = [];
+      try { stored = JSON.parse(localStorage.getItem(APPT_KEY) || '[]'); } catch (e) {}
+      const storedMarked = (Array.isArray(stored) ? stored : []).map(a => Object.assign({}, a, { _stored: true }));
+      const seen = new Set(storedMarked.map(a => a.id));
+      const demo = DEMO.filter(a => !seen.has(a.id)).map(a => Object.assign({}, a));
+      APPTS = storedMarked.concat(demo);
+    }
+    function persistStored() {
+      try {
+        const stored = APPTS.filter(a => a._stored).map(a => { const c = Object.assign({}, a); delete c._stored; return c; });
+        localStorage.setItem(APPT_KEY, JSON.stringify(stored));
+      } catch (e) {}
+    }
+
+    function dateOf(a) { const p = (a.dateISO || '').split('-').map(Number); const t = (a.time || '00:00').split(':').map(Number); return new Date(p[0], (p[1] || 1) - 1, p[2] || 1, t[0] || 0, t[1] || 0); }
+    function bucketOf(a) {
+      if (a.status === 'CANCELLED') return 'cancelled';
+      if (dateOf(a).getTime() >= Date.now() && a.status !== 'COMPLETED') return 'upcoming';
+      return 'past';
+    }
+    const byId = id => APPTS.find(a => a.id === id);
+
+    function counts() {
+      const c = { upcoming: 0, past: 0, cancelled: 0 };
+      APPTS.forEach(a => c[bucketOf(a)]++);
+      document.getElementById('cUpcoming').textContent = c.upcoming;
+      document.getElementById('cPast').textContent = c.past;
+      document.getElementById('cCancelled').textContent = c.cancelled;
+    }
+
+    function statusPill(bucket) {
+      if (bucket === 'upcoming') return '<span class="rdv-status st-confirmed"><i class="fa fa-circle-check me-1"></i>' + T('mesrdv.status_confirmed') + '</span>';
+      if (bucket === 'cancelled') return '<span class="rdv-status st-cancelled"><i class="fa fa-ban me-1"></i>' + T('mesrdv.status_cancelled') + '</span>';
+      return '<span class="rdv-status st-completed"><i class="fa fa-check me-1"></i>' + T('mesrdv.status_completed') + '</span>';
+    }
+    function dateBox(a, bucket) {
+      const dt = dateOf(a);
+      const cls = bucket === 'upcoming' ? '' : (bucket === 'cancelled' ? 'red' : 'grey');
+      return '<div class="rdv-datebox ' + cls + '">' +
+        '<div class="day">' + dt.getDate() + '</div>' +
+        '<div class="mon">' + dt.toLocaleDateString(locale(), { month: 'short' }).replace('.', '') + '</div>' +
+        '<div class="yr">' + dt.getFullYear() + '</div>' +
+        '<div class="time">' + esc(a.time) + '</div></div>';
+    }
+    function actionsFor(a, bucket) {
+      const details = '<button class="btn-act" onclick="openDetail(\'' + a.id + '\')"><i class="fa fa-eye me-1"></i>' + T('mesrdv.act_details') + '</button>';
+      if (bucket === 'upcoming') {
+        return details +
+          '<button class="btn-act" onclick="addToCalendar(\'' + a.id + '\')"><i class="fa fa-calendar-plus me-1"></i>' + T('mesrdv.act_calendar') + '</button>' +
+          '<button class="btn-act danger" onclick="cancelAppt(\'' + a.id + '\')"><i class="fa fa-xmark me-1"></i>' + T('mesrdv.act_cancel') + '</button>';
+      }
+      return details + '<a class="btn-act" href="28-patient-search.html?q=' + encodeURIComponent(a.doctor) + '"><i class="fa fa-rotate-right me-1"></i>' + T('mesrdv.act_rebook') + '</a>';
+    }
+
+    const norm = s => (s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
+    function render() {
+      counts();
+      const qn = norm(document.getElementById('q').value);
+      let list = APPTS.filter(a => bucketOf(a) === curTab);
+      if (qn) list = list.filter(a => norm(a.doctor + ' ' + a.spec + ' ' + (a.motif || '')).includes(qn));
+      list.sort((x, y) => curTab === 'upcoming' ? dateOf(x) - dateOf(y) : dateOf(y) - dateOf(x));
+      const box = document.getElementById('list');
+      if (!list.length) {
+        box.innerHTML = '<div class="empty"><i class="fa fa-calendar-xmark d-block"></i><div>' + T('mesrdv.empty_' + curTab) + '</div>' +
+          '<a href="28-patient-search.html" class="btn btn-patient mt-3"><i class="fa fa-plus me-2"></i>' + T('mesrdv.new_btn') + '</a></div>';
+        return;
+      }
+      box.innerHTML = list.map(a => {
+        const b = bucketOf(a);
+        return '<div class="rdv-card' + (b === 'past' ? ' past' : '') + '">' +
+          dateBox(a, b) +
+          '<div class="rdv-av">' + initials(a.doctor) + '</div>' +
+          '<div class="rdv-info">' +
+            '<div class="doc">' + esc(a.doctor) + '</div>' +
+            '<div class="spec">' + esc(a.spec) + '</div>' +
+            '<div class="meta"><i class="fa fa-location-dot"></i> ' + esc(a.locationName) + (a.locationAddr ? ' · ' + esc(a.locationAddr) : '') + '</div>' +
+            '<div class="meta"><i class="fa fa-stethoscope"></i> ' + esc(a.motif || '') + (a.reason ? ' — ' + esc(a.reason) : '') + '</div>' +
+          '</div>' +
+          '<div class="rdv-side">' + statusPill(b) + '<div class="rdv-actions">' + actionsFor(a, b) + '</div></div>' +
+        '</div>';
+      }).join('');
+    }
+
+    function setTab(t) {
+      curTab = t;
+      document.querySelectorAll('.rdv-tab').forEach(el => el.classList.toggle('active', el.dataset.tab === t));
+      render();
+    }
+
+    let detailOff = null;
+    function openDetail(id) {
+      const a = byId(id); if (!a) return;
+      const b = bucketOf(a);
+      const dt = dateOf(a);
+      const when = dt.toLocaleDateString(locale(), { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) + ' · ' + a.time;
+      const rows = [
+        [T('mesrdv.d_doctor'), esc(a.doctor) + ' — ' + esc(a.spec)],
+        [T('mesrdv.d_when'), esc(when)],
+        [T('mesrdv.d_loc'), esc(a.locationName) + (a.locationAddr ? ', ' + esc(a.locationAddr) : '')],
+        [T('mesrdv.d_motif'), esc(a.motif || '') + (a.duration ? ' (' + a.duration + ' ' + T('mesrdv.min') + ')' : '')],
+        [T('mesrdv.d_status'), statusPill(b)]
+      ];
+      if (a.reason) rows.push([T('mesrdv.d_reason'), esc(a.reason)]);
+      let html = rows.map(r => '<div class="kv"><span class="k">' + r[0] + '</span><span class="v">' + r[1] + '</span></div>').join('');
+      if (a.price != null) {
+        html += '<div class="price-info"><i class="fa fa-circle-info me-1"></i>' + T('mesrdv.d_price') + ' <b>' + fmt(a.price) + ' ' + esc(a.currency || 'XOF') + '</b> — ' + T('mesrdv.price_note') + '</div>';
+      }
+      document.getElementById('detailBody').innerHTML = html;
+      let foot = '';
+      if (b === 'upcoming') {
+        foot = '<button class="btn btn-patient" onclick="addToCalendar(\'' + a.id + '\')"><i class="fa fa-calendar-plus me-2"></i>' + T('mesrdv.act_calendar') + '</button>' +
+               '<button class="btn btn-outline-danger" onclick="cancelAppt(\'' + a.id + '\')"><i class="fa fa-xmark me-2"></i>' + T('mesrdv.act_cancel') + '</button>';
+      } else {
+        foot = '<a class="btn btn-patient" href="28-patient-search.html?q=' + encodeURIComponent(a.doctor) + '"><i class="fa fa-rotate-right me-2"></i>' + T('mesrdv.act_rebook') + '</a>';
+      }
+      document.getElementById('detailFoot').innerHTML = foot;
+      detailOff = detailOff || new bootstrap.Offcanvas(document.getElementById('rdvDetail'));
+      detailOff.show();
+    }
+
+    function cancelAppt(id) {
+      const a = byId(id); if (!a) return;
+      if (!window.confirm(T('mesrdv.cancel_confirm').replace('{doctor}', a.doctor))) return;
+      a.status = 'CANCELLED';
+      persistStored();
+      if (detailOff) detailOff.hide();
+      curTab = 'cancelled';
+      document.querySelectorAll('.rdv-tab').forEach(el => el.classList.toggle('active', el.dataset.tab === 'cancelled'));
+      render();
+      toast(T('mesrdv.cancel_toast'));
+    }
+
+    function pad(n) { return String(n).padStart(2, '0'); }
+    function addToCalendar(id) {
+      const a = byId(id); if (!a) return;
+      const s = dateOf(a), e = new Date(s.getTime() + (a.duration || 30) * 60000);
+      const stamp = d => d.getFullYear() + pad(d.getMonth() + 1) + pad(d.getDate()) + 'T' + pad(d.getHours()) + pad(d.getMinutes()) + '00';
+      const cl = t => (t || '').replace(/([,;\\])/g, '\\$1').replace(/\n/g, ' ');
+      const ics = [
+        'BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//FUENI//RDV//FR', 'CALSCALE:GREGORIAN',
+        'BEGIN:VEVENT', 'UID:' + a.id + '@fueni', 'DTSTAMP:' + stamp(new Date()),
+        'DTSTART:' + stamp(s), 'DTEND:' + stamp(e),
+        'SUMMARY:' + cl((a.motif || 'Rendez-vous') + ' — ' + a.doctor),
+        'LOCATION:' + cl(a.locationName + (a.locationAddr ? ', ' + a.locationAddr : '')),
+        'DESCRIPTION:' + cl(a.spec + (a.reason ? ' — ' + a.reason : '')),
+        'END:VEVENT', 'END:VCALENDAR'
+      ].join('\r\n');
+      const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a'); link.href = url; link.download = 'rdv-' + a.id + '.ics';
+      document.body.appendChild(link); link.click(); document.body.removeChild(link);
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      toast(T('mesrdv.calendar_toast'));
+    }
+
+    let toastObj = null;
+    function toast(msg) {
+      document.getElementById('toastMsg').textContent = msg;
+      toastObj = toastObj || new bootstrap.Toast(document.getElementById('toast'), { delay: 2600 });
+      toastObj.show();
+    }
+
+    function applyUserDisplay() {
+      try {
+        const u = JSON.parse(sessionStorage.getItem('fueni_user') || '{}');
+        const first = (u.firstName || '').trim(), last = (u.lastName || '').trim();
+        if (!first && !last) return;
+        document.getElementById('userFullName').textContent = (first + ' ' + last).trim();
+        document.getElementById('userAvatar').textContent = ((first[0] || '') + (last[0] || '')).toUpperCase() || 'P';
+      } catch (e) {}
+    }
+
+    function init() { load(); applyUserDisplay(); render(); }
+    document.addEventListener('fueni:langchange', render);
+    if (window.NazI18n) init(); else document.addEventListener('DOMContentLoaded', init);
+  </script>
+
+  <!-- Prototype version badge -->
+  <script>(function(){if(window.__pv)return;window.__pv=1;var v=document.createElement('div');v.style.cssText='position:fixed;top:0;left:50%;transform:translateX(-50%);background:#155e75;color:#fff;padding:6px 20px;border-radius:0 0 16px 16px;font:600 12px/1 system-ui,-apple-system,sans-serif;letter-spacing:.6px;z-index:99999;box-shadow:0 3px 10px rgba(0,0,0,.2);text-transform:uppercase;display:flex;align-items:center;gap:8px';v.innerHTML='🧪 Prototype <span style="background:#f59e0b;color:#1a1a1a;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:4px">v1.4.0</span><span style="background:#facc15;color:#1a1a1a;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:4px;text-transform:none;letter-spacing:0">⏳ À valider</span>';document.body.appendChild(v);})();</script>
+</body>
+</html>

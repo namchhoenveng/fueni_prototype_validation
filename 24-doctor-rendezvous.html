@@ -115,13 +115,22 @@
     .today-rdv .tm { color:#64748b; font-size:0.78rem; margin-top:2px; }
     .legend-row { display:flex; align-items:center; gap:9px; font-size:0.83rem; padding:5px 0; color:#475569; }
     .legend-dot { width:12px; height:12px; border-radius:4px; flex-shrink:0; }
+    .lbl-sys { color:#94a3b8; font-size:0.72rem; font-weight:600; }
+    .lbl-del { color:#cbd5e1; cursor:pointer; font-weight:700; padding:0 4px; }
+    .lbl-del:hover { color:#dc2626; }
+    .add-label-btn { border:0; background:none; color:#155e75; font-weight:600; font-size:0.82rem; cursor:pointer; padding:6px 0; display:inline-flex; align-items:center; }
+    .add-label-form { background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:10px; margin:2px 0 8px; }
+    .add-label-input { width:100%; border:1px solid #cbd5e1; border-radius:6px; padding:6px 9px; font-size:0.85rem; }
+    .swatches { display:flex; flex-wrap:wrap; gap:8px; margin-top:8px; }
+    .sw { width:22px; height:22px; border-radius:6px; cursor:pointer; border:2px solid transparent; box-sizing:border-box; }
+    .sw.sel { border-color:#0f172a; }
+    .btn-al-add { background:#155e75; border:0; color:#fff; font-weight:600; border-radius:6px; padding:6px 12px; font-size:0.82rem; }
+    .btn-al-cancel { background:#eef2f6; border:0; color:#475569; font-weight:600; border-radius:6px; padding:6px 12px; font-size:0.82rem; }
+    .np-dot { display:inline-block; width:9px; height:9px; border-radius:3px; margin-right:6px; vertical-align:middle; }
 
     .stat-tile { background:#fff; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.04); padding:12px 14px; display:flex; align-items:center; gap:12px; }
     .stat-tile .n { font-size:1.3rem; font-weight:800; color:#0f172a; line-height:1; }
     .stat-tile .l { font-size:0.74rem; color:#94a3b8; font-weight:600; }
-    .stat-urgent { cursor:pointer; border:1.5px solid transparent; transition:border-color .15s, background .15s; }
-    .stat-urgent:hover { border-color:#fed7aa; }
-    .stat-urgent.active { border-color:#c2410c; background:#fff7ed; }
 
     .np { padding:6px 14px; border-radius:20px; font-size:0.82rem; font-weight:600; border:1.5px solid #e2e8f0; background:#fff; color:#475569; cursor:pointer; }
     .np.sel { background:#eef5f7; color:#155e75; border-color:#155e75; }
@@ -170,7 +179,7 @@
       <div class="row g-3 mb-3">
         <div class="col-sm-6 col-lg-4"><div class="stat-tile"><div class="ic" style="width:40px;height:40px;border-radius:11px;background:#e0f2f1;color:#0e7490;display:flex;align-items:center;justify-content:center;"><i class="fa fa-calendar-day"></i></div><div><div class="n" id="stToday">0</div><div class="l" data-i18n="docrdv.stat_today">RDV aujourd'hui</div></div></div></div>
         <div class="col-sm-6 col-lg-4"><div class="stat-tile"><div class="ic" style="width:40px;height:40px;border-radius:11px;background:#ede9fe;color:#5b21b6;display:flex;align-items:center;justify-content:center;"><i class="fa fa-calendar-week"></i></div><div><div class="n" id="stWeek">0</div><div class="l" data-i18n="docrdv.stat_week">RDV à venir (7 j)</div></div></div></div>
-        <div class="col-sm-6 col-lg-4"><div class="stat-tile stat-urgent" id="urgTile" onclick="toggleUrgentFilter()" title="" role="button"><div class="ic" style="width:40px;height:40px;border-radius:11px;background:#fef1e7;color:#c2410c;display:flex;align-items:center;justify-content:center;"><i class="fa fa-truck-medical"></i></div><div><div class="n" id="stUrgent" style="color:#c2410c;">0</div><div class="l" data-i18n="docrdv.stat_urgent">Urgences aujourd'hui</div></div></div></div>
+        <div class="col-sm-6 col-lg-4"><div class="stat-tile"><div class="ic" style="width:40px;height:40px;border-radius:11px;background:#e0f2fe;color:#0369a1;display:flex;align-items:center;justify-content:center;"><i class="fa fa-clock"></i></div><div><div class="n" id="stNext" style="color:#0369a1;">—</div><div class="l" data-i18n="docrdv.stat_next">Prochain RDV</div></div></div></div>
       </div>
 
       <div class="toolbar">
@@ -197,8 +206,14 @@
         <div class="side-card">
           <h6 class="side-title" id="sideToday"></h6>
           <div id="todayList"></div>
-          <h6 class="side-title mt-4"><i class="fa fa-palette me-1"></i><span data-i18n="docrdv.legend">Légende</span></h6>
+          <h6 class="side-title mt-4"><i class="fa fa-tags me-1"></i><span data-i18n="docrdv.labels_title">Étiquettes</span></h6>
           <div id="legend"></div>
+          <button type="button" class="add-label-btn" onclick="toggleAddLabel()"><i class="fa fa-plus me-1"></i><span data-i18n="docrdv.new_label">Nouvelle étiquette</span></button>
+          <div id="addLabelForm" class="add-label-form d-none">
+            <input type="text" id="newLabelName" class="add-label-input" maxlength="30" data-i18n-placeholder="docrdv.label_ph" placeholder="Nom de l'étiquette…" onkeydown="if(event.key==='Enter'){event.preventDefault();addLabel();}">
+            <div class="swatches" id="labelSwatches"></div>
+            <div class="d-flex gap-2 mt-2"><button type="button" class="btn-al-add" onclick="addLabel()" data-i18n="docrdv.add">Ajouter</button><button type="button" class="btn-al-cancel" onclick="toggleAddLabel()" data-i18n="docrdv.act_cancel">Annuler</button></div>
+          </div>
 
           <h6 class="side-title mt-4"><i class="fa fa-sliders me-1"></i><span data-i18n="docrdv.avail_title">Disponibilités</span></h6>
           <p class="text-muted mb-2" style="font-size:0.8rem;line-height:1.5;" data-i18n="docrdv.avail_source">Les créneaux réservables suivent vos horaires de consultation.</p>
@@ -236,20 +251,13 @@
                 <label class="form-label fw-semibold small" data-i18n="docrdv.m_nature">Nature</label>
                 <div class="d-flex gap-2 flex-wrap" id="naturePills"></div>
               </div>
-              <div class="col-md-8">
+              <div class="col-12">
                 <label class="form-label fw-semibold small" data-i18n="docrdv.m_patient">Patient</label>
                 <input list="patientList" class="form-control" id="cPatient" data-i18n-placeholder="docrdv.m_patient_ph" placeholder="Rechercher un patient…">
                 <datalist id="patientList">
                   <option value="Mariam Diallo"><option value="Ousmane Sow"><option value="Awa Faye"><option value="Ibrahima Bâ">
                   <option value="Fatou Ndiaye"><option value="Modou Cissé"><option value="Rokhaya Diop"><option value="Samba Gueye">
                 </datalist>
-              </div>
-              <div class="col-md-4">
-                <label class="form-label fw-semibold small" data-i18n="docrdv.m_mode">Mode</label>
-                <select class="form-select" id="cMode">
-                  <option value="cab" data-i18n="docrdv.m_presentiel">Présentiel</option>
-                  <option value="tele" data-i18n="docrdv.m_tele">Téléconsultation</option>
-                </select>
               </div>
               <div class="col-12">
                 <label class="form-label fw-semibold small" data-i18n="docrdv.m_titlef">Motif</label>
@@ -269,7 +277,7 @@
               </div>
               <div class="col-12">
                 <div class="alert py-2 small mb-0" style="background:#ecfeff;color:#155e75;border:1px solid #a5f3fc;border-radius:10px;">
-                  <i class="fa fa-bell me-1"></i><span data-i18n="docrdv.m_notif">Notifications automatiques : SMS + e-mail envoyés au patient à la création, puis rappels avant le rendez-vous.</span>
+                  <i class="fa fa-bell me-1"></i><span data-i18n="docrdv.m_notif">Une confirmation par e-mail sera envoyée au patient. (Rappels et notifications SMS : post-MVP.)</span>
                 </div>
               </div>
             </div>
@@ -317,21 +325,57 @@
     const TODAY = '2026-07-10';
     let cur = TODAY, view = 'week', fNature = 'all', fStatus = 'all';
 
-    const NATURES = ['consultation', 'suivi', 'urgence', 'teleconsult', 'reunion'];
-    const NAT_COLOR = { consultation:'#2563eb', suivi:'#059669', urgence:'#dc2626', teleconsult:'#7c3aed', reunion:'#f59e0b' };
+    // Étiquettes (style Google Agenda). Les RDV patients portent l'étiquette « Consultation »
+    // (bleu, système, non supprimable) ; le docteur peut créer ses propres étiquettes (libellé libre + couleur).
+    let LABELS = [
+      { id: 'consultation', name: 'Consultation', color: '#2563eb', system: true },
+      { id: 'reunion', name: 'Réunion', color: '#f59e0b' },
+      { id: 'domicile', name: 'Visite à domicile', color: '#7c3aed' }
+    ];
+    const labelOf = id => LABELS.find(l => l.id === id) || LABELS[0];
+    const escL = s => (s == null ? '' : String(s)).replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
+    const labelTag = id => { const l = labelOf(id); return '<span class="nat-tag" style="background:' + l.color + '22;color:' + l.color + '">' + escL(l.name) + '</span>'; };
+    // Création d'étiquette (libellé libre + couleur) — style Google Agenda
+    const SWATCHES = ['#2563eb', '#059669', '#dc2626', '#7c3aed', '#f59e0b', '#0891b2', '#db2777', '#64748b'];
+    let newLabelColor = SWATCHES[1];
+    function toggleAddLabel() {
+      const f = document.getElementById('addLabelForm'); const opening = f.classList.contains('d-none');
+      f.classList.toggle('d-none');
+      if (opening) { document.getElementById('newLabelName').value = ''; newLabelColor = SWATCHES[1]; renderSwatches(); document.getElementById('newLabelName').focus(); }
+    }
+    function renderSwatches() {
+      document.getElementById('labelSwatches').innerHTML = SWATCHES.map(c =>
+        '<span class="sw' + (c === newLabelColor ? ' sel' : '') + '" style="background:' + c + '" onclick="pickSwatch(\'' + c + '\')"></span>').join('');
+    }
+    function pickSwatch(c) { newLabelColor = c; renderSwatches(); }
+    function addLabel() {
+      const name = document.getElementById('newLabelName').value.trim(); if (!name) return;
+      LABELS.push({ id: 'lbl' + Date.now(), name: name, color: newLabelColor });
+      toggleAddLabel(); render();
+    }
+    function removeLabel(id) {
+      const lab = labelOf(id); if (!lab || lab.system) return;
+      const used = RDV.filter(r => r.nature === id).length;
+      if (used > 0) { toast('« ' + lab.name + ' » — ' + used + ' ' + T('docrdv.lbl_del_inuse')); return; } // bloqué si utilisée
+      if (!window.confirm(T('docrdv.lbl_del_confirm_pre') + lab.name + T('docrdv.lbl_del_confirm_post'))) return;
+      LABELS = LABELS.filter(l => l.id !== id);
+      if (fNature === id) fNature = 'all';
+      render();
+      toast(T('docrdv.lbl_del_toast'));
+    }
 
     // Rendez-vous de démo (semaine du 6 au 12 juillet 2026 ; aujourd'hui = ven. 10)
     const RDV = [
       { date:'2026-07-06', start:'09:00', end:'10:30', ini:'AD', name:'Aïssatou Diop',  motif:'Consultation générale', nature:'consultation', status:'confirmed', loc:'loc1' },
-      { date:'2026-07-06', start:'15:00', end:'16:00', ini:'AR', name:'Antoine Rousseau', motif:'Bilan lipidique',      nature:'suivi',        status:'confirmed', loc:'loc1' },
-      { date:'2026-07-07', start:'08:00', end:'09:00', ini:'FM', name:'François Moreau', motif:'Suivi cardio',          nature:'suivi',        status:'confirmed', loc:'loc1' },
+      { date:'2026-07-06', start:'15:00', end:'16:00', ini:'AR', name:'Antoine Rousseau', motif:'Bilan lipidique',      nature:'consultation', status:'confirmed', loc:'loc1' },
+      { date:'2026-07-07', start:'09:00', end:'10:00', ini:'FM', name:'François Moreau', motif:'Suivi cardio',          nature:'consultation', status:'confirmed', loc:'loc1' },
       { date:'2026-07-07', start:'11:00', end:'12:00', ini:'FN', name:'Fatou Ndiaye',    motif:'Asthme',                nature:'consultation', status:'confirmed', loc:'loc1' },
-      { date:'2026-07-06', start:'18:00', end:'18:30', ini:'AF', name:'Awa Faye',        motif:'Téléconsultation',      nature:'teleconsult',  status:'confirmed', loc:'loc3' },
-      { date:'2026-07-09', start:'14:00', end:'15:00', ini:'IS', name:'Ibrahima Sow',    motif:'Drépanocytose',         nature:'consultation', status:'confirmed', loc:'loc1' },
-      { date:'2026-07-10', start:'09:00', end:'10:00', ini:'MD', name:'Mamadou Diallo',  motif:'Décompensation diabétique', nature:'urgence',  status:'confirmed', loc:'loc1' },
+      { date:'2026-07-08', start:'10:00', end:'11:30', ini:'HV', name:'Visite à domicile', motif:'M. Sarr — pansement', nature:'domicile',     status:'confirmed', loc:'loc1' },
+      { date:'2026-07-09', start:'15:00', end:'16:00', ini:'IS', name:'Ibrahima Sow',    motif:'Drépanocytose',         nature:'consultation', status:'confirmed', loc:'loc1' },
+      { date:'2026-07-10', start:'09:00', end:'10:00', ini:'MD', name:'Mamadou Diallo',  motif:'Décompensation diabétique', nature:'consultation', status:'confirmed', loc:'loc1' },
       { date:'2026-07-10', start:'11:00', end:'12:00', ini:'ST', name:'Staff cabinet',   motif:'Réunion hebdomadaire',  nature:'reunion',      status:'confirmed', loc:'loc1' },
-      { date:'2026-07-10', start:'18:00', end:'19:00', ini:'RD', name:'Rokhaya Diop',    motif:'Suivi grossesse',       nature:'suivi',        status:'confirmed', loc:'loc3' },
-      { date:'2026-07-14', start:'18:00', end:'18:30', ini:'MC', name:'Modou Cissé',     motif:'Renouvellement',        nature:'teleconsult',  status:'confirmed', loc:'loc3' }
+      { date:'2026-07-10', start:'10:00', end:'11:00', ini:'RD', name:'Rokhaya Diop',    motif:'Suivi grossesse',       nature:'consultation', status:'confirmed', loc:'loc1' },
+      { date:'2026-07-14', start:'15:00', end:'15:30', ini:'MC', name:'Modou Cissé',     motif:'Renouvellement',        nature:'consultation', status:'confirmed', loc:'loc1' }
     ];
 
     // Créneaux bloqués — exceptions par-dessus les horaires. loc absent = tous les lieux (ex. congé).
@@ -451,7 +495,8 @@
         const rdvHtml = RDV.map((r, idx) => ({ r, idx })).filter(o => o.r.date === ds && pass(o.r)).map(o => {
           const r = o.r; const top = (toMin(r.start) - START * 60) / 60 * HH;
           const hgt = Math.max(26, (toMin(r.end) - toMin(r.start)) / 60 * HH - 3);
-          return '<div class="rdv-card nat-' + r.nature + (r.status === 'cancelled' ? ' cancelled' : '') + '" style="top:' + top + 'px;height:' + hgt + 'px" onclick="openDetail(' + o.idx + ')">' +
+          const c = labelOf(r.nature).color;
+          return '<div class="rdv-card' + (r.status === 'cancelled' ? ' cancelled' : '') + '" style="top:' + top + 'px;height:' + hgt + 'px;border-left:3px solid ' + c + ';background:' + c + '1a" onclick="openDetail(' + o.idx + ')">' +
             '<div class="rt">' + r.start + '</div><div class="rs">' + r.name + '</div></div>';
         }).join('');
         return '<div class="wk-col' + (ds === TODAY ? ' today' : '') + (wknd ? ' weekend' : '') + '" style="height:' + H + 'px" onclick="colClick(event,\'' + ds + '\')" title="' + T('docrdv.slot_new') + '">' + availHtml + blockHtml + rdvHtml + '</div>';
@@ -475,7 +520,7 @@
       const grid = cells.map(c => {
         const ds = iso(c.dt); const items = (byDate[ds] || []);
         let dots = '';
-        items.slice(0, 4).forEach(r => dots += '<span class="cal-dot" style="background:' + NAT_COLOR[r.nature] + '"></span>');
+        items.slice(0, 4).forEach(r => dots += '<span class="cal-dot" style="background:' + labelOf(r.nature).color + '"></span>');
         if (items.length > 4) dots += '<span class="cal-more">+' + (items.length - 4) + '</span>';
         if (blk[ds]) dots += '<span class="cal-dot" style="background:#cbd5e1" title="' + T('docrdv.unavailable') + '"></span>';
         return '<div class="cal-cell' + (c.out ? ' out' : '') + (ds === TODAY ? ' today' : '') + '" onclick="pickDay(\'' + ds + '\')"><div class="cal-num">' + c.dt.getDate() + '</div><div class="cal-appts">' + dots + '</div></div>';
@@ -501,7 +546,7 @@
           html += '<div class="list-row" onclick="openDetail(' + o.idx + ')">' +
             '<div class="list-time">' + r.start + ' <span class="e">→ ' + r.end + '</span></div>' +
             '<div class="list-body"><div class="list-t">' + r.name + '</div><div class="list-m">' + r.motif + '</div></div>' +
-            '<span class="nat-tag nat-' + r.nature + '">' + T('docrdv.nat_' + r.nature) + '</span></div>';
+            labelTag(r.nature) + '</div>';
         } else {
           const b = o.b;
           html += '<div class="list-row" onclick="openBlockDetail(' + o.bi + ')">' +
@@ -517,10 +562,12 @@
       document.getElementById('sideToday').innerHTML = '<i class="fa fa-bolt me-1"></i>' + T('docrdv.today_btn') + ' — ' + dObj(TODAY).toLocaleDateString(lang(), { day:'numeric', month:'long' });
       const today = RDV.filter(r => r.date === TODAY && r.status !== 'cancelled').sort((a, b) => a.start.localeCompare(b.start));
       document.getElementById('todayList').innerHTML = today.length ? today.map(r =>
-        '<div class="today-rdv" style="border-left-color:' + NAT_COLOR[r.nature] + '"><div class="tt">' + r.start + ' — ' + r.end + '</div><div class="tn">' + r.name + '</div><div class="tm">' + T('docrdv.nat_' + r.nature) + ' · ' + r.motif + '</div></div>'
+        '<div class="today-rdv" style="border-left-color:' + labelOf(r.nature).color + '"><div class="tt">' + r.start + ' — ' + r.end + '</div><div class="tn">' + r.name + '</div><div class="tm">' + escL(labelOf(r.nature).name) + ' · ' + r.motif + '</div></div>'
       ).join('') : '<div class="text-muted small">' + T('docrdv.empty_day') + '</div>';
-      document.getElementById('legend').innerHTML = NATURES.map(n =>
-        '<div class="legend-row"><span class="legend-dot" style="background:' + NAT_COLOR[n] + '"></span>' + T('docrdv.nat_' + n) + '</div>'
+      document.getElementById('legend').innerHTML = LABELS.map(l =>
+        '<div class="legend-row"><span class="legend-dot" style="background:' + l.color + '"></span><span class="flex-grow-1">' + escL(l.name) +
+        (l.system ? ' <span class="lbl-sys">· ' + T('docrdv.lbl_patients') + '</span>' : '') + '</span>' +
+        (l.system ? '' : '<span class="lbl-del" title="' + T('docrdv.act_cancel') + '" onclick="removeLabel(\'' + l.id + '\')">×</span>') + '</div>'
       ).join('');
     }
 
@@ -532,7 +579,7 @@
           LOCS.map(l => '<option value="' + l.id + '"' + (fLoc === l.id ? ' selected' : '') + '>' + locLabel(l) + '</option>').join('');
       } else { fl.style.display = 'none'; }
       const fn = document.getElementById('fltNature');
-      fn.innerHTML = '<option value="all">' + T('docrdv.filter_nature') + '</option>' + NATURES.map(n => '<option value="' + n + '"' + (fNature === n ? ' selected' : '') + '>' + T('docrdv.nat_' + n) + '</option>').join('');
+      fn.innerHTML = '<option value="all">' + T('docrdv.filter_nature') + '</option>' + LABELS.map(l => '<option value="' + l.id + '"' + (fNature === l.id ? ' selected' : '') + '>' + escL(l.name) + '</option>').join('');
       const fs = document.getElementById('fltStatus');
       fs.innerHTML = '<option value="all">' + T('docrdv.filter_status') + '</option>' +
         ['confirmed', 'cancelled'].map(s => '<option value="' + s + '"' + (fStatus === s ? ' selected' : '') + '>' + T('docrdv.status_' + s) + '</option>').join('');
@@ -542,30 +589,28 @@
       document.getElementById('stToday').textContent = RDV.filter(r => r.date === TODAY && r.status !== 'cancelled').length;
       const end = dObj(TODAY); end.setDate(end.getDate() + 7);
       document.getElementById('stWeek').textContent = RDV.filter(r => r.date >= TODAY && r.date <= iso(end) && r.status !== 'cancelled').length;
-      document.getElementById('stUrgent').textContent = RDV.filter(r => r.date === TODAY && r.nature === 'urgence' && r.status !== 'cancelled').length;
-      const tile = document.getElementById('urgTile');
-      tile.classList.toggle('active', fNature === 'urgence');
-      tile.title = T(fNature === 'urgence' ? 'docrdv.stat_urgent_off' : 'docrdv.stat_urgent_on');
-    }
-    // Bascule le filtre « nature » sur urgence (et inversement) depuis la tuile
-    function toggleUrgentFilter() {
-      fNature = (fNature === 'urgence') ? 'all' : 'urgence';
-      render();
+      // Prochain RDV : le plus proche à venir (heure si aujourd'hui, sinon jj/mm · heure)
+      const upcoming = RDV.filter(r => r.date >= TODAY && r.status !== 'cancelled')
+        .sort((a, b) => (a.date + a.start).localeCompare(b.date + b.start))[0];
+      document.getElementById('stNext').textContent = upcoming
+        ? (upcoming.date === TODAY ? upcoming.start : upcoming.date.slice(8, 10) + '/' + upcoming.date.slice(5, 7) + ' · ' + upcoming.start)
+        : '—';
     }
 
     /* ---- Detail modal ---- */
     let detailModal, createModal;
     function openDetail(i) {
       const r = RDV[i];
+      const isConsult = !!(labelOf(r.nature) && labelOf(r.nature).system);
       document.getElementById('detailBody').innerHTML =
-        '<div class="d-flex align-items-center gap-2 mb-3"><span class="nat-tag nat-' + r.nature + '">' + T('docrdv.nat_' + r.nature) + '</span>' +
+        '<div class="d-flex align-items-center gap-2 mb-3">' + labelTag(r.nature) +
         '<span class="nat-tag" style="background:#f1f5f9;color:#475569;">' + T('docrdv.status_' + r.status) + '</span></div>' +
         '<div class="fw-bold" style="font-size:1.1rem;">' + r.name + '</div>' +
         '<div class="text-muted mb-3">' + r.motif + '</div>' +
         '<div><i class="fa fa-calendar-day me-2 text-muted"></i>' + dObj(r.date).toLocaleDateString(lang(), { weekday:'long', day:'numeric', month:'long', year:'numeric' }) + '</div>' +
         '<div class="mt-1"><i class="fa fa-clock me-2 text-muted"></i>' + r.start + ' → ' + r.end + '</div>' +
         (r.loc && LOC_IDS.has(r.loc) ? '<div class="mt-1"><i class="fa ' + (curLocType(r.loc) === 'teleconsult' ? 'fa-video' : 'fa-location-dot') + ' me-2 text-muted"></i>' + locNameById(r.loc) + '</div>' : '') +
-        (r.status !== 'cancelled' ? '<div class="text-muted small mt-3"><i class="fa fa-circle-info me-1"></i>' + T('docrdv.cancel_note') + '</div>' +
+        (r.status !== 'cancelled' ? (isConsult ? '<div class="text-muted small mt-3"><i class="fa fa-circle-info me-1"></i>' + T('docrdv.cancel_note') + '</div>' : '') +
           '<div id="reschedPanel" class="d-none mt-3 p-3" style="background:#f8fafc;border-radius:10px;">' +
             '<div class="fw-semibold small mb-2">' + T('docrdv.resched_title') + '</div>' +
             '<div class="d-flex gap-2 align-items-center flex-wrap">' +
@@ -578,7 +623,7 @@
           '</div>' : '');
       let foot = '';
       if (r.status !== 'cancelled') {
-        foot += '<a class="btn btn-sm" style="background:#155e75;color:#fff;" href="25-doctor-consultation.html?patient=' + encodeURIComponent(r.name) + '&motif=' + encodeURIComponent(r.motif) + '"><i class="fa fa-notes-medical me-1"></i>' + T('docrdv.document') + '</a>';
+        if (isConsult) foot += '<a class="btn btn-sm" style="background:#155e75;color:#fff;" href="25-doctor-consultation.html?patient=' + encodeURIComponent(r.name) + '&motif=' + encodeURIComponent(r.motif) + '"><i class="fa fa-notes-medical me-1"></i>' + T('docrdv.document') + '</a>';
         foot += '<button class="btn btn-outline-secondary btn-sm" onclick="toggleResched()"><i class="fa fa-clock-rotate-left me-1"></i>' + T('docrdv.resched') + '</button>';
         foot += '<button class="btn btn-outline-danger btn-sm" onclick="setStatus(' + i + ',\'cancelled\')"><i class="fa fa-ban me-1"></i>' + T('docrdv.cancel_appt') + '</button>';
       }
@@ -606,8 +651,8 @@
     let createNature = 'consultation';
     function openCreate(date, start, end) {
       createNature = 'consultation';
-      document.getElementById('naturePills').innerHTML = NATURES.map(n =>
-        '<span class="np' + (n === createNature ? ' sel' : '') + '" onclick="pickNature(\'' + n + '\')">' + T('docrdv.nat_' + n) + '</span>'
+      document.getElementById('naturePills').innerHTML = LABELS.map(l =>
+        '<span class="np' + (l.id === createNature ? ' sel' : '') + '" data-lid="' + l.id + '" onclick="pickNature(\'' + l.id + '\')"><span class="np-dot" style="background:' + l.color + '"></span>' + escL(l.name) + '</span>'
       ).join('');
       document.getElementById('cDate').value = date || cur;
       if (start) document.getElementById('cStart').value = start;
@@ -627,11 +672,11 @@
     }
     function pickNature(n) {
       createNature = n;
-      document.querySelectorAll('#naturePills .np').forEach(p => p.classList.toggle('sel', p.textContent === T('docrdv.nat_' + n)));
+      document.querySelectorAll('#naturePills .np').forEach(p => p.classList.toggle('sel', p.dataset.lid === n));
     }
     function submitCreate() {
       const name = document.getElementById('cPatient').value.trim() || '—';
-      const motif = document.getElementById('cMotif').value.trim() || T('docrdv.nat_' + createNature);
+      const motif = document.getElementById('cMotif').value.trim() || labelOf(createNature).name;
       const date = document.getElementById('cDate').value, start = document.getElementById('cStart').value, end = document.getElementById('cEnd').value;
       if (!date || !start || !end) return;
       RDV.push({ date, start, end, ini:name.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase(), name, motif, nature:createNature, status:'confirmed', loc: (fLoc === 'all' ? LOCS[0].id : fLoc) });
