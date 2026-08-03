@@ -156,6 +156,8 @@
     .hr-sep { color:#94a3b8; }
     .hr-closed { color:#cbd5e1; font-size:0.9rem; padding-top:5px; }
     .hours-conflict { background:#fff7ed; border:1px solid #fed7aa; color:#9a3412; border-radius:10px; padding:9px 12px; font-size:0.82rem; margin-bottom:10px; }
+    .hv-tzline { font-size:0.78rem; color:#64748b; margin:2px 0 8px; }
+    .hv-tz { display:inline-flex; align-items:center; background:#f1f5f9; color:#475569; border-radius:6px; padding:1px 8px; font-weight:600; }
     .btn-slot { align-self:flex-start; background:none; border:0; color:#155e75; font-weight:600; font-size:0.8rem; cursor:pointer; padding:2px 0; }
     .btn-slot:hover { text-decoration:underline; }
     .hv-row { display:flex; gap:12px; padding:5px 0; }
@@ -506,23 +508,33 @@
     function initials() { return (P.name || 'D').split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase(); }
     function avatarInner() { return P.photo ? '<img src="' + P.photo + '" alt="">' : initials(); }
 
-    /* ---------- Per-card edit / view ---------- */
-    let editing = null, snap = null;
+    /* ---------- Édition carte par carte (multi-cartes : plusieurs cartes ouvrables à la fois, comme le profil patient) ---------- */
+    const snaps = {}; // clé de carte -> snapshot de P à l'ouverture (restauration ciblée à l'annulation)
     function editCard(key) {
-      if (editing && editing !== key) cancelCard(editing);
-      editing = key; snap = clone(P);
+      snaps[key] = clone(P); // instantané pour l'annulation ; n'affecte pas les autres cartes ouvertes
       const el = document.querySelector('[data-card="' + key + '"]'); if (el) el.classList.add('editing');
     }
+    // Annuler ne restaure QUE les champs de cette carte → préserve les modifications non enregistrées des autres cartes ouvertes.
+    function restoreCardFields(key) {
+      const s = snaps[key]; if (!s) return;
+      if (key === 'bio') P.bio = s.bio;
+      else if (key === 'expertise') { P.spec = s.spec; P.expertise = clone(s.expertise); }
+      else if (key === 'langs') P.langs = clone(s.langs);
+      else if (key === 'training') P.training = clone(s.training);
+      else if (key === 'location') { P.locations = clone(s.locations); P.currency = s.currency; } // structurel : lieux + devise (dérivée du pays du lieu principal)
+      else if (key === 'hours') (s.locations || []).forEach(sL => { const L = (P.locations || []).find(x => x.id === sL.id); if (L) L.hours = clone(sL.hours); });
+      else if (key === 'motifs') (s.locations || []).forEach(sL => { const L = (P.locations || []).find(x => x.id === sL.id); if (L) L.motifs = clone(sL.motifs); });
+    }
     function cancelCard(key) {
-      if (snap) P = clone(snap);
-      snap = null; editing = null;
+      restoreCardFields(key);
+      delete snaps[key];
       fillEditControls(); renderAllViews();
       const el = document.querySelector('[data-card="' + key + '"]'); if (el) el.classList.remove('editing');
     }
     function saveCard(key) {
       if (key === 'location' && !validateLocations()) return;
       if (!persist()) return;
-      snap = null; editing = null;
+      delete snaps[key];
       const el = document.querySelector('[data-card="' + key + '"]'); if (el) el.classList.remove('editing');
       renderAllViews(); toast();
     }
@@ -577,7 +589,9 @@
       // Horaires & motifs : par lieu réservable
       const bl = bookableLocs();
       document.getElementById('view-hours').innerHTML = bl.length ? bl.map(({ L }) => {
-        const head = bl.length > 1 ? '<div class="hv-loc">' + e(locName(L)) + '</div>' : '';
+        const tz = (window.NazGeo && NazGeo.tzLabel) ? NazGeo.tzLabel(L.country, L.region) : '';
+        const tzLine = tz ? '<div class="hv-tzline"><i class="fa fa-clock me-1"></i>' + T('geo.tz_local') + ' · <span class="hv-tz">' + e(tz) + '</span></div>' : '';
+        const head = (bl.length > 1 ? '<div class="hv-loc">' + e(locName(L)) + '</div>' : '') + tzLine;
         const rows = DAYS.map(([k]) => {
           const r = (L.hours || {})[k] || [];
           const val = r.length ? r.map(x => x[0] + '–' + x[1]).join(', ') : '<span class="hv-closed">' + T('docppv.closed') + '</span>';

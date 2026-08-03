@@ -152,5 +152,21 @@ window.NazGeo = (function () {
     }
   };
 
-  return { countries: countries, regions: regions, cities: cities };
+  // Fuseaux horaires des 9 pays MVP (aucun n'observe l'heure d'été).
+  // GMT (UTC+0) · WAT (UTC+1) · CAT (UTC+2). La RDC s'étend sur deux fuseaux (ouest UTC+1 / est UTC+2).
+  const TZ0 = { abbr: 'GMT', off: 0 }, TZ1 = { abbr: 'WAT', off: 1 }, TZ2 = { abbr: 'CAT', off: 2 };
+  const TZ_BY_COUNTRY = {
+    'Sénégal': TZ0, "Côte d'Ivoire": TZ0, 'Mali': TZ0, 'Burkina Faso': TZ0, 'Togo': TZ0,
+    'Bénin': TZ1, 'Niger': TZ1, 'Cameroun': TZ1, 'RDC': TZ1
+  };
+  // Provinces RDC en CAT (UTC+2) — l'est du pays.
+  const RDC_EAST = ['Nord-Kivu', 'Sud-Kivu', 'Ituri', 'Maniema', 'Tanganyika', 'Haut-Katanga', 'Lualaba', 'Haut-Lomami'];
+  function tzOf(country, region) {
+    if (country === 'RDC' && region && RDC_EAST.indexOf(region) !== -1) return TZ2;
+    return TZ_BY_COUNTRY[country] || TZ0;
+  }
+  // Libellé court : « GMT (UTC+0) », « WAT (UTC+1) », « CAT (UTC+2) ».
+  function tzLabel(country, region) { const t = tzOf(country, region); return t.abbr + ' (UTC+' + t.off + ')'; }
+
+  return { countries: countries, regions: regions, cities: cities, tzOf: tzOf, tzLabel: tzLabel };
 })();

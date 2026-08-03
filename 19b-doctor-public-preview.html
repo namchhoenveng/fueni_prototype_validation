@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>FUENI — Fiche praticien</title>
   <script src="naz-i18n.js" defer></script>
+  <script src="naz-geo.js" defer></script>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
   <link rel="stylesheet" href="naz-common.css">
@@ -56,6 +57,8 @@
     table.hours td { padding:5px 0; border-bottom:1px solid #f4f7fa; }
     table.hours td:last-child { text-align:right; color:#334155; font-weight:600; }
     table.hours td.closed { color:#cbd5e1; font-weight:500; }
+    .hours-tz { font-size:0.8rem; color:#64748b; margin-top:10px; }
+    .hours-tz .tz { display:inline-flex; align-items:center; background:#eef5f7; color:#155e75; border-radius:6px; padding:1px 8px; font-weight:600; }
     .motif-card { display:flex; align-items:center; justify-content:space-between; border:1px solid #eef2f6; border-radius:12px; padding:12px 15px; margin-bottom:9px; }
     .motif-card .m-name { font-weight:600; color:#1e293b; }
     .motif-card .m-meta { font-size:0.8rem; color:#94a3b8; }
@@ -166,6 +169,7 @@
         <h5 data-i18n="docppv.hours">Horaires de consultation</h5>
         <div id="fHoursNote" class="loc-ext-note d-none"></div>
         <table class="hours" id="fHoursTable"><tbody id="fHours"></tbody></table>
+        <div id="fHoursTz" class="hours-tz d-none"></div>
       </div>
 
       <!-- Motifs / tarifs -->
@@ -313,15 +317,20 @@
 
       // ----- Horaires du lieu actif (ou note « réservation externe ») -----
       const hoursTable = document.getElementById('fHoursTable'), hoursNote = document.getElementById('fHoursNote');
+      const hoursTz = document.getElementById('fHoursTz');
       const motifsNote = document.getElementById('fMotifsNote'), motifsBox = document.getElementById('fMotifs');
       if (!bookable) {
         hoursTable.classList.add('d-none'); hoursNote.classList.remove('d-none');
+        hoursTz.classList.add('d-none');
         hoursNote.innerHTML = '<i class="fa fa-circle-info me-1"></i>' + T('docppv.ext_booking');
         motifsNote.classList.remove('d-none'); motifsBox.classList.add('d-none');
         motifsNote.innerHTML = '<i class="fa fa-circle-info me-1"></i>' + T('docppv.ext_booking');
       } else {
         hoursTable.classList.remove('d-none'); hoursNote.classList.add('d-none');
         motifsNote.classList.add('d-none'); motifsBox.classList.remove('d-none');
+        const tz = (window.NazGeo && NazGeo.tzLabel) ? NazGeo.tzLabel(L.country, L.region) : '';
+        if (tz) { hoursTz.innerHTML = '<i class="fa fa-clock me-1"></i>' + T('geo.tz_local') + ' · <span class="tz">' + tz + '</span>'; hoursTz.classList.remove('d-none'); }
+        else hoursTz.classList.add('d-none');
         document.getElementById('fHours').innerHTML = DAYS.map(([k]) => {
           const ranges = (L.hours || {})[k] || [];
           const label = T('docpp.day_' + k);

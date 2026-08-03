@@ -10,7 +10,9 @@
  *                next (prochain RDV|''), nextMotif
  *   Dossier    : blood, allergies[{name,sev:'high'|'medium'|'low'}],
  *                ant[] (perso), family[{rel,cond}],
- *                consults[{date,motif,diag,note,rx[]}], docs[{n,t,date}]
+ *                consults[{date,motif,diag,note,rx[]}],
+ *                docs[{n,t,date, st?:'pending'|'validated'|'refused', by?:'Dr X'(auteur si repartagé), motif?}]
+ *                (st absent ⇒ déjà au dossier ; by absent ⇒ téléversé par le patient)
  */
 (function () {
   window.NazPatients = [
@@ -24,7 +26,7 @@
         { date: '2026-07-02', motif: 'Consultation générale', diag: 'Rhinopharyngite aiguë', note: 'État général conservé. Fièvre à 38,2 °C, rhinorrhée. Auscultation libre.', rx: ['Paracétamol 1 g × 3/j — 5 j', 'Sérum physiologique — nez'] },
         { date: '2026-05-12', motif: 'Suivi hypertension', diag: 'HTA équilibrée', note: 'TA 130/80. Bonne observance. Poursuite du traitement.', rx: ['Amlodipine 5 mg — 3 mois'] }
       ],
-      docs: [{ n: 'Ordonnance', t: 'rx', date: '2026-07-02' }, { n: 'Compte-rendu de consultation', t: 'doc', date: '2026-07-02' }, { n: 'Analyses sanguines', t: 'lab', date: '2026-06-30' }]
+      docs: [{ n: 'Analyse — bilan lipidique', t: 'lab', date: '2026-07-10', st: 'pending' }, { n: 'Compte-rendu cardiologie', t: 'doc', date: '2026-07-08', st: 'pending', by: 'Dr Sow' }, { n: 'Ordonnance', t: 'rx', date: '2026-07-02' }, { n: 'Compte-rendu de consultation', t: 'doc', date: '2026-07-02' }, { n: 'Analyses sanguines', t: 'lab', date: '2026-06-30' }]
     },
     {
       id: 'p2', ini: 'OS', name: 'Ousmane Sow', sex: 'M', age: 52,
@@ -32,7 +34,7 @@
       last: '2026-06-28', lastMotif: 'Suivi hypertension', next: '2026-07-18', nextMotif: 'Suivi hypertension',
       blood: 'A+', allergies: [], ant: ['Diabète type 2 (2019)', 'HTA'], family: [],
       consults: [{ date: '2026-06-28', motif: 'Suivi hypertension', diag: 'HTA · adaptation', note: 'TA 145/90. Majoration posologie.', rx: ['Amlodipine 10 mg — 3 mois'] }],
-      docs: [{ n: 'Ordonnance', t: 'rx', date: '2026-06-28' }]
+      docs: [{ n: 'Ordonnance — Dr Ndiaye', t: 'rx', date: '2026-07-05', st: 'pending', by: 'Dr Ndiaye' }, { n: 'Ordonnance', t: 'rx', date: '2026-06-28' }]
     },
     {
       id: 'p3', ini: 'AF', name: 'Awa Faye', sex: 'F', age: 29,

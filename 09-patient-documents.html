@@ -163,6 +163,7 @@
           <option value="ordonnance" data-i18n="pdoc.type_ordonnance">Ordonnance</option>
           <option value="imagerie" data-i18n="pdoc.type_imagerie">Imagerie</option>
           <option value="cr" data-i18n="pdoc.type_cr">Compte-rendu</option>
+          <option value="orientation" data-i18n="pdoc.type_orientation">Orientation</option>
           <option value="vaccins" data-i18n="pdoc.type_vaccins">Vaccins</option>
           <option value="autre" data-i18n="pdoc.type_autre">Autre</option>
         </select>
@@ -245,6 +246,7 @@
                 <td style="text-align:right; white-space:nowrap;">
                   <button class="btn-action" data-i18n-title="pdoc.act_view" title="Aperçu"><i class="fa fa-eye"></i></button>
                   <button class="btn-action" data-i18n-title="pdoc.act_download" title="Télécharger"><i class="fa fa-download"></i></button>
+                  <button class="btn-action btn-share" onclick="shareDoc(this)" data-i18n-title="pdoc.act_share" title="Partager"><i class="fa fa-share-nodes"></i></button>
                 </td>
               </tr>
 
@@ -258,6 +260,21 @@
                 <td style="text-align:right; white-space:nowrap;">
                   <button class="btn-action" data-i18n-title="pdoc.act_view" title="Aperçu"><i class="fa fa-eye"></i></button>
                   <button class="btn-action" data-i18n-title="pdoc.act_download" title="Télécharger"><i class="fa fa-download"></i></button>
+                  <button class="btn-action btn-share" onclick="shareDoc(this)" data-i18n-title="pdoc.act_share" title="Partager"><i class="fa fa-share-nodes"></i></button>
+                </td>
+              </tr>
+
+              <tr data-type="orientation" data-origin="fueni" data-status="nouveau" data-date="2026-04-28" data-name="adressage cardiologue orientation">
+                <td><div class="file-icon icon-doc"><i class="fa fa-user-doctor"></i></div></td>
+                <td><div class="fw-semibold small doc-title" data-i18n="pdoc.d6_title">Adressage vers un cardiologue</div><div class="small text-muted">adressage-2026-04-28.pdf · 88 Ko</div></td>
+                <td><span class="type-badge" data-i18n="pdoc.type_orientation">Orientation</span></td>
+                <td><div class="small">28/04/2026</div></td>
+                <td><span class="origin-badge origin-shared"><i class="fa fa-share-nodes me-1"></i><span data-i18n="pdoc.origin_shared">Partagé</span> · Dr Diallo</span></td>
+                <td><span class="status-pill st-new" data-i18n="pdoc.st_new">Nouveau</span></td>
+                <td style="text-align:right; white-space:nowrap;">
+                  <button class="btn-action" data-i18n-title="pdoc.act_view" title="Aperçu"><i class="fa fa-eye"></i></button>
+                  <button class="btn-action" data-i18n-title="pdoc.act_download" title="Télécharger"><i class="fa fa-download"></i></button>
+                  <button class="btn-action btn-share" onclick="shareDoc(this)" data-i18n-title="pdoc.act_share" title="Partager"><i class="fa fa-share-nodes"></i></button>
                 </td>
               </tr>
 
@@ -303,6 +320,7 @@
                 <option data-i18n="pdoc.type_ordonnance">Ordonnance</option>
                 <option data-i18n="pdoc.type_imagerie">Imagerie</option>
                 <option data-i18n="pdoc.type_cr">Compte-rendu</option>
+                <option data-i18n="pdoc.type_orientation">Orientation</option>
                 <option data-i18n="pdoc.type_vaccins">Vaccins</option>
                 <option data-i18n="pdoc.type_autre">Autre</option>
               </select>
@@ -352,6 +370,7 @@
             <textarea class="form-control form-control-sm" rows="2"></textarea>
           </div>
           <div class="small text-muted"><i class="fa fa-circle-info me-1" style="color:#16a085;"></i><span data-i18n="pdoc.share_info">Le praticien devra valider le document avant son intégration à votre dossier.</span></div>
+          <div id="shareProvNote" class="small mt-2 d-none" style="color:#0e6f5c;"><i class="fa fa-user-doctor me-1"></i><span data-i18n="pdoc.share_prov_note">Ce document a été établi par un médecin. Son auteur d'origine sera indiqué au destinataire (« Auteur : Dr X · Partagé par le patient »).</span></div>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-link text-muted small" data-bs-dismiss="modal" data-i18n="pdoc.up_cancel">Annuler</button>
@@ -429,20 +448,33 @@
 
     // Partage patient → praticien (démo)
     let shareRow = null;
-    function shareDoc(btn) { shareRow = btn.closest('tr'); new bootstrap.Modal(document.getElementById('shareModal')).show(); }
+    function shareDoc(btn) {
+      shareRow = btn.closest('tr');
+      // Repartage d'un document reçu d'un médecin (origine fueni) : l'auteur d'origine est préservé (DP7).
+      const prov = document.getElementById('shareProvNote');
+      if (prov) prov.classList.toggle('d-none', shareRow.dataset.origin !== 'fueni');
+      new bootstrap.Modal(document.getElementById('shareModal')).show();
+    }
     function confirmShare() {
       if (!shareRow) return;
-      const pill = shareRow.querySelector('.status-pill');
-      if (pill) { pill.className = 'status-pill st-pending'; pill.removeAttribute('data-i18n'); pill.textContent = t('pdoc.st_pending', 'En attente de validation'); }
-      shareRow.dataset.status = 'pending';
+      // Le statut « En attente/Validé » du partage est PAR destinataire. Pour un document `fueni`,
+      // on ne touche pas au statut de réception (Nouveau/Vu) — seul le bouton passe en « partagé ».
+      if (shareRow.dataset.origin !== 'fueni') {
+        const pill = shareRow.querySelector('.status-pill');
+        if (pill) { pill.className = 'status-pill st-pending'; pill.removeAttribute('data-i18n'); pill.textContent = t('pdoc.st_pending', 'En attente de validation'); }
+        shareRow.dataset.status = 'pending';
+      }
       const sb = shareRow.querySelector('.btn-share');
       if (sb) { sb.classList.add('shared'); sb.setAttribute('onclick', 'revokeShare(this)'); sb.title = t('pdoc.act_revoke', 'Révoquer le partage'); }
       shareRow = null;
     }
     function revokeShare(btn) {
-      const tr = btn.closest('tr'), pill = tr.querySelector('.status-pill');
-      if (pill) { pill.className = 'status-pill st-private'; pill.removeAttribute('data-i18n'); pill.textContent = t('pdoc.st_private', 'Privé'); }
-      tr.dataset.status = 'prive';
+      const tr = btn.closest('tr');
+      if (tr.dataset.origin !== 'fueni') {
+        const pill = tr.querySelector('.status-pill');
+        if (pill) { pill.className = 'status-pill st-private'; pill.removeAttribute('data-i18n'); pill.textContent = t('pdoc.st_private', 'Privé'); }
+        tr.dataset.status = 'prive';
+      }
       btn.classList.remove('shared'); btn.setAttribute('onclick', 'shareDoc(this)'); btn.title = t('pdoc.act_share', 'Partager');
     }
 
