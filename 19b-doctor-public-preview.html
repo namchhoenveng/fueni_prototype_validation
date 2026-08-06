@@ -6,6 +6,7 @@
   <title>FUENI — Fiche praticien</title>
   <script src="naz-i18n.js" defer></script>
   <script src="naz-geo.js" defer></script>
+  <script src="naz-doctors.js"></script>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
   <link rel="stylesheet" href="naz-common.css">
@@ -15,7 +16,9 @@
     .preview-banner .btn-close-prev { margin-left:auto; background:rgba(255,255,255,0.16); border:0; color:#fff; border-radius:8px; padding:5px 12px; font-size:0.8rem; font-weight:600; cursor:pointer; }
     .preview-banner .btn-close-prev:hover { background:rgba(255,255,255,0.28); }
     .wrap { max-width:900px; margin:22px auto; padding:0 16px 96px; }
-    .topnav { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
+    .topnav { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; gap:12px; }
+    .back-btn { background:#fff; border:1.5px solid #e2e8f0; color:#155e75; border-radius:9px; padding:7px 14px; font-size:0.85rem; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; white-space:nowrap; }
+    .back-btn:hover { border-color:#155e75; background:#eef5f7; }
     .fiche { background:#fff; border-radius:16px; box-shadow:0 4px 18px rgba(0,0,0,0.07); overflow:hidden; margin-bottom:16px; }
     .fiche:last-child { margin-bottom:0; }
     .fiche-head { display:flex; gap:20px 24px; padding:26px; flex-wrap:wrap; align-items:flex-start; }
@@ -24,7 +27,7 @@
       .head-cta { margin-left:0; width:100%; align-items:stretch; }
       .head-cta .book-cta { width:100%; }
     }
-    .fiche-avatar { width:104px; height:104px; border-radius:20px; background:#0e7490; color:#fff; display:flex; align-items:center; justify-content:center; font-size:2.1rem; font-weight:800; flex-shrink:0; overflow:hidden; }
+    .fiche-avatar { width:104px; height:104px; border-radius:50%; background:#0e7490; color:#fff; display:flex; align-items:center; justify-content:center; font-size:2.1rem; font-weight:800; flex-shrink:0; overflow:hidden; }
     .fiche-avatar img { width:100%; height:100%; object-fit:cover; }
     .fiche-name { font-size:1.55rem; font-weight:800; color:#0f172a; margin:0; }
     .fiche-spec { color:#155e75; font-weight:600; font-size:1rem; }
@@ -78,7 +81,7 @@
     .sticky-book { position:fixed; left:0; right:0; bottom:0; z-index:600; background:#fff; border-top:1px solid #e2e8f0; box-shadow:0 -4px 18px rgba(0,0,0,0.09); padding:12px 20px; display:flex; align-items:center; justify-content:space-between; gap:16px; transform:translateY(130%); transition:transform .25s ease; }
     .sticky-book.show { transform:translateY(0); }
     .sticky-book .sb-info { display:flex; align-items:center; gap:12px; min-width:0; }
-    .sticky-book .sb-avatar { width:40px; height:40px; border-radius:10px; background:#0e7490; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:0.82rem; flex-shrink:0; overflow:hidden; }
+    .sticky-book .sb-avatar { width:40px; height:40px; border-radius:50%; background:#0e7490; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:0.82rem; flex-shrink:0; overflow:hidden; }
     .sticky-book .sb-avatar img { width:100%; height:100%; object-fit:cover; }
     .sticky-book .sb-name { font-weight:700; color:#0f172a; font-size:0.95rem; line-height:1.15; }
     .sticky-book .sb-spec { font-size:0.8rem; color:#155e75; font-weight:600; }
@@ -97,7 +100,7 @@
   <div class="wrap">
     <div class="topnav">
       <a href="01-home.html" class="brand-logo" aria-label="FUENI"><img src="assets/fueni-lockup-horizontal.svg" alt="FUENI" style="height:30px;"></a>
-      <a href="01-home.html" class="text-decoration-none text-muted small"><i class="fa fa-magnifying-glass me-1"></i><span data-i18n="docppv.back_dir">Annuaire</span></a>
+      <button type="button" class="back-btn" onclick="goBackFiche()"><i class="fa fa-arrow-left me-1"></i><span data-i18n="docppv.back">Retour</span></button>
     </div>
 
     <div id="hiddenNote" class="hidden-note d-none">
@@ -231,7 +234,13 @@
     };
     const DAYS = [['mon','Lundi'],['tue','Mardi'],['wed','Mercredi'],['thu','Jeudi'],['fri','Vendredi'],['sat','Samedi'],['sun','Dimanche']];
 
+    // Praticien affiché : ?doc=<id>. 'real' (ou absent) = profil configuré à l'écran 19 (localStorage).
+    // Les autres ids sont des médecins de démonstration de l'annuaire (naz-doctors.js).
+    const DOC_ID = new URLSearchParams(location.search).get('doc') || 'real';
     function load() {
+      if (DOC_ID !== 'real' && window.NazDoctors && NazDoctors[DOC_ID]) {
+        return Object.assign({}, DEFAULT, JSON.parse(JSON.stringify(NazDoctors[DOC_ID])));
+      }
       try { const raw = localStorage.getItem(STORE_KEY); if (raw) return Object.assign({}, DEFAULT, JSON.parse(raw)); } catch (e) {}
       return JSON.parse(JSON.stringify(DEFAULT));
     }
@@ -384,7 +393,14 @@
     function book() {
       const L = P.locations[activeLoc];
       if (!L.bookable) { alert(T('docppv.ext_booking')); return; }
-      window.location.href = '27-patient-booking.html?loc=' + activeLoc;
+      window.location.href = '27-patient-booking.html?doc=' + encodeURIComponent(DOC_ID) + '&loc=' + activeLoc;
+    }
+    function goBackFiche() {
+      // Aperçu (onglet ouvert par le médecin depuis l'écran 19) → fermer.
+      // Parcours patient → page précédente (résultats de recherche), avec repli sur l'annuaire.
+      if (isPreview) { window.close(); return; }
+      try { if (document.referrer) { history.back(); return; } } catch (e) {}
+      window.location.href = '28-patient-search.html';
     }
 
     document.addEventListener('fueni:langchange', render);

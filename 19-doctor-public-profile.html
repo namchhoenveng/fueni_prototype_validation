@@ -156,6 +156,8 @@
     .hr-sep { color:#94a3b8; }
     .hr-closed { color:#cbd5e1; font-size:0.9rem; padding-top:5px; }
     .hours-conflict { background:#fff7ed; border:1px solid #fed7aa; color:#9a3412; border-radius:10px; padding:9px 12px; font-size:0.82rem; margin-bottom:10px; }
+    .hours-travel-note { display:flex; gap:8px; align-items:flex-start; background:#eef5f7; border:1px solid #cfe3e9; color:#155e75; border-radius:10px; padding:9px 12px; font-size:0.82rem; margin-bottom:12px; }
+    .hours-travel-note i { margin-top:2px; color:#155e75; }
     .hv-tzline { font-size:0.78rem; color:#64748b; margin:2px 0 8px; }
     .hv-tz { display:inline-flex; align-items:center; background:#f1f5f9; color:#475569; border-radius:6px; padding:1px 8px; font-weight:600; }
     .btn-slot { align-self:flex-start; background:none; border:0; color:#155e75; font-weight:600; font-size:0.8rem; cursor:pointer; padding:2px 0; }
@@ -348,6 +350,24 @@
         </div>
       </div>
 
+      <!-- Règles de réservation (fenêtre) -->
+      <div class="card-pp" data-card="booking">
+        <div class="card-head">
+          <h6 data-i18n="docpp.sec_booking_rules">Règles de réservation</h6>
+          <button class="card-edit-btn" onclick="editCard('booking')"><i class="fa fa-pen me-1"></i><span data-i18n="docpp.edit">Modifier</span></button>
+        </div>
+        <div class="card-view" id="view-booking"></div>
+        <div class="card-edit">
+          <div class="form-label mb-1" data-i18n="docpp.bookwin_label">Fenêtre de réservation</div>
+          <div class="form-hint mb-2" data-i18n="docpp.bookwin_help">Jusqu'à combien de temps à l'avance les patients peuvent réserver. Au-delà, aucun créneau n'est proposé.</div>
+          <select class="form-select form-select-sm" id="ppBookWin" style="max-width:220px" onchange="setBookWin(this.value)"></select>
+        </div>
+        <div class="card-foot">
+          <button class="btn btn-doctor btn-sm" onclick="saveCard('booking')"><i class="fa fa-check me-1"></i><span data-i18n="docpp.save_btn">Enregistrer</span></button>
+          <button class="btn btn-ghost btn-sm" onclick="cancelCard('booking')" data-i18n="docpp.cancel">Annuler</button>
+        </div>
+      </div>
+
       <!-- Motifs & tarifs -->
       <div class="card-pp" data-card="motifs">
         <div class="card-head">
@@ -469,8 +489,10 @@
           motifs:[ { label:'Consultation générale', dur:30, price:8000 }, { label:'Suivi / renouvellement', dur:20, price:6000 } ] },
         { id:'loc2', type:'hopital', label:'Hôpital Principal de Dakar', street:'Avenue Nelson Mandela', city:'Dakar', region:'Dakar', country:'Sénégal', primary:false, bookable:false, access:['wheelchair'], photos:[], hours:{}, motifs:[], service:'Cardiologie interventionnelle', position:'chef' }
       ],
-      currency: 'XOF'
+      currency: 'XOF',
+      bookingWindow: 30 // fenêtre de réservation (jours à l'avance) — profondeur des créneaux proposés côté patient
     };
+    const BOOK_WINDOWS = [7, 15, 30, 60, 90]; // options de fenêtre de réservation (jours)
     const DAYS = [['mon','Lundi'],['tue','Mardi'],['wed','Mercredi'],['thu','Jeudi'],['fri','Vendredi'],['sat','Samedi'],['sun','Dimanche']];
     const T = k => (window.NazI18n ? NazI18n.t(k) : k);
     const e = s => (s == null ? '' : String(s)).replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
@@ -521,9 +543,20 @@
       else if (key === 'expertise') { P.spec = s.spec; P.expertise = clone(s.expertise); }
       else if (key === 'langs') P.langs = clone(s.langs);
       else if (key === 'training') P.training = clone(s.training);
-      else if (key === 'location') { P.locations = clone(s.locations); P.currency = s.currency; } // structurel : lieux + devise (dérivée du pays du lieu principal)
+      else if (key === 'location') {
+        // Restaure la STRUCTURE des lieux (snapshot) + la devise, mais conserve les horaires/motifs actuels des lieux
+        // survivants : ils ont pu être enregistrés entre-temps par les cartes Horaires/Motifs ouvertes en parallèle.
+        P.currency = s.currency;
+        const curById = {}; (P.locations || []).forEach(L => { curById[L.id] = L; });
+        P.locations = (s.locations || []).map(sL => {
+          const restored = clone(sL), cur = curById[sL.id];
+          if (cur) { restored.hours = clone(cur.hours || sL.hours || {}); restored.motifs = clone(cur.motifs || sL.motifs || []); }
+          return restored;
+        });
+      }
       else if (key === 'hours') (s.locations || []).forEach(sL => { const L = (P.locations || []).find(x => x.id === sL.id); if (L) L.hours = clone(sL.hours); });
       else if (key === 'motifs') (s.locations || []).forEach(sL => { const L = (P.locations || []).find(x => x.id === sL.id); if (L) L.motifs = clone(sL.motifs); });
+      else if (key === 'booking') P.bookingWindow = s.bookingWindow;
     }
     function cancelCard(key) {
       restoreCardFields(key);
@@ -536,6 +569,9 @@
       if (!persist()) return;
       delete snaps[key];
       const el = document.querySelector('[data-card="' + key + '"]'); if (el) el.classList.remove('editing');
+      // Localisation est structurelle : Horaires et Motifs sont indexés sur la liste des lieux.
+      // On rafraîchit leurs éditeurs (même s'ils sont encore ouverts) pour qu'ils reflètent les lieux ajoutés/retirés.
+      if (key === 'location') { ensureLocIdx(); renderHours(); renderMotifs(); }
       renderAllViews(); toast();
     }
     function onVisible(on) { P.visible = on; persist(); }
@@ -588,7 +624,8 @@
 
       // Horaires & motifs : par lieu réservable
       const bl = bookableLocs();
-      document.getElementById('view-hours').innerHTML = bl.length ? bl.map(({ L }) => {
+      const travelNote = travelNoteHtml(bl);
+      document.getElementById('view-hours').innerHTML = bl.length ? travelNote + bl.map(({ L }) => {
         const tz = (window.NazGeo && NazGeo.tzLabel) ? NazGeo.tzLabel(L.country, L.region) : '';
         const tzLine = tz ? '<div class="hv-tzline"><i class="fa fa-clock me-1"></i>' + T('geo.tz_local') + ' · <span class="hv-tz">' + e(tz) + '</span></div>' : '';
         const head = (bl.length > 1 ? '<div class="hv-loc">' + e(locName(L)) + '</div>' : '') + tzLine;
@@ -599,6 +636,10 @@
         }).join('');
         return head + rows;
       }).join('') : NR;
+
+      document.getElementById('view-booking').innerHTML =
+        '<div style="color:#334155;"><i class="fa fa-calendar-day me-2" style="color:#155e75;"></i>' +
+        T('docpp.bookwin_view').replace('{n}', (parseInt(P.bookingWindow, 10) || 30)) + '</div>';
 
       document.getElementById('view-motifs').innerHTML = bl.length ? bl.map(({ L }) => {
         const head = bl.length > 1 ? '<div class="hv-loc">' + e(locName(L)) + '</div>' : '';
@@ -686,6 +727,11 @@
     const posOpts = sel => '<option value="">' + T('docpp.pos_none') + '</option>' + POSITIONS.map(k => '<option value="' + k + '"' + (sel === k ? ' selected' : '') + '>' + T('docpp.pos_' + k) + '</option>').join('');
     let photoTargetLoc = 0, hoursLoc = 0, motifsLoc = 0;
     const bookableLocs = () => P.locations.map((L, i) => ({ L, i })).filter(o => o.L.bookable);
+    // Rappel « temps de déplacement » : pertinent seulement avec ≥2 lieux physiques réservables (la téléconsultation n'implique pas de trajet).
+    function travelNoteHtml(bl) {
+      const physical = bl.filter(o => o.L.type !== 'teleconsult').length;
+      return physical > 1 ? '<div class="hours-travel-note"><i class="fa fa-route"></i><span>' + T('docpp.hours_travel_note') + '</span></div>' : '';
+    }
     // Nom affiché d'un lieu : libellé si renseigné ; sinon type · ville, avec un numéro si doublon (évite deux « Cabinet » identiques).
     function locName(L) {
       if (L.label && L.label.trim()) return L.label;
@@ -983,7 +1029,7 @@
       if (!bl.length) { box.innerHTML = '<div class="form-hint">' + T('docpp.no_bookable') + '</div>'; return; }
       const L = P.locations[hoursLoc];
       normalizeHours(L);
-      box.innerHTML = locPicker(hoursLoc, 'setHoursLoc') + DAYS.map(([k]) => {
+      box.innerHTML = travelNoteHtml(bl) + locPicker(hoursLoc, 'setHoursLoc') + DAYS.map(([k]) => {
         const ranges = L.hours[k] || [];
         const open = ranges.length > 0;
         let body;
@@ -1076,6 +1122,13 @@
       sel.innerHTML = CURRENCIES.map(c => '<option' + (c === P.currency ? ' selected' : '') + '>' + c + '</option>').join('');
     }
     function setCurrency(v) { P.currency = v; renderMotifs(); }
+    // Fenêtre de réservation (carte éditable : édition ciblée + Enregistrer/Annuler comme les autres cartes)
+    function fillBookWin() {
+      const sel = document.getElementById('ppBookWin'); if (!sel) return;
+      const cur = parseInt(P.bookingWindow, 10) || 30;
+      sel.innerHTML = BOOK_WINDOWS.map(d => '<option value="' + d + '"' + (d === cur ? ' selected' : '') + '>' + T('docpp.bookwin_days').replace('{n}', d) + '</option>').join('');
+    }
+    function setBookWin(v) { P.bookingWindow = parseInt(v, 10) || 30; } // en mémoire ; persistance à l'enregistrement de la carte
 
     /* ---------- Formation ---------- */
     function renderTraining() {
@@ -1119,7 +1172,7 @@
       document.getElementById('ppOrdreBody').value = P.ordreBody;
       document.getElementById('ppBio').value = P.bio;
       document.getElementById('ppBioCount').textContent = (P.bio || '').length;
-      renderCurrency(); renderLangTags(); renderExpertise(); renderTraining(); renderHours(); renderMotifs(); renderLocations();
+      renderCurrency(); renderLangTags(); renderExpertise(); renderTraining(); renderHours(); renderMotifs(); renderLocations(); fillBookWin();
     }
     function relocalise() { fillEditControls(); renderAllViews(); }
     document.addEventListener('fueni:langchange', relocalise);

@@ -6,6 +6,7 @@
   <title data-i18n-pagetitle="book.page_title">FUENI — Prendre rendez-vous</title>
   <script src="naz-i18n.js" defer></script>
   <script src="naz-geo.js" defer></script>
+  <script src="naz-doctors.js"></script>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
   <link rel="stylesheet" href="naz-common.css">
@@ -14,6 +15,10 @@
     body { background:#f1f5f9; color:#0f172a; }
     .topbar { background:#fff; border-bottom:1px solid #e2e8f0; padding:12px 20px; display:flex; align-items:center; justify-content:space-between; }
     .wrap { max-width:920px; margin:0 auto; padding:22px 16px 80px; }
+
+    /* Bandeau report */
+    .resched-banner { display:flex; align-items:flex-start; gap:10px; background:#eef5f7; border:1px solid #b8dde6; color:#0e5a6e; border-radius:12px; padding:12px 16px; margin-bottom:16px; font-size:0.88rem; font-weight:600; }
+    .resched-banner i { color:#0e7490; margin-top:2px; }
 
     /* Stepper */
     .stepper { display:flex; align-items:center; gap:8px; margin:6px 0 22px; }
@@ -26,7 +31,7 @@
 
     /* Doctor summary */
     .doc-card { background:#fff; border:1px solid #e2e8f0; border-radius:14px; padding:16px 18px; display:flex; align-items:center; gap:14px; margin-bottom:18px; }
-    .doc-card .av { width:52px; height:52px; border-radius:12px; background:var(--teal-d); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:800; overflow:hidden; flex-shrink:0; }
+    .doc-card .av { width:52px; height:52px; border-radius:50%; background:var(--teal-d); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:800; overflow:hidden; flex-shrink:0; }
     .doc-card .av img { width:100%; height:100%; object-fit:cover; }
     .doc-card .dn { font-weight:700; font-size:1.05rem; }
     .doc-card .ds { color:var(--teal); font-weight:600; font-size:0.9rem; }
@@ -52,6 +57,13 @@
     .motif.sel .m-radio { border-color:var(--teal); }
     .motif.sel .m-radio::after { content:''; width:10px; height:10px; border-radius:50%; background:var(--teal); }
 
+    /* Prochaine disponibilité (raccourci) */
+    .next-avail { display:inline-flex; align-items:center; gap:8px; border:1.5px solid #a5d8e6; background:var(--teal-l); color:var(--teal); border-radius:999px; padding:8px 16px; font-size:0.86rem; font-weight:600; cursor:pointer; margin-bottom:14px; }
+    .next-avail:hover { border-color:var(--teal); }
+    .next-avail.cur { cursor:default; }
+    .next-avail i { color:var(--teal-d); }
+    .next-avail b { font-weight:800; }
+
     /* Date strip */
     .date-strip { display:flex; gap:8px; overflow-x:auto; padding-bottom:8px; margin-bottom:16px; }
     .date-cell { flex:0 0 auto; width:64px; border:1.5px solid #e2e8f0; border-radius:12px; padding:10px 6px; text-align:center; cursor:pointer; background:#fff; }
@@ -76,12 +88,12 @@
     .sum-row:last-child { border-bottom:none; }
     .sum-row .k { color:#64748b; }
     .sum-row .v { font-weight:600; text-align:right; }
-    .price-line { display:flex; justify-content:space-between; align-items:center; background:var(--teal-l); border-radius:10px; padding:14px 16px; margin-top:14px; }
+    .price-line { display:flex; flex-direction:column; gap:9px; background:var(--teal-l); border-radius:10px; padding:14px 16px; margin-top:14px; }
+    .price-line .pl-row { display:flex; justify-content:space-between; align-items:center; }
     .price-line .pl-k { font-weight:700; }
     .price-line .pl-v { font-weight:800; font-size:1.2rem; color:var(--teal); }
-
-    .pay-note { background:#fff8e1; border:1px solid #ffd54f; border-radius:10px; padding:12px 14px; font-size:0.84rem; color:#6d4c00; margin-top:14px; display:flex; gap:10px; }
-    .pay-note i { color:#f59e0b; margin-top:2px; }
+    .price-line .pl-note { display:flex; gap:8px; align-items:flex-start; font-size:0.82rem; color:#0e7490; line-height:1.45; border-top:1px solid #cdeef2; padding-top:9px; }
+    .price-line .pl-note i { margin-top:2px; }
 
     .foot { display:flex; justify-content:space-between; gap:12px; margin-top:20px; }
     .btn-teal { background:var(--teal); border:0; color:#fff; font-weight:700; border-radius:10px; padding:11px 22px; }
@@ -106,6 +118,8 @@
   </div>
 
   <div class="wrap">
+
+    <div id="reschedBanner" class="resched-banner" style="display:none;"><i class="fa fa-clock-rotate-left"></i><span data-i18n="book.resched_banner">Vous reportez un rendez-vous : choisissez un nouveau créneau. Votre rendez-vous existant sera déplacé.</span></div>
 
     <!-- Stepper -->
     <div class="stepper" id="stepper">
@@ -142,6 +156,7 @@
     <div class="panel hide" id="step2">
       <h5 data-i18n="book.s2_title">Choisissez un créneau</h5>
       <div class="sub" id="s2Sub"></div>
+      <div id="nextAvailJump" class="next-avail hide" onclick="jumpNextAvail()"></div>
       <div class="date-strip" id="dateStrip"></div>
       <div id="slotsWrap"><div class="slots" id="slots"></div></div>
       <div class="foot">
@@ -158,18 +173,16 @@
       <div id="sumBox"></div>
 
       <div class="mt-3">
-        <label class="form-label small fw-semibold" data-i18n="book.reason_label">Motif de la visite (facultatif)</label>
-        <textarea class="form-control" id="reason" rows="2" maxlength="300" data-i18n-placeholder="book.reason_ph" placeholder="Précisez brièvement la raison de votre venue…"></textarea>
+        <label class="form-label small fw-semibold" data-i18n="book.reason_label">Précisions pour le médecin (facultatif)</label>
+        <textarea class="form-control" id="reason" rows="2" maxlength="300" data-i18n-placeholder="book.reason_ph" placeholder="Ajoutez un mot à l'attention du médecin (symptômes, contexte…)"></textarea>
       </div>
 
       <div class="price-line">
-        <span class="pl-k" data-i18n="book.prepay">Tarif de la consultation</span>
-        <span class="pl-v" id="priceVal">—</span>
-      </div>
-
-      <div class="pay-note" data-i18n-html="book.pay_gate_html">
-        <i class="fa fa-circle-info"></i>
-        <span><strong>Aucun paiement en ligne au MVP.</strong> Le tarif est affiché à titre indicatif et se règle directement auprès du médecin. Le prépaiement en ligne (Flutterwave — carte / Mobile&nbsp;Money) est prévu ultérieurement.</span>
+        <div class="pl-row">
+          <span class="pl-k" data-i18n="book.prepay">Tarif de la consultation</span>
+          <span class="pl-v" id="priceVal">—</span>
+        </div>
+        <div class="pl-note"><i class="fa fa-circle-info"></i><span data-i18n="book.pay_face_note">À régler directement auprès du médecin lors de la consultation. Le paiement en ligne via FUENI sera disponible ultérieurement.</span></div>
       </div>
 
       <div class="foot">
@@ -182,12 +195,12 @@
     <div class="panel hide" id="stepDone">
       <div class="success">
         <div class="ok"><i class="fa fa-check"></i></div>
-        <h4 data-i18n="book.done_title">Rendez-vous confirmé</h4>
-        <p class="text-muted" data-i18n="book.done_sub">Votre rendez-vous est confirmé automatiquement. Un rappel vous sera envoyé.</p>
+        <h4 id="doneTitle" data-i18n="book.done_title">Rendez-vous confirmé</h4>
+        <p class="text-muted" id="doneSub" data-i18n="book.done_sub">Votre rendez-vous est confirmé automatiquement. Un rappel vous sera envoyé.</p>
         <div class="recap" id="recap"></div>
         <div class="d-flex gap-2 justify-content-center flex-wrap">
           <a href="08-patient-mes-rdv.html" class="btn-teal text-decoration-none" data-i18n="book.done_myrdv">Voir mes rendez-vous</a>
-          <a href="01-home.html" class="btn-ghost text-decoration-none" data-i18n="book.done_home">Retour à l'annuaire</a>
+          <a href="05-patient-dashboard.html" class="btn-ghost text-decoration-none" data-i18n="book.done_dashboard">Retour au tableau de bord</a>
         </div>
       </div>
     </div>
@@ -204,10 +217,21 @@
       title:'Dr', name:'Aboubacar Diallo', spec:'Cardiologie', photo:null, currency:'XOF',
       street:'12, rue Carnot', city:'Dakar', region:'Dakar', country:'Sénégal',
       hours:{ mon:[['09:00','13:00'],['15:00','18:00']], tue:[['09:00','13:00'],['15:00','18:00']], wed:[['09:00','13:00']], thu:[['09:00','13:00'],['15:00','18:00']], fri:[['09:00','13:00']], sat:[], sun:[] },
-      motifs:[ {label:'Consultation générale',dur:30,price:8000}, {label:'Suivi / renouvellement',dur:20,price:6000} ]
+      motifs:[ {label:'Consultation générale',dur:30,price:8000}, {label:'Suivi / renouvellement',dur:20,price:6000} ],
+      bookingWindow:30
     };
 
+    // Praticien réservé : ?doc=<id>. 'real' (ou absent) = profil configuré à l'écran 19 (localStorage).
+    // Les autres ids sont des médecins de démonstration de l'annuaire (naz-doctors.js).
+    const DOC_ID = new URLSearchParams(location.search).get('doc') || 'real';
+    // Mode « report » (depuis Mes RDV) : on déplacera le RDV existant au lieu d'en créer un nouveau.
+    const RESCHED = new URLSearchParams(location.search).get('reschedule') === '1';
+    let reschedTarget = null;
+    try { if (RESCHED) reschedTarget = JSON.parse(sessionStorage.getItem('fueni_reschedule') || 'null'); } catch (e) {}
     function loadProfile() {
+      if (DOC_ID !== 'real' && window.NazDoctors && NazDoctors[DOC_ID]) {
+        return Object.assign({}, DEFAULT, JSON.parse(JSON.stringify(NazDoctors[DOC_ID])));
+      }
       try { const raw = localStorage.getItem(STORE_KEY); if (raw) return Object.assign({}, DEFAULT, JSON.parse(raw)); } catch (e) {}
       return JSON.parse(JSON.stringify(DEFAULT));
     }
@@ -300,7 +324,8 @@
     function setMotif(i) { motifIdx = i; renderStep1(); }
 
     /* ---------- Step 2 : dates + slots ---------- */
-    const DAY_COUNT = 14;
+    // Profondeur du calendrier = fenêtre de réservation définie par le médecin (écran 19), bornée par sécurité.
+    const DAY_COUNT = Math.max(1, Math.min(180, parseInt(P.bookingWindow, 10) || 30));
     function upcomingDates() {
       const out = [];
       const base = new Date(); base.setHours(0, 0, 0, 0);
@@ -334,9 +359,17 @@
         esc(m.label) + ' · ' + m.dur + ' ' + T('book.min') + ' · ' + esc(locName(L)) +
         (tz ? ' · ' + T('geo.tz_local') + ' ' + tz : '');
       const dates = upcomingDates();
+      const firstAvail = dates.find(dateHasSlots) || null;
       if (!selDate || !dates.some(d => sameDay(d, selDate))) {
-        const first = dates.find(dateHasSlots); selDate = first || null; selTime = null;
+        selDate = firstAvail; selTime = null;
       }
+      // Raccourci « prochaine disponibilité » : saute au premier jour ouvert.
+      const naj = document.getElementById('nextAvailJump');
+      if (firstAvail) {
+        const onIt = selDate && sameDay(firstAvail, selDate);
+        naj.className = 'next-avail' + (onIt ? ' cur' : '');
+        naj.innerHTML = '<i class="fa fa-bolt"></i><span>' + T('book.next_avail') + ' <b>' + esc(fmtNextDay(firstAvail)) + '</b></span>';
+      } else { naj.className = 'next-avail hide'; }
       document.getElementById('dateStrip').innerHTML = dates.map((dt, i) => {
         const has = dateHasSlots(dt);
         const sel = selDate && sameDay(dt, selDate);
@@ -350,6 +383,18 @@
       document.getElementById('s2Next').disabled = !selTime;
     }
     function setDate(i) { selDate = upcomingDates()[i]; selTime = null; renderStep2(); }
+    function fmtNextDay(dt) {
+      const now = new Date(); now.setHours(0, 0, 0, 0);
+      const off = Math.round((dt - now) / 86400000);
+      if (off === 0) return T('psearch.day_today');
+      if (off === 1) return T('psearch.day_tomorrow');
+      return dt.toLocaleDateString(lang(), { weekday: 'long', day: 'numeric', month: 'long' });
+    }
+    function jumpNextAvail() {
+      const first = upcomingDates().find(dateHasSlots);
+      if (!first) return;
+      selDate = first; selTime = null; renderStep2();
+    }
     function renderSlots() {
       const box = document.getElementById('slots');
       if (!selDate) { box.innerHTML = '<div class="no-slots">' + T('book.no_slot') + '</div>'; return; }
@@ -370,6 +415,7 @@
       try { const u = JSON.parse(sessionStorage.getItem('fueni_user') || '{}'); const n = ((u.firstName || '') + ' ' + (u.lastName || '')).trim(); if (n) return n; } catch (e) {}
       return 'Aïssatou Diop';
     }
+    function patientPhone() { try { const u = JSON.parse(sessionStorage.getItem('fueni_user') || '{}'); return (u.phone || '').trim(); } catch (e) { return ''; } }
     function fmtDate(dt) { return dt.toLocaleDateString(lang(), { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }); }
     function renderStep3() {
       const L = P.locations[locIdx];
@@ -404,20 +450,38 @@
         return;
       }
       const L = P.locations[locIdx], m = L.motifs[motifIdx];
-      const appt = {
-        id: 'apt_' + selDate.getFullYear() + pad(selDate.getMonth() + 1) + pad(selDate.getDate()) + '_' + selTime.replace(':', ''),
-        doctor: (P.title ? P.title + ' ' : '') + P.name, spec: P.spec,
-        locationName: locName(L), locationAddr: locAddr(L), teleconsult: false,
+      const dateISO = selDate.getFullYear() + '-' + pad(selDate.getMonth() + 1) + '-' + pad(selDate.getDate());
+      const reasonVal = (document.getElementById('reason').value || '').trim();
+      const commonFields = {
+        doc: DOC_ID, doctor: (P.title ? P.title + ' ' : '') + P.name, spec: P.spec,
+        locationName: locName(L), locationAddr: locAddr(L), country: L.country || '', region: L.region || '', teleconsult: false,
         motif: m.label, duration: m.dur, price: m.price, currency: P.currency || 'XOF',
-        dateISO: selDate.getFullYear() + '-' + pad(selDate.getMonth() + 1) + '-' + pad(selDate.getDate()),
-        time: selTime, reason: (document.getElementById('reason').value || '').trim(),
-        status: 'CONFIRMED', payment: 'NONE'
+        dateISO: dateISO, time: selTime, reason: reasonVal, status: 'CONFIRMED'
       };
+      let saved = null;
       try {
         const arr = JSON.parse(localStorage.getItem(APPT_KEY) || '[]');
-        arr.push(appt); localStorage.setItem(APPT_KEY, JSON.stringify(arr));
+        if (RESCHED && reschedTarget) {
+          const i = arr.findIndex(x => x.id === reschedTarget.id);
+          if (i >= 0) { Object.assign(arr[i], commonFields); saved = arr[i]; } // déplace le RDV existant (id conservé)
+        }
+        if (!saved) {
+          saved = Object.assign({
+            // id unique par praticien + lieu + date + heure (évite les collisions entre deux praticiens au même créneau)
+            id: 'apt_' + DOC_ID + '_' + locIdx + '_' + dateISO.replace(/-/g, '') + '_' + selTime.replace(':', ''),
+            patient: patientName(), patientPhone: patientPhone(), payment: 'NONE'
+          }, commonFields);
+          arr.push(saved);
+        }
+        localStorage.setItem(APPT_KEY, JSON.stringify(arr));
+        try { sessionStorage.removeItem('fueni_reschedule'); } catch (e) {}
       } catch (e) {}
-      renderRecap(appt);
+      if (!saved) return;
+      if (RESCHED) {
+        const dt = document.getElementById('doneTitle'); if (dt) dt.textContent = T('book.done_resched_title');
+        const ds = document.getElementById('doneSub'); if (ds) ds.textContent = T('book.done_resched_sub');
+      }
+      renderRecap(saved);
       showStep('done');
     }
     function pad(n) { return String(n).padStart(2, '0'); }
@@ -479,11 +543,25 @@
       showStep(3);
       return true;
     }
+    // Report : préselectionne le lieu + le motif du RDV à déplacer, affiche le bandeau, et saute au choix du créneau.
+    function applyReschedule() {
+      if (!RESCHED || !reschedTarget) return false;
+      const li = P.locations.findIndex(L => L.bookable && locName(L) === reschedTarget.locationName);
+      if (li >= 0) locIdx = li; else if (bookableIdx.length) locIdx = bookableIdx[0];
+      const mi = (P.locations[locIdx].motifs || []).findIndex(m => m.label === reschedTarget.motif);
+      motifIdx = mi >= 0 ? mi : -1;
+      const rb = document.getElementById('reschedBanner'); if (rb) rb.style.display = 'flex';
+      renderDocCard(); renderStep1();
+      if (reschedTarget.reason) { const r = document.getElementById('reason'); if (r) r.value = reschedTarget.reason; }
+      if (motifIdx >= 0) { renderStep2(); showStep(2); } else { showStep(1); }
+      return true;
+    }
     function initBooking() {
-      // Back link returns to the doctor's public preview
-      document.getElementById('backLink').href = '19b-doctor-public-preview.html';
+      // Report → retour vers Mes RDV ; sinon retour à la fiche du même praticien.
+      document.getElementById('backLink').href = RESCHED ? '08-patient-mes-rdv.html' : ('19b-doctor-public-preview.html?doc=' + encodeURIComponent(DOC_ID));
       renderDocCard();
       renderStep1();
+      if (applyReschedule()) return;
       if (resumePending()) return;
       showStep(1);
     }

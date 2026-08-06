@@ -264,13 +264,13 @@
 
           <!-- 2FA : e-mail par défaut (toujours actif) + SMS optionnel sur numéro vérifié -->
           <div class="sub-h"><i class="fa fa-user-shield"></i><span data-i18n="dset.mfa_title">Authentification à deux facteurs (2FA)</span></div>
-          <div class="sec-sub" data-i18n="dset.mfa_sub2">Obligatoire — un code de vérification à chaque connexion. Choisissez votre méthode préférée ; l'e-mail reste toujours actif comme secours.</div>
+          <div class="sec-sub" data-i18n="dset.mfa_sub2">Obligatoire — un code de vérification à chaque connexion. Choisissez votre méthode préférée.</div>
 
           <label class="mfa-opt">
             <input type="radio" name="mfaPref" value="email" checked onchange="setMfaPref('email')">
             <div class="mfa-opt-body">
               <div class="rl-k"><i class="fa fa-envelope me-2" style="color:#155e75;"></i><span data-i18n="dset.mfa_email">Code par e-mail</span> <span class="chip-ok ms-1" data-i18n="dset.mfa_default">Par défaut</span></div>
-              <div class="rl-sub" data-i18n="dset.mfa_email_desc">Code envoyé à votre adresse vérifiée. Toujours actif (méthode de secours).</div>
+              <div class="rl-sub" data-i18n="dset.mfa_email_desc">Code de connexion envoyé par e-mail à votre adresse vérifiée.</div>
             </div>
           </label>
 
@@ -300,6 +300,8 @@
               <button class="btn-ghost-danger" onclick="revoke(this)" data-i18n="dset.dev_revoke">Retirer</button>
             </div>
           </div>
+
+          <div class="stepup-note mt-3"><i class="fa fa-shield-halved"></i><span data-i18n="dset.dev_revoke_note">Par sécurité, vos appareils de confiance sont automatiquement retirés lorsque vous modifiez votre mot de passe, votre adresse e-mail ou votre numéro de téléphone vérifié.</span></div>
 
           <!-- Sessions actives : reporté post-MVP (décision 2026-07-31) -->
         </div>

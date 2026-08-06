@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title data-i18n-pagetitle="mesrdv.page_title">FUENI — Mes rendez-vous</title>
   <script src="naz-i18n.js" defer></script>
+  <script src="naz-geo.js"></script>
+  <script src="naz-doctors.js"></script>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
   <link rel="stylesheet" href="naz-common.css">
@@ -59,7 +61,7 @@
     .rdv-info .spec { font-size: 0.85rem; color: #16a085; font-weight: 600; }
     .rdv-info .meta { font-size: 0.82rem; color: #64748b; margin-top: 5px; }
     .rdv-info .meta i { color: #16a085; width: 15px; }
-    .rdv-side { display: flex; flex-direction: column; gap: 10px; align-items: flex-end; }
+    .rdv-side { display: flex; flex-direction: column; gap: 18px; align-items: flex-end; justify-content: center; }
     .rdv-status { padding: 4px 12px; border-radius: 20px; font-size: 0.76rem; font-weight: 700; white-space: nowrap; }
     .st-confirmed { background: #e8f8f5; color: #117a65; }
     .st-completed { background: #eef2f6; color: #5d6d7e; }
@@ -68,6 +70,9 @@
     .btn-act { background: #fff; border: 1px solid #e2e8f0; color: #334155; padding: 6px 12px; border-radius: 8px; font-size: 0.78rem; cursor: pointer; text-decoration: none; white-space: nowrap; }
     .btn-act:hover { background: #e8f8f5; border-color: #16a085; color: #117a65; }
     .btn-act.danger:hover { background: #fdedec; border-color: #c0392b; color: #c0392b; }
+    .btn-act.kebab { padding: 6px 11px; }
+    .rdv-actions .dropdown-menu { font-size: 0.84rem; border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,0.12); border-color: #eef2f6; }
+    .rdv-actions .dropdown-item { padding: 8px 14px; }
 
     .empty { background: #fff; border-radius: 14px; padding: 56px 20px; text-align: center; color: #94a3b8; }
     .empty i { font-size: 2.6rem; color: #d5dbdb; margin-bottom: 12px; }
@@ -179,19 +184,43 @@
     const fmt = n => (n || 0).toLocaleString(locale());
     const esc = s => (s == null ? '' : String(s)).replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
     const initials = n => (n || 'D').replace(/^Dr\.?\s*/i, '').split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
+    // Réserver à nouveau : accès direct à la réservation du même médecin si connu (?doc=), sinon recherche par nom.
+    const rebookHref = a => a.doc ? ('27-patient-booking.html?doc=' + encodeURIComponent(a.doc)) : ('28-patient-search.html?q=' + encodeURIComponent(a.doctor));
+    // Fuseau du lieu (heure locale du lieu, comme la fiche/réservation)
+    const tzLabelOf = a => (window.NazGeo && a.country) ? NazGeo.tzLabel(a.country, a.region) : '';
+    const tzOffOf = a => (window.NazGeo && a.country) ? NazGeo.tzOf(a.country, a.region).off : null;
 
     // Rendez-vous de démonstration (fusionnés avec les réservations réelles du parcours 27).
     const DEMO = [
-      { id:'demo_u1', doctor:'Dr Mamadou Sow', spec:'Cardiologie', locationName:'Cabinet Médical Plateau', locationAddr:'Av. Senghor, Dakar', motif:'Consultation générale', duration:30, price:10000, currency:'XOF', dateISO:'2026-08-04', time:'15:30', reason:'Palpitations depuis 2 semaines', status:'CONFIRMED' },
-      { id:'demo_u2', doctor:'Dr Fatou Ndiaye', spec:'Médecine générale', locationName:'Clinique Pasteur', locationAddr:'Médina, Dakar', motif:'Suivi / renouvellement', duration:20, price:6000, currency:'XOF', dateISO:'2026-08-11', time:'10:00', reason:'', status:'CONFIRMED' },
-      { id:'demo_p1', doctor:'Dr Cheikh Diop', spec:'Médecine générale', locationName:'Polyclinique Hâtim', locationAddr:'Ouakam, Dakar', motif:'Suivi', duration:30, price:8000, currency:'XOF', dateISO:'2026-07-20', time:'09:30', reason:'', status:'COMPLETED' },
-      { id:'demo_p2', doctor:'Dr Aminata Mbaye', spec:'Dermatologie', locationName:'Cabinet Le Patio', locationAddr:'Sacré-Cœur, Dakar', motif:'Consultation', duration:20, price:12000, currency:'XOF', dateISO:'2026-07-06', time:'14:00', reason:'', status:'COMPLETED' },
-      { id:'demo_c1', doctor:'Dr Ousmane Ba', spec:'Ophtalmologie', locationName:'Centre Vision', locationAddr:'Plateau, Dakar', motif:'Bilan visuel', duration:30, price:15000, currency:'XOF', dateISO:'2026-07-27', time:'11:00', reason:'', status:'CANCELLED' }
+      { id:'demo_u1', doctor:'Dr Mamadou Sow', spec:'Cardiologie', locationName:'Cabinet Médical Plateau', locationAddr:'Av. Senghor, Dakar', country:'Sénégal', region:'Dakar', motif:'Consultation générale', duration:30, price:10000, currency:'XOF', dateISO:'2026-08-04', time:'15:30', reason:'Palpitations depuis 2 semaines', status:'CONFIRMED' },
+      { id:'demo_u2', doctor:'Dr Fatou Ndiaye', spec:'Médecine générale', locationName:'Clinique Pasteur', locationAddr:'Médina, Dakar', country:'Sénégal', region:'Dakar', motif:'Suivi / renouvellement', duration:20, price:6000, currency:'XOF', dateISO:'2026-08-11', time:'10:00', reason:'', status:'CONFIRMED' },
+      { id:'demo_p1', doctor:'Dr Cheikh Diop', spec:'Médecine générale', locationName:'Polyclinique Hâtim', locationAddr:'Ouakam, Dakar', country:'Sénégal', region:'Dakar', motif:'Suivi', duration:30, price:8000, currency:'XOF', dateISO:'2026-07-20', time:'09:30', reason:'', status:'COMPLETED' },
+      { id:'demo_p2', doctor:'Dr Aminata Mbaye', spec:'Dermatologie', locationName:'Cabinet Le Patio', locationAddr:'Sacré-Cœur, Dakar', country:'Sénégal', region:'Dakar', motif:'Consultation', duration:20, price:12000, currency:'XOF', dateISO:'2026-07-06', time:'14:00', reason:'', status:'COMPLETED' },
+      { id:'demo_c1', doctor:'Dr Ousmane Ba', spec:'Ophtalmologie', locationName:'Centre Vision', locationAddr:'Plateau, Dakar', country:'Sénégal', region:'Dakar', motif:'Bilan visuel', duration:30, price:15000, currency:'XOF', dateISO:'2026-07-27', time:'11:00', reason:'', status:'CANCELLED' }
     ];
 
     let APPTS = [];
     let curTab = 'upcoming';
 
+    // Nom du praticien configuré (profil public) — pour rattacher les anciens RDV au médecin « real ».
+    const REAL_DOCTOR_NAME = (function () { try { const p = JSON.parse(localStorage.getItem('fueni_pubprofile_v2') || '{}'); const n = ((p.title ? p.title + ' ' : '') + (p.name || '')).trim(); if (n) return n; } catch (e) {} return 'Dr Aboubacar Diallo'; })();
+    // Rétro-remplissage de l'id médecin (`doc`) pour les anciens RDV (créés avant ce champ) → réactive « Reporter ».
+    function backfillDoc(a) {
+      if (a.doc) return;
+      if (a.doctor === REAL_DOCTOR_NAME) { a.doc = 'real'; return; }
+      if (window.NazDoctors) {
+        for (const id in NazDoctors) { const d = NazDoctors[id]; if (((d.title ? d.title + ' ' : '') + d.name) === a.doctor) { a.doc = id; return; } }
+      }
+    }
+    // Rétro-remplissage du fuseau pour les anciens RDV (créés avant le stockage pays/région) :
+    // l'adresse du lieu se termine toujours par le pays (locAddr = rue, ville, région, pays).
+    function backfillTz(a) {
+      if (a.country || !window.NazGeo || !a.locationAddr) return;
+      const parts = a.locationAddr.split(',').map(s => s.trim()).filter(Boolean);
+      for (let i = parts.length - 1; i >= 0; i--) {
+        if (NazGeo.countries.indexOf(parts[i]) !== -1) { a.country = parts[i]; a.region = parts[i - 1] || ''; break; }
+      }
+    }
     function load() {
       let stored = [];
       try { stored = JSON.parse(localStorage.getItem(APPT_KEY) || '[]'); } catch (e) {}
@@ -199,6 +228,7 @@
       const seen = new Set(storedMarked.map(a => a.id));
       const demo = DEMO.filter(a => !seen.has(a.id)).map(a => Object.assign({}, a));
       APPTS = storedMarked.concat(demo);
+      APPTS.forEach(a => { backfillDoc(a); backfillTz(a); });
     }
     function persistStored() {
       try {
@@ -240,11 +270,19 @@
     function actionsFor(a, bucket) {
       const details = '<button class="btn-act" onclick="openDetail(\'' + a.id + '\')"><i class="fa fa-eye me-1"></i>' + T('mesrdv.act_details') + '</button>';
       if (bucket === 'upcoming') {
+        // Une seule action visible (Détails) ; les actions utilitaires sont regroupées dans un menu « ⋮ ».
+        const items =
+          (a.doc ? '<li><button class="dropdown-item" onclick="rescheduleAppt(\'' + a.id + '\')"><i class="fa fa-clock-rotate-left me-2 text-muted"></i>' + T('mesrdv.act_reschedule') + '</button></li>' : '') +
+          '<li><button class="dropdown-item" onclick="addToCalendar(\'' + a.id + '\')"><i class="fa fa-calendar-plus me-2 text-muted"></i>' + T('mesrdv.act_calendar') + '</button></li>' +
+          '<li><hr class="dropdown-divider"></li>' +
+          '<li><button class="dropdown-item text-danger" onclick="cancelAppt(\'' + a.id + '\')"><i class="fa fa-xmark me-2"></i>' + T('mesrdv.act_cancel') + '</button></li>';
         return details +
-          '<button class="btn-act" onclick="addToCalendar(\'' + a.id + '\')"><i class="fa fa-calendar-plus me-1"></i>' + T('mesrdv.act_calendar') + '</button>' +
-          '<button class="btn-act danger" onclick="cancelAppt(\'' + a.id + '\')"><i class="fa fa-xmark me-1"></i>' + T('mesrdv.act_cancel') + '</button>';
+          '<div class="dropdown d-inline-block">' +
+            '<button class="btn-act kebab" data-bs-toggle="dropdown" aria-expanded="false" aria-label="' + T('mesrdv.act_more') + '"><i class="fa fa-ellipsis-vertical"></i></button>' +
+            '<ul class="dropdown-menu dropdown-menu-end">' + items + '</ul>' +
+          '</div>';
       }
-      return details + '<a class="btn-act" href="28-patient-search.html?q=' + encodeURIComponent(a.doctor) + '"><i class="fa fa-rotate-right me-1"></i>' + T('mesrdv.act_rebook') + '</a>';
+      return details + '<a class="btn-act" href="' + rebookHref(a) + '"><i class="fa fa-rotate-right me-1"></i>' + T('mesrdv.act_rebook') + '</a>';
     }
 
     const norm = s => (s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
@@ -287,7 +325,7 @@
       const a = byId(id); if (!a) return;
       const b = bucketOf(a);
       const dt = dateOf(a);
-      const when = dt.toLocaleDateString(locale(), { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) + ' · ' + a.time;
+      const when = dt.toLocaleDateString(locale(), { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) + ' · ' + a.time + (tzLabelOf(a) ? ' · ' + tzLabelOf(a) : '');
       const rows = [
         [T('mesrdv.d_doctor'), esc(a.doctor) + ' — ' + esc(a.spec)],
         [T('mesrdv.d_when'), esc(when)],
@@ -303,14 +341,24 @@
       document.getElementById('detailBody').innerHTML = html;
       let foot = '';
       if (b === 'upcoming') {
-        foot = '<button class="btn btn-patient" onclick="addToCalendar(\'' + a.id + '\')"><i class="fa fa-calendar-plus me-2"></i>' + T('mesrdv.act_calendar') + '</button>' +
+        foot = (a.doc ? '<button class="btn btn-outline-secondary" onclick="rescheduleAppt(\'' + a.id + '\')"><i class="fa fa-clock-rotate-left me-2"></i>' + T('mesrdv.act_reschedule') + '</button>' : '') +
+               '<button class="btn btn-patient" onclick="addToCalendar(\'' + a.id + '\')"><i class="fa fa-calendar-plus me-2"></i>' + T('mesrdv.act_calendar') + '</button>' +
                '<button class="btn btn-outline-danger" onclick="cancelAppt(\'' + a.id + '\')"><i class="fa fa-xmark me-2"></i>' + T('mesrdv.act_cancel') + '</button>';
       } else {
-        foot = '<a class="btn btn-patient" href="28-patient-search.html?q=' + encodeURIComponent(a.doctor) + '"><i class="fa fa-rotate-right me-2"></i>' + T('mesrdv.act_rebook') + '</a>';
+        foot = '<a class="btn btn-patient" href="' + rebookHref(a) + '"><i class="fa fa-rotate-right me-2"></i>' + T('mesrdv.act_rebook') + '</a>';
       }
       document.getElementById('detailFoot').innerHTML = foot;
       detailOff = detailOff || new bootstrap.Offcanvas(document.getElementById('rdvDetail'));
       detailOff.show();
+    }
+
+    // Reporter : rouvre l'assistant de réservation du même médecin en mode « report » (le RDV existant sera déplacé, pas dupliqué).
+    function rescheduleAppt(id) {
+      const a = byId(id); if (!a || !a.doc) return;
+      try {
+        sessionStorage.setItem('fueni_reschedule', JSON.stringify({ id: a.id, motif: a.motif || '', locationName: a.locationName || '', reason: a.reason || '' }));
+      } catch (e) {}
+      window.location.href = '27-patient-booking.html?doc=' + encodeURIComponent(a.doc) + '&reschedule=1';
     }
 
     function cancelAppt(id) {
@@ -329,11 +377,15 @@
     function addToCalendar(id) {
       const a = byId(id); if (!a) return;
       const s = dateOf(a), e = new Date(s.getTime() + (a.duration || 30) * 60000);
-      const stamp = d => d.getFullYear() + pad(d.getMonth() + 1) + pad(d.getDate()) + 'T' + pad(d.getHours()) + pad(d.getMinutes()) + '00';
+      // Instant absolu : l'heure du RDV est l'heure LOCALE DU LIEU ; UTC = heure locale − décalage du fuseau (aucun DST dans les pays cibles).
+      // On émet en UTC (suffixe Z) pour que l'agenda du patient affiche le bon instant, même dans un autre fuseau.
+      const off = tzOffOf(a);
+      const stampUTC = d => { const u = new Date(d.getTime() - ((off || 0) * 3600000)); return u.getUTCFullYear() + pad(u.getUTCMonth() + 1) + pad(u.getUTCDate()) + 'T' + pad(u.getUTCHours()) + pad(u.getUTCMinutes()) + '00Z'; };
+      const stamp = d => (off != null) ? stampUTC(d) : (d.getFullYear() + pad(d.getMonth() + 1) + pad(d.getDate()) + 'T' + pad(d.getHours()) + pad(d.getMinutes()) + '00');
       const cl = t => (t || '').replace(/([,;\\])/g, '\\$1').replace(/\n/g, ' ');
       const ics = [
         'BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//FUENI//RDV//FR', 'CALSCALE:GREGORIAN',
-        'BEGIN:VEVENT', 'UID:' + a.id + '@fueni', 'DTSTAMP:' + stamp(new Date()),
+        'BEGIN:VEVENT', 'UID:' + a.id + '@fueni', 'DTSTAMP:' + stampUTC(new Date()),
         'DTSTART:' + stamp(s), 'DTEND:' + stamp(e),
         'SUMMARY:' + cl((a.motif || 'Rendez-vous') + ' — ' + a.doctor),
         'LOCATION:' + cl(a.locationName + (a.locationAddr ? ', ' + a.locationAddr : '')),

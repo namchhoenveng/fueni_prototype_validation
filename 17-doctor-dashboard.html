@@ -207,6 +207,11 @@
           <div class="flex-grow-1 small"><strong data-i18n="doc.dash.phone_unverified_t">Téléphone non vérifié.</strong> <span data-i18n="doc.dash.phone_unverified">Vérifiez-le pour pouvoir vous connecter par SMS et recevoir les alertes urgentes.</span></div>
           <a href="13b-doctor-otp.html" class="btn btn-sm" style="background:#f57c00;color:#fff;font-weight:600;white-space:nowrap;" data-i18n="doc.dash.phone_verify_btn">Vérifier maintenant</a>
         </div>
+        <a id="newBookingsBanner" href="24-doctor-rendezvous.html" class="d-flex align-items-center gap-3 mb-4 text-decoration-none" style="display:none;background:#eef5f7;border:1px solid #b8dde6;border-radius:10px;padding:12px 16px;color:#0e5a6e;">
+          <i class="fa fa-bell" style="color:#0e7490;font-size:1.2rem;"></i>
+          <div class="flex-grow-1 small fw-semibold" id="newBookingsText"></div>
+          <span class="btn btn-sm" style="background:#155e75;color:#fff;font-weight:600;white-space:nowrap;" data-i18n="doc.dash.new_bookings_btn">Voir</span>
+        </a>
         <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
           <div>
             <h2 class="fw-bold mb-1" style="color:#155e75;" data-i18n-html="doc.dash.hello_html">Bonjour <strong>Dr Diallo</strong> 👋</h2>
@@ -324,6 +329,20 @@
       bg.style.filter = 'none';
       document.querySelectorAll('.nav-link-side.js-locked').forEach(l => { l.classList.add('unlocked'); l.classList.remove('js-locked'); });
       document.getElementById('sidebarStatus').innerHTML = '<i class="fa fa-circle-check me-1" style="color:#22d3ee;"></i><span style="color:rgba(255,255,255,0.72);">' + t('doc.dash.validated_status', 'Profil validé') + '</span>';
+      renderNewBookings();
+    }
+
+    // Compteur « nouveaux rendez-vous réservés en ligne » (non encore ouverts dans le planning).
+    function renderNewBookings() {
+      const el = document.getElementById('newBookingsBanner'); if (!el) return;
+      let arr = [], seen = new Set();
+      try { arr = JSON.parse(localStorage.getItem('fueni_appointments') || '[]'); } catch (e) {}
+      try { seen = new Set(JSON.parse(localStorage.getItem('fueni_rdv_seen') || '[]')); } catch (e) {}
+      const docName = (function () { try { const p = JSON.parse(localStorage.getItem('fueni_pubprofile_v2') || '{}'); const n = ((p.title ? p.title + ' ' : '') + (p.name || '')).trim(); if (n) return n; } catch (e) {} return 'Dr Aboubacar Diallo'; })();
+      const n = arr.filter(a => a && a.status !== 'CANCELLED' && (!a.doctor || a.doctor === docName) && !seen.has(a.id)).length;
+      if (!n) { el.style.display = 'none'; return; }
+      document.getElementById('newBookingsText').textContent = t('doc.dash.new_bookings', '{n} nouveau(x) rendez-vous réservé(s) en ligne à vérifier').replace('{n}', n);
+      el.style.display = 'flex';
     }
 
     // Plan souscrit : Solo ou Gratuit

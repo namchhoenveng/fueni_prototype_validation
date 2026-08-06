@@ -27,6 +27,14 @@
     .topbar-btn.ghost { background:#fff; color:#155e75; border-color:#cbd5e1; }
     .topbar-btn.ghost:hover { background:#eef5f7; border-color:#155e75; color:#155e75; }
     .content-area { padding: 88px 28px 40px; }
+    /* RDV réservés en ligne — bandeau + badges « Nouveau » */
+    .new-banner { display:flex; align-items:center; gap:12px; background:#eef5f7; border:1px solid #b8dde6; color:#0e5a6e; border-radius:12px; padding:12px 16px; margin-bottom:18px; font-size:0.9rem; font-weight:600; }
+    .new-banner i.fa-bell { color:#0e7490; font-size:1.05rem; }
+    .new-banner .nb-btn { background:#155e75; border:0; color:#fff; font-weight:600; font-size:0.84rem; border-radius:8px; padding:7px 15px; cursor:pointer; white-space:nowrap; }
+    .new-banner .nb-btn:hover { background:#114c5f; }
+    .rdv-card.is-new { box-shadow:0 0 0 2px #22d3ee; }
+    .rdv-card .new-dot { position:absolute; top:3px; right:3px; width:8px; height:8px; border-radius:50%; background:#0e7490; }
+    .new-badge { display:inline-block; background:#cffafe; color:#0e7490; border-radius:10px; padding:1px 8px; font-size:0.66rem; font-weight:800; text-transform:uppercase; letter-spacing:0.4px; vertical-align:middle; margin-left:6px; }
     .page-sub { color:#64748b; font-size:0.9rem; margin:-2px 0 16px; }
 
     .toolbar { background:#fff; border-radius:14px; padding:12px 16px; display:flex; align-items:center; gap:14px; flex-wrap:nowrap; box-shadow:0 2px 8px rgba(0,0,0,0.04); margin-bottom:18px; }
@@ -181,6 +189,8 @@
         <div class="col-sm-6 col-lg-4"><div class="stat-tile"><div class="ic" style="width:40px;height:40px;border-radius:11px;background:#ede9fe;color:#5b21b6;display:flex;align-items:center;justify-content:center;"><i class="fa fa-calendar-week"></i></div><div><div class="n" id="stWeek">0</div><div class="l" data-i18n="docrdv.stat_week">RDV à venir (7 j)</div></div></div></div>
         <div class="col-sm-6 col-lg-4"><div class="stat-tile"><div class="ic" style="width:40px;height:40px;border-radius:11px;background:#e0f2fe;color:#0369a1;display:flex;align-items:center;justify-content:center;"><i class="fa fa-clock"></i></div><div><div class="n" id="stNext" style="color:#0369a1;">—</div><div class="l" data-i18n="docrdv.stat_next">Prochain RDV</div></div></div></div>
       </div>
+
+      <div id="newBanner" class="new-banner" style="display:none;"></div>
 
       <div class="toolbar">
         <div class="seg">
@@ -429,6 +439,36 @@
     const isEn = () => window.NazI18n && NazI18n.getLang() === 'en';
     const START = 8, END = 19, HH = 54;
 
+    /* ---------- RDV réservés en ligne (patients) : ingestion depuis fueni_appointments ---------- */
+    const APPT_KEY = 'fueni_appointments', SEEN_KEY = 'fueni_rdv_seen';
+    // Nom du praticien connecté = profil public configuré (pour ne montrer que SES rendez-vous).
+    const DOCTOR_NAME = (function () { try { const p = JSON.parse(localStorage.getItem('fueni_pubprofile_v2') || '{}'); const n = ((p.title ? p.title + ' ' : '') + (p.name || '')).trim(); if (n) return n; } catch (e) {} return 'Dr Aboubacar Diallo'; })();
+    function loadSeen() { try { return new Set(JSON.parse(localStorage.getItem(SEEN_KEY) || '[]')); } catch (e) { return new Set(); } }
+    let seenSet = loadSeen();
+    function markSeen(id) { if (!id || seenSet.has(id)) return; seenSet.add(id); try { localStorage.setItem(SEEN_KEY, JSON.stringify([...seenSet])); } catch (e) {} }
+    const iniOf = n => (n || '?').replace(/^Dr\.?\s*/i, '').split(' ').filter(Boolean).map(w => w[0]).slice(0, 2).join('').toUpperCase();
+    const addMin = (t, mins) => { const m = toMin(t) + (mins || 0); return String(Math.floor(m / 60)).padStart(2, '0') + ':' + String(m % 60).padStart(2, '0'); };
+    function ingestBookings() {
+      let arr = []; try { arr = JSON.parse(localStorage.getItem(APPT_KEY) || '[]'); } catch (e) {}
+      arr.forEach(a => {
+        if (!a || !a.dateISO || !a.time) return;
+        if (a.doctor && DOCTOR_NAME && a.doctor !== DOCTOR_NAME) return; // uniquement les RDV de CE praticien
+        if (RDV.some(r => r.apptId === a.id)) return;                   // pas de doublon (ré-exécution)
+        RDV.push({
+          apptId: a.id, booked: true,
+          date: a.dateISO, start: a.time, end: addMin(a.time, a.duration || 30),
+          ini: iniOf(a.patient), name: (a.patient || '').trim(),
+          motif: a.motif || '', nature: 'consultation',
+          status: (a.status === 'CANCELLED') ? 'cancelled' : 'confirmed',
+          loc: (LOCS[0] ? LOCS[0].id : 'loc1'),
+          note: a.reason || '', phone: a.patientPhone || ''
+        });
+      });
+    }
+    ingestBookings();
+    // Nom affiché (le repli i18n est résolu au rendu, quand NazI18n est prêt — pas à l'ingestion).
+    const rdvName = r => r.name || (r.booked ? T('docrdv.patient_online') : '');
+
     function mondayOf(s) { const d = dObj(s); const off = (d.getDay() + 6) % 7; d.setDate(d.getDate() - off); return d; }
     function pass(r) { return matchLoc(r) && (fNature === 'all' || r.nature === fNature) && (fStatus === 'all' || r.status === fStatus); }
 
@@ -464,7 +504,22 @@
       if (view === 'week') renderWeek();
       else if (view === 'month') renderMonth();
       else renderList();
-      renderSide(); renderFilters(); stats();
+      renderSide(); renderFilters(); stats(); renderBanner();
+    }
+    // Bandeau « nouveaux RDV réservés en ligne » — nécessaire car la vue s'ouvre sur la semaine courante,
+    // alors qu'un RDV fraîchement réservé peut tomber une autre semaine : le bandeau permet d'y sauter.
+    function newBookings() { return RDV.filter(r => r.booked && r.status !== 'cancelled' && !seenSet.has(r.apptId)); }
+    function renderBanner() {
+      const box = document.getElementById('newBanner'); if (!box) return;
+      const news = newBookings();
+      if (!news.length) { box.style.display = 'none'; box.innerHTML = ''; return; }
+      box.style.display = 'flex';
+      box.innerHTML = '<i class="fa fa-bell"></i><span class="flex-grow-1">' + T('docrdv.new_banner').replace('{n}', news.length) + '</span>' +
+        '<button class="nb-btn" onclick="jumpToNew()">' + T('docrdv.new_banner_btn') + '</button>';
+    }
+    function jumpToNew() {
+      // Liste complète à partir d'aujourd'hui : l'agenda reste entier et les RDV réservés y sont surlignés « Nouveau ».
+      cur = TODAY; setView('list');
     }
 
     function renderWeek() {
@@ -496,8 +551,10 @@
           const r = o.r; const top = (toMin(r.start) - START * 60) / 60 * HH;
           const hgt = Math.max(26, (toMin(r.end) - toMin(r.start)) / 60 * HH - 3);
           const c = labelOf(r.nature).color;
-          return '<div class="rdv-card' + (r.status === 'cancelled' ? ' cancelled' : '') + '" style="top:' + top + 'px;height:' + hgt + 'px;border-left:3px solid ' + c + ';background:' + c + '1a" onclick="openDetail(' + o.idx + ')">' +
-            '<div class="rt">' + r.start + '</div><div class="rs">' + r.name + '</div></div>';
+          const isNew = r.booked && r.status !== 'cancelled' && !seenSet.has(r.apptId);
+          return '<div class="rdv-card' + (r.status === 'cancelled' ? ' cancelled' : '') + (isNew ? ' is-new' : '') + '" style="top:' + top + 'px;height:' + hgt + 'px;border-left:3px solid ' + c + ';background:' + c + '1a" onclick="openDetail(' + o.idx + ')">' +
+            (isNew ? '<span class="new-dot"></span>' : '') +
+            '<div class="rt">' + r.start + '</div><div class="rs">' + escL(rdvName(r)) + '</div></div>';
         }).join('');
         return '<div class="wk-col' + (ds === TODAY ? ' today' : '') + (wknd ? ' weekend' : '') + '" style="height:' + H + 'px" onclick="colClick(event,\'' + ds + '\')" title="' + T('docrdv.slot_new') + '">' + availHtml + blockHtml + rdvHtml + '</div>';
       }).join('');
@@ -543,9 +600,10 @@
         if (o.date !== curD) { curD = o.date; html += '<div class="list-dh">' + dObj(o.date).toLocaleDateString(lang(), { weekday:'long', day:'numeric', month:'long' }) + (o.date === TODAY ? ' · ' + T('docrdv.today_btn') : '') + '</div>'; }
         if (o.t === 'rdv') {
           const r = o.r;
+          const isNew = r.booked && r.status !== 'cancelled' && !seenSet.has(r.apptId);
           html += '<div class="list-row" onclick="openDetail(' + o.idx + ')">' +
             '<div class="list-time">' + r.start + ' <span class="e">→ ' + r.end + '</span></div>' +
-            '<div class="list-body"><div class="list-t">' + r.name + '</div><div class="list-m">' + r.motif + '</div></div>' +
+            '<div class="list-body"><div class="list-t">' + escL(rdvName(r)) + (isNew ? '<span class="new-badge">' + T('docrdv.new_badge') + '</span>' : '') + '</div><div class="list-m">' + escL(r.motif) + '</div></div>' +
             labelTag(r.nature) + '</div>';
         } else {
           const b = o.b;
@@ -562,7 +620,7 @@
       document.getElementById('sideToday').innerHTML = '<i class="fa fa-bolt me-1"></i>' + T('docrdv.today_btn') + ' — ' + dObj(TODAY).toLocaleDateString(lang(), { day:'numeric', month:'long' });
       const today = RDV.filter(r => r.date === TODAY && r.status !== 'cancelled').sort((a, b) => a.start.localeCompare(b.start));
       document.getElementById('todayList').innerHTML = today.length ? today.map(r =>
-        '<div class="today-rdv" style="border-left-color:' + labelOf(r.nature).color + '"><div class="tt">' + r.start + ' — ' + r.end + '</div><div class="tn">' + r.name + '</div><div class="tm">' + escL(labelOf(r.nature).name) + ' · ' + r.motif + '</div></div>'
+        '<div class="today-rdv" style="border-left-color:' + labelOf(r.nature).color + '"><div class="tt">' + r.start + ' — ' + r.end + '</div><div class="tn">' + escL(rdvName(r)) + '</div><div class="tm">' + escL(labelOf(r.nature).name) + ' · ' + r.motif + '</div></div>'
       ).join('') : '<div class="text-muted small">' + T('docrdv.empty_day') + '</div>';
       document.getElementById('legend').innerHTML = LABELS.map(l =>
         '<div class="legend-row"><span class="legend-dot" style="background:' + l.color + '"></span><span class="flex-grow-1">' + escL(l.name) +
@@ -602,14 +660,19 @@
     function openDetail(i) {
       const r = RDV[i];
       const isConsult = !!(labelOf(r.nature) && labelOf(r.nature).system);
+      const wasNew = r.booked && r.status !== 'cancelled' && !seenSet.has(r.apptId);
       document.getElementById('detailBody').innerHTML =
-        '<div class="d-flex align-items-center gap-2 mb-3">' + labelTag(r.nature) +
-        '<span class="nat-tag" style="background:#f1f5f9;color:#475569;">' + T('docrdv.status_' + r.status) + '</span></div>' +
-        '<div class="fw-bold" style="font-size:1.1rem;">' + r.name + '</div>' +
-        '<div class="text-muted mb-3">' + r.motif + '</div>' +
+        '<div class="d-flex align-items-center gap-2 mb-3 flex-wrap">' + labelTag(r.nature) +
+        '<span class="nat-tag" style="background:#f1f5f9;color:#475569;">' + T('docrdv.status_' + r.status) + '</span>' +
+        (r.booked ? '<span class="nat-tag" style="background:#e0f2f1;color:#0e7490;"><i class="fa fa-globe me-1"></i>' + T('docrdv.booked_online') + '</span>' : '') +
+        (wasNew ? '<span class="new-badge">' + T('docrdv.new_badge') + '</span>' : '') + '</div>' +
+        '<div class="fw-bold" style="font-size:1.1rem;">' + escL(rdvName(r)) + '</div>' +
+        '<div class="text-muted mb-3">' + escL(r.motif) + '</div>' +
         '<div><i class="fa fa-calendar-day me-2 text-muted"></i>' + dObj(r.date).toLocaleDateString(lang(), { weekday:'long', day:'numeric', month:'long', year:'numeric' }) + '</div>' +
         '<div class="mt-1"><i class="fa fa-clock me-2 text-muted"></i>' + r.start + ' → ' + r.end + '</div>' +
         (r.loc && LOC_IDS.has(r.loc) ? '<div class="mt-1"><i class="fa ' + (curLocType(r.loc) === 'teleconsult' ? 'fa-video' : 'fa-location-dot') + ' me-2 text-muted"></i>' + locNameById(r.loc) + '</div>' : '') +
+        (r.phone ? '<div class="mt-1"><i class="fa fa-phone me-2 text-muted"></i>' + escL(r.phone) + '</div>' : '') +
+        (r.note ? '<div class="mt-3 p-3" style="background:#f8fafc;border-radius:10px;"><div class="fw-semibold small mb-1"><i class="fa fa-comment-dots me-1" style="color:#155e75;"></i>' + T('docrdv.patient_note') + '</div><div class="small text-muted" style="white-space:pre-line;">' + escL(r.note) + '</div></div>' : '') +
         (r.status !== 'cancelled' ? (isConsult ? '<div class="text-muted small mt-3"><i class="fa fa-circle-info me-1"></i>' + T('docrdv.cancel_note') + '</div>' : '') +
           '<div id="reschedPanel" class="d-none mt-3 p-3" style="background:#f8fafc;border-radius:10px;">' +
             '<div class="fw-semibold small mb-2">' + T('docrdv.resched_title') + '</div>' +
@@ -623,13 +686,15 @@
           '</div>' : '');
       let foot = '';
       if (r.status !== 'cancelled') {
-        if (isConsult) foot += '<a class="btn btn-sm" style="background:#155e75;color:#fff;" href="25-doctor-consultation.html?patient=' + encodeURIComponent(r.name) + '&motif=' + encodeURIComponent(r.motif) + '"><i class="fa fa-notes-medical me-1"></i>' + T('docrdv.document') + '</a>';
+        if (isConsult) foot += '<a class="btn btn-sm" style="background:#155e75;color:#fff;" href="25-doctor-consultation.html?patient=' + encodeURIComponent(rdvName(r)) + '&motif=' + encodeURIComponent(r.motif) + '"><i class="fa fa-notes-medical me-1"></i>' + T('docrdv.document') + '</a>';
         foot += '<button class="btn btn-outline-secondary btn-sm" onclick="toggleResched()"><i class="fa fa-clock-rotate-left me-1"></i>' + T('docrdv.resched') + '</button>';
         foot += '<button class="btn btn-outline-danger btn-sm" onclick="setStatus(' + i + ',\'cancelled\')"><i class="fa fa-ban me-1"></i>' + T('docrdv.cancel_appt') + '</button>';
       }
       document.getElementById('detailFoot').innerHTML = foot;
       detailModal = detailModal || new bootstrap.Offcanvas(document.getElementById('rdvDetail'));
       detailModal.show();
+      // Ouvrir un RDV réservé en ligne le marque « vu » → le badge Nouveau disparaît en arrière-plan.
+      if (wasNew) { markSeen(r.apptId); render(); }
     }
     function setStatus(i, s) {
       RDV[i].status = s;
