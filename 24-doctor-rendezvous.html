@@ -35,6 +35,8 @@
     .rdv-card.is-new { box-shadow:0 0 0 2px #22d3ee; }
     .rdv-card .new-dot { position:absolute; top:3px; right:3px; width:8px; height:8px; border-radius:50%; background:#0e7490; }
     .new-badge { display:inline-block; background:#cffafe; color:#0e7490; border-radius:10px; padding:1px 8px; font-size:0.66rem; font-weight:800; text-transform:uppercase; letter-spacing:0.4px; vertical-align:middle; margin-left:6px; }
+    .modify-info { background:#eef5f7; border:1px solid #cfe3e9; color:#0e5a6e; border-radius:10px; padding:9px 12px; font-size:0.82rem; line-height:1.45; }
+    .modify-info i { color:#0e7490; }
     .page-sub { color:#64748b; font-size:0.9rem; margin:-2px 0 16px; }
 
     .toolbar { background:#fff; border-radius:14px; padding:12px 16px; display:flex; align-items:center; gap:14px; flex-wrap:nowrap; box-shadow:0 2px 8px rgba(0,0,0,0.04); margin-bottom:18px; }
@@ -333,6 +335,7 @@
   <script>
     const T = k => (window.NazI18n ? NazI18n.t(k) : k);
     const TODAY = '2026-07-10';
+    const MODIFY_CUTOFF_H = 2; // délai de modif/annulation patient EN LIGNE (règle plateforme MVP) — le médecin, lui, agit à tout moment
     let cur = TODAY, view = 'week', fNature = 'all', fStatus = 'all';
 
     // Étiquettes (style Google Agenda). Les RDV patients portent l'étiquette « Consultation »
@@ -673,8 +676,8 @@
         (r.loc && LOC_IDS.has(r.loc) ? '<div class="mt-1"><i class="fa ' + (curLocType(r.loc) === 'teleconsult' ? 'fa-video' : 'fa-location-dot') + ' me-2 text-muted"></i>' + locNameById(r.loc) + '</div>' : '') +
         (r.phone ? '<div class="mt-1"><i class="fa fa-phone me-2 text-muted"></i>' + escL(r.phone) + '</div>' : '') +
         (r.note ? '<div class="mt-3 p-3" style="background:#f8fafc;border-radius:10px;"><div class="fw-semibold small mb-1"><i class="fa fa-comment-dots me-1" style="color:#155e75;"></i>' + T('docrdv.patient_note') + '</div><div class="small text-muted" style="white-space:pre-line;">' + escL(r.note) + '</div></div>' : '') +
-        (r.status !== 'cancelled' ? (isConsult ? '<div class="text-muted small mt-3"><i class="fa fa-circle-info me-1"></i>' + T('docrdv.cancel_note') + '</div>' : '') +
-          '<div id="reschedPanel" class="d-none mt-3 p-3" style="background:#f8fafc;border-radius:10px;">' +
+        (r.status !== 'cancelled' && r.date >= TODAY && r.nature !== 'reunion' ? '<div class="modify-info mt-3"><i class="fa fa-circle-info me-1"></i>' + T('docrdv.modify_info').replace('{h}', MODIFY_CUTOFF_H) + '</div>' : '') +
+        (r.status !== 'cancelled' ? '<div id="reschedPanel" class="d-none mt-3 p-3" style="background:#f8fafc;border-radius:10px;">' +
             '<div class="fw-semibold small mb-2">' + T('docrdv.resched_title') + '</div>' +
             '<div class="d-flex gap-2 align-items-center flex-wrap">' +
               '<input type="date" class="form-control form-control-sm" style="max-width:150px" id="rsDate" value="' + r.date + '">' +

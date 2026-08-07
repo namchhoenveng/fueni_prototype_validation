@@ -107,6 +107,8 @@
     .success .ok { width:74px; height:74px; border-radius:50%; background:#dcfce7; color:#16a34a; display:flex; align-items:center; justify-content:center; font-size:2.1rem; margin:0 auto 14px; }
     .success h4 { font-weight:800; }
     .recap { text-align:left; border:1px solid #e2e8f0; border-radius:12px; padding:16px 18px; margin:18px 0; }
+    .done-policy { font-size:0.84rem; color:#64748b; margin:-6px 0 18px; }
+    .done-policy i { color:#0e7490; }
     .hide { display:none !important; }
   </style>
 </head>
@@ -198,6 +200,7 @@
         <h4 id="doneTitle" data-i18n="book.done_title">Rendez-vous confirmé</h4>
         <p class="text-muted" id="doneSub" data-i18n="book.done_sub">Votre rendez-vous est confirmé automatiquement. Un rappel vous sera envoyé.</p>
         <div class="recap" id="recap"></div>
+        <div id="donePolicy" class="done-policy"></div>
         <div class="d-flex gap-2 justify-content-center flex-wrap">
           <a href="08-patient-mes-rdv.html" class="btn-teal text-decoration-none" data-i18n="book.done_myrdv">Voir mes rendez-vous</a>
           <a href="05-patient-dashboard.html" class="btn-ghost text-decoration-none" data-i18n="book.done_dashboard">Retour au tableau de bord</a>
@@ -228,6 +231,8 @@
     const RESCHED = new URLSearchParams(location.search).get('reschedule') === '1';
     let reschedTarget = null;
     try { if (RESCHED) reschedTarget = JSON.parse(sessionStorage.getItem('fueni_reschedule') || 'null'); } catch (e) {}
+    // Délai de modification / annulation patient (heures avant le RDV) — règle plateforme globale en MVP. 🟠 valeur à valider Nazounki.
+    const MODIFY_CUTOFF_H = 2;
     function loadProfile() {
       if (DOC_ID !== 'real' && window.NazDoctors && NazDoctors[DOC_ID]) {
         return Object.assign({}, DEFAULT, JSON.parse(JSON.stringify(NazDoctors[DOC_ID])));
@@ -482,6 +487,7 @@
         const ds = document.getElementById('doneSub'); if (ds) ds.textContent = T('book.done_resched_sub');
       }
       renderRecap(saved);
+      const dp = document.getElementById('donePolicy'); if (dp) dp.innerHTML = '<i class="fa fa-circle-info me-1"></i>' + T('mesrdv.modify_window').replace('{h}', MODIFY_CUTOFF_H);
       showStep('done');
     }
     function pad(n) { return String(n).padStart(2, '0'); }

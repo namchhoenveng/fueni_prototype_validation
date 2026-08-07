@@ -404,6 +404,29 @@
       {"id":"act-nutri","fr":"Nutrition et surpoids","en":"Nutrition & weight management"},
       {"id":"act-travel","fr":"Santé du voyageur","en":"Travel medicine"},
       {"id":"act-geria","fr":"Gériatrie de premier recours","en":"Primary geriatric care"}
-    ]
+    ],
+    // Synonymes de recherche : nom du praticien + quelques termes profanes, par libellé de spécialité (FR).
+    // Utilisés par l'annuaire (écran 28) pour que « cardiologue » / « cœur » retrouvent « Cardiologie ».
+    // En production, ce rôle revient au moteur de recherche (synonymes + racinisation + tolérance aux fautes).
+    synonyms: {
+      "Cardiologie": ["cardiologue", "cardio", "cœur", "coeur"],
+      "Médecine générale": ["généraliste", "médecin généraliste", "omnipraticien", "médecin de famille"],
+      "Pédiatrie": ["pédiatre", "enfant", "enfants", "bébé", "nourrisson"],
+      "Dermatologie": ["dermatologue", "dermato", "peau"],
+      "Gynécologie-obstétrique": ["gynécologue", "gynéco", "obstétricien", "grossesse", "femme"],
+      "Ophtalmologie": ["ophtalmologue", "ophtalmo", "yeux", "vue"],
+      "Oto-rhino-laryngologie": ["orl", "oto-rhino-laryngologiste", "gorge", "oreille", "nez"],
+      "Psychiatrie": ["psychiatre", "psy", "santé mentale"],
+      "Neurologie": ["neurologue", "neuro", "cerveau", "nerfs"],
+      "Gastro-entérologie": ["gastro-entérologue", "gastro", "estomac", "digestion", "intestin"],
+      "Rhumatologie": ["rhumatologue", "rhumato", "articulations", "os"],
+      "Endocrinologie": ["endocrinologue", "endocrino", "diabète", "thyroïde", "hormones"],
+      "Urologie": ["urologue", "prostate", "reins"],
+      "Pneumologie": ["pneumologue", "pneumo", "poumons", "respiration", "asthme"],
+      "Radiologie": ["radiologue", "radio", "imagerie", "échographie"],
+      "Anesthésie-réanimation": ["anesthésiste", "réanimateur", "anesthésie"],
+      "Chirurgie générale": ["chirurgien", "chirurgie"],
+      "Néphrologie": ["néphrologue", "reins", "dialyse"]
+    }
   };
 })();

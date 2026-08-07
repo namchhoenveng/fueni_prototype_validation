@@ -6,6 +6,7 @@
   <title data-i18n-pagetitle="psearch.page_title">FUENI — Prendre rendez-vous</title>
   <script src="naz-i18n.js" defer></script>
   <script src="naz-doctors.js"></script>
+  <script src="naz-specialities.js"></script>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
   <link rel="stylesheet" href="naz-common.css">
@@ -239,11 +240,21 @@
     }
 
     const norm = s => (s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
+    // Synonymes de spécialité (nom du praticien + termes profanes) : « cardiologue » / « cœur » → « Cardiologie ».
+    function specSynonyms(spec) {
+      const S = window.NazSpecialities && NazSpecialities.synonyms; if (!S) return [];
+      const key = Object.keys(S).find(k => norm(k) === norm(spec));
+      return key ? S[key] : [];
+    }
+    function nameSpecMatch(d, qn) {
+      if (norm(d.name).includes(qn) || norm(d.spec).includes(qn)) return true;
+      return specSynonyms(d.spec).some(s => norm(s).includes(qn));
+    }
     function renderResults() {
       const qn = norm(document.getElementById('qName').value);
       const qc = norm(document.getElementById('qCity').value);
       const list = DOCTORS.filter(d =>
-        (!qn || norm(d.name).includes(qn) || norm(d.spec).includes(qn)) &&
+        (!qn || nameSpecMatch(d, qn)) &&
         (!qc || norm(d.city).includes(qc) || norm(d.country).includes(qc))
       );
       document.getElementById('count').textContent = T('psearch.results_count').replace('{n}', list.length);
