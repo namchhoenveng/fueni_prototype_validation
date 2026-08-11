@@ -30,7 +30,7 @@
       next: { offset: 0, time: '16:00' },
       locations: [{
         id: 'loc1', type: 'cabinet', label: '', street: '45, avenue Cheikh Anta Diop',
-        city: 'Dakar', region: 'Dakar', country: 'Sénégal', primary: true, bookable: true,
+        city: 'Dakar', region: 'Dakar', country: 'Sénégal', phone: '+221 33 889 12 34', primary: true, bookable: true,
         access: ['parking', 'wheelchair'], photos: [],
         hours: hrs({ mon: [['08:30', '13:00'], ['15:00', '18:30']], tue: [['08:30', '13:00'], ['15:00', '18:30']], wed: [['08:30', '13:00']], thu: [['08:30', '13:00'], ['15:00', '18:30']], fri: [['08:30', '13:00'], ['15:00', '17:00']] }),
         motifs: [
@@ -54,7 +54,7 @@
       next: { offset: 2, time: '08:30' },
       locations: [{
         id: 'loc1', type: 'cabinet', label: '', street: '8, rue Félix Faure',
-        city: 'Dakar', region: 'Dakar', country: 'Sénégal', primary: true, bookable: true,
+        city: 'Dakar', region: 'Dakar', country: 'Sénégal', phone: '+221 33 821 45 67', primary: true, bookable: true,
         access: ['parking', 'elevator'], photos: [],
         hours: hrs({ mon: [['09:00', '13:00']], tue: [['09:00', '13:00'], ['15:00', '18:00']], wed: [['09:00', '13:00'], ['15:00', '18:00']], thu: [['09:00', '13:00']], fri: [['09:00', '13:00'], ['15:00', '17:00']] }),
         motifs: [
@@ -79,7 +79,7 @@
       next: { offset: 0, time: '17:30' },
       locations: [{
         id: 'loc1', type: 'cabinet', label: '', street: 'Boulevard de la République, Plateau',
-        city: 'Abidjan', region: 'Abidjan', country: "Côte d'Ivoire", primary: true, bookable: true,
+        city: 'Abidjan', region: 'Abidjan', country: "Côte d'Ivoire", phone: '+225 27 20 30 40 50', primary: true, bookable: true,
         access: ['parking', 'wheelchair', 'stepfree'], photos: [],
         hours: hrs({ mon: [['09:00', '13:00'], ['15:00', '18:00']], tue: [['09:00', '13:00'], ['15:00', '18:00']], wed: [['09:00', '13:00'], ['15:00', '18:00']], thu: [['09:00', '13:00'], ['15:00', '18:00']], fri: [['09:00', '13:00'], ['15:00', '18:00']], sat: [['09:00', '12:00']] }),
         motifs: [
@@ -102,7 +102,7 @@
       next: { offset: 3, time: '10:00' },
       locations: [{
         id: 'loc1', type: 'cabinet', label: '', street: 'Avenue de la Justice, Gombe',
-        city: 'Kinshasa', region: 'Kinshasa', country: 'RDC', primary: true, bookable: true,
+        city: 'Kinshasa', region: 'Kinshasa', country: 'RDC', phone: '+243 81 234 56 78', primary: true, bookable: true,
         access: ['parking'], photos: [],
         hours: hrs({ mon: [['08:00', '12:00'], ['14:00', '17:00']], tue: [['08:00', '12:00'], ['14:00', '17:00']], wed: [['08:00', '12:00']], thu: [['08:00', '12:00'], ['14:00', '17:00']], fri: [['08:00', '12:00'], ['14:00', '16:00']] }),
         motifs: [

@@ -93,6 +93,15 @@
     .geo-control { position:relative; border:1.5px solid #9fb0c0; border-radius:10px; padding:11px 32px 11px 14px; background:#fff; cursor:pointer; font-size:0.94rem; line-height:1.5; color:#334155; display:flex; align-items:center; }
     .geo-control::after { content:'▾'; position:absolute; right:11px; top:50%; transform:translateY(-50%); color:#94a3b8; pointer-events:none; }
     .geo-control:focus { outline:none; border-color:#155e75; box-shadow:0 0 0 0.15rem rgba(21,94,117,0.15); }
+    /* Champ téléphone du lieu : deux boîtes séparées (indicatif + numéro), style aligné sur .geo-control. */
+    .loc-phone { display:flex; gap:6px; }
+    .loc-phone .cc { flex:0 0 auto; display:flex; align-items:center; gap:6px; padding:11px 14px; border:1.5px solid #9fb0c0; border-radius:10px; background:#f1f5f9; color:#475569; font-size:0.94rem; font-weight:600; white-space:nowrap; }
+    .loc-phone .loc-phone-input { flex:1 1 auto; min-width:0; padding:11px 14px; border:1.5px solid #9fb0c0; border-radius:10px; background:#fff; color:#334155; font-size:0.94rem; line-height:1.5; }
+    .loc-phone .loc-phone-input:focus { outline:none; border-color:#155e75; box-shadow:0 0 0 0.15rem rgba(21,94,117,0.15); }
+    .loc-phone .loc-phone-input::placeholder { color:#94a3b8; }
+    .loc-phone.is-invalid .loc-phone-input, .loc-phone.is-invalid .cc { border-color:#dc2626; }
+    .loc-phone-fb { display:none; }
+    .loc-phone.is-invalid ~ .loc-phone-fb { display:block; }
     .geo-control.placeholder { color:#94a3b8; }
     .geo-control.disabled { background:#f1f5f9; color:#cbd5e1; cursor:not-allowed; }
     .geo-control.is-invalid { border-color:#dc2626; }
@@ -484,7 +493,7 @@
         { year:'2020', label:'Cabinet privé — Dakar Plateau' }
       ],
       locations: [
-        { id:'loc1', type:'cabinet', label:'Cabinet Plateau', street:'12, rue Carnot', city:'Dakar', region:'Dakar', country:'Sénégal', primary:true, bookable:true, access:['wheelchair','parking'], photos:[makePh('Façade', '#dbeafe', '#bfdbfe'), makePh("Salle d'attente", '#e0f2f1', '#c7ece6')],
+        { id:'loc1', type:'cabinet', label:'Cabinet Plateau', street:'12, rue Carnot', city:'Dakar', region:'Dakar', country:'Sénégal', phone:'+221 33 823 45 67', primary:true, bookable:true, access:['wheelchair','parking'], photos:[makePh('Façade', '#dbeafe', '#bfdbfe'), makePh("Salle d'attente", '#e0f2f1', '#c7ece6')],
           hours:{ mon:[['09:00','13:00'],['15:00','18:00']], tue:[['09:00','13:00'],['15:00','18:00']], wed:[['09:00','13:00']], thu:[['09:00','13:00'],['15:00','18:00']], fri:[['09:00','13:00']], sat:[], sun:[] },
           motifs:[ { label:'Consultation générale', dur:30, price:8000 }, { label:'Suivi / renouvellement', dur:20, price:6000 } ] },
         { id:'loc2', type:'hopital', label:'Hôpital Principal de Dakar', street:'Avenue Nelson Mandela', city:'Dakar', region:'Dakar', country:'Sénégal', primary:false, bookable:false, access:['wheelchair'], photos:[], hours:{}, motifs:[], service:'Cardiologie interventionnelle', position:'chef' }
@@ -773,6 +782,14 @@
           if (ctl) ctl.classList.toggle('is-invalid', bad);
           if (bad) { ok = false; if (!first) first = ctl; }
         });
+        // Téléphone : obligatoire pour un lieu physique réservable en ligne
+        if (phoneRequired(L)) {
+          const bad = !String(L.phone || '').trim();
+          const inp = document.getElementById('locphone-' + i);
+          const wrap = inp ? inp.closest('.loc-phone') : null;
+          if (wrap) wrap.classList.toggle('is-invalid', bad);
+          if (bad) { ok = false; if (!first) first = inp; }
+        }
       });
       if (first && first.focus) first.focus();
       if (first && first.scrollIntoView) first.scrollIntoView({ block: 'center', behavior: 'smooth' });
@@ -847,6 +864,27 @@
       box.innerHTML = P.locations.map((L, i) => locEditor(L, i)).join('');
       P.locations.forEach((L, i) => { renderLocAccess(i); renderLocPhotos(i); });
     }
+    // Indicatifs des 9 pays MVP (alignés sur le sélecteur téléphone des autres écrans) — clés = noms NazGeo.
+    const PHONE_CC = {
+      'Sénégal': { dial: '+221', flag: '🇸🇳' }, "Côte d'Ivoire": { dial: '+225', flag: '🇨🇮' },
+      'Mali': { dial: '+223', flag: '🇲🇱' }, 'Bénin': { dial: '+229', flag: '🇧🇯' },
+      'Togo': { dial: '+228', flag: '🇹🇬' }, 'Burkina Faso': { dial: '+226', flag: '🇧🇫' },
+      'Niger': { dial: '+227', flag: '🇳🇪' }, 'Cameroun': { dial: '+237', flag: '🇨🇲' }, 'RDC': { dial: '+243', flag: '🇨🇩' }
+    };
+    function phoneCC(country) { return PHONE_CC[country] || null; }
+    // Téléphone obligatoire pour un lieu physique réservable en ligne (seul canal patient→médecin hors délai en MVP).
+    function phoneRequired(L) { return !!L.bookable && L.type !== 'teleconsult'; }
+    // Partie locale = numéro stocké moins l'indicatif du pays (le préfixe est affiché séparément).
+    function phoneLocalPart(L) {
+      const cc = phoneCC(L.country), ph = (L.phone || '').trim();
+      if (cc && ph.indexOf(cc.dial) === 0) return ph.slice(cc.dial.length).trim();
+      return ph;
+    }
+    // Recompose le numéro complet (indicatif + local) à la saisie ; vide si aucun local.
+    function setLocPhone(i, val) {
+      const L = P.locations[i], cc = phoneCC(L.country), local = (val || '').trim();
+      L.phone = local ? ((cc ? cc.dial + ' ' : '') + local) : '';
+    }
     function locEditor(L, i) {
       const isTele = L.type === 'teleconsult';
       const isInstit = INSTIT_TYPES.includes(L.type);
@@ -867,7 +905,18 @@
             '<div class="col-12"><label class="form-label"><span data-i18n="docpp.f_street">Adresse</span><span class="req">*</span></label><input class="form-control form-control-sm loc-req" value="' + e(L.street) + '" oninput="setLocField(' + i + ',\'street\',this.value);this.classList.remove(\'is-invalid\')"><div class="invalid-feedback" data-i18n="docpp.field_required">Ce champ est obligatoire.</div></div>' +
             '<div class="col-sm-4"><label class="form-label"><span data-i18n="docpp.f_country">Pays</span></label>' + geoPaysSel(i, L) + '</div>' +
             '<div class="col-sm-4"><label class="form-label"><span data-i18n="docpp.f_region">Région</span><span class="req">*</span></label>' + geoRegionSel(i, L) + '</div>' +
-            '<div class="col-sm-4"><label class="form-label"><span data-i18n="docpp.f_city">Ville</span><span class="req">*</span></label>' + geoVilleSel(i, L) + '</div>') +
+            '<div class="col-sm-4"><label class="form-label"><span data-i18n="docpp.f_city">Ville</span><span class="req">*</span></label>' + geoVilleSel(i, L) + '</div>' +
+            '<div class="col-12"><label class="form-label"><span data-i18n="docpp.f_phone">Téléphone du lieu</span>' +
+                (phoneRequired(L)
+                  ? '<span class="req">*</span> <span class="text-muted" style="font-weight:400" data-i18n="docpp.f_phone_note_req">(visible par les patients)</span>'
+                  : ' <span class="text-muted" style="font-weight:400" data-i18n="docpp.f_phone_note">(facultatif — visible par les patients)</span>') +
+              '</label>' +
+              '<div class="loc-phone">' +
+                (phoneCC(L.country) ? '<span class="cc">' + phoneCC(L.country).flag + ' ' + phoneCC(L.country).dial + '</span>' : '') +
+                '<input type="tel" inputmode="tel" id="locphone-' + i + '" class="loc-phone-input" value="' + e(phoneLocalPart(L)) + '" oninput="setLocPhone(' + i + ',this.value);this.closest(\'.loc-phone\').classList.remove(\'is-invalid\')" placeholder="' + T('docpp.f_phone_ph') + '">' +
+              '</div>' +
+              '<div class="invalid-feedback loc-phone-fb" data-i18n="docpp.field_required">Ce champ est obligatoire.</div>' +
+              '<div class="form-hint" style="margin-top:4px"><i class="fa fa-circle-info me-1"></i><span data-i18n="' + (phoneRequired(L) ? 'docpp.f_phone_hint_req' : 'docpp.f_phone_hint') + '">' + (phoneRequired(L) ? 'Numéro d\'accueil du lieu affiché sur votre fiche pour joindre le secrétariat (report/annulation hors délai). Obligatoire pour un lieu réservable en ligne.' : 'Numéro d\'accueil du lieu affiché sur votre fiche pour joindre le secrétariat (report/annulation hors délai). Laissez vide pour ne pas l\'afficher.') + '</span></div></div>') +
           (isInstit ?
             '<div class="col-sm-6"><label class="form-label">' + T('docpp.loc_service') + '</label><input class="form-control form-control-sm" value="' + e(L.service || '') + '" oninput="setLocField(' + i + ',\'service\',this.value)" placeholder="' + T('docpp.loc_service_ph') + '"></div>' +
             '<div class="col-sm-6"><label class="form-label">' + T('docpp.loc_position') + '</label><select class="form-select form-select-sm" onchange="setLocField(' + i + ',\'position\',this.value)">' + posOpts(L.position) + '</select></div>'
@@ -882,7 +931,8 @@
     // Changement de type : défaut de réservabilité (hôpital = info seule ; autres = réservable)
     function setLocType(i, type) { P.locations[i].type = type; P.locations[i].bookable = (type !== 'hopital'); renderLocations(); renderHours(); renderMotifs(); }
     function setPrimary(i) { P.locations.forEach((L, idx) => L.primary = (idx === i)); onLocCountry(i); }
-    function setBookable(i, on) { P.locations[i].bookable = on; renderHours(); renderMotifs(); }
+    // Re-rend la carte Localisation pour que l'état requis/facultatif du téléphone (astérisque) suive la case « Réservable ».
+    function setBookable(i, on) { P.locations[i].bookable = on; renderLocations(); renderHours(); renderMotifs(); }
     function onLocCountry(i) { if (P.locations[i].primary) { P.currency = currencyFor(P.locations[i].country); renderCurrency(); renderMotifs(); } }
     function addLocation() {
       const base = primaryLoc() || {};

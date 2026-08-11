@@ -232,9 +232,21 @@
       if (isLocked || isExpired) return;
       const code = Array.from(inputs).map(i => i.value).join('');
       if (code === CORRECT_CODE) {
-        // Téléphone vérifié → le compte est créé (nouveau modèle) → on nettoie le brouillon
+        // Téléphone vérifié → compte créé → on connecte le nouvel utilisateur (auth + profil depuis le brouillon)
+        try {
+          const d = JSON.parse(sessionStorage.getItem('fueni_signup_data') || '{}');
+          sessionStorage.setItem('fueni_user', JSON.stringify({ firstName: d.firstName || '', lastName: d.lastName || '', email: d.email || '', phone: d.phoneE164 || d.phone || '' }));
+          sessionStorage.setItem('fueni_auth', '1');
+        } catch (e) { /* ignore */ }
         try { sessionStorage.removeItem('fueni_signup_data'); } catch (e) { /* ignore */ }
-        window.location = '05-patient-dashboard.html';
+        // Reprise d'un parcours interrompu (ex. réservation lancée avant inscription) : retour mémorisé, sinon tableau de bord.
+        let dest = '05-patient-dashboard.html';
+        try {
+          const r = sessionStorage.getItem('fueni_post_auth_return');
+          if (r && /^[\w.\-]+\.html(\?[\w.%=&\-]*)?$/.test(r)) dest = r;
+          sessionStorage.removeItem('fueni_post_auth_return');
+        } catch (e) { /* ignore */ }
+        window.location = dest;
         return;
       }
       attemptsLeft--;

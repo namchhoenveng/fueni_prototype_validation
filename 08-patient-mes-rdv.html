@@ -89,7 +89,11 @@
     .kv:last-child { border-bottom: 0; }
     .kv .k { color: #94a3b8; font-size: 0.85rem; flex: 0 0 96px; }
     .kv .v { color: #1e293b; font-weight: 600; font-size: 0.9rem; }
-    .price-info { background: #f1f5f9; border-radius: 10px; padding: 10px 12px; font-size: 0.8rem; color: #475569; margin-top: 14px; }
+    .detail-note { padding: 12px 0 2px; }
+    .detail-note-k { color: #94a3b8; font-size: 0.85rem; margin-bottom: 6px; }
+    .detail-note-v { color: #334155; font-size: 0.9rem; line-height: 1.55; white-space: pre-wrap; word-break: break-word; background: #f8fafc; border: 1px solid #eef2f6; border-left: 3px solid #155e75; border-radius: 8px; padding: 10px 12px; }
+    .price-info { background: #fff7ed; border: 1px solid #fde8cf; border-left: 3px solid #f59e0b; border-radius: 8px; padding: 10px 12px; font-size: 0.8rem; color: #7c5410; margin-top: 20px; }
+    .price-info b { color: #7c2d12; }
 
     @media (max-width: 720px) {
       .main { margin-left: 0; } .sidebar { position: static; width: 100%; min-height: auto; }
@@ -198,8 +202,8 @@
 
     // Rendez-vous de démonstration (fusionnés avec les réservations réelles du parcours 27).
     const DEMO = [
-      { id:'demo_u1', doctor:'Dr Mamadou Sow', spec:'Cardiologie', locationName:'Cabinet Médical Plateau', locationAddr:'Av. Senghor, Dakar', country:'Sénégal', region:'Dakar', motif:'Consultation générale', duration:30, price:10000, currency:'XOF', dateISO:'2026-08-04', time:'15:30', reason:'Palpitations depuis 2 semaines', status:'CONFIRMED' },
-      { id:'demo_u2', doctor:'Dr Fatou Ndiaye', spec:'Médecine générale', locationName:'Clinique Pasteur', locationAddr:'Médina, Dakar', country:'Sénégal', region:'Dakar', motif:'Suivi / renouvellement', duration:20, price:6000, currency:'XOF', dateISO:'2026-08-11', time:'10:00', reason:'', status:'CONFIRMED' },
+      { id:'demo_u1', doctor:'Dr Mamadou Sow', spec:'Cardiologie', locationName:'Cabinet Médical Plateau', locationAddr:'Av. Senghor, Dakar', country:'Sénégal', region:'Dakar', phone:'+221 33 821 45 67', motif:'Consultation générale', duration:30, price:10000, currency:'XOF', dateISO:'2026-08-04', time:'15:30', reason:'Depuis environ trois semaines, je ressens des palpitations, surtout en fin de journée et parfois la nuit, avec un léger essoufflement lorsque je monte les escaliers.\nMon médecin traitant a évoqué une possible arythmie et m’a conseillé un avis cardiologique. Je prends de l’amlodipine 5 mg pour l’hypertension depuis deux ans. Antécédent familial : mon père a fait un infarctus à 58 ans. Je souhaiterais faire le point et savoir si des examens complémentaires (Holter, échographie) sont utiles.', status:'CONFIRMED' },
+      { id:'demo_u2', doctor:'Dr Fatou Ndiaye', spec:'Médecine générale', locationName:'Clinique Pasteur', locationAddr:'Médina, Dakar', country:'Sénégal', region:'Dakar', phone:'+221 33 889 12 34', motif:'Suivi / renouvellement', duration:20, price:6000, currency:'XOF', dateISO:'2026-08-11', time:'10:00', reason:'', status:'CONFIRMED' },
       { id:'demo_p1', doctor:'Dr Cheikh Diop', spec:'Médecine générale', locationName:'Polyclinique Hâtim', locationAddr:'Ouakam, Dakar', country:'Sénégal', region:'Dakar', motif:'Suivi', duration:30, price:8000, currency:'XOF', dateISO:'2026-07-20', time:'09:30', reason:'', status:'COMPLETED' },
       { id:'demo_p2', doctor:'Dr Aminata Mbaye', spec:'Dermatologie', locationName:'Cabinet Le Patio', locationAddr:'Sacré-Cœur, Dakar', country:'Sénégal', region:'Dakar', motif:'Consultation', duration:20, price:12000, currency:'XOF', dateISO:'2026-07-06', time:'14:00', reason:'', status:'COMPLETED' },
       { id:'demo_c1', doctor:'Dr Ousmane Ba', spec:'Ophtalmologie', locationName:'Centre Vision', locationAddr:'Plateau, Dakar', country:'Sénégal', region:'Dakar', motif:'Bilan visuel', duration:30, price:15000, currency:'XOF', dateISO:'2026-07-27', time:'11:00', reason:'', status:'CANCELLED' }
@@ -211,7 +215,7 @@
       const d = new Date(Date.now() + 75 * 60000);
       const dateISO = d.getFullYear() + '-' + p2(d.getMonth() + 1) + '-' + p2(d.getDate());
       const time = p2(d.getHours()) + ':' + p2(d.getMinutes());
-      return { id: 'demo_soon', doctor: 'Dr Aboubacar Diallo', spec: 'Cardiologie', locationName: 'Cabinet Plateau', locationAddr: '12, rue Carnot, Dakar, Dakar, Sénégal', country: 'Sénégal', region: 'Dakar', motif: 'Consultation générale', duration: 30, price: 8000, currency: 'XOF', dateISO: dateISO, time: time, reason: 'Test — RDV imminent (moins de 2 h)', status: 'CONFIRMED' };
+      return { id: 'demo_soon', doctor: 'Dr Aboubacar Diallo', spec: 'Cardiologie', locationName: 'Cabinet Plateau', locationAddr: '12, rue Carnot, Dakar, Dakar, Sénégal', country: 'Sénégal', region: 'Dakar', phone: '+221 33 800 11 22', motif: 'Consultation générale', duration: 30, price: 8000, currency: 'XOF', dateISO: dateISO, time: time, reason: 'Test — RDV imminent (moins de 2 h)', status: 'CONFIRMED' };
     }
 
     let APPTS = [];
@@ -309,7 +313,7 @@
             '<div class="doc">' + esc(a.doctor) + '</div>' +
             '<div class="spec">' + esc(a.spec) + '</div>' +
             '<div class="meta"><i class="fa fa-location-dot"></i> ' + esc(a.locationName) + (a.locationAddr ? ' · ' + esc(a.locationAddr) : '') + '</div>' +
-            '<div class="meta"><i class="fa fa-stethoscope"></i> ' + esc(a.motif || '') + (a.reason ? ' — ' + esc(a.reason) : '') + '</div>' +
+            '<div class="meta"><i class="fa fa-stethoscope"></i> ' + esc(a.motif || '') + '</div>' +
           '</div>' +
           '<div class="rdv-side">' + statusPill(b) + '<span class="rdv-more">' + T('mesrdv.act_details') + ' <i class="fa fa-chevron-right"></i></span></div>' +
         '</div>';
@@ -332,11 +336,16 @@
         [T('mesrdv.d_doctor'), esc(a.doctor) + ' — ' + esc(a.spec)],
         [T('mesrdv.d_when'), esc(when)],
         [T('mesrdv.d_loc'), esc(a.locationName) + (a.locationAddr ? ', ' + esc(a.locationAddr) : '')],
-        [T('mesrdv.d_motif'), esc(a.motif || '') + (a.duration ? ' (' + a.duration + ' ' + T('mesrdv.min') + ')' : '')],
-        [T('mesrdv.d_status'), statusPill(b)]
+        [T('mesrdv.d_motif'), esc(a.motif || '') + (a.duration ? ' (' + a.duration + ' ' + T('mesrdv.min') + ')' : '')]
       ];
-      if (a.reason) rows.push([T('mesrdv.d_reason'), esc(a.reason)]);
+      // Téléphone du lieu (facultatif) — cliquable pour joindre le secrétariat.
+      const telHref = a.phone ? 'tel:' + String(a.phone).replace(/[^\d+]/g, '') : '';
+      if (a.phone) rows.push([T('mesrdv.d_phone'), '<a href="' + telHref + '" style="color:#117a65;text-decoration:none;font-weight:600;">' + esc(a.phone) + '</a>']);
       let html = rows.map(r => '<div class="kv"><span class="k">' + r[0] + '</span><span class="v">' + r[1] + '</span></div>').join('');
+      // Précisions patient : bloc pleine largeur (texte libre, jusqu'à 500 car., retours à la ligne préservés).
+      if (a.reason && String(a.reason).trim()) {
+        html += '<div class="detail-note"><div class="detail-note-k">' + T('mesrdv.d_reason') + '</div><div class="detail-note-v">' + esc(a.reason) + '</div></div>';
+      }
       if (a.price != null) {
         html += '<div class="price-info"><i class="fa fa-circle-info me-1"></i>' + T('mesrdv.d_price') + ' <b>' + fmt(a.price) + ' ' + esc(a.currency || 'XOF') + '</b> — ' + T('mesrdv.price_note') + '</div>';
       }
@@ -345,16 +354,16 @@
       if (b === 'upcoming') {
         const calBtn = '<button class="btn btn-patient" onclick="addToCalendar(\'' + a.id + '\')"><i class="fa fa-calendar-plus me-2"></i>' + T('mesrdv.act_calendar') + '</button>';
         if (canModify(a)) {
-          foot = (a.doc ? '<button class="btn btn-outline-secondary" onclick="rescheduleAppt(\'' + a.id + '\')"><i class="fa fa-clock-rotate-left me-2"></i>' + T('mesrdv.act_reschedule') + '</button>' : '') +
-                 calBtn +
+          foot = calBtn +
+                 (a.doc ? '<button class="btn btn-outline-secondary" onclick="rescheduleAppt(\'' + a.id + '\')"><i class="fa fa-clock-rotate-left me-2"></i>' + T('mesrdv.act_reschedule') + '</button>' : '') +
                  '<button class="btn btn-outline-danger" onclick="cancelAppt(\'' + a.id + '\')"><i class="fa fa-xmark me-2"></i>' + T('mesrdv.act_cancel') + '</button>' +
                  '<div class="modify-note info"><i class="fa fa-circle-info me-1"></i>' + T('mesrdv.modify_window').replace('{h}', MODIFY_CUTOFF_H) + '</div>';
         } else {
-          const lockT = T('mesrdv.modify_locked').replace('{h}', MODIFY_CUTOFF_H);
-          foot = (a.doc ? '<button class="btn btn-outline-secondary" disabled title="' + lockT + '"><i class="fa fa-clock-rotate-left me-2"></i>' + T('mesrdv.act_reschedule') + '</button>' : '') +
-                 calBtn +
+          const lockT = T('mesrdv.modify_window').replace('{h}', MODIFY_CUTOFF_H);
+          foot = calBtn +
+                 (a.doc ? '<button class="btn btn-outline-secondary" disabled title="' + lockT + '"><i class="fa fa-clock-rotate-left me-2"></i>' + T('mesrdv.act_reschedule') + '</button>' : '') +
                  '<button class="btn btn-outline-secondary" disabled title="' + lockT + '"><i class="fa fa-xmark me-2"></i>' + T('mesrdv.act_cancel') + '</button>' +
-                 '<div class="modify-note"><i class="fa fa-circle-info me-1"></i>' + lockT + '</div>';
+                 '<div class="modify-note info"><i class="fa fa-circle-info me-1"></i>' + lockT + '</div>';
         }
       } else {
         foot = '<a class="btn btn-patient" href="' + rebookHref(a) + '"><i class="fa fa-rotate-right me-2"></i>' + T('mesrdv.act_rebook') + '</a>';

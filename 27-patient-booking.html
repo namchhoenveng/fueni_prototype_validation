@@ -45,6 +45,10 @@
     .loc-chips { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:16px; }
     .loc-chip { border:1px solid #cbd5e1; background:#fff; border-radius:999px; padding:7px 14px; font-size:0.85rem; font-weight:600; color:#334155; cursor:pointer; }
     .loc-chip.active { background:var(--teal); border-color:var(--teal); color:#fff; }
+    .loc-addr { display:flex; align-items:flex-start; gap:8px; color:#475569; font-size:0.85rem; line-height:1.35; margin:-6px 0 16px; }
+    .loc-addr i { color:var(--teal); margin-top:2px; flex:none; }
+    .char-count { text-align:right; font-size:0.78rem; color:#94a3b8; margin-top:4px; }
+    .char-count.warn { color:#dc2626; }
 
     /* Motif cards */
     .motif { border:1.5px solid #e2e8f0; border-radius:12px; padding:14px 16px; display:flex; align-items:center; justify-content:space-between; gap:12px; cursor:pointer; margin-bottom:10px; transition:border-color .12s, background .12s; }
@@ -147,6 +151,7 @@
       <h5 data-i18n="book.s1_title">Choisissez le motif</h5>
       <div class="sub" data-i18n="book.s1_sub">Sélectionnez le lieu puis l'acte souhaité.</div>
       <div class="loc-chips" id="locChips"></div>
+      <div class="loc-addr" id="locAddr" style="display:none;"></div>
       <div id="motifList"></div>
       <div class="foot">
         <span></span>
@@ -176,7 +181,8 @@
 
       <div class="mt-3">
         <label class="form-label small fw-semibold" data-i18n="book.reason_label">Précisions pour le médecin (facultatif)</label>
-        <textarea class="form-control" id="reason" rows="2" maxlength="300" data-i18n-placeholder="book.reason_ph" placeholder="Ajoutez un mot à l'attention du médecin (symptômes, contexte…)"></textarea>
+        <textarea class="form-control" id="reason" rows="2" maxlength="500" oninput="updateReasonCount()" data-i18n-placeholder="book.reason_ph" placeholder="Ajoutez un mot à l'attention du médecin (symptômes, contexte…)"></textarea>
+        <div class="char-count" id="reasonCount">0 / 500</div>
       </div>
 
       <div class="price-line">
@@ -309,6 +315,16 @@
         }).join('');
       }
       const L = P.locations[locIdx];
+      // Adresse réelle du lieu sélectionné (le patient doit savoir où se rendre physiquement).
+      const addrEl = document.getElementById('locAddr');
+      const addr = locAddr(L);
+      if (addr) {
+        addrEl.style.display = 'flex';
+        const prefix = (bookableIdx.length <= 1) ? '<strong>' + esc(locName(L)) + '</strong> — ' : '';
+        addrEl.innerHTML = '<i class="fa fa-location-dot"></i><span>' + prefix + esc(addr) + '</span>';
+      } else {
+        addrEl.style.display = 'none';
+      }
       const box = document.getElementById('motifList');
       const motifs = L.motifs || [];
       if (!motifs.length) { box.innerHTML = '<div class="no-slots">' + T('book.no_motif') + '</div>'; }
@@ -427,15 +443,31 @@
       const m = L.motifs[motifIdx];
       const rows = [
         [T('book.sum_doctor'), (P.title ? P.title + ' ' : '') + P.name + ' — ' + P.spec],
-        [T('book.sum_loc'), locName(L) + (locAddr(L) ? ' · ' + locAddr(L) : '')],
+        [T('book.sum_loc'), locName(L) + (locAddr(L) ? ' · ' + locAddr(L) : '')]
+      ];
+      // Téléphone du lieu (facultatif) — cliquable pour appeler ; masqué si non publié.
+      if (L.phone && String(L.phone).trim()) {
+        const ph = String(L.phone).trim();
+        rows.push([T('book.sum_phone'), '<a href="tel:' + ph.replace(/[^\d+]/g, '') + '" style="color:var(--teal);text-decoration:none;font-weight:600;">' + esc(ph) + '</a>', true]);
+      }
+      rows.push(
         [T('book.sum_motif'), esc(m.label) + ' (' + m.dur + ' ' + T('book.min') + ')'],
         [T('book.sum_when'), fmtDate(selDate) + ' · ' + selTime + (window.NazGeo && NazGeo.tzLabel ? ' · ' + NazGeo.tzLabel(L.country, L.region) : '')],
         [T('book.sum_patient'), patientName()]
-      ];
+      );
       document.getElementById('sumBox').innerHTML = rows.map(r =>
-        '<div class="sum-row"><span class="k">' + r[0] + '</span><span class="v">' + esc(r[1]) + '</span></div>'
+        '<div class="sum-row"><span class="k">' + r[0] + '</span><span class="v">' + (r[2] ? r[1] : esc(r[1])) + '</span></div>'
       ).join('');
       document.getElementById('priceVal').textContent = fmt(m.price) + ' ' + (P.currency || 'XOF');
+      updateReasonCount();
+    }
+    // Compteur de caractères du champ « Précisions » (limite = maxlength de #reason).
+    function updateReasonCount() {
+      const ta = document.getElementById('reason'), el = document.getElementById('reasonCount');
+      if (!ta || !el) return;
+      const max = ta.maxLength, n = ta.value.length;
+      el.textContent = n + ' / ' + max;
+      el.classList.toggle('warn', n >= max - 20);
     }
 
     /* ---------- Confirm ---------- */
@@ -443,15 +475,17 @@
     function confirmBooking() {
       // Parcours Doctolib : consultation + créneau publics ; connexion requise uniquement pour confirmer.
       if (!isAuthed()) {
+        const retRaw = location.pathname.split('/').pop() + location.search;
         try {
           sessionStorage.setItem('fueni_pending_booking', JSON.stringify({
             loc: locIdx, motif: motifIdx,
             dateISO: selDate.getFullYear() + '-' + pad(selDate.getMonth() + 1) + '-' + pad(selDate.getDate()),
             time: selTime, reason: (document.getElementById('reason').value || '').trim()
           }));
+          // Mémorise le retour pour reprendre la réservation même via l'INSCRIPTION (le tunnel signup ne porte pas ?return).
+          sessionStorage.setItem('fueni_post_auth_return', retRaw);
         } catch (e) {}
-        const ret = encodeURIComponent(location.pathname.split('/').pop() + location.search);
-        window.location.href = '10-login.html?return=' + ret;
+        window.location.href = '10-login.html?return=' + encodeURIComponent(retRaw);
         return;
       }
       const L = P.locations[locIdx], m = L.motifs[motifIdx];
@@ -459,7 +493,7 @@
       const reasonVal = (document.getElementById('reason').value || '').trim();
       const commonFields = {
         doc: DOC_ID, doctor: (P.title ? P.title + ' ' : '') + P.name, spec: P.spec,
-        locationName: locName(L), locationAddr: locAddr(L), country: L.country || '', region: L.region || '', teleconsult: false,
+        locationName: locName(L), locationAddr: locAddr(L), country: L.country || '', region: L.region || '', phone: L.phone || '', teleconsult: false,
         motif: m.label, duration: m.dur, price: m.price, currency: P.currency || 'XOF',
         dateISO: dateISO, time: selTime, reason: reasonVal, status: 'CONFIRMED'
       };
@@ -545,7 +579,7 @@
       selDate = new Date(parts[0], parts[1] - 1, parts[2]);
       selTime = pend.time;
       renderDocCard(); renderStep1(); renderStep2(); renderStep3();
-      if (pend.reason) document.getElementById('reason').value = pend.reason;
+      if (pend.reason) { document.getElementById('reason').value = pend.reason; updateReasonCount(); }
       showStep(3);
       return true;
     }
@@ -558,7 +592,7 @@
       motifIdx = mi >= 0 ? mi : -1;
       const rb = document.getElementById('reschedBanner'); if (rb) rb.style.display = 'flex';
       renderDocCard(); renderStep1();
-      if (reschedTarget.reason) { const r = document.getElementById('reason'); if (r) r.value = reschedTarget.reason; }
+      if (reschedTarget.reason) { const r = document.getElementById('reason'); if (r) { r.value = reschedTarget.reason; updateReasonCount(); } }
       if (motifIdx >= 0) { renderStep2(); showStep(2); } else { showStep(1); }
       return true;
     }

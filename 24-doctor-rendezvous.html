@@ -37,6 +37,15 @@
     .new-badge { display:inline-block; background:#cffafe; color:#0e7490; border-radius:10px; padding:1px 8px; font-size:0.66rem; font-weight:800; text-transform:uppercase; letter-spacing:0.4px; vertical-align:middle; margin-left:6px; }
     .modify-info { background:#eef5f7; border:1px solid #cfe3e9; color:#0e5a6e; border-radius:10px; padding:9px 12px; font-size:0.82rem; line-height:1.45; }
     .modify-info i { color:#0e7490; }
+    /* Tiroir de détail : structure clé/valeur alignée sur l'écran patient (08). */
+    .d-patient-name { font-size:1.15rem; font-weight:800; color:#0f172a; margin:2px 0 8px; }
+    .dkv { display:flex; gap:14px; padding:11px 0; border-bottom:1px solid #f1f5f9; }
+    .dkv .k { color:#94a3b8; font-size:0.85rem; flex:0 0 104px; }
+    .dkv .v { color:#1e293b; font-weight:600; font-size:0.9rem; }
+    .d-note { margin-top:14px; }
+    .d-note-k { color:#94a3b8; font-size:0.85rem; font-weight:600; margin-bottom:6px; }
+    .d-note-k i { color:#155e75; }
+    .d-note-v { color:#334155; font-size:0.9rem; line-height:1.55; white-space:pre-line; word-break:break-word; background:#f8fafc; border:1px solid #eef2f6; border-left:3px solid #155e75; border-radius:8px; padding:10px 12px; }
     .page-sub { color:#64748b; font-size:0.9rem; margin:-2px 0 16px; }
 
     .toolbar { background:#fff; border-radius:14px; padding:12px 16px; display:flex; align-items:center; gap:14px; flex-wrap:nowrap; box-shadow:0 2px 8px rgba(0,0,0,0.04); margin-bottom:18px; }
@@ -379,8 +388,8 @@
 
     // Rendez-vous de démo (semaine du 6 au 12 juillet 2026 ; aujourd'hui = ven. 10)
     const RDV = [
-      { date:'2026-07-06', start:'09:00', end:'10:30', ini:'AD', name:'Aïssatou Diop',  motif:'Consultation générale', nature:'consultation', status:'confirmed', loc:'loc1' },
-      { date:'2026-07-06', start:'15:00', end:'16:00', ini:'AR', name:'Antoine Rousseau', motif:'Bilan lipidique',      nature:'consultation', status:'confirmed', loc:'loc1' },
+      { date:'2026-07-06', start:'09:00', end:'10:30', ini:'AD', name:'Aïssatou Diop',  motif:'Consultation générale', nature:'consultation', status:'confirmed', loc:'loc1', phone:'+221 77 512 34 89', note:'Fatiguée depuis une dizaine de jours, maux de tête fréquents le matin.' },
+      { date:'2026-07-06', start:'15:00', end:'16:00', ini:'AR', name:'Antoine Rousseau', motif:'Bilan lipidique',      nature:'consultation', status:'confirmed', loc:'loc1', phone:'+221 78 903 45 12', note:"Suite au bilan sanguin, cholestérol élevé signalé par le laboratoire.\nJe prends du Tahor 10 mg depuis six mois. J'aimerais savoir si le dosage doit être ajusté et refaire un contrôle." },
       { date:'2026-07-07', start:'09:00', end:'10:00', ini:'FM', name:'François Moreau', motif:'Suivi cardio',          nature:'consultation', status:'confirmed', loc:'loc1' },
       { date:'2026-07-07', start:'11:00', end:'12:00', ini:'FN', name:'Fatou Ndiaye',    motif:'Asthme',                nature:'consultation', status:'confirmed', loc:'loc1' },
       { date:'2026-07-08', start:'10:00', end:'11:30', ini:'HV', name:'Visite à domicile', motif:'M. Sarr — pansement', nature:'domicile',     status:'confirmed', loc:'loc1' },
@@ -669,13 +678,12 @@
         '<span class="nat-tag" style="background:#f1f5f9;color:#475569;">' + T('docrdv.status_' + r.status) + '</span>' +
         (r.booked ? '<span class="nat-tag" style="background:#e0f2f1;color:#0e7490;"><i class="fa fa-globe me-1"></i>' + T('docrdv.booked_online') + '</span>' : '') +
         (wasNew ? '<span class="new-badge">' + T('docrdv.new_badge') + '</span>' : '') + '</div>' +
-        '<div class="fw-bold" style="font-size:1.1rem;">' + escL(rdvName(r)) + '</div>' +
-        '<div class="text-muted mb-3">' + escL(r.motif) + '</div>' +
-        '<div><i class="fa fa-calendar-day me-2 text-muted"></i>' + dObj(r.date).toLocaleDateString(lang(), { weekday:'long', day:'numeric', month:'long', year:'numeric' }) + '</div>' +
-        '<div class="mt-1"><i class="fa fa-clock me-2 text-muted"></i>' + r.start + ' → ' + r.end + '</div>' +
-        (r.loc && LOC_IDS.has(r.loc) ? '<div class="mt-1"><i class="fa ' + (curLocType(r.loc) === 'teleconsult' ? 'fa-video' : 'fa-location-dot') + ' me-2 text-muted"></i>' + locNameById(r.loc) + '</div>' : '') +
-        (r.phone ? '<div class="mt-1"><i class="fa fa-phone me-2 text-muted"></i>' + escL(r.phone) + '</div>' : '') +
-        (r.note ? '<div class="mt-3 p-3" style="background:#f8fafc;border-radius:10px;"><div class="fw-semibold small mb-1"><i class="fa fa-comment-dots me-1" style="color:#155e75;"></i>' + T('docrdv.patient_note') + '</div><div class="small text-muted" style="white-space:pre-line;">' + escL(r.note) + '</div></div>' : '') +
+        '<div class="d-patient-name">' + escL(rdvName(r)) + '</div>' +
+        '<div class="dkv"><span class="k">' + T('docrdv.d_motif') + '</span><span class="v">' + escL(r.motif) + ' <span class="text-muted" style="font-weight:400">(' + (toMin(r.end) - toMin(r.start)) + ' ' + T('docrdv.min') + ')</span></span></div>' +
+        '<div class="dkv"><span class="k">' + T('docrdv.d_when') + '</span><span class="v">' + dObj(r.date).toLocaleDateString(lang(), { weekday:'long', day:'numeric', month:'long', year:'numeric' }) + ' · ' + r.start + ' → ' + r.end + '</span></div>' +
+        (r.loc && LOC_IDS.has(r.loc) ? '<div class="dkv"><span class="k">' + T('docrdv.d_loc') + '</span><span class="v">' + locNameById(r.loc) + '</span></div>' : '') +
+        (r.phone ? '<div class="dkv"><span class="k">' + T('docrdv.d_phone') + '</span><span class="v"><a href="tel:' + escL(r.phone).replace(/[^\d+]/g, '') + '" style="color:#155e75;text-decoration:none;">' + escL(r.phone) + '</a></span></div>' : '') +
+        (r.note ? '<div class="d-note"><div class="d-note-k"><i class="fa fa-comment-dots me-1"></i>' + T('docrdv.patient_note') + '</div><div class="d-note-v">' + escL(r.note) + '</div></div>' : '') +
         (r.status !== 'cancelled' && r.date >= TODAY && r.nature !== 'reunion' ? '<div class="modify-info mt-3"><i class="fa fa-circle-info me-1"></i>' + T('docrdv.modify_info').replace('{h}', MODIFY_CUTOFF_H) + '</div>' : '') +
         (r.status !== 'cancelled' ? '<div id="reschedPanel" class="d-none mt-3 p-3" style="background:#f8fafc;border-radius:10px;">' +
             '<div class="fw-semibold small mb-2">' + T('docrdv.resched_title') + '</div>' +
@@ -690,6 +698,7 @@
       let foot = '';
       if (r.status !== 'cancelled') {
         if (isConsult) foot += '<a class="btn btn-sm" style="background:#155e75;color:#fff;" href="25-doctor-consultation.html?patient=' + encodeURIComponent(rdvName(r)) + '&motif=' + encodeURIComponent(r.motif) + '"><i class="fa fa-notes-medical me-1"></i>' + T('docrdv.document') + '</a>';
+        if (isConsult) foot += '<a class="btn btn-outline-secondary btn-sm" href="26-doctor-records.html?patient=' + encodeURIComponent(rdvName(r)) + '"><i class="fa fa-folder-open me-1"></i>' + T('docrdv.view_patient') + '</a>';
         foot += '<button class="btn btn-outline-secondary btn-sm" onclick="toggleResched()"><i class="fa fa-clock-rotate-left me-1"></i>' + T('docrdv.resched') + '</button>';
         foot += '<button class="btn btn-outline-danger btn-sm" onclick="setStatus(' + i + ',\'cancelled\')"><i class="fa fa-ban me-1"></i>' + T('docrdv.cancel_appt') + '</button>';
       }

@@ -328,6 +328,7 @@
       try { sessionStorage.setItem('fueni_auth', '1'); } catch (e) {}
       // Reprise du parcours (ex. réservation) : ?return=<page.html> — sinon tableau de bord.
       const ret = new URLSearchParams(location.search).get('return');
+      try { sessionStorage.removeItem('fueni_post_auth_return'); } catch (e) {} // consommé par la connexion ; évite une reprise obsolète à une inscription ultérieure
       window.location = (ret && /^[\w.\-]+\.html(\?[\w.%=&\-]*)?$/.test(ret)) ? ret : '05-patient-dashboard.html';
       return false;
     }

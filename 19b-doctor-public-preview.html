@@ -177,7 +177,7 @@
 
       <!-- Motifs / tarifs -->
       <div class="sect">
-        <h5 data-i18n="docppv.motifs">Tarifs des consultations</h5>
+        <h5 data-i18n="docppv.motifs">Actes et tarifs</h5>
         <div id="fMotifsNote" class="loc-ext-note d-none"></div>
         <div id="fMotifs"></div>
       </div>
@@ -307,6 +307,13 @@
         const esc = s => (s == null ? '' : String(s)).replace(/[&<>]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;' }[c]));
         const sp = [esc(L.service || ''), L.position ? T('docpp.pos_' + L.position) : ''].filter(Boolean).join(' · ');
         addrHtml += '<div class="mt-1" style="color:#64748b;font-size:0.88rem;"><i class="fa fa-user-doctor me-1"></i>' + sp + '</div>';
+      }
+      // Téléphone public du lieu (facultatif, lieux physiques uniquement) — cliquable pour appeler.
+      if (!isTele && L.phone && String(L.phone).trim()) {
+        const ph = String(L.phone).trim();
+        const telHref = 'tel:' + ph.replace(/[^\d+]/g, '');
+        addrHtml += '<div class="mt-1"><i class="fa fa-phone me-1" style="color:#155e75;"></i>'
+          + '<a href="' + telHref + '" style="color:#155e75;text-decoration:none;font-weight:600;">' + ph + '</a></div>';
       }
       document.getElementById('fAddress').innerHTML = addrHtml;
       document.getElementById('fMap').style.display = isTele ? 'none' : '';
