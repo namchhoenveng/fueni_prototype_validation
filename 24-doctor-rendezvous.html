@@ -125,6 +125,18 @@
     .list-t { font-weight:600; color:#0f172a; }
     .list-m { color:#64748b; font-size:0.85rem; }
     .nat-tag { display:inline-block; padding:3px 10px; border-radius:14px; font-size:0.72rem; font-weight:700; white-space:nowrap; }
+    /* Onglets du modal de création : Rendez-vous patient / Événement */
+    .create-tabs { display:flex; gap:4px; border-bottom:2px solid #e5e7eb; }
+    .create-tab { background:transparent; border:0; border-bottom:3px solid transparent; margin-bottom:-2px; padding:9px 16px; font-weight:600; font-size:0.92rem; color:#64748b; cursor:pointer; }
+    .create-tab:hover { color:#155e75; }
+    .create-tab.active { color:#155e75; border-bottom-color:#155e75; }
+    /* Combobox patient (recherche stylée par l'app, remplace le datalist natif du navigateur) */
+    .pt-combo { position:relative; }
+    .pt-menu { position:absolute; top:calc(100% + 4px); left:0; right:0; background:#fff; border:1px solid #e2e8f0; border-radius:10px; box-shadow:0 10px 28px rgba(15,23,42,0.14); max-height:240px; overflow:auto; z-index:30; padding:4px; }
+    .pt-opt { padding:9px 12px; border-radius:8px; cursor:pointer; font-size:0.92rem; color:#334155; }
+    .pt-opt:hover { background:#f1f5f9; }
+    .pt-opt.add { color:#155e75; font-weight:600; }
+    .pt-empty { padding:9px 12px; color:#94a3b8; font-size:0.88rem; }
 
     /* Side */
     .side-title { font-size:0.72rem; font-weight:800; letter-spacing:0.8px; text-transform:uppercase; color:#475569; margin:0 0 12px; }
@@ -132,8 +144,19 @@
     .today-rdv .tt { font-weight:700; color:#155e75; font-size:0.83rem; }
     .today-rdv .tn { font-weight:600; color:#0f172a; margin-top:2px; font-size:0.9rem; }
     .today-rdv .tm { color:#64748b; font-size:0.78rem; margin-top:2px; }
-    .legend-row { display:flex; align-items:center; gap:9px; font-size:0.83rem; padding:5px 0; color:#475569; }
-    .legend-dot { width:12px; height:12px; border-radius:4px; flex-shrink:0; }
+    .list-more-wrap { text-align:center; padding:14px; }
+    .list-more-btn { background:#fff; border:1px solid #e2e8f0; border-radius:10px; padding:8px 18px; color:#155e75; font-weight:600; font-size:0.88rem; cursor:pointer; }
+    .list-more-btn:hover { background:#f8fafc; }
+    .today-more { color:#155e75; font-weight:600; font-size:0.82rem; padding:6px 4px 2px; cursor:pointer; }
+    .today-more:hover { text-decoration:underline; }
+    .add-label-btn:disabled { opacity:0.5; cursor:not-allowed; }
+    .label-limit-hint { color:#94a3b8; font-size:0.75rem; line-height:1.35; margin-top:4px; }
+    .label-limit-hint i { color:#f59e0b; }
+    .legend-row { display:flex; align-items:center; gap:9px; font-size:0.83rem; padding:5px 0; color:#475569; cursor:pointer; border-radius:6px; }
+    .legend-row:hover { background:#f8fafc; }
+    .legend-row.off { color:#94a3b8; }
+    .legend-dot { width:16px; height:16px; border-radius:4px; flex-shrink:0; box-sizing:border-box; display:flex; align-items:center; justify-content:center; }
+    .legend-dot i { color:#fff; font-size:9px; }
     .lbl-sys { color:#94a3b8; font-size:0.72rem; font-weight:600; }
     .lbl-del { color:#cbd5e1; cursor:pointer; font-weight:700; padding:0 4px; }
     .lbl-del:hover { color:#dc2626; }
@@ -190,7 +213,7 @@
       <div class="d-flex gap-2 flex-wrap">
         <a href="19-doctor-public-profile.html" class="topbar-btn ghost"><i class="fa fa-clock"></i><span data-i18n="docrdv.avail_edit">Modifier mes horaires</span></a>
         <button class="topbar-btn ghost" onclick="openBlock()"><i class="fa fa-ban"></i><span data-i18n="docrdv.block_btn">Bloquer un créneau</span></button>
-        <button class="topbar-btn" onclick="openCreate()"><i class="fa fa-calendar-plus"></i><span data-i18n="docrdv.new_rdv">Nouveau rendez-vous</span></button>
+        <button class="topbar-btn" onclick="openCreate()"><i class="fa fa-calendar-plus"></i><span data-i18n="docrdv.new_rdv">Ajouter au planning</span></button>
       </div>
     </header>
 
@@ -217,8 +240,6 @@
         <div class="cur-range" id="curRange"></div>
         <div class="tb-filters">
           <select class="filter-select" id="fltLoc" onchange="fLoc=this.value;render()" style="display:none;"></select>
-          <select class="filter-select" id="fltNature" onchange="fNature=this.value;render()"></select>
-          <select class="filter-select" id="fltStatus" onchange="fStatus=this.value;render()"></select>
         </div>
       </div>
 
@@ -229,7 +250,8 @@
           <div id="todayList"></div>
           <h6 class="side-title mt-4"><i class="fa fa-tags me-1"></i><span data-i18n="docrdv.labels_title">Étiquettes</span></h6>
           <div id="legend"></div>
-          <button type="button" class="add-label-btn" onclick="toggleAddLabel()"><i class="fa fa-plus me-1"></i><span data-i18n="docrdv.new_label">Nouvelle étiquette</span></button>
+          <button type="button" id="addLabelBtn" class="add-label-btn" onclick="toggleAddLabel()"><i class="fa fa-plus me-1"></i><span data-i18n="docrdv.new_label">Nouvelle étiquette</span></button>
+          <div id="labelLimitHint" class="label-limit-hint d-none"><i class="fa fa-circle-info me-1"></i><span data-i18n="docrdv.label_limit">Limite atteinte (8) — supprimez une étiquette pour en ajouter une autre.</span></div>
           <div id="addLabelForm" class="add-label-form d-none">
             <input type="text" id="newLabelName" class="add-label-input" maxlength="30" data-i18n-placeholder="docrdv.label_ph" placeholder="Nom de l'étiquette…" onkeydown="if(event.key==='Enter'){event.preventDefault();addLabel();}">
             <div class="swatches" id="labelSwatches"></div>
@@ -262,43 +284,67 @@
     <div class="modal-dialog modal-lg modal-dialog-centered">
       <div class="modal-content" style="border:0;border-radius:16px;">
         <div class="modal-header border-0 pb-0">
-          <h5 class="modal-title fw-bold" data-i18n="docrdv.new_rdv">Nouveau rendez-vous</h5>
+          <h5 class="modal-title fw-bold" data-i18n="docrdv.new_rdv">Ajouter au planning</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
         <div class="modal-body pt-2">
+          <div class="create-tabs mb-3">
+            <button type="button" class="create-tab active" data-ctab="patient" onclick="setCreateTab('patient')"><i class="fa fa-user-injured me-2"></i><span data-i18n="docrdv.tab_patient">Rendez-vous patient</span></button>
+            <button type="button" class="create-tab" data-ctab="event" onclick="setCreateTab('event')"><i class="fa fa-calendar-day me-2"></i><span data-i18n="docrdv.tab_event">Événement</span></button>
+          </div>
           <form id="createForm" onsubmit="event.preventDefault(); submitCreate();">
             <div class="row g-3">
-              <div class="col-12">
-                <label class="form-label fw-semibold small" data-i18n="docrdv.m_nature">Nature</label>
-                <div class="d-flex gap-2 flex-wrap" id="naturePills"></div>
+              <!-- Onglet « Rendez-vous patient » -->
+              <div class="col-12 cpane" id="panePatient">
+                <div class="row g-3">
+                  <div class="col-12">
+                    <label class="form-label fw-semibold small"><span data-i18n="docrdv.m_patient">Patient</span> <span class="text-danger">*</span></label>
+                    <div class="pt-combo" id="ptCombo">
+                      <input type="text" autocomplete="off" class="form-control" id="cPatient" data-i18n-placeholder="docrdv.m_patient_ph" placeholder="Rechercher un patient…" oninput="ptFilter(this.value); this.classList.remove('is-invalid')" onfocus="ptFilter(this.value)" onkeydown="ptKey(event)">
+                      <div class="pt-menu d-none" id="ptMenu"></div>
+                    </div>
+                  </div>
+                  <div class="col-12">
+                    <label class="form-label fw-semibold small" data-i18n="docrdv.m_titlef">Motif</label>
+                    <input type="text" class="form-control" id="cMotif" data-i18n-placeholder="docrdv.m_motif_ph" placeholder="Ex : Consultation générale">
+                  </div>
+                  <div class="col-12">
+                    <label class="d-inline-flex align-items-center gap-2" style="cursor:pointer;font-size:0.9rem;color:#334155;">
+                      <input type="checkbox" id="cDomicile"> <i class="fa fa-house-medical" style="color:#7c3aed;"></i> <span data-i18n="docrdv.m_domicile">Rendez-vous à domicile</span>
+                    </label>
+                  </div>
+                </div>
               </div>
-              <div class="col-12">
-                <label class="form-label fw-semibold small" data-i18n="docrdv.m_patient">Patient</label>
-                <input list="patientList" class="form-control" id="cPatient" data-i18n-placeholder="docrdv.m_patient_ph" placeholder="Rechercher un patient…">
-                <datalist id="patientList">
-                  <option value="Mariam Diallo"><option value="Ousmane Sow"><option value="Awa Faye"><option value="Ibrahima Bâ">
-                  <option value="Fatou Ndiaye"><option value="Modou Cissé"><option value="Rokhaya Diop"><option value="Samba Gueye">
-                </datalist>
+              <!-- Onglet « Événement » -->
+              <div class="col-12 cpane d-none" id="paneEvent">
+                <div class="row g-3">
+                  <div class="col-12">
+                    <label class="form-label fw-semibold small"><span data-i18n="docrdv.m_title">Titre</span> <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" id="cTitle" data-i18n-placeholder="docrdv.m_title_ph" placeholder="Ex : Réunion d'équipe, Formation…" oninput="this.classList.remove('is-invalid')">
+                  </div>
+                  <div class="col-12">
+                    <label class="form-label fw-semibold small" data-i18n="docrdv.m_label">Étiquette</label>
+                    <div class="d-flex gap-2 flex-wrap" id="eventPills"></div>
+                  </div>
+                </div>
               </div>
-              <div class="col-12">
-                <label class="form-label fw-semibold small" data-i18n="docrdv.m_titlef">Motif</label>
-                <input type="text" class="form-control" id="cMotif" data-i18n-placeholder="docrdv.m_motif_ph" placeholder="Ex : Consultation générale">
-              </div>
+              <!-- Champs communs -->
               <div class="col-md-4">
                 <label class="form-label fw-semibold small" data-i18n="docrdv.m_date">Date</label>
-                <input type="date" class="form-control" id="cDate" value="2026-07-10">
+                <input type="date" lang="fr-FR" class="form-control" id="cDate" value="2026-07-10" onchange="cCheck()">
               </div>
               <div class="col-md-4">
                 <label class="form-label fw-semibold small" data-i18n="docrdv.m_start">Début</label>
-                <input type="time" class="form-control" id="cStart" value="09:00" step="900">
+                <select class="form-control" id="cStart" onchange="onCreateStart()"></select>
               </div>
               <div class="col-md-4">
                 <label class="form-label fw-semibold small" data-i18n="docrdv.m_end">Fin</label>
-                <input type="time" class="form-control" id="cEnd" value="09:30" step="900">
+                <select class="form-control" id="cEnd" onchange="cCheck()"></select>
               </div>
-              <div class="col-12">
+              <div class="col-12"><div id="cError" class="text-danger small" style="display:none"></div></div>
+              <div class="col-12" id="cNotifRow">
                 <div class="alert py-2 small mb-0" style="background:#ecfeff;color:#155e75;border:1px solid #a5f3fc;border-radius:10px;">
-                  <i class="fa fa-bell me-1"></i><span data-i18n="docrdv.m_notif">Une confirmation par e-mail sera envoyée au patient. (Rappels et notifications SMS : post-MVP.)</span>
+                  <i class="fa fa-bell me-1"></i><span data-i18n="docrdv.m_notif">Une confirmation par e-mail sera envoyée au patient.</span>
                 </div>
               </div>
             </div>
@@ -306,7 +352,7 @@
         </div>
         <div class="modal-footer border-0 pt-0">
           <button type="button" class="btn btn-light" data-bs-dismiss="modal" data-i18n="docrdv.act_cancel">Annuler</button>
-          <button type="submit" form="createForm" class="topbar-btn"><i class="fa fa-check"></i><span data-i18n="docrdv.m_create">Créer le rendez-vous</span></button>
+          <button type="submit" id="createBtn" form="createForm" class="topbar-btn"><i class="fa fa-check"></i><span data-i18n="docrdv.m_create">Créer le rendez-vous</span></button>
         </div>
       </div>
     </div>
@@ -323,9 +369,9 @@
         <div class="modal-body pt-2">
           <div class="row g-3">
             <div class="col-12" id="bLocWrap" style="display:none;"><label class="form-label fw-semibold small" data-i18n="docrdv.block_loc">Lieu</label><select class="form-select" id="bLoc"></select></div>
-            <div class="col-12"><label class="form-label fw-semibold small" data-i18n="docrdv.m_date">Date</label><input type="date" class="form-control" id="bDate"></div>
-            <div class="col-6"><label class="form-label fw-semibold small" data-i18n="docrdv.m_start">Début</label><input type="time" class="form-control" id="bStart" value="12:00" step="900"></div>
-            <div class="col-6"><label class="form-label fw-semibold small" data-i18n="docrdv.m_end">Fin</label><input type="time" class="form-control" id="bEnd" value="14:00" step="900"></div>
+            <div class="col-12"><label class="form-label fw-semibold small" data-i18n="docrdv.m_date">Date</label><input type="date" lang="fr-FR" class="form-control" id="bDate"></div>
+            <div class="col-6"><label class="form-label fw-semibold small" data-i18n="docrdv.m_start">Début</label><select class="form-control" id="bStart"></select></div>
+            <div class="col-6"><label class="form-label fw-semibold small" data-i18n="docrdv.m_end">Fin</label><select class="form-control" id="bEnd"></select></div>
             <div class="col-12"><label class="form-label fw-semibold small" data-i18n="docrdv.block_reason">Motif (facultatif)</label><input type="text" class="form-control" id="bReason" data-i18n-placeholder="docrdv.block_reason_ph" placeholder="Ex : congé, formation, déjeuner…"></div>
             <div class="col-12"><label class="d-flex align-items-center gap-2 small text-muted mb-0"><input type="checkbox" id="bAllDay" onchange="onAllDay(this.checked)"> <span data-i18n="docrdv.block_allday">Journée entière</span></label></div>
           </div>
@@ -345,7 +391,9 @@
     const T = k => (window.NazI18n ? NazI18n.t(k) : k);
     const TODAY = '2026-07-10';
     const MODIFY_CUTOFF_H = 2; // délai de modif/annulation patient EN LIGNE (règle plateforme MVP) — le médecin, lui, agit à tout moment
-    let cur = TODAY, view = 'week', fNature = 'all', fStatus = 'all';
+    let cur = TODAY, view = 'week', listLimit = 30; // Listing = agenda « à partir de cur », borné à listLimit + « Charger plus »
+    const hiddenLabels = new Set(); // étiquettes masquées (multi-sélection via la légende, style Google Agenda)
+    function toggleLabelVis(id) { hiddenLabels.has(id) ? hiddenLabels.delete(id) : hiddenLabels.add(id); render(); }
 
     // Étiquettes (style Google Agenda). Les RDV patients portent l'étiquette « Consultation »
     // (bleu, système, non supprimable) ; le docteur peut créer ses propres étiquettes (libellé libre + couleur).
@@ -372,6 +420,7 @@
     function pickSwatch(c) { newLabelColor = c; renderSwatches(); }
     function addLabel() {
       const name = document.getElementById('newLabelName').value.trim(); if (!name) return;
+      if (LABELS.filter(l => !l.system).length >= 8) { toast(T('docrdv.label_limit')); return; } // cap = palette (8)
       LABELS.push({ id: 'lbl' + Date.now(), name: name, color: newLabelColor });
       toggleAddLabel(); render();
     }
@@ -381,7 +430,7 @@
       if (used > 0) { toast('« ' + lab.name + ' » — ' + used + ' ' + T('docrdv.lbl_del_inuse')); return; } // bloqué si utilisée
       if (!window.confirm(T('docrdv.lbl_del_confirm_pre') + lab.name + T('docrdv.lbl_del_confirm_post'))) return;
       LABELS = LABELS.filter(l => l.id !== id);
-      if (fNature === id) fNature = 'all';
+      hiddenLabels.delete(id);
       render();
       toast(T('docrdv.lbl_del_toast'));
     }
@@ -392,10 +441,10 @@
       { date:'2026-07-06', start:'15:00', end:'16:00', ini:'AR', name:'Antoine Rousseau', motif:'Bilan lipidique',      nature:'consultation', status:'confirmed', loc:'loc1', phone:'+221 78 903 45 12', note:"Suite au bilan sanguin, cholestérol élevé signalé par le laboratoire.\nJe prends du Tahor 10 mg depuis six mois. J'aimerais savoir si le dosage doit être ajusté et refaire un contrôle." },
       { date:'2026-07-07', start:'09:00', end:'10:00', ini:'FM', name:'François Moreau', motif:'Suivi cardio',          nature:'consultation', status:'confirmed', loc:'loc1' },
       { date:'2026-07-07', start:'11:00', end:'12:00', ini:'FN', name:'Fatou Ndiaye',    motif:'Asthme',                nature:'consultation', status:'confirmed', loc:'loc1' },
-      { date:'2026-07-08', start:'10:00', end:'11:30', ini:'HV', name:'Visite à domicile', motif:'M. Sarr — pansement', nature:'domicile',     status:'confirmed', loc:'loc1' },
+      { date:'2026-07-08', start:'10:00', end:'11:30', ini:'IS', name:'Ibrahima Sarr', motif:'Pansement (à domicile)', nature:'domicile', status:'confirmed', patient:true, phone:'+221 77 645 30 18', loc:'loc1' },
       { date:'2026-07-09', start:'15:00', end:'16:00', ini:'IS', name:'Ibrahima Sow',    motif:'Drépanocytose',         nature:'consultation', status:'confirmed', loc:'loc1' },
       { date:'2026-07-10', start:'09:00', end:'10:00', ini:'MD', name:'Mamadou Diallo',  motif:'Décompensation diabétique', nature:'consultation', status:'confirmed', loc:'loc1' },
-      { date:'2026-07-10', start:'11:00', end:'12:00', ini:'ST', name:'Staff cabinet',   motif:'Réunion hebdomadaire',  nature:'reunion',      status:'confirmed', loc:'loc1' },
+      { date:'2026-07-10', start:'11:00', end:'12:00', ini:'RH', name:'Réunion hebdomadaire', motif:'', nature:'reunion', status:'confirmed', patient:false, loc:'loc1' },
       { date:'2026-07-10', start:'10:00', end:'11:00', ini:'RD', name:'Rokhaya Diop',    motif:'Suivi grossesse',       nature:'consultation', status:'confirmed', loc:'loc1' },
       { date:'2026-07-14', start:'15:00', end:'15:30', ini:'MC', name:'Modou Cissé',     motif:'Renouvellement',        nature:'consultation', status:'confirmed', loc:'loc1' }
     ];
@@ -425,6 +474,20 @@
     const locLabel = l => l.label || T('docpp.loctype_' + l.type);
     const locNameById = id => { const l = LOCS.find(x => x.id === id); return l ? locLabel(l) : ''; };
     const curLocType = id => { const l = LOCS.find(x => x.id === id); return l ? l.type : ''; };
+    // Options d'heures en 24 h (les <input type="time"> natifs suivent la locale du navigateur → AM/PM
+    // incontrôlable ; un <select> garantit le 24 h partout, conforme RG9). Pas de 15 min, 06:00 → 21:00.
+    const hhmm = m => String(Math.floor(m / 60)).padStart(2, '0') + ':' + String(m % 60).padStart(2, '0');
+    function timeOptions(sel) {
+      let o = '';
+      for (let m = 6 * 60; m <= 21 * 60; m += 15) { const t = hhmm(m); o += '<option value="' + t + '"' + (t === sel ? ' selected' : '') + '>' + t + '</option>'; }
+      return o;
+    }
+    // Options d'heure de FIN : uniquement > début (l'heure de fin est donc toujours postérieure au début, par construction).
+    function endOptions(startStr, sel) {
+      const min = toMin(startStr); let o = '';
+      for (let m = min + 15; m <= 21 * 60; m += 15) { const t = hhmm(m); o += '<option value="' + t + '"' + (t === sel ? ' selected' : '') + '>' + t + '</option>'; }
+      return o;
+    }
     // Filtre de lieu actif seulement si plusieurs lieux ET si les RDV portent des ids connus
     // (sinon on n'applique pas le filtre — évite un agenda vide si le profil a changé).
     const LOC_IDS = new Set(LOCS.map(l => l.id));
@@ -467,7 +530,7 @@
         if (a.doctor && DOCTOR_NAME && a.doctor !== DOCTOR_NAME) return; // uniquement les RDV de CE praticien
         if (RDV.some(r => r.apptId === a.id)) return;                   // pas de doublon (ré-exécution)
         RDV.push({
-          apptId: a.id, booked: true,
+          apptId: a.id, booked: true, patient: true,
           date: a.dateISO, start: a.time, end: addMin(a.time, a.duration || 30),
           ini: iniOf(a.patient), name: (a.patient || '').trim(),
           motif: a.motif || '', nature: 'consultation',
@@ -480,15 +543,48 @@
     ingestBookings();
     // Nom affiché (le repli i18n est résolu au rendu, quand NazI18n est prêt — pas à l'ingestion).
     const rdvName = r => r.name || (r.booked ? T('docrdv.patient_online') : '');
+    // RDV lié à un patient (onglet « Rendez-vous patient » ou réservé en ligne) vs événement interne (onglet « Événement »).
+    // Le flag `patient` est explicite sur les créations récentes ; repli pour les données démo sans flag.
+    function hasPatient(r) {
+      if (r.patient === true) return true;
+      if (r.patient === false) return false;
+      if (r.booked) return true;
+      return r.nature !== 'reunion' && !!r.name && r.name !== '—';
+    }
 
     function mondayOf(s) { const d = dObj(s); const off = (d.getDay() + 6) % 7; d.setDate(d.getDate() - off); return d; }
-    function pass(r) { return matchLoc(r) && (fNature === 'all' || r.nature === fNature) && (fStatus === 'all' || r.status === fStatus); }
+    // Les RDV annulés libèrent le créneau → ils ne s'affichent plus dans le planning (pas de filtre Statut).
+    // Filtre par étiquette = multi-sélection via la légende (une étiquette masquée cache ses RDV).
+    function pass(r) { return r.status !== 'cancelled' && matchLoc(r) && !hiddenLabels.has(r.nature); }
+    // Validation d'un créneau (ligne de temps unique — le docteur ne peut être qu'à un endroit à la fois).
+    // excludeIdx = index du RDV en cours de report (ignoré dans le test de chevauchement).
+    function slotConflict(date, start, end, excludeIdx) {
+      const s = toMin(start), e = toMin(end);
+      for (let k = 0; k < RDV.length; k++) {
+        if (k === excludeIdx) continue;
+        const r = RDV[k];
+        if (r.date !== date || r.status === 'cancelled') continue;
+        if (s < toMin(r.end) && e > toMin(r.start)) return true; // chevauchement RDV
+      }
+      for (const b of (BLOCKS || [])) {
+        if (b.date !== date) continue;
+        if (s < toMin(b.end) && e > toMin(b.start)) return true; // chevauchement indisponibilité
+      }
+      return false;
+    }
+    function validateSlot(date, start, end, excludeIdx) {
+      if (toMin(end) <= toMin(start)) { toast(T('docrdv.err_endbefore')); return false; }
+      if (date < TODAY) { toast(T('docrdv.err_past')); return false; }
+      if (slotConflict(date, start, end, excludeIdx)) { toast(T('docrdv.err_overlap')); return false; }
+      return true;
+    }
 
     function setView(v) {
-      view = v;
+      view = v; listLimit = 30;
       ['Week', 'Month', 'List'].forEach(x => document.getElementById('seg' + x).classList.toggle('on', v === x.toLowerCase()));
       render();
     }
+    function loadMoreList() { listLimit += 30; renderList(); }
     function navPrev() { shift(view === 'month' ? 'month' : (view === 'week' ? 'week' : 'day'), -1); }
     function navNext() { shift(view === 'month' ? 'month' : (view === 'week' ? 'week' : 'day'), 1); }
     function shift(unit, n) {
@@ -496,9 +592,9 @@
       if (unit === 'month') { d.setDate(1); d.setMonth(d.getMonth() + n); }
       else if (unit === 'week') d.setDate(d.getDate() + 7 * n);
       else d.setDate(d.getDate() + n);
-      cur = iso(d); render();
+      cur = iso(d); listLimit = 30; render();
     }
-    function goToday() { cur = TODAY; render(); }
+    function goToday() { cur = TODAY; listLimit = 30; render(); }
 
     function render() {
       // range label
@@ -509,7 +605,7 @@
       } else if (view === 'month') {
         range = dObj(cur).toLocaleDateString(lang(), { month:'long', year:'numeric' });
       } else {
-        range = dObj(cur).toLocaleDateString(lang(), { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+        range = T('docrdv.list_from') + ' ' + dObj(cur).toLocaleDateString(lang(), { day:'numeric', month:'long', year:'numeric' });
       }
       const rl = document.getElementById('curRange'); rl.textContent = range;
 
@@ -600,15 +696,16 @@
     function pickDay(ds) { cur = ds; setView('week'); }
 
     function renderList() {
-      const mon = iso(mondayOf(cur));
+      // Agenda « à partir de la date sélectionnée » (r.date >= cur), borné à listLimit + « Charger plus ».
       const items = [];
-      RDV.forEach((r, idx) => { if (pass(r) && r.date >= mon) items.push({ t:'rdv', date:r.date, start:r.start, r, idx }); });
-      BLOCKS.forEach((b, bi) => { if (b.date >= mon && matchLoc(b)) items.push({ t:'blk', date:b.date, start:b.start, b, bi }); });
+      RDV.forEach((r, idx) => { if (pass(r) && r.date >= cur) items.push({ t:'rdv', date:r.date, start:r.start, r, idx }); });
+      BLOCKS.forEach((b, bi) => { if (b.date >= cur && matchLoc(b)) items.push({ t:'blk', date:b.date, start:b.start, b, bi }); });
       items.sort((a, b) => (a.date + a.start).localeCompare(b.date + b.start));
       const box = document.getElementById('calCard');
       if (!items.length) { box.innerHTML = '<div class="list-pad text-center text-muted py-5"><i class="fa fa-calendar-xmark fa-2x mb-2 d-block"></i>' + T('docrdv.empty_list') + '</div>'; return; }
+      const shown = items.slice(0, listLimit), rest = items.length - shown.length;
       let html = '<div class="list-pad">', curD = '';
-      items.forEach(o => {
+      shown.forEach(o => {
         if (o.date !== curD) { curD = o.date; html += '<div class="list-dh">' + dObj(o.date).toLocaleDateString(lang(), { weekday:'long', day:'numeric', month:'long' }) + (o.date === TODAY ? ' · ' + T('docrdv.today_btn') : '') + '</div>'; }
         if (o.t === 'rdv') {
           const r = o.r;
@@ -625,21 +722,33 @@
             '<span class="nat-tag" style="background:#eef2f6;color:#64748b;">' + T('docrdv.unavailable') + '</span></div>';
         }
       });
+      if (rest > 0) html += '<div class="list-more-wrap"><button class="list-more-btn" onclick="loadMoreList()"><i class="fa fa-chevron-down me-1"></i>' + T('docrdv.load_more').replace('{n}', rest) + '</button></div>';
       box.innerHTML = html + '</div>';
     }
 
     function renderSide() {
       document.getElementById('sideToday').innerHTML = '<i class="fa fa-bolt me-1"></i>' + T('docrdv.today_btn') + ' — ' + dObj(TODAY).toLocaleDateString(lang(), { day:'numeric', month:'long' });
       const today = RDV.filter(r => r.date === TODAY && r.status !== 'cancelled').sort((a, b) => a.start.localeCompare(b.start));
-      document.getElementById('todayList').innerHTML = today.length ? today.map(r =>
-        '<div class="today-rdv" style="border-left-color:' + labelOf(r.nature).color + '"><div class="tt">' + r.start + ' — ' + r.end + '</div><div class="tn">' + escL(rdvName(r)) + '</div><div class="tm">' + escL(labelOf(r.nature).name) + ' · ' + r.motif + '</div></div>'
-      ).join('') : '<div class="text-muted small">' + T('docrdv.empty_day') + '</div>';
-      document.getElementById('legend').innerHTML = LABELS.map(l =>
-        '<div class="legend-row"><span class="legend-dot" style="background:' + l.color + '"></span><span class="flex-grow-1">' + escL(l.name) +
-        (l.system ? ' <span class="lbl-sys">· ' + T('docrdv.lbl_patients') + '</span>' : '') + '</span>' +
-        (l.system ? '' : '<span class="lbl-del" title="' + T('docrdv.act_cancel') + '" onclick="removeLabel(\'' + l.id + '\')">×</span>') + '</div>'
+      // Panneau résumé : on n'affiche que les 3 premiers du jour + un lien vers le listing complet.
+      let todayHtml = today.slice(0, 3).map(r =>
+        '<div class="today-rdv" style="border-left-color:' + labelOf(r.nature).color + '"><div class="tt">' + r.start + ' — ' + r.end + '</div><div class="tn">' + escL(rdvName(r)) + '</div><div class="tm">' + escL(labelOf(r.nature).name) + (r.motif ? ' · ' + escL(r.motif) : '') + '</div></div>'
       ).join('');
+      if (today.length > 3) todayHtml += '<div class="today-more" onclick="viewFullDay()">' + T('docrdv.see_full_day').replace('{n}', today.length) + '</div>';
+      document.getElementById('todayList').innerHTML = today.length ? todayHtml : '<div class="text-muted small">' + T('docrdv.empty_day') + '</div>';
+      document.getElementById('legend').innerHTML = LABELS.map(l => {
+        const off = hiddenLabels.has(l.id);
+        return '<div class="legend-row' + (off ? ' off' : '') + '" onclick="toggleLabelVis(\'' + l.id + '\')" title="' + T(off ? 'docrdv.legend_show' : 'docrdv.legend_hide') + '">' +
+          '<span class="legend-dot" style="' + (off ? 'background:#fff;border:2px solid ' + l.color : 'background:' + l.color + ';border:2px solid ' + l.color) + '">' + (off ? '' : '<i class="fa fa-check"></i>') + '</span>' +
+          '<span class="flex-grow-1">' + escL(l.name) + (l.system ? ' <span class="lbl-sys">· ' + T('docrdv.lbl_patients') + '</span>' : '') + '</span>' +
+          (l.system ? '' : '<span class="lbl-del" title="' + T('docrdv.act_cancel') + '" onclick="event.stopPropagation();removeLabel(\'' + l.id + '\')">×</span>') +
+        '</div>';
+      }).join('');
+      // Cap des étiquettes personnalisées = taille de la palette (8) ; au-delà, ajout désactivé.
+      const atLabelLimit = LABELS.filter(l => !l.system).length >= 8;
+      const addBtn = document.getElementById('addLabelBtn'); if (addBtn) addBtn.disabled = atLabelLimit;
+      const limitHint = document.getElementById('labelLimitHint'); if (limitHint) limitHint.classList.toggle('d-none', !atLabelLimit);
     }
+    function viewFullDay() { cur = TODAY; setView('list'); }
 
     function renderFilters() {
       const fl = document.getElementById('fltLoc');
@@ -648,11 +757,6 @@
         fl.innerHTML = '<option value="all"' + (fLoc === 'all' ? ' selected' : '') + '>' + T('docrdv.block_loc_all') + '</option>' +
           LOCS.map(l => '<option value="' + l.id + '"' + (fLoc === l.id ? ' selected' : '') + '>' + locLabel(l) + '</option>').join('');
       } else { fl.style.display = 'none'; }
-      const fn = document.getElementById('fltNature');
-      fn.innerHTML = '<option value="all">' + T('docrdv.filter_nature') + '</option>' + LABELS.map(l => '<option value="' + l.id + '"' + (fNature === l.id ? ' selected' : '') + '>' + escL(l.name) + '</option>').join('');
-      const fs = document.getElementById('fltStatus');
-      fs.innerHTML = '<option value="all">' + T('docrdv.filter_status') + '</option>' +
-        ['confirmed', 'cancelled'].map(s => '<option value="' + s + '"' + (fStatus === s ? ' selected' : '') + '>' + T('docrdv.status_' + s) + '</option>').join('');
     }
 
     function stats() {
@@ -671,42 +775,51 @@
     let detailModal, createModal;
     function openDetail(i) {
       const r = RDV[i];
-      const isConsult = !!(labelOf(r.nature) && labelOf(r.nature).system);
+      const isConsult = hasPatient(r); // RDV lié à un patient (consultation / domicile / réservé en ligne) → Documenter + fiche patient
       const wasNew = r.booked && r.status !== 'cancelled' && !seenSet.has(r.apptId);
       document.getElementById('detailBody').innerHTML =
         '<div class="d-flex align-items-center gap-2 mb-3 flex-wrap">' + labelTag(r.nature) +
-        '<span class="nat-tag" style="background:#f1f5f9;color:#475569;">' + T('docrdv.status_' + r.status) + '</span>' +
         (r.booked ? '<span class="nat-tag" style="background:#e0f2f1;color:#0e7490;"><i class="fa fa-globe me-1"></i>' + T('docrdv.booked_online') + '</span>' : '') +
         (wasNew ? '<span class="new-badge">' + T('docrdv.new_badge') + '</span>' : '') + '</div>' +
         '<div class="d-patient-name">' + escL(rdvName(r)) + '</div>' +
-        '<div class="dkv"><span class="k">' + T('docrdv.d_motif') + '</span><span class="v">' + escL(r.motif) + ' <span class="text-muted" style="font-weight:400">(' + (toMin(r.end) - toMin(r.start)) + ' ' + T('docrdv.min') + ')</span></span></div>' +
-        '<div class="dkv"><span class="k">' + T('docrdv.d_when') + '</span><span class="v">' + dObj(r.date).toLocaleDateString(lang(), { weekday:'long', day:'numeric', month:'long', year:'numeric' }) + ' · ' + r.start + ' → ' + r.end + '</span></div>' +
+        (r.motif ? '<div class="dkv"><span class="k">' + T('docrdv.d_motif') + '</span><span class="v">' + escL(r.motif) + '</span></div>' : '') +
+        '<div class="dkv"><span class="k">' + T('docrdv.d_when') + '</span><span class="v">' + dObj(r.date).toLocaleDateString(lang(), { weekday:'long', day:'numeric', month:'long', year:'numeric' }) + ' · ' + r.start + ' → ' + r.end + ' <span class="text-muted" style="font-weight:400">(' + (toMin(r.end) - toMin(r.start)) + ' ' + T('docrdv.min') + ')</span></span></div>' +
         (r.loc && LOC_IDS.has(r.loc) ? '<div class="dkv"><span class="k">' + T('docrdv.d_loc') + '</span><span class="v">' + locNameById(r.loc) + '</span></div>' : '') +
         (r.phone ? '<div class="dkv"><span class="k">' + T('docrdv.d_phone') + '</span><span class="v"><a href="tel:' + escL(r.phone).replace(/[^\d+]/g, '') + '" style="color:#155e75;text-decoration:none;">' + escL(r.phone) + '</a></span></div>' : '') +
         (r.note ? '<div class="d-note"><div class="d-note-k"><i class="fa fa-comment-dots me-1"></i>' + T('docrdv.patient_note') + '</div><div class="d-note-v">' + escL(r.note) + '</div></div>' : '') +
         (r.status !== 'cancelled' && r.date >= TODAY && r.nature !== 'reunion' ? '<div class="modify-info mt-3"><i class="fa fa-circle-info me-1"></i>' + T('docrdv.modify_info').replace('{h}', MODIFY_CUTOFF_H) + '</div>' : '') +
-        (r.status !== 'cancelled' ? '<div id="reschedPanel" class="d-none mt-3 p-3" style="background:#f8fafc;border-radius:10px;">' +
+        (r.status !== 'cancelled' ? '<div id="reschedPanel" class="d-none mt-3 p-3" data-idx="' + i + '" data-od="' + r.date + '" data-os="' + r.start + '" data-oe="' + r.end + '" style="background:#f8fafc;border-radius:10px;">' +
             '<div class="fw-semibold small mb-2">' + T('docrdv.resched_title') + '</div>' +
-            '<div class="d-flex gap-2 align-items-center flex-wrap">' +
-              '<input type="date" class="form-control form-control-sm" style="max-width:150px" id="rsDate" value="' + r.date + '">' +
-              '<input type="time" class="form-control form-control-sm" style="max-width:110px" id="rsStart" value="' + r.start + '" step="900">' +
-              '<span class="text-muted">–</span>' +
-              '<input type="time" class="form-control form-control-sm" style="max-width:110px" id="rsEnd" value="' + r.end + '" step="900">' +
+            '<div class="d-flex gap-2">' +
+              '<div style="flex:1.5;min-width:0"><label class="form-label small text-muted mb-1">' + T('docrdv.m_date') + '</label><input type="date" lang="fr-FR" min="' + TODAY + '" class="form-control form-control-sm" id="rsDate" value="' + r.date + '" onchange="rsCheck()"></div>' +
+              '<div style="flex:1;min-width:0"><label class="form-label small text-muted mb-1">' + T('docrdv.m_start') + '</label><select class="form-control form-control-sm" id="rsStart" onchange="onReschedStart()">' + timeOptions(r.start) + '</select></div>' +
+              '<div style="flex:1;min-width:0"><label class="form-label small text-muted mb-1">' + T('docrdv.m_end') + '</label><select class="form-control form-control-sm" id="rsEnd" onchange="rsCheck()">' + endOptions(r.start, r.end) + '</select></div>' +
             '</div>' +
-            '<button class="btn btn-sm mt-2" style="background:#155e75;color:#fff;" onclick="doReschedule(' + i + ')"><i class="fa fa-check me-1"></i>' + T('docrdv.resched_confirm') + '</button>' +
+            '<div id="rsError" class="text-danger small mt-2" style="display:none"></div>' +
+            '<div class="text-muted small mt-2"><i class="fa fa-bell me-1"></i>' + T('docrdv.resched_notify') + '</div>' +
+            '<button id="rsConfirm" class="btn btn-sm mt-2 w-100" style="background:#155e75;color:#fff;" disabled onclick="doReschedule(' + i + ')"><i class="fa fa-check me-1"></i>' + T('docrdv.resched_confirm') + '</button>' +
           '</div>' : '');
       let foot = '';
       if (r.status !== 'cancelled') {
         if (isConsult) foot += '<a class="btn btn-sm" style="background:#155e75;color:#fff;" href="25-doctor-consultation.html?patient=' + encodeURIComponent(rdvName(r)) + '&motif=' + encodeURIComponent(r.motif) + '"><i class="fa fa-notes-medical me-1"></i>' + T('docrdv.document') + '</a>';
         if (isConsult) foot += '<a class="btn btn-outline-secondary btn-sm" href="26-doctor-records.html?patient=' + encodeURIComponent(rdvName(r)) + '"><i class="fa fa-folder-open me-1"></i>' + T('docrdv.view_patient') + '</a>';
         foot += '<button class="btn btn-outline-secondary btn-sm" onclick="toggleResched()"><i class="fa fa-clock-rotate-left me-1"></i>' + T('docrdv.resched') + '</button>';
-        foot += '<button class="btn btn-outline-danger btn-sm" onclick="setStatus(' + i + ',\'cancelled\')"><i class="fa fa-ban me-1"></i>' + T('docrdv.cancel_appt') + '</button>';
+        foot += '<button class="btn btn-outline-danger btn-sm" onclick="askCancel(' + i + ')"><i class="fa fa-ban me-1"></i>' + T('docrdv.cancel_appt') + '</button>';
       }
       document.getElementById('detailFoot').innerHTML = foot;
       detailModal = detailModal || new bootstrap.Offcanvas(document.getElementById('rdvDetail'));
       detailModal.show();
       // Ouvrir un RDV réservé en ligne le marque « vu » → le badge Nouveau disparaît en arrière-plan.
       if (wasNew) { markSeen(r.apptId); render(); }
+    }
+    // Annulation = destructif + notifie le patient → confirmation inline (remplace le pied du tiroir).
+    function askCancel(i) {
+      document.getElementById('detailFoot').innerHTML =
+        '<div class="w-100"><div class="small mb-2"><i class="fa fa-triangle-exclamation me-1" style="color:#dc2626;"></i>' + T('docrdv.cancel_confirm_q') + '</div>' +
+        '<div class="d-flex gap-2">' +
+          '<button class="btn btn-outline-danger btn-sm" onclick="setStatus(' + i + ',\'cancelled\')"><i class="fa fa-ban me-1"></i>' + T('docrdv.cancel_confirm_yes') + '</button>' +
+          '<button class="btn btn-light btn-sm" onclick="openDetail(' + i + ')">' + T('docrdv.cancel_back') + '</button>' +
+        '</div></div>';
     }
     function setStatus(i, s) {
       RDV[i].status = s;
@@ -715,27 +828,86 @@
       toast(T(s === 'confirmed' ? 'docrdv.confirm_toast' : 'docrdv.cancel_toast'));
     }
     function toggleResched() { const p = document.getElementById('reschedPanel'); if (p) p.classList.toggle('d-none'); }
+    // Le début change → reconstruit les options de fin (> début) en gardant une fin valide.
+    function onReschedStart() {
+      const start = document.getElementById('rsStart').value, es = document.getElementById('rsEnd');
+      const keep = toMin(es.value) > toMin(start) ? es.value : hhmm(Math.min(21 * 60, toMin(start) + 30));
+      es.innerHTML = endOptions(start, keep);
+      rsCheck();
+    }
+    // Validation en direct : « Confirmer » actif seulement si le créneau a changé ET est valide (pas dans le passé,
+    // pas de chevauchement). L'erreur s'affiche sous les champs (pas de toaster). La fin > début est déjà garantie par les options.
+    function rsCheck() {
+      const p = document.getElementById('reschedPanel'); if (!p) return;
+      const date = document.getElementById('rsDate').value, start = document.getElementById('rsStart').value, end = document.getElementById('rsEnd').value;
+      const changed = date !== p.dataset.od || start !== p.dataset.os || end !== p.dataset.oe;
+      let err = '';
+      if (!date || date < TODAY) err = T('docrdv.err_past');
+      else if (toMin(end) <= toMin(start)) err = T('docrdv.err_endbefore');
+      else if (slotConflict(date, start, end, +p.dataset.idx)) err = T('docrdv.err_overlap');
+      const el = document.getElementById('rsError'); if (el) { el.textContent = err; el.style.display = err ? '' : 'none'; }
+      const btn = document.getElementById('rsConfirm'); if (btn) btn.disabled = !changed || !!err;
+    }
     function doReschedule(i) {
       const date = document.getElementById('rsDate').value, start = document.getElementById('rsStart').value, end = document.getElementById('rsEnd').value;
       if (!date || !start || !end) return;
+      const p = document.getElementById('reschedPanel');
+      if (p && date === p.dataset.od && start === p.dataset.os && end === p.dataset.oe) return; // aucun changement
+      if (date < TODAY || toMin(end) <= toMin(start) || slotConflict(date, start, end, i)) return; // garde silencieuse (bouton déjà désactivé)
       RDV[i].date = date; RDV[i].start = start; RDV[i].end = end;
       if (detailModal) detailModal.hide();
       cur = date; render();
       toast(T('docrdv.resched_toast'));
     }
 
-    /* ---- Create modal ---- */
-    let createNature = 'consultation';
+    /* ---- Create modal (2 onglets : Rendez-vous patient / Événement) ---- */
+    // Le TYPE de saisie (onglet) détermine s'il y a un patient — pas l'étiquette (inspiré Google Agenda :
+    // « invités » facultatifs). Onglet patient = patient requis + notifié. Onglet événement = titre + étiquette, sans patient.
+    let createTab = 'patient';
+    let eventLabel = 'reunion';
     function openCreate(date, start, end) {
-      createNature = 'consultation';
-      document.getElementById('naturePills').innerHTML = LABELS.map(l =>
-        '<span class="np' + (l.id === createNature ? ' sel' : '') + '" data-lid="' + l.id + '" onclick="pickNature(\'' + l.id + '\')"><span class="np-dot" style="background:' + l.color + '"></span>' + escL(l.name) + '</span>'
+      eventLabel = (LABELS.find(l => !l.system) || {}).id || 'reunion';
+      // Étiquettes proposées à l'événement = toutes sauf l'étiquette système « Consultation ».
+      document.getElementById('eventPills').innerHTML = LABELS.filter(l => !l.system).map(l =>
+        '<span class="np' + (l.id === eventLabel ? ' sel' : '') + '" data-lid="' + l.id + '" onclick="pickEventLabel(\'' + l.id + '\')"><span class="np-dot" style="background:' + l.color + '"></span>' + escL(l.name) + '</span>'
       ).join('');
-      document.getElementById('cDate').value = date || cur;
-      if (start) document.getElementById('cStart').value = start;
-      if (end) document.getElementById('cEnd').value = end;
+      const cd = document.getElementById('cDate'); cd.min = TODAY; cd.value = date || cur;
+      const st = start || '09:00', en = end || '09:30';
+      document.getElementById('cStart').innerHTML = timeOptions(st);
+      document.getElementById('cEnd').innerHTML = endOptions(st, en);
+      document.getElementById('ptMenu').classList.add('d-none');
+      setCreateTab('patient');
+      cCheck();
       createModal = createModal || new bootstrap.Modal(document.getElementById('rdvCreate'));
       createModal.show();
+    }
+    // Début change → reconstruit les options de fin (> début).
+    function onCreateStart() {
+      const start = document.getElementById('cStart').value, es = document.getElementById('cEnd');
+      const keep = toMin(es.value) > toMin(start) ? es.value : hhmm(Math.min(21 * 60, toMin(start) + 30));
+      es.innerHTML = endOptions(start, keep);
+      cCheck();
+    }
+    // Validation en direct du créneau à la création : erreur inline + « Créer » désactivé si invalide (pas de toaster).
+    function cCheck() {
+      const date = document.getElementById('cDate').value, start = document.getElementById('cStart').value, end = document.getElementById('cEnd').value;
+      let err = '';
+      if (!date || date < TODAY) err = T('docrdv.err_past');
+      else if (toMin(end) <= toMin(start)) err = T('docrdv.err_endbefore');
+      else if (slotConflict(date, start, end, -1)) err = T('docrdv.err_overlap');
+      const el = document.getElementById('cError'); if (el) { el.textContent = err; el.style.display = err ? '' : 'none'; }
+      const btn = document.getElementById('createBtn'); if (btn) btn.disabled = !!err;
+    }
+    function setCreateTab(t) {
+      createTab = t;
+      document.querySelectorAll('#rdvCreate .create-tab').forEach(b => b.classList.toggle('active', b.dataset.ctab === t));
+      document.getElementById('panePatient').classList.toggle('d-none', t !== 'patient');
+      document.getElementById('paneEvent').classList.toggle('d-none', t !== 'event');
+      document.getElementById('cNotifRow').style.display = (t === 'patient') ? '' : 'none'; // e-mail au patient : onglet patient seulement
+    }
+    function pickEventLabel(id) {
+      eventLabel = id;
+      document.querySelectorAll('#eventPills .np').forEach(p => p.classList.toggle('sel', p.dataset.lid === id));
     }
     // Clic sur un créneau vide de la semaine → nouveau RDV pré-rempli (jour + heure arrondie)
     function colClick(e, ds) {
@@ -747,21 +919,53 @@
       const f2 = t => String(Math.floor(t / 60)).padStart(2, '0') + ':' + String(t % 60).padStart(2, '0');
       openCreate(ds, f2(mins), f2(mins + 30));
     }
-    function pickNature(n) {
-      createNature = n;
-      document.querySelectorAll('#naturePills .np').forEach(p => p.classList.toggle('sel', p.dataset.lid === n));
-    }
     function submitCreate() {
-      const name = document.getElementById('cPatient').value.trim() || '—';
-      const motif = document.getElementById('cMotif').value.trim() || labelOf(createNature).name;
       const date = document.getElementById('cDate').value, start = document.getElementById('cStart').value, end = document.getElementById('cEnd').value;
       if (!date || !start || !end) return;
-      RDV.push({ date, start, end, ini:name.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase(), name, motif, nature:createNature, status:'confirmed', loc: (fLoc === 'all' ? LOCS[0].id : fLoc) });
+      let name, motif, nature;
+      if (createTab === 'patient') {
+        const patientVal = document.getElementById('cPatient').value.trim();
+        if (!patientVal) { const inp = document.getElementById('cPatient'); inp.classList.add('is-invalid'); inp.focus(); return; }
+        name = patientVal;
+        nature = document.getElementById('cDomicile').checked ? 'domicile' : 'consultation';
+        motif = document.getElementById('cMotif').value.trim();
+      } else {
+        const titleVal = document.getElementById('cTitle').value.trim();
+        if (!titleVal) { const inp = document.getElementById('cTitle'); inp.classList.add('is-invalid'); inp.focus(); return; }
+        name = titleVal; nature = eventLabel; motif = ''; // événement : pas de patient, pas de motif
+      }
+      if (date < TODAY || toMin(end) <= toMin(start) || slotConflict(date, start, end, -1)) { cCheck(); return; } // garde silencieuse (bouton déjà désactivé)
+      RDV.push({ date, start, end, ini:name.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase(), name, motif, nature, status:'confirmed', patient: (createTab === 'patient'), loc: (fLoc === 'all' ? LOCS[0].id : fLoc) });
       if (createModal) createModal.hide();
       cur = date; render();
       toast(T('docrdv.create_toast'));
       document.getElementById('createForm').reset();
+      setCreateTab('patient');
     }
+
+    /* ---- Combobox « Patient » (liste de l'app, recherche + ajout d'un nouveau patient) ---- */
+    const PATIENT_LIST = ['Mariam Diallo', 'Ousmane Sow', 'Awa Faye', 'Ibrahima Bâ', 'Fatou Ndiaye', 'Modou Cissé', 'Rokhaya Diop', 'Samba Gueye', 'Aïssatou Diop', 'Antoine Rousseau'];
+    const ptNorm = s => (s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+    const ptEscA = s => (s || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+    function ptFilter(q) {
+      const menu = document.getElementById('ptMenu'); if (!menu) return;
+      const nq = ptNorm(q).trim();
+      const matches = PATIENT_LIST.filter(p => ptNorm(p).includes(nq)).sort();
+      let html = matches.map(p => '<div class="pt-opt" onmousedown="ptPick(\'' + ptEscA(p) + '\')">' + escL(p) + '</div>').join('');
+      const qt = (q || '').trim();
+      if (qt && !matches.some(p => ptNorm(p) === nq)) {
+        html += '<div class="pt-opt add" onmousedown="ptPick(\'' + ptEscA(qt) + '\')"><i class="fa fa-user-plus me-2"></i>' + T('docrdv.pt_add') + ' « ' + escL(qt) + ' »</div>';
+      }
+      if (!html) html = '<div class="pt-empty">' + T('docrdv.pt_none') + '</div>';
+      menu.innerHTML = html;
+      menu.classList.remove('d-none');
+    }
+    function ptPick(name) {
+      const inp = document.getElementById('cPatient'); if (inp) { inp.value = name; inp.classList.remove('is-invalid'); }
+      const menu = document.getElementById('ptMenu'); if (menu) menu.classList.add('d-none');
+    }
+    function ptKey(e) { if (e.key === 'Escape') { const m = document.getElementById('ptMenu'); if (m) m.classList.add('d-none'); } }
+    document.addEventListener('click', function (e) { if (!e.target.closest('#ptCombo')) { const m = document.getElementById('ptMenu'); if (m) m.classList.add('d-none'); } });
 
     /* ---- Bloquer un créneau ---- */
     let blockModal;
@@ -769,7 +973,7 @@
       document.getElementById('bDate').value = cur;
       document.getElementById('bAllDay').checked = false;
       const s = document.getElementById('bStart'), en = document.getElementById('bEnd');
-      s.value = '12:00'; en.value = '14:00'; s.disabled = false; en.disabled = false;
+      s.innerHTML = timeOptions('12:00'); en.innerHTML = timeOptions('14:00'); s.disabled = false; en.disabled = false;
       document.getElementById('bReason').value = '';
       const wrap = document.getElementById('bLocWrap'), bl = document.getElementById('bLoc');
       if (LOCS.length > 1) {

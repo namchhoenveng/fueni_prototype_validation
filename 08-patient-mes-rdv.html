@@ -356,7 +356,7 @@
         if (canModify(a)) {
           foot = calBtn +
                  (a.doc ? '<button class="btn btn-outline-secondary" onclick="rescheduleAppt(\'' + a.id + '\')"><i class="fa fa-clock-rotate-left me-2"></i>' + T('mesrdv.act_reschedule') + '</button>' : '') +
-                 '<button class="btn btn-outline-danger" onclick="cancelAppt(\'' + a.id + '\')"><i class="fa fa-xmark me-2"></i>' + T('mesrdv.act_cancel') + '</button>' +
+                 '<button class="btn btn-outline-danger" onclick="askCancel(\'' + a.id + '\')"><i class="fa fa-xmark me-2"></i>' + T('mesrdv.act_cancel') + '</button>' +
                  '<div class="modify-note info"><i class="fa fa-circle-info me-1"></i>' + T('mesrdv.modify_window').replace('{h}', MODIFY_CUTOFF_H) + '</div>';
         } else {
           const lockT = T('mesrdv.modify_window').replace('{h}', MODIFY_CUTOFF_H);
@@ -382,9 +382,18 @@
       window.location.href = '27-patient-booking.html?doc=' + encodeURIComponent(a.doc) + '&reschedule=1';
     }
 
+    // Annulation = destructif → confirmation inline (remplace le pied du tiroir), pas de fenêtre navigateur.
+    function askCancel(id) {
+      const a = byId(id); if (!a) return;
+      document.getElementById('detailFoot').innerHTML =
+        '<div class="w-100"><div class="small mb-2" style="color:#334155;"><i class="fa fa-triangle-exclamation me-1" style="color:#dc2626;"></i>' + T('mesrdv.cancel_confirm_q').replace('{doctor}', esc(a.doctor)) + '</div>' +
+        '<div class="d-grid gap-2">' +
+          '<button class="btn btn-outline-danger" onclick="cancelAppt(\'' + id + '\')"><i class="fa fa-xmark me-2"></i>' + T('mesrdv.cancel_confirm_yes') + '</button>' +
+          '<button class="btn btn-light" onclick="openDetail(\'' + id + '\')">' + T('mesrdv.cancel_back') + '</button>' +
+        '</div></div>';
+    }
     function cancelAppt(id) {
       const a = byId(id); if (!a) return;
-      if (!window.confirm(T('mesrdv.cancel_confirm').replace('{doctor}', a.doctor))) return;
       a.status = 'CANCELLED';
       persistStored();
       if (detailOff) detailOff.hide();
