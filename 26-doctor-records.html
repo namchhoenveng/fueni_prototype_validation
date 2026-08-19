@@ -23,6 +23,8 @@
     .main { margin-left: 240px; }
     .main-topbar { position: fixed; top: 0; left: 240px; right: 0; z-index: 200; background: white; border-bottom: 1px solid #f1f5f9; padding: 14px 28px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 1px 3px rgba(0,0,0,0.03); }
     .topbar-title { font-size: 1.15rem; font-weight: 700; margin: 0; color: #0f172a; }
+    .topbar-btn { background:#155e75; color:#fff; padding:9px 16px; border-radius:10px; font-size:0.85rem; font-weight:600; border:0; cursor:pointer; display:inline-flex; align-items:center; gap:8px; }
+    .topbar-btn:hover { filter:brightness(0.96); }
     .content-area { padding: 88px 28px 40px; }
     .records-grid { display:grid; grid-template-columns:320px 1fr; gap:18px; align-items:start; }
     .card-w { background:#fff; border-radius:14px; box-shadow:0 2px 12px rgba(0,0,0,0.06); }
@@ -107,6 +109,52 @@
     .synth-row .v.chips { display:flex; flex-wrap:wrap; gap:6px; }
     .me-row .form-control, .me-row .form-select { min-width:0; }
     .docs-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:10px; }
+    .np-err { color:#dc2626; font-size:0.78rem; margin-top:4px; }
+    .form-control.is-invalid, .form-select.is-invalid { border-color:#dc2626; }
+    .perso-link { color:#155e75; text-decoration:none; font-weight:600; }
+    .perso-badge { display:inline-flex; align-items:center; gap:6px; background:#eef2f6; color:#64748b; border-radius:8px; padding:3px 10px; font-size:0.8rem; font-weight:600; }
+    .perso-badge.fueni { background:#ecfeff; color:#155e75; }
+    .perso-list { max-width:640px; }
+    .perso-kv { display:flex; justify-content:space-between; align-items:baseline; gap:24px; padding:11px 2px; border-bottom:1px solid #eef2f6; font-size:0.92rem; }
+    .perso-kv:last-child { border-bottom:0; }
+    .perso-kv .pk { color:#94a3b8; font-weight:600; flex-shrink:0; }
+    .perso-kv .pv { color:#334155; font-weight:600; text-align:right; word-break:break-word; }
+    .perso-kv .pv.chips { display:flex; flex-wrap:wrap; gap:6px; justify-content:flex-end; }
+    .doc-grp-h { font-size:0.68rem; font-weight:800; text-transform:uppercase; letter-spacing:0.5px; color:#94a3b8; margin:14px 0 6px; }
+    .doc-grp-h.pending { color:#b45309; }
+    .doc-chip2 { border:1px solid #eef2f6; border-radius:10px; padding:10px 12px; margin-bottom:8px; }
+    .doc-chip2.pending { border-color:#fde3b6; background:#fffbf3; }
+    .doc-chip2 .dc-top { display:flex; align-items:center; gap:9px; }
+    .doc-chip2 .dc-name { flex:1; font-weight:600; font-size:0.86rem; color:#334155; min-width:0; }
+    .doc-chip2 .dc-dl { color:#94a3b8; cursor:pointer; }
+    .doc-chip2 .dc-dl:hover { color:#155e75; }
+    .doc-chip2 .dc-meta { font-size:0.76rem; color:#94a3b8; margin-top:4px; }
+    .doc-st { font-size:0.64rem; font-weight:700; padding:2px 8px; border-radius:12px; white-space:nowrap; }
+    .doc-st.ok { background:#dcfce7; color:#15803d; }
+    .doc-st.no { background:#fee2e2; color:#b91c1c; }
+    .doc-actions { display:flex; gap:8px; margin-top:9px; }
+    .doc-btn { border:1.5px solid #e2e8f0; background:#fff; border-radius:8px; font-size:0.78rem; font-weight:600; padding:5px 12px; cursor:pointer; }
+    .doc-btn.ok { color:#15803d; } .doc-btn.ok:hover { background:#dcfce7; border-color:#15803d; }
+    .doc-btn.no { color:#b91c1c; } .doc-btn.no:hover { background:#fee2e2; border-color:#b91c1c; }
+    .pend-badge { display:inline-block; background:#fef3c7; color:#b45309; font-size:0.68rem; font-weight:700; border-radius:10px; padding:1px 7px; }
+    /* Hauteur / bord / rayon uniformes pour tous les champs de la ligne (combobox + selects + inputs). min-height (pas height fixe) → pas de rognage du texte des selects. */
+    .me-row .cbx, .me-row .form-select, .me-row .form-control { min-height:40px; border-radius:8px; }
+    .me-row .form-select, .me-row .form-control { border:1px solid #cbd5e1; }
+    .cbx { display:flex; align-items:center; justify-content:space-between; gap:8px; padding:8px 11px; min-height:40px; border:1px solid #cbd5e1; border-radius:8px; background:#fff; cursor:pointer; font-size:0.85rem; color:#334155; }
+    .cbx:hover { border-color:#94a3b8; }
+    .cbx .cbx-val { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .cbx .cbx-val.placeholder { color:#94a3b8; }
+    .cbx > .fa-chevron-down { color:#94a3b8; font-size:0.68rem; flex-shrink:0; }
+    .cbx-panel { position:fixed; z-index:3500; background:#fff; border:1px solid #e2e8f0; border-radius:12px; box-shadow:0 10px 30px rgba(0,0,0,0.16); padding:8px; }
+    .cbx-search { width:100%; border:1px solid #cbd5e1; border-radius:8px; padding:8px 11px; font-size:0.85rem; outline:none; margin-bottom:6px; }
+    .cbx-search:focus { border-color:#155e75; box-shadow:0 0 0 3px rgba(21,94,117,0.12); }
+    .cbx-list { max-height:230px; overflow:auto; }
+    .cbx-opt { padding:8px 12px; border-radius:8px; font-size:0.85rem; color:#334155; cursor:pointer; }
+    .cbx-opt:hover, .cbx-opt.active { background:#eef5f7; color:#155e75; }
+    .cbx-add { display:flex; align-items:center; gap:11px; padding:9px 12px; margin-top:4px; border:1.5px dashed #cbd5e1; border-radius:10px; color:#155e75; font-weight:600; font-size:0.85rem; cursor:pointer; }
+    .cbx-add:hover, .cbx-add.active { background:#f8fafc; border-color:#155e75; }
+    .cbx-add .plus { width:26px; height:26px; border-radius:50%; background:#155e75; color:#fff; display:inline-flex; align-items:center; justify-content:center; flex-shrink:0; }
+    .cbx-empty { padding:9px 12px; color:#94a3b8; font-size:0.82rem; }
     @media (max-width:900px){ .records-grid { grid-template-columns:1fr; } .sidebar{display:none;} .main{margin-left:0;} .main-topbar{left:0;} }
   </style>
 </head>
@@ -127,9 +175,8 @@
     <div class="nav-section" data-i18n="doc.dash.sec_main">Principal</div>
     <a href="17-doctor-dashboard.html?state=active" class="nav-link-side"><i class="fa fa-home"></i><span data-i18n="doc.dash.nav_dashboard">Tableau de bord</span></a>
     <a href="19-doctor-public-profile.html" class="nav-link-side"><i class="fa fa-id-badge"></i><span data-i18n="doc.dash.nav_public_profile">Mon profil public</span></a>
-    <a href="20-doctor-patients.html" class="nav-link-side"><i class="fa fa-user-injured"></i><span data-i18n="doc.dash.tile_patients">Mes patients</span></a>
+    <a href="#" class="nav-link-side active"><i class="fa fa-user-injured"></i><span data-i18n="doc.dash.tile_patients">Patients</span></a>
     <a href="24-doctor-rendezvous.html" class="nav-link-side"><i class="fa fa-calendar-check"></i><span data-i18n="doc.dash.tile_rdv">Mon planning</span></a>
-    <a href="#" class="nav-link-side active"><i class="fa fa-file-medical"></i><span data-i18n="doc.dash.tile_records">Dossiers médicaux</span></a>
     <div class="nav-section" data-i18n="doc.dash.sec_account">Compte</div>
     <a href="18-doctor-abonnement.html" class="nav-link-side"><i class="fa fa-star"></i><span data-i18n="doc.dash.nav_subscription">Mon abonnement</span></a>
     <a href="29-doctor-settings.html" class="nav-link-side"><i class="fa fa-cog"></i><span data-i18n="doc.dash.nav_settings">Paramètres</span></a>
@@ -138,7 +185,8 @@
 
   <div class="main">
     <header class="main-topbar">
-      <h1 class="topbar-title" data-i18n="doc.dash.tile_records">Dossiers médicaux</h1>
+      <h1 class="topbar-title" data-i18n="doc.dash.tile_patients">Patients</h1>
+      <button class="topbar-btn" onclick="openNewPatient()"><i class="fa fa-user-plus"></i><span data-i18n="docpat.new_patient">Nouveau patient</span></button>
     </header>
 
     <div class="content-area">
@@ -155,6 +203,43 @@
     </div>
   </div>
 
+  <!-- Nouveau patient (aligné sur l'inscription : prénom / nom / date de naissance / sexe à la naissance / indicatif + téléphone) -->
+  <div class="modal fade" id="npModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content" style="border:0;border-radius:16px;">
+        <div class="modal-header border-0 pb-0">
+          <h5 class="modal-title fw-bold" style="font-size:1.05rem;" data-i18n="docpat.new_patient">Nouveau patient</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body pt-2">
+          <form id="npForm" novalidate onsubmit="event.preventDefault(); submitNewPatient();">
+            <div class="row g-3">
+              <div class="col-6"><label class="form-label small fw-semibold" data-i18n="docpat.np_firstname">Prénom</label><input type="text" class="form-control" id="npFirst" maxlength="80" oninput="clearNpErr('npFirst')"><div class="np-err d-none" id="err-npFirst"></div></div>
+              <div class="col-6"><label class="form-label small fw-semibold" data-i18n="docpat.np_lastname">Nom</label><input type="text" class="form-control" id="npLast" maxlength="80" oninput="clearNpErr('npLast')"><div class="np-err d-none" id="err-npLast"></div></div>
+              <div class="col-6"><label class="form-label small fw-semibold" data-i18n="docpat.np_sex">Sexe à la naissance</label><select class="form-select" id="npSex"><option value="F" data-i18n="docpat.sex_female">Féminin</option><option value="M" data-i18n="docpat.sex_male">Masculin</option></select></div>
+              <div class="col-6"><label class="form-label small fw-semibold" data-i18n="docpat.np_dob">Date de naissance</label><input type="date" lang="fr-FR" class="form-control" id="npDob" oninput="clearNpErr('npDob')"><div class="np-err d-none" id="err-npDob"></div></div>
+              <div class="col-12"><label class="form-label small fw-semibold" data-i18n="docpat.np_phone">Téléphone</label>
+                <div class="d-flex gap-2"><select class="form-select" id="npCC" style="max-width:130px;flex-shrink:0;" onchange="clearNpErr('npPhone')"></select><input type="tel" class="form-control" id="npPhone" inputmode="tel" placeholder="77 123 45 67" oninput="clearNpErr('npPhone')"></div>
+                <div class="np-err d-none" id="err-npPhone"></div></div>
+              <div class="col-12"><label class="form-label small fw-semibold" data-i18n="docpat.np_email">E-mail</label><input type="email" class="form-control" id="npEmail" oninput="clearNpErr('npEmail')"><div class="np-err d-none" id="err-npEmail"></div></div>
+              <div class="col-12"><div class="small text-muted" style="background:#f8fafc;border-radius:8px;padding:8px 10px;"><i class="fa fa-circle-info me-1"></i><span data-i18n="docpat.np_manual_note">Fiche créée par le praticien — non rattachée à un compte FUENI (rattachement possible si le patient s'inscrit).</span></div></div>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer border-0 pt-0">
+          <button type="button" class="btn btn-light" data-bs-dismiss="modal" data-i18n="docpp.cancel">Annuler</button>
+          <button type="submit" form="npForm" class="rec-cta" style="border:0;"><i class="fa fa-check"></i><span data-i18n="docpat.np_add">Ajouter le patient</span></button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Panneau partagé du combobox « créable » (allergies / antécédents) -->
+  <div id="cbxPanel" class="cbx-panel d-none">
+    <input type="text" class="cbx-search" id="cbxSearch" autocomplete="off" oninput="cbxFilter()" onkeydown="cbxKey(event)">
+    <div class="cbx-list" id="cbxList"></div>
+  </div>
+
   <div class="toast-ok" id="mrToast" style="position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#0f5132;color:#fff;padding:12px 22px;border-radius:10px;font-size:0.9rem;font-weight:600;box-shadow:0 6px 20px rgba(0,0,0,0.25);z-index:3000;display:none;align-items:center;gap:9px;"><i class="fa fa-circle-check"></i><span id="mrToastMsg"></span></div>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
@@ -163,6 +248,15 @@
     const esc = s => (s == null ? '' : String(s)).replace(/[&<>]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;' }[c]));
     const fmtDate = d => { try { return new Date(d + 'T00:00:00').toLocaleDateString((window.NazI18n && NazI18n.getLang() === 'en') ? 'en-GB' : 'fr-FR', { day:'2-digit', month:'short', year:'numeric' }); } catch (e) { return d; } };
     const DOC_IC = { rx:'fa-prescription', lab:'fa-flask-vial', img:'fa-x-ray', doc:'fa-file-lines' };
+    // Âge dérivé de la date de naissance (repli sur p.age pour les fiches démo sans dob).
+    function ageFromDob(dob) {
+      if (!dob) return '';
+      const b = new Date(dob + 'T00:00:00'); if (isNaN(b.getTime())) return '';
+      const t = new Date(); let a = t.getFullYear() - b.getFullYear();
+      if (t.getMonth() < b.getMonth() || (t.getMonth() === b.getMonth() && t.getDate() < b.getDate())) a--;
+      return a >= 0 && a <= 130 ? a : '';
+    }
+    const ageOf = p => p.dob ? ageFromDob(p.dob) : (p.age != null ? p.age : '');
 
     const PATIENTS = window.NazPatients;
     const byId = Object.fromEntries(PATIENTS.map(p => [p.id, p]));
@@ -171,7 +265,8 @@
     (function () { const pn = new URLSearchParams(location.search).get('patient'); if (pn) { const f = PATIENTS.find(p => p.name === decodeURIComponent(pn)); if (f) sel = f.id; } })();
     let editMed = false, snapMed = null;
     let recTab = 'history';
-    function setRecTab(t) { recTab = t; renderRecord(); }
+    let editPersoMode = false; // édition de l'onglet « Informations personnelles » (fiches créées par le praticien uniquement)
+    function setRecTab(t) { recTab = t; editPersoMode = false; if (typeof cbxClose === 'function') cbxClose(); renderRecord(); }
 
     function renderList() {
       const q = document.getElementById('recSearch').value.trim().toLowerCase();
@@ -180,52 +275,283 @@
       document.getElementById('recList').innerHTML = list.map(p =>
         '<div class="rec-item' + (p.id === sel ? ' sel' : '') + '" onclick="select(\'' + p.id + '\')">' +
           '<div class="rec-av">' + p.ini + '</div>' +
-          '<div><div class="nm">' + esc(p.name) + '</div><div class="mt">' + p.age + ' ' + T('docpat.years') + ' · ' + T('docpat.sex_' + p.sex) + '</div></div>' +
+          '<div class="flex-grow-1"><div class="nm">' + esc(p.name) + '</div><div class="mt">' + (ageOf(p) !== '' ? ageOf(p) + ' ' + T('docpat.years') + ' · ' : '') + T('docpat.sex_' + p.sex) + '</div></div>' +
+          (pendingCount(p) > 0 ? '<span class="pend-badge" title="' + T('docpat.to_validate') + '">' + pendingCount(p) + '</span>' : '') +
         '</div>'
       ).join('') || '<div class="muted p-3">' + T('docpat.empty') + '</div>';
     }
-    function select(id) { sel = id; editMed = false; snapMed = null; renderList(); renderRecord(); }
+    function select(id) { sel = id; editMed = false; snapMed = null; editPersoMode = false; refusingIdx = -1; cbxClose(); renderList(); renderRecord(); }
 
     let mrt;
     function mrToast(msg) { const t = document.getElementById('mrToast'); document.getElementById('mrToastMsg').textContent = msg; t.style.display = 'flex'; clearTimeout(mrt); mrt = setTimeout(() => { t.style.display = 'none'; }, 2400); }
 
-    function editMedInfo() { const p = byId[sel]; snapMed = JSON.parse(JSON.stringify({ blood: p.blood, allergies: p.allergies, ant: p.ant, family: p.family })); editMed = true; renderRecord(); }
+    /* ---- Nouveau patient (formulaire aligné sur l'inscription : prénom/nom, date de naissance, sexe à la naissance, indicatif + numéro, validation en ligne) ---- */
+    let npModal;
+    const NP_FIELDS = ['npFirst', 'npLast', 'npDob', 'npPhone', 'npEmail'];
+    const NP_CC = [
+      { dial:'+221', flag:'🇸🇳', len:9 }, { dial:'+225', flag:'🇨🇮', len:10 }, { dial:'+223', flag:'🇲🇱', len:8 },
+      { dial:'+229', flag:'🇧🇯', len:8 }, { dial:'+228', flag:'🇹🇬', len:8 }, { dial:'+226', flag:'🇧🇫', len:8 },
+      { dial:'+227', flag:'🇳🇪', len:8 }, { dial:'+237', flag:'🇨🇲', len:9 }, { dial:'+243', flag:'🇨🇩', len:9 }
+    ];
+    function fillCC() {
+      const s = document.getElementById('npCC'); if (!s || s.options.length) return;
+      s.innerHTML = NP_CC.map(c => '<option value="' + c.dial + '" data-len="' + c.len + '">' + c.flag + ' ' + c.dial + '</option>').join('');
+    }
+    function openNewPatient() {
+      fillCC();
+      document.getElementById('npForm').reset();
+      NP_FIELDS.forEach(clearNpErr);
+      npModal = npModal || new bootstrap.Modal(document.getElementById('npModal'));
+      npModal.show();
+    }
+    function npErr(id, key) {
+      const el = document.getElementById('err-' + id); if (el) { el.textContent = key ? T(key) : ''; el.classList.toggle('d-none', !key); }
+      const inp = document.getElementById(id); if (inp) inp.classList.toggle('is-invalid', !!key);
+    }
+    function clearNpErr(id) { npErr(id, ''); }
+    // Validation « douce » : Prénom/Nom requis ; DOB / e-mail / téléphone contrôlés seulement s'ils sont renseignés (mineurs admis, contact facultatif).
+    function validateNewPatient() {
+      const v = id => document.getElementById(id).value.trim();
+      const first = v('npFirst'), lastN = v('npLast'), dob = document.getElementById('npDob').value, phone = v('npPhone'), email = v('npEmail');
+      let focusEl = null; const fail = id => { if (!focusEl) focusEl = document.getElementById(id); };
+      npErr('npFirst', first ? '' : 'docpat.np_err_required'); if (!first) fail('npFirst');
+      npErr('npLast', lastN ? '' : 'docpat.np_err_required'); if (!lastN) fail('npLast');
+      const dobBad = dob && (new Date(dob + 'T00:00:00') > new Date() || ageFromDob(dob) === '');
+      npErr('npDob', dobBad ? 'docpat.np_err_dob' : ''); if (dobBad) fail('npDob');
+      const mailBad = email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+      npErr('npEmail', mailBad ? 'docpat.np_err_email' : ''); if (mailBad) fail('npEmail');
+      const ccOpt = document.getElementById('npCC').selectedOptions[0];
+      const expLen = ccOpt ? +ccOpt.dataset.len : 0;
+      const phoneBad = phone && (expLen ? phone.replace(/[^\d]/g, '').length !== expLen : phone.replace(/[^\d]/g, '').length < 6);
+      npErr('npPhone', phoneBad ? 'docpat.np_err_phone' : ''); if (phoneBad) fail('npPhone');
+      if (focusEl) focusEl.focus();
+      return !focusEl;
+    }
+    function submitNewPatient() {
+      if (!validateNewPatient()) return;
+      const first = document.getElementById('npFirst').value.trim(), lastN = document.getElementById('npLast').value.trim();
+      const sex = document.getElementById('npSex').value, dob = document.getElementById('npDob').value;
+      const rawPhone = document.getElementById('npPhone').value.trim();
+      const phone = rawPhone ? (document.getElementById('npCC').value + ' ' + rawPhone) : '';
+      const email = document.getElementById('npEmail').value.trim();
+      const name = (first + ' ' + lastN).trim(), ini = ((first[0] || '') + (lastN[0] || '')).toUpperCase();
+      const id = 'p' + Date.now();
+      const p = { id, ini, firstName: first, lastName: lastN, name, sex, dob, manual: true, last:'', lastMotif:'', next:'', nextMotif:'', phone, email, blood:'', allergies:[], ant:[], family:[], consults:[], docs:[] };
+      PATIENTS.unshift(p); byId[id] = p;
+      if (npModal) npModal.hide();
+      select(id); // ouvre directement la fiche du nouveau patient
+      mrToast(T('docpat.np_toast'));
+    }
+
+    /* ---- Documents partagés : revue (validation / refus) — porté depuis « Mes patients » ---- */
+    const pendingCount = p => (p.docs || []).filter(d => d.st === 'pending').length;
+    let refusingIdx = -1;
+    function docProvenance(d) {
+      return d.by ? (T('docpat.doc_author').replace('{dr}', d.by) + ' · ' + T('docpat.doc_shared_by_patient')) : T('docpat.doc_from_patient');
+    }
+    function docChip(d, i, actionable) {
+      const stTag = (d.st === 'refused') ? '<span class="doc-st no">' + T('docpat.doc_st_refused') + '</span>'
+        : (d.st === 'pending') ? '' : '<span class="doc-st ok">' + T('docpat.doc_st_validated') + '</span>';
+      const actions = !actionable ? ''
+        : (i === refusingIdx
+          ? '<div class="mt-2"><input type="text" class="form-control form-control-sm mb-2" id="refuseReason" placeholder="' + T('docpat.doc_refuse_ph') + '" onkeydown="if(event.key===\'Enter\'){event.preventDefault();confirmRefuse(' + i + ');}">' +
+            '<div class="doc-actions"><button class="doc-btn no" onclick="confirmRefuse(' + i + ')"><i class="fa fa-xmark me-1"></i>' + T('docpat.doc_refuse_confirm') + '</button>' +
+            '<button class="doc-btn" onclick="cancelRefuse()">' + T('docpat.doc_refuse_cancel') + '</button></div></div>'
+          : '<div class="doc-actions"><button class="doc-btn ok" onclick="validateDoc(' + i + ')"><i class="fa fa-check me-1"></i>' + T('docpat.doc_validate') + '</button>' +
+            '<button class="doc-btn no" onclick="askRefuse(' + i + ')"><i class="fa fa-xmark me-1"></i>' + T('docpat.doc_refuse') + '</button></div>');
+      const motif = (d.st === 'refused' && d.motif) ? ' · ' + T('docpat.doc_motif') + ' ' + esc(d.motif) : '';
+      return '<div class="doc-chip2' + (actionable ? ' pending' : '') + '">' +
+        '<div class="dc-top"><i class="fa ' + (DOC_IC[d.t] || 'fa-file') + '" style="color:#155e75;"></i>' +
+        '<span class="dc-name">' + esc(d.n) + '</span>' + stTag +
+        '<a class="dc-dl" title="' + T('docpat.action_view') + '" onclick="event.preventDefault();"><i class="fa fa-eye"></i></a>' +
+        '<a class="dc-dl" onclick="event.preventDefault();"><i class="fa fa-download"></i></a></div>' +
+        '<div class="dc-meta">' + (d.date ? fmtDate(d.date) + ' · ' : '') + docProvenance(d) + motif + '</div>' +
+        actions + '</div>';
+    }
+    function renderDocs(p) {
+      if (!(p.docs || []).length) return '<div class="muted">' + T('docmr.no_docs') + '</div>';
+      const g = { pending: [], validated: [], refused: [] };
+      p.docs.forEach((d, i) => { const s = d.st === 'pending' ? 'pending' : (d.st === 'refused' ? 'refused' : 'validated'); g[s].push({ d, i }); });
+      let h = '';
+      if (g.pending.length) h += '<div class="doc-grp-h pending"><i class="fa fa-clock me-1"></i>' + T('docpat.doc_pending') + ' · ' + g.pending.length + '</div>' + g.pending.map(o => docChip(o.d, o.i, true)).join('');
+      if (g.validated.length) h += '<div class="doc-grp-h">' + T('docpat.doc_validated') + '</div>' + g.validated.map(o => docChip(o.d, o.i, false)).join('');
+      if (g.refused.length) h += '<div class="doc-grp-h">' + T('docpat.doc_refused') + '</div>' + g.refused.map(o => docChip(o.d, o.i, false)).join('');
+      return h;
+    }
+    function validateDoc(i) {
+      const p = byId[sel]; if (!p || !p.docs[i]) return;
+      refusingIdx = -1;
+      p.docs[i].st = 'validated'; delete p.docs[i].motif;
+      renderRecord(); renderList(); mrToast(T('docpat.doc_validate_toast'));
+    }
+    function askRefuse(i) { refusingIdx = i; renderRecord(); const el = document.getElementById('refuseReason'); if (el) el.focus(); }
+    function cancelRefuse() { refusingIdx = -1; renderRecord(); }
+    function confirmRefuse(i) {
+      const p = byId[sel]; if (!p || !p.docs[i]) return;
+      const el = document.getElementById('refuseReason');
+      p.docs[i].st = 'refused'; p.docs[i].motif = (el ? el.value : '').trim();
+      refusingIdx = -1;
+      renderRecord(); renderList(); mrToast(T('docpat.doc_refuse_toast'));
+    }
+
+    function editMedInfo() { const p = byId[sel]; snapMed = JSON.parse(JSON.stringify({ blood: p.blood, allergies: p.allergies, ant: p.ant, family: p.family })); p.ant = (p.ant || []).map(a => typeof a === 'string' ? { cond: a, year: '' } : a); editMed = true; renderRecord(); }
     function cancelMedInfo() { const p = byId[sel]; if (snapMed) { p.blood = snapMed.blood; p.allergies = snapMed.allergies; p.ant = snapMed.ant; p.family = snapMed.family; } snapMed = null; editMed = false; renderRecord(); }
     function saveMedInfo() { snapMed = null; editMed = false; renderRecord(); mrToast(T('docmr.saved')); }
     function addAllergy() { (byId[sel].allergies = byId[sel].allergies || []).push({ name: '', sev: 'medium' }); renderRecord(); }
     function rmAllergy(i) { byId[sel].allergies.splice(i, 1); renderRecord(); }
-    function addAnt() { (byId[sel].ant = byId[sel].ant || []).push(''); renderRecord(); }
+    function addAnt() { (byId[sel].ant = byId[sel].ant || []).push({ cond: '', year: '' }); renderRecord(); }
     function rmAnt(i) { byId[sel].ant.splice(i, 1); renderRecord(); }
     function addFam() { (byId[sel].family = byId[sel].family || []).push({ rel: '', cond: '' }); renderRecord(); }
     function rmFam(i) { byId[sel].family.splice(i, 1); renderRecord(); }
 
+    // Listes de référence (MVP, français) — combobox à suggestions + saisie libre. En V2 : codage CIM-10 (antécédents) et SNOMED CT / ATC (allergènes).
+    const ALLERGENS = ['Pénicilline', 'Amoxicilline', 'AINS', 'Aspirine', 'Iode / produits de contraste', 'Latex', 'Arachide', 'Fruits de mer', 'Œuf', 'Lait', 'Sulfamides', 'Anesthésiques locaux', 'Pollen', 'Acariens'];
+    const CONDITIONS = ['Hypertension artérielle (HTA)', 'Diabète type 2', 'Diabète type 1', 'Asthme', 'Drépanocytose', 'Insuffisance rénale chronique', 'Cardiopathie', 'AVC', 'Épilepsie', 'Ulcère gastroduodénal', 'Tuberculose', 'VIH', 'Hépatite B', 'Cancer', 'Hypothyroïdie', 'Dépression'];
+    const RELATIONS = ['Père', 'Mère', 'Frère', 'Sœur', 'Grand-père', 'Grand-mère', 'Oncle', 'Tante', 'Autre'];
+    // Antécédent perso = { cond, year } (année de diagnostic, facultative) ; repli sur les chaînes des fiches démo.
+    const antStr = a => (typeof a === 'string') ? a : ((a.cond || '') + (a.year ? ' (' + a.year + ')' : ''));
+    // Combobox « créable » (style annuaire) : déclencheur type select → panneau partagé avec recherche + liste + « Ajouter « X » » (valeur libre).
+    const escA = s => (s == null ? '' : String(s)).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+    const MED_LISTS = { al: ALLERGENS, cond: CONDITIONS, rel: RELATIONS };
+    let cbxTrigger = null;
+    function cbxTriggerHtml(listKey, coll, idx, field, value, placeholder, style) {
+      const has = !!value;
+      return '<div class="cbx"' + (style ? ' style="' + style + '"' : '') + ' data-list="' + listKey + '" data-coll="' + coll + '" data-idx="' + idx + '" data-field="' + (field || '') + '" onclick="cbxOpen(this)">' +
+        '<span class="cbx-val' + (has ? '' : ' placeholder') + '">' + (has ? esc(value) : (placeholder || '—')) + '</span><i class="fa fa-chevron-down"></i></div>';
+    }
+    function cbxOpen(trigger) {
+      cbxTrigger = trigger;
+      const panel = document.getElementById('cbxPanel'), r = trigger.getBoundingClientRect();
+      panel.style.left = r.left + 'px'; panel.style.top = (r.bottom + 4) + 'px'; panel.style.width = Math.max(r.width, 240) + 'px';
+      panel.classList.remove('d-none');
+      const s = document.getElementById('cbxSearch'); s.value = ''; s.placeholder = T('docmr.search_in_list');
+      cbxFilter(); s.focus();
+    }
+    function cbxClose() { const p = document.getElementById('cbxPanel'); if (p) p.classList.add('d-none'); cbxTrigger = null; }
+    function cbxFilter() {
+      if (!cbxTrigger) return;
+      const list = MED_LISTS[cbxTrigger.dataset.list] || [];
+      const q = document.getElementById('cbxSearch').value.trim(), nq = q.toLowerCase();
+      let html = list.filter(x => x.toLowerCase().includes(nq)).map(x => '<div class="cbx-opt" onmousedown="cbxPick(event,\'' + escA(x) + '\')">' + esc(x) + '</div>').join('');
+      if (q && !list.some(x => x.toLowerCase() === nq)) html += '<div class="cbx-add" onmousedown="cbxPick(event,\'' + escA(q) + '\')"><span class="plus"><i class="fa fa-plus"></i></span>' + T('docmr.add_value').replace('{v}', esc(q)) + '</div>';
+      if (!html) html = '<div class="cbx-empty">' + T('docmr.no_result') + '</div>';
+      document.getElementById('cbxList').innerHTML = html;
+    }
+    function cbxPick(e, value) {
+      if (e) e.preventDefault();
+      if (!cbxTrigger) return;
+      const p = byId[sel], coll = cbxTrigger.dataset.coll, idx = +cbxTrigger.dataset.idx, field = cbxTrigger.dataset.field;
+      if (field) { if (p[coll][idx]) p[coll][idx][field] = value; } else { p[coll][idx] = value; }
+      cbxClose(); renderRecord();
+    }
+    function cbxKey(e) {
+      if (e.key === 'Escape') { cbxClose(); return; }
+      const opts = Array.prototype.slice.call(document.querySelectorAll('#cbxList .cbx-opt, #cbxList .cbx-add'));
+      if (!opts.length) return;
+      let idx = opts.findIndex(o => o.classList.contains('active'));
+      if (e.key === 'ArrowDown') { e.preventDefault(); idx = Math.min(opts.length - 1, idx + 1); }
+      else if (e.key === 'ArrowUp') { e.preventDefault(); idx = Math.max(0, idx - 1); }
+      else if (e.key === 'Enter') { e.preventDefault(); const pick = opts[idx < 0 ? 0 : idx]; if (pick) pick.dispatchEvent(new Event('mousedown')); return; }
+      else return;
+      opts.forEach(o => o.classList.remove('active')); opts[idx].classList.add('active'); opts[idx].scrollIntoView({ block: 'nearest' });
+    }
+    document.addEventListener('mousedown', function (e) { if (cbxTrigger && !e.target.closest('#cbxPanel') && !e.target.closest('.cbx')) cbxClose(); });
     function medInfoHtml(p) {
       if (!editMed) {
         const al = p.allergies || [];
         const allergies = al.length ? al.map(a => '<span class="al-sev ' + a.sev + '">' + esc(a.name) + ' · ' + T('docmr.sev_' + a.sev) + '</span>').join('') : '<span class="muted">' + T('docmr.none') + '</span>';
-        const ant = p.ant.length ? p.ant.map(a => '<span class="tag-an">' + esc(a) + '</span>').join('') : '<span class="muted">' + T('docmr.none') + '</span>';
+        const ant = p.ant.length ? p.ant.map(a => '<span class="tag-an">' + esc(antStr(a)) + '</span>').join('') : '<span class="muted">' + T('docmr.none') + '</span>';
         const fam = (p.family && p.family.length) ? p.family.map(f => '<span class="tag-an">' + esc(f.rel) + ' · ' + esc(f.cond) + '</span>').join('') : '<span class="muted">' + T('docmr.none') + '</span>';
+        const chipKv = (k, v, chips) => '<div class="perso-kv"><span class="pk">' + k + '</span><span class="pv' + (chips ? ' chips' : '') + '">' + v + '</span></div>';
         return '<div class="synth-head"><h6 class="rec-sec-title" style="margin-bottom:0">' + T('docmr.med_info') + '</h6>' +
           '<button class="mr-edit-btn" onclick="editMedInfo()"><i class="fa fa-pen me-1"></i>' + T('docpp.edit') + '</button></div>' +
-          '<div class="synth-body">' +
-            '<div class="synth-row"><div class="k">' + T('docmr.blood') + '</div><div class="v">' + (p.blood || '—') + '</div></div>' +
-            '<div class="synth-row"><div class="k">' + T('docmr.allergies') + '</div><div class="v chips">' + allergies + '</div></div>' +
-            '<div class="synth-row"><div class="k">' + T('docmr.ant_perso') + '</div><div class="v chips">' + ant + '</div></div>' +
-            '<div class="synth-row"><div class="k">' + T('docmr.ant_family') + '</div><div class="v chips">' + fam + '</div></div>' +
+          '<div class="perso-list">' +
+            chipKv(T('docmr.blood'), p.blood || T('docmr.blood_unknown')) +
+            chipKv(T('docmr.allergies'), allergies, true) +
+            chipKv(T('docmr.ant_perso'), ant, true) +
+            chipKv(T('docmr.ant_family'), fam, true) +
           '</div>';
       }
       const bloods = ['O+', 'O-', 'A+', 'A-', 'B+', 'B-', 'AB+', 'AB-'];
-      const bloodSel = '<select class="form-select form-select-sm" style="max-width:130px" onchange="byId[sel].blood=this.value">' + bloods.map(b => '<option' + (p.blood === b ? ' selected' : '') + '>' + b + '</option>').join('') + '</select>';
+      const bloodSel = '<select class="form-select form-select-sm" style="max-width:150px" onchange="byId[sel].blood=this.value"><option value=""' + (p.blood ? '' : ' selected') + '>' + T('docmr.blood_unknown') + '</option>' + bloods.map(b => '<option' + (p.blood === b ? ' selected' : '') + '>' + b + '</option>').join('') + '</select>';
       const sevOpts = s => ['high', 'medium', 'low'].map(x => '<option value="' + x + '"' + (s === x ? ' selected' : '') + '>' + T('docmr.sev_' + x) + '</option>').join('');
-      const alRows = (p.allergies || []).map((a, i) => '<div class="me-row"><input type="text" class="form-control form-control-sm" value="' + esc(a.name).replace(/"/g, '&quot;') + '" placeholder="' + T('docmr.al_name_ph') + '" oninput="byId[sel].allergies[' + i + '].name=this.value"><select class="form-select form-select-sm" style="max-width:130px" onchange="byId[sel].allergies[' + i + '].sev=this.value">' + sevOpts(a.sev) + '</select><button class="btn-del" onclick="rmAllergy(' + i + ')"><i class="fa fa-trash-can"></i></button></div>').join('');
-      const antRows = (p.ant || []).map((a, i) => '<div class="me-row"><input type="text" class="form-control form-control-sm" value="' + esc(a).replace(/"/g, '&quot;') + '" placeholder="' + T('docmr.ant_ph') + '" oninput="byId[sel].ant[' + i + ']=this.value"><button class="btn-del" onclick="rmAnt(' + i + ')"><i class="fa fa-trash-can"></i></button></div>').join('');
-      const famRows = (p.family || []).map((f, i) => '<div class="me-row"><input type="text" class="form-control form-control-sm" style="max-width:150px" value="' + esc(f.rel).replace(/"/g, '&quot;') + '" placeholder="' + T('docmr.rel_ph') + '" oninput="byId[sel].family[' + i + '].rel=this.value"><input type="text" class="form-control form-control-sm" value="' + esc(f.cond).replace(/"/g, '&quot;') + '" placeholder="' + T('docmr.cond_ph') + '" oninput="byId[sel].family[' + i + '].cond=this.value"><button class="btn-del" onclick="rmFam(' + i + ')"><i class="fa fa-trash-can"></i></button></div>').join('');
+      const alRows = (p.allergies || []).map((a, i) => '<div class="me-row">' + cbxTriggerHtml('al', 'allergies', i, 'name', a.name, T('docmr.al_name_ph'), 'flex:1') + '<select class="form-select form-select-sm" style="max-width:130px" onchange="byId[sel].allergies[' + i + '].sev=this.value">' + sevOpts(a.sev) + '</select><button class="btn-del" onclick="rmAllergy(' + i + ')"><i class="fa fa-trash-can"></i></button></div>').join('');
+      const antRows = (p.ant || []).map((a, i) => { const c = (typeof a === 'string') ? a : (a.cond || ''), yr = (typeof a === 'string') ? '' : (a.year || ''); return '<div class="me-row">' + cbxTriggerHtml('cond', 'ant', i, 'cond', c, T('docmr.ant_ph'), 'flex:1') + '<input type="text" class="form-control form-control-sm" style="max-width:90px" inputmode="numeric" maxlength="4" placeholder="' + T('docmr.year_ph') + '" value="' + esc(yr).replace(/"/g, '&quot;') + '" oninput="byId[sel].ant[' + i + '].year=this.value"><button class="btn-del" onclick="rmAnt(' + i + ')"><i class="fa fa-trash-can"></i></button></div>'; }).join('');
+      const famRows = (p.family || []).map((f, i) => '<div class="me-row">' + cbxTriggerHtml('rel', 'family', i, 'rel', f.rel, T('docmr.rel_ph'), 'flex:0 0 160px') + cbxTriggerHtml('cond', 'family', i, 'cond', f.cond, T('docmr.cond_ph'), 'flex:1') + '<button class="btn-del" onclick="rmFam(' + i + ')"><i class="fa fa-trash-can"></i></button></div>').join('');
       return '<h6 class="rec-sec-title">' + T('docmr.med_info') + '</h6>' +
-        '<div class="me-lbl">' + T('docmr.blood') + '</div>' + bloodSel +
+        '<div class="me-lbl">' + T('docmr.blood') + '</div><div class="me-row">' + bloodSel + '</div>' +
         '<div class="me-lbl">' + T('docmr.allergies') + '</div>' + alRows + '<button class="mr-add" onclick="addAllergy()"><i class="fa fa-plus me-1"></i>' + T('docmr.add') + '</button>' +
         '<div class="me-lbl">' + T('docmr.ant_perso') + '</div>' + antRows + '<button class="mr-add" onclick="addAnt()"><i class="fa fa-plus me-1"></i>' + T('docmr.add') + '</button>' +
         '<div class="me-lbl">' + T('docmr.ant_family') + '</div>' + famRows + '<button class="mr-add" onclick="addFam()"><i class="fa fa-plus me-1"></i>' + T('docmr.add') + '</button>' +
         '<div class="mr-foot"><button class="btn btn-ghost btn-sm" onclick="cancelMedInfo()">' + T('docpp.cancel') + '</button><button class="btn btn-teal btn-sm" onclick="saveMedInfo()"><i class="fa fa-check me-1"></i>' + T('docpp.save_btn') + '</button></div>';
+    }
+
+    // Onglet « Informations personnelles » : coordonnées + identité + statut du compte (absorbe l'ancienne fiche « Mes patients »).
+    // Éditable UNIQUEMENT pour une fiche créée par le praticien ; les données d'un compte FUENI vérifié appartiennent au patient (lecture seule).
+    function persoHtml(p) {
+      if (editPersoMode && p.manual) return persoEditHtml(p);
+      const a = ageOf(p);
+      const phone = p.phone ? '<a class="perso-link" href="tel:' + esc(p.phone).replace(/[^\d+]/g, '') + '">' + esc(p.phone) + '</a>' : '<span class="muted">—</span>';
+      const email = p.email ? '<a class="perso-link" href="mailto:' + esc(p.email) + '">' + esc(p.email) + '</a>' : '<span class="muted">—</span>';
+      const kv = (k, v) => '<div class="perso-kv"><span class="pk">' + k + '</span><span class="pv">' + v + '</span></div>';
+      // Statut du compte : toujours affiché, comme classification — « Patient FUENI » (compte) vs « Créé par le praticien » (fiche manuelle).
+      const statutBadge = p.manual
+        ? '<span class="perso-badge"><i class="fa fa-user-pen"></i>' + T('docpat.manual_badge') + '</span>'
+        : '<span class="perso-badge fueni"><i class="fa fa-circle-check"></i>' + T('docmr.fueni_account') + '</span>';
+      const statutRow = kv(T('docmr.account_status'), statutBadge);
+      // Bouton « Modifier » pour une fiche praticien ; sinon note « géré par le patient ».
+      const head = p.manual
+        ? '<div class="synth-head" style="margin-bottom:2px;"><h6 class="rec-sec-title" style="margin:0">' + T('docmr.perso_info') + '</h6><button class="mr-edit-btn" onclick="startEditPerso()"><i class="fa fa-pen me-1"></i>' + T('docpp.edit') + '</button></div>'
+        : '<div class="synth-head" style="margin-bottom:2px;"><h6 class="rec-sec-title" style="margin:0">' + T('docmr.perso_info') + '</h6><span class="small muted"><i class="fa fa-lock me-1"></i>' + T('docmr.perso_patient_managed') + '</span></div>';
+      return '<div class="synth-card">' + head +
+        '<h6 class="rec-sec-title">' + T('docpat.d_contact') + '</h6>' +
+        '<div class="perso-list">' + kv(T('docpat.np_phone'), phone) + kv(T('docpat.np_email'), email) + '</div>' +
+        '<h6 class="rec-sec-title" style="margin-top:18px">' + T('docmr.identity') + '</h6>' +
+        '<div class="perso-list">' +
+          kv(T('docpat.np_dob'), p.dob ? fmtDate(p.dob) : '<span class="muted">—</span>') +
+          kv(T('docpat.np_age'), a !== '' ? a + ' ' + T('docpat.years') : '<span class="muted">—</span>') +
+          kv(T('docpat.np_sex'), T('docpat.sex_' + p.sex)) +
+          statutRow +
+        '</div>' +
+      '</div>';
+    }
+    // Édition en ligne (fiche praticien) : téléphone (indicatif + numéro), e-mail, date de naissance, sexe.
+    function persoEditHtml(p) {
+      let cc = '+221', local = '';
+      const mm = NP_CC.find(c => (p.phone || '').startsWith(c.dial));
+      if (mm) { cc = mm.dial; local = p.phone.slice(mm.dial.length).trim(); } else { local = (p.phone || '').replace(/^\+\d+\s*/, ''); }
+      const ccOpts = NP_CC.map(c => '<option value="' + c.dial + '" data-len="' + c.len + '"' + (c.dial === cc ? ' selected' : '') + '>' + c.flag + ' ' + c.dial + '</option>').join('');
+      const sexOpts = [['F', 'female'], ['M', 'male']].map(s => '<option value="' + s[0] + '"' + (p.sex === s[0] ? ' selected' : '') + '>' + T('docpat.sex_' + s[1]) + '</option>').join('');
+      const q = s => esc(s || '').replace(/"/g, '&quot;');
+      return '<div class="synth-card">' +
+        '<h6 class="rec-sec-title" style="margin-top:0">' + T('docmr.perso_info') + '</h6>' +
+        '<div class="me-lbl">' + T('docpat.np_phone') + '</div>' +
+        '<div class="d-flex gap-2" style="max-width:420px;"><select class="form-select form-select-sm" id="pePhoneCC" style="max-width:120px;flex-shrink:0;">' + ccOpts + '</select><input type="tel" class="form-control form-control-sm" id="pePhone" value="' + q(local) + '"></div>' +
+        '<div class="me-lbl">' + T('docpat.np_email') + '</div><input type="email" class="form-control form-control-sm" id="peEmail" style="max-width:420px;" value="' + q(p.email) + '">' +
+        '<div class="me-lbl">' + T('docpat.np_dob') + '</div><input type="date" lang="fr-FR" class="form-control form-control-sm" id="peDob" style="max-width:220px;" value="' + (p.dob || '') + '">' +
+        '<div class="me-lbl">' + T('docpat.np_sex') + '</div><select class="form-select form-select-sm" id="peSex" style="max-width:220px;">' + sexOpts + '</select>' +
+        '<div class="np-err d-none mt-2" id="peErr"></div>' +
+        '<div class="mr-foot"><button class="btn btn-ghost btn-sm" onclick="cancelPerso()">' + T('docpp.cancel') + '</button><button class="btn btn-teal btn-sm" onclick="savePerso()"><i class="fa fa-check me-1"></i>' + T('docpp.save_btn') + '</button></div>' +
+      '</div>';
+    }
+    function startEditPerso() { editPersoMode = true; renderRecord(); }
+    function cancelPerso() { editPersoMode = false; renderRecord(); }
+    function savePerso() {
+      const p = byId[sel]; if (!p) return;
+      const cc = document.getElementById('pePhoneCC'), ccVal = cc ? cc.value : '+221';
+      const local = document.getElementById('pePhone').value.trim();
+      const email = document.getElementById('peEmail').value.trim();
+      const dob = document.getElementById('peDob').value, sex = document.getElementById('peSex').value;
+      // Validation « douce » (cohérente avec le formulaire d'ajout) : e-mail / téléphone / date de naissance contrôlés si renseignés.
+      let err = '';
+      if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) err = 'docpat.np_err_email';
+      else if (dob && (new Date(dob + 'T00:00:00') > new Date() || ageFromDob(dob) === '')) err = 'docpat.np_err_dob';
+      else if (local) { const opt = cc && cc.selectedOptions[0], len = opt ? +opt.dataset.len : 0, d = local.replace(/[^\d]/g, ''); if (len ? d.length !== len : d.length < 6) err = 'docpat.np_err_phone'; }
+      const el = document.getElementById('peErr');
+      if (err) { if (el) { el.textContent = T(err); el.classList.remove('d-none'); } return; }
+      p.phone = local ? (ccVal + ' ' + local) : ''; p.email = email; p.dob = dob; p.sex = sex;
+      editPersoMode = false;
+      renderRecord(); renderList(); mrToast(T('docmr.saved'));
     }
 
     function renderRecord() {
@@ -235,7 +561,7 @@
 
       const al = p.allergies || [];
       const allergies = al.length ? al.map(a => '<span class="al-sev ' + a.sev + '">' + esc(a.name) + ' · ' + T('docmr.sev_' + a.sev) + '</span>').join('') : '<span class="muted">' + T('docmr.none') + '</span>';
-      const ant = p.ant.length ? p.ant.map(a => '<span class="tag-an">' + esc(a) + '</span>').join('') : '<span class="muted">' + T('docmr.none') + '</span>';
+      const ant = p.ant.length ? p.ant.map(a => '<span class="tag-an">' + esc(antStr(a)) + '</span>').join('') : '<span class="muted">' + T('docmr.none') + '</span>';
       const fam = (p.family && p.family.length) ? p.family.map(f => '<span class="tag-an">' + esc(f.rel) + ' · ' + esc(f.cond) + '</span>').join('') : '<span class="muted">' + T('docmr.none') + '</span>';
       // Bandeau de sécurité allergies (garde-fou prescription)
       const hi = al.filter(a => a.sev === 'high');
@@ -251,28 +577,30 @@
         '</div>'
       ).join('') : '<div class="muted">' + T('docmr.no_consults') + '</div>';
 
-      const docs = p.docs.length ? '<div class="docs-grid">' + p.docs.map(d =>
-        '<div class="doc-chip"><i class="fa ' + (DOC_IC[d.t] || 'fa-file') + ' di"></i><span>' + esc(d.n) + '</span><span class="muted ms-2" style="font-size:0.78rem;">' + fmtDate(d.date) + '</span><a class="dl" onclick="event.preventDefault();"><i class="fa fa-download"></i></a></div>'
-      ).join('') + '</div>' : '<div class="muted">' + T('docmr.no_docs') + '</div>';
+      const docs = renderDocs(p); // grille lecture seule remplacée par la revue groupée (à valider / validés / refusés)
 
       // Contenu de l'onglet actif
       let tabBody = '';
       if (recTab === 'history') tabBody = consults;
+      else if (recTab === 'perso') tabBody = persoHtml(p);
       else if (recTab === 'med') tabBody = '<div class="synth-card">' + medInfoHtml(p) + '</div>';
       else tabBody = docs;
 
       const tab = (id, label, count) => '<button class="' + (recTab === id ? 'on' : '') + '" onclick="setRecTab(\'' + id + '\')">' + T(label) + (count != null ? '<span class="cnt">' + count + '</span>' : '') + '</button>';
+      const pc = pendingCount(p); // pastille ambre « à valider » sur l'onglet Documents (visible depuis les autres onglets)
+      const docsTab = '<button class="' + (recTab === 'docs' ? 'on' : '') + '" onclick="setRecTab(\'docs\')">' + T('docmr.documents') + (pc > 0 ? '<span class="cnt" style="background:#fef3c7;color:#b45309;">' + pc + '</span>' : (p.docs.length ? '<span class="cnt">' + p.docs.length + '</span>' : '')) + '</button>';
 
       box.innerHTML =
         '<div class="rec-head"><div class="av">' + p.ini + '</div>' +
-          '<div class="flex-grow-1"><div class="nm">' + esc(p.name) + '</div><div class="mt">' + p.age + ' ' + T('docpat.years') + ' · ' + T('docpat.sex_' + p.sex) + ' · ' + esc(p.phone) + '</div></div>' +
+          '<div class="flex-grow-1"><div class="nm">' + esc(p.name) + '</div><div class="mt">' + (ageOf(p) !== '' ? ageOf(p) + ' ' + T('docpat.years') + ' · ' : '') + T('docpat.sex_' + p.sex) + (p.phone ? ' · ' + esc(p.phone) : '') + '</div></div>' +
           '<a class="rec-cta" href="25-doctor-consultation.html?patient=' + encodeURIComponent(p.name) + '&from=records"><i class="fa fa-notes-medical"></i>' + T('docmr.doc_action') + '</a>' +
         '</div>' +
         '<div class="rec-body">' + banner +
           '<div class="rec-tabs">' +
             tab('history', 'docmr.history', p.consults.length) +
+            tab('perso', 'docmr.perso_info', null) +
             tab('med', 'docmr.med_info', null) +
-            tab('docs', 'docmr.documents', p.docs.length) +
+            docsTab +
           '</div>' +
           '<div class="rec-tabbody">' + tabBody + '</div>' +
         '</div>';

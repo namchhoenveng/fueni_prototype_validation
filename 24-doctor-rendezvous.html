@@ -126,8 +126,8 @@
     .list-m { color:#64748b; font-size:0.85rem; }
     .nat-tag { display:inline-block; padding:3px 10px; border-radius:14px; font-size:0.72rem; font-weight:700; white-space:nowrap; }
     /* Onglets du modal de création : Rendez-vous patient / Événement */
-    .create-tabs { display:flex; gap:4px; border-bottom:2px solid #e5e7eb; }
-    .create-tab { background:transparent; border:0; border-bottom:3px solid transparent; margin-bottom:-2px; padding:9px 16px; font-weight:600; font-size:0.92rem; color:#64748b; cursor:pointer; }
+    .create-tabs { display:flex; flex-wrap:wrap; gap:4px; border-bottom:2px solid #e5e7eb; }
+    .create-tab { background:transparent; border:0; border-bottom:3px solid transparent; margin-bottom:-2px; padding:9px 16px; font-weight:600; font-size:0.92rem; color:#64748b; cursor:pointer; white-space:nowrap; }
     .create-tab:hover { color:#155e75; }
     .create-tab.active { color:#155e75; border-bottom-color:#155e75; }
     /* Combobox patient (recherche stylée par l'app, remplace le datalist natif du navigateur) */
@@ -176,7 +176,10 @@
 
     .np { padding:6px 14px; border-radius:20px; font-size:0.82rem; font-weight:600; border:1.5px solid #e2e8f0; background:#fff; color:#475569; cursor:pointer; }
     .np.sel { background:#eef5f7; color:#155e75; border-color:#155e75; }
+    .np-add { border-style:dashed !important; color:#155e75; }
+    .np-add:hover { border-color:#155e75; background:#f8fafc; }
     .toast-ok { position:fixed; bottom:24px; left:50%; transform:translateX(-50%); background:#0f5132; color:#fff; padding:12px 22px; border-radius:10px; font-size:0.9rem; font-weight:600; box-shadow:0 6px 20px rgba(0,0,0,0.25); z-index:3000; display:none; align-items:center; gap:9px; }
+    .toast-ok.toast-err { background:#b42318; }
     @media (max-width:1100px){ .planning-grid { grid-template-columns:1fr; } }
     @media (max-width:820px){ .sidebar{display:none;} .main{margin-left:0;} .main-topbar{left:0;} }
   </style>
@@ -198,10 +201,8 @@
     <div class="nav-section" data-i18n="doc.dash.sec_main">Principal</div>
     <a href="17-doctor-dashboard.html?state=active" class="nav-link-side"><i class="fa fa-home"></i><span data-i18n="doc.dash.nav_dashboard">Tableau de bord</span></a>
     <a href="19-doctor-public-profile.html" class="nav-link-side"><i class="fa fa-id-badge"></i><span data-i18n="doc.dash.nav_public_profile">Mon profil public</span></a>
-    <a href="20-doctor-patients.html" class="nav-link-side"><i class="fa fa-user-injured"></i><span data-i18n="doc.dash.tile_patients">Patients</span></a>
-    <a href="#" class="nav-link-side active"><i class="fa fa-calendar-check"></i><span data-i18n="doc.dash.tile_rdv">Rendez-vous</span></a>
-    <a href="26-doctor-records.html" class="nav-link-side"><i class="fa fa-file-medical"></i><span data-i18n="doc.dash.tile_records">Dossiers médicaux</span></a>
-    <div class="nav-section" data-i18n="doc.dash.sec_account">Compte</div>
+    <a href="26-doctor-records.html" class="nav-link-side"><i class="fa fa-user-injured"></i><span data-i18n="doc.dash.tile_patients">Patients</span></a>
+    <a href="#" class="nav-link-side active"><i class="fa fa-calendar-check"></i><span data-i18n="doc.dash.tile_rdv">Rendez-vous</span></a>    <div class="nav-section" data-i18n="doc.dash.sec_account">Compte</div>
     <a href="18-doctor-abonnement.html" class="nav-link-side"><i class="fa fa-star"></i><span data-i18n="doc.dash.nav_subscription">Mon abonnement</span></a>
     <a href="29-doctor-settings.html" class="nav-link-side"><i class="fa fa-cog"></i><span data-i18n="doc.dash.nav_settings">Paramètres</span></a>
     <a href="10b-login-doctor.html" class="nav-link-side"><i class="fa fa-arrow-right-from-bracket"></i><span data-i18n="doc.dash.logout">Déconnexion</span></a>
@@ -291,6 +292,7 @@
           <div class="create-tabs mb-3">
             <button type="button" class="create-tab active" data-ctab="patient" onclick="setCreateTab('patient')"><i class="fa fa-user-injured me-2"></i><span data-i18n="docrdv.tab_patient">Rendez-vous patient</span></button>
             <button type="button" class="create-tab" data-ctab="event" onclick="setCreateTab('event')"><i class="fa fa-calendar-day me-2"></i><span data-i18n="docrdv.tab_event">Événement</span></button>
+            <button type="button" class="create-tab" data-ctab="block" onclick="setCreateTab('block')"><i class="fa fa-ban me-2"></i><span data-i18n="docrdv.tab_block">Indisponible</span></button>
           </div>
           <form id="createForm" onsubmit="event.preventDefault(); submitCreate();">
             <div class="row g-3">
@@ -300,12 +302,12 @@
                   <div class="col-12">
                     <label class="form-label fw-semibold small"><span data-i18n="docrdv.m_patient">Patient</span> <span class="text-danger">*</span></label>
                     <div class="pt-combo" id="ptCombo">
-                      <input type="text" autocomplete="off" class="form-control" id="cPatient" data-i18n-placeholder="docrdv.m_patient_ph" placeholder="Rechercher un patient…" oninput="ptFilter(this.value); this.classList.remove('is-invalid')" onfocus="ptFilter(this.value)" onkeydown="ptKey(event)">
+                      <input type="text" autocomplete="off" class="form-control" id="cPatient" data-i18n-placeholder="docrdv.m_patient_ph" placeholder="Rechercher un patient…" oninput="ptFilter(this.value); this.classList.remove('is-invalid'); updateNotif()" onfocus="ptFilter(this.value)" onkeydown="ptKey(event)">
                       <div class="pt-menu d-none" id="ptMenu"></div>
                     </div>
                   </div>
                   <div class="col-12">
-                    <label class="form-label fw-semibold small" data-i18n="docrdv.m_titlef">Motif</label>
+                    <label class="form-label fw-semibold small"><span data-i18n="docrdv.m_titlef">Motif</span> <span class="text-muted" style="font-weight:400" data-i18n="docrdv.optional">(facultatif)</span></label>
                     <input type="text" class="form-control" id="cMotif" data-i18n-placeholder="docrdv.m_motif_ph" placeholder="Ex : Consultation générale">
                   </div>
                   <div class="col-12">
@@ -324,11 +326,29 @@
                   </div>
                   <div class="col-12">
                     <label class="form-label fw-semibold small" data-i18n="docrdv.m_label">Étiquette</label>
-                    <div class="d-flex gap-2 flex-wrap" id="eventPills"></div>
+                    <div class="d-flex gap-2 flex-wrap align-items-center" id="eventPills"></div>
+                    <div id="evNewForm" class="d-none mt-2 p-2" style="background:#f8fafc;border-radius:10px;">
+                      <input type="text" id="evNewName" class="add-label-input" maxlength="30" data-i18n-placeholder="docrdv.label_ph" placeholder="Nom de l'étiquette…" onkeydown="if(event.key==='Enter'){event.preventDefault();evAddLabel();}">
+                      <div class="swatches" id="evSwatches"></div>
+                      <div class="d-flex gap-2 mt-2"><button type="button" class="btn-al-add" onclick="evAddLabel()" data-i18n="docrdv.add">Ajouter</button><button type="button" class="btn-al-cancel" onclick="evToggleNew()" data-i18n="docrdv.act_cancel">Annuler</button></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <!-- Onglet « Indisponible » (bloc) -->
+              <div class="col-12 cpane d-none" id="paneBlock">
+                <div class="row g-3">
+                  <div class="col-12">
+                    <label class="form-label fw-semibold small"><span data-i18n="docrdv.m_titlef">Motif</span> <span class="text-muted" style="font-weight:400" data-i18n="docrdv.optional">(facultatif)</span></label>
+                    <input type="text" class="form-control" id="cBlockReason" data-i18n-placeholder="docrdv.block_reason_ph" placeholder="Ex : congé, formation, déjeuner…">
                   </div>
                 </div>
               </div>
               <!-- Champs communs -->
+              <div class="col-12" id="cLocWrap">
+                <label class="form-label fw-semibold small" data-i18n="docrdv.m_loc">Lieu</label>
+                <select class="form-control" id="cLoc"></select>
+              </div>
               <div class="col-md-4">
                 <label class="form-label fw-semibold small" data-i18n="docrdv.m_date">Date</label>
                 <input type="date" lang="fr-FR" class="form-control" id="cDate" value="2026-07-10" onchange="cCheck()">
@@ -341,7 +361,23 @@
                 <label class="form-label fw-semibold small" data-i18n="docrdv.m_end">Fin</label>
                 <select class="form-control" id="cEnd" onchange="cCheck()"></select>
               </div>
+              <div class="col-12 d-none" id="cBlockOpts">
+                <div class="d-flex flex-wrap gap-3">
+                  <label class="d-inline-flex align-items-center gap-2" style="cursor:pointer;font-size:0.9rem;color:#334155;">
+                    <input type="checkbox" id="cAllDay" onchange="onCreateAllDay(this.checked)"> <span data-i18n="docrdv.block_allday">Journée entière</span>
+                  </label>
+                  <label class="d-inline-flex align-items-center gap-2" style="cursor:pointer;font-size:0.9rem;color:#334155;">
+                    <input type="checkbox" id="cMultiDay" onchange="onMultiDay(this.checked)"> <span data-i18n="docrdv.block_multiday">Plusieurs jours</span>
+                  </label>
+                </div>
+                <div class="d-none mt-3" id="cBlockRangeRow">
+                  <label class="form-label fw-semibold small" data-i18n="docrdv.block_until">Jusqu'au</label>
+                  <input type="date" lang="fr-FR" class="form-control" id="cBlockDateEnd" onchange="cCheck()">
+                  <div class="text-muted small mt-1" data-i18n="docrdv.block_range_note">Un blocage est posé chaque jour de la plage.</div>
+                </div>
+              </div>
               <div class="col-12"><div id="cError" class="text-danger small" style="display:none"></div></div>
+              <div class="col-12"><div id="cBlockWarn" class="small" style="display:none"></div></div>
               <div class="col-12" id="cNotifRow">
                 <div class="alert py-2 small mb-0" style="background:#ecfeff;color:#155e75;border:1px solid #a5f3fc;border-radius:10px;">
                   <i class="fa fa-bell me-1"></i><span data-i18n="docrdv.m_notif">Une confirmation par e-mail sera envoyée au patient.</span>
@@ -358,33 +394,7 @@
     </div>
   </div>
 
-  <!-- Block modal -->
-  <div class="modal fade" id="blockModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content" style="border:0;border-radius:16px;">
-        <div class="modal-header border-0 pb-0">
-          <h5 class="modal-title fw-bold" data-i18n="docrdv.block_btn">Bloquer un créneau</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-        </div>
-        <div class="modal-body pt-2">
-          <div class="row g-3">
-            <div class="col-12" id="bLocWrap" style="display:none;"><label class="form-label fw-semibold small" data-i18n="docrdv.block_loc">Lieu</label><select class="form-select" id="bLoc"></select></div>
-            <div class="col-12"><label class="form-label fw-semibold small" data-i18n="docrdv.m_date">Date</label><input type="date" lang="fr-FR" class="form-control" id="bDate"></div>
-            <div class="col-6"><label class="form-label fw-semibold small" data-i18n="docrdv.m_start">Début</label><select class="form-control" id="bStart"></select></div>
-            <div class="col-6"><label class="form-label fw-semibold small" data-i18n="docrdv.m_end">Fin</label><select class="form-control" id="bEnd"></select></div>
-            <div class="col-12"><label class="form-label fw-semibold small" data-i18n="docrdv.block_reason">Motif (facultatif)</label><input type="text" class="form-control" id="bReason" data-i18n-placeholder="docrdv.block_reason_ph" placeholder="Ex : congé, formation, déjeuner…"></div>
-            <div class="col-12"><label class="d-flex align-items-center gap-2 small text-muted mb-0"><input type="checkbox" id="bAllDay" onchange="onAllDay(this.checked)"> <span data-i18n="docrdv.block_allday">Journée entière</span></label></div>
-          </div>
-        </div>
-        <div class="modal-footer border-0 pt-0">
-          <button type="button" class="btn btn-light" data-bs-dismiss="modal" data-i18n="docrdv.act_cancel">Annuler</button>
-          <button type="button" class="topbar-btn" onclick="submitBlock()"><i class="fa fa-ban"></i><span data-i18n="docrdv.block_confirm">Bloquer</span></button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="toast-ok" id="rdvToast"><i class="fa fa-circle-check"></i><span id="rdvToastMsg"></span></div>
+  <div class="toast-ok" id="rdvToast"><i class="fa fa-circle-check" id="rdvToastIcon"></i><span id="rdvToastMsg"></span></div>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script>
@@ -400,7 +410,8 @@
     let LABELS = [
       { id: 'consultation', name: 'Consultation', color: '#2563eb', system: true },
       { id: 'reunion', name: 'Réunion', color: '#f59e0b' },
-      { id: 'domicile', name: 'Visite à domicile', color: '#7c3aed' }
+      { id: 'domicile', name: 'Visite à domicile', color: '#7c3aed', patientOnly: true }, // étiquette liée au patient (onglet patient) — pas proposée en Événement
+      { id: 'bloque', name: 'Indisponible', color: '#64748b', system: true, block: true } // étiquette système « indisponibilité » (onglet Événement) — rendue hachurée, retire le créneau des réservations en ligne
     ];
     const labelOf = id => LABELS.find(l => l.id === id) || LABELS[0];
     const escL = s => (s == null ? '' : String(s)).replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
@@ -418,16 +429,19 @@
         '<span class="sw' + (c === newLabelColor ? ' sel' : '') + '" style="background:' + c + '" onclick="pickSwatch(\'' + c + '\')"></span>').join('');
     }
     function pickSwatch(c) { newLabelColor = c; renderSwatches(); }
+    // Nom d'étiquette déjà pris ? (insensible à la casse et aux accents, y compris système/réservées)
+    function labelNameTaken(name) { return LABELS.some(l => ptNorm(l.name) === ptNorm(name)); }
     function addLabel() {
       const name = document.getElementById('newLabelName').value.trim(); if (!name) return;
-      if (LABELS.filter(l => !l.system).length >= 8) { toast(T('docrdv.label_limit')); return; } // cap = palette (8)
+      if (labelNameTaken(name)) { toast(T('docrdv.label_dup').replace('{name}', name), 'error'); return; }
+      if (LABELS.filter(l => !l.system && !l.patientOnly).length >= 8) { toast(T('docrdv.label_limit'), 'error'); return; } // cap = palette (8)
       LABELS.push({ id: 'lbl' + Date.now(), name: name, color: newLabelColor });
       toggleAddLabel(); render();
     }
     function removeLabel(id) {
       const lab = labelOf(id); if (!lab || lab.system) return;
       const used = RDV.filter(r => r.nature === id).length;
-      if (used > 0) { toast('« ' + lab.name + ' » — ' + used + ' ' + T('docrdv.lbl_del_inuse')); return; } // bloqué si utilisée
+      if (used > 0) { toast('« ' + lab.name + ' » — ' + used + ' ' + T('docrdv.lbl_del_inuse'), 'error'); return; } // bloqué si utilisée
       if (!window.confirm(T('docrdv.lbl_del_confirm_pre') + lab.name + T('docrdv.lbl_del_confirm_post'))) return;
       LABELS = LABELS.filter(l => l.id !== id);
       hiddenLabels.delete(id);
@@ -446,13 +460,10 @@
       { date:'2026-07-10', start:'09:00', end:'10:00', ini:'MD', name:'Mamadou Diallo',  motif:'Décompensation diabétique', nature:'consultation', status:'confirmed', loc:'loc1' },
       { date:'2026-07-10', start:'11:00', end:'12:00', ini:'RH', name:'Réunion hebdomadaire', motif:'', nature:'reunion', status:'confirmed', patient:false, loc:'loc1' },
       { date:'2026-07-10', start:'10:00', end:'11:00', ini:'RD', name:'Rokhaya Diop',    motif:'Suivi grossesse',       nature:'consultation', status:'confirmed', loc:'loc1' },
-      { date:'2026-07-14', start:'15:00', end:'15:30', ini:'MC', name:'Modou Cissé',     motif:'Renouvellement',        nature:'consultation', status:'confirmed', loc:'loc1' }
-    ];
-
-    // Créneaux bloqués — exceptions par-dessus les horaires. loc absent = tous les lieux (ex. congé).
-    const BLOCKS = [
-      { date:'2026-07-08', start:'13:00', end:'19:00', reason:'Formation' },
-      { date:'2026-07-10', start:'12:00', end:'14:00', reason:'Déjeuner', loc:'loc1' }
+      { date:'2026-07-14', start:'15:00', end:'15:30', ini:'MC', name:'Modou Cissé',     motif:'Renouvellement',        nature:'consultation', status:'confirmed', loc:'loc1' },
+      // Créneaux « Indisponible » (blocs) — désormais dans RDV (nature:'bloque', patient:false). name = motif (facultatif). loc absent = tous les lieux (ex. congé).
+      { date:'2026-07-08', start:'13:00', end:'19:00', name:'Formation', nature:'bloque', status:'confirmed', patient:false },
+      { date:'2026-07-10', start:'12:00', end:'14:00', name:'Déjeuner',  nature:'bloque', status:'confirmed', patient:false, loc:'loc1' }
     ];
     const DAY_KEYS = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
     // Horaires par défaut — miroir du profil (source des créneaux réservables)
@@ -512,7 +523,19 @@
     const toMin = t => (+t.slice(0, 2)) * 60 + (+t.slice(3, 5));
     const lang = () => (window.NazI18n && NazI18n.getLang() === 'en') ? 'en-GB' : 'fr-FR';
     const isEn = () => window.NazI18n && NazI18n.getLang() === 'en';
-    const START = 8, END = 19, HH = 54;
+    const START = 8, END = 19, HH = 54; // START/END = plancher d'affichage (08–19) ; la grille s'étend au besoin
+    let gStartH = START, gEndH = END;   // bornes d'affichage dynamiques de la grille semaine (recalculées à chaque rendu)
+    // Enveloppe « journée de travail » = union des horaires de tous les lieux (repli 08–19) — sert à « Journée entière ».
+    function workBounds() {
+      let ws = 24 * 60, we = 0;
+      LOCS.forEach(l => DAY_KEYS.forEach(dk => normRanges((l.hours || {})[dk]).forEach(rg => { ws = Math.min(ws, toMin(rg[0])); we = Math.max(we, toMin(rg[1])); })));
+      return we > ws ? [ws, we] : [START * 60, END * 60];
+    }
+    // Plage de dates d'un blocage multi-jours (congé) : nombre de jours inclusifs + itération jour par jour.
+    function blockDayCount(d1, d2) { return Math.round((dObj(d2) - dObj(d1)) / 86400000) + 1; }
+    function eachDate(d1, d2, fn) { let d = dObj(d1); const end = dObj(d2); while (d <= end) { fn(iso(d)); d.setDate(d.getDate() + 1); } }
+    const BLOCK_RANGE_MAX = 90; // garde-fou : un blocage ne peut pas couvrir plus de 90 jours d'un coup
+    let editIdx = -1;           // >= 0 = index du RDV/événement/bloc en cours d'édition (sinon création)
 
     /* ---------- RDV réservés en ligne (patients) : ingestion depuis fueni_appointments ---------- */
     const APPT_KEY = 'fueni_appointments', SEEN_KEY = 'fueni_rdv_seen';
@@ -556,6 +579,7 @@
     // Les RDV annulés libèrent le créneau → ils ne s'affichent plus dans le planning (pas de filtre Statut).
     // Filtre par étiquette = multi-sélection via la légende (une étiquette masquée cache ses RDV).
     function pass(r) { return r.status !== 'cancelled' && matchLoc(r) && !hiddenLabels.has(r.nature); }
+    const isBlock = r => r && r.nature === 'bloque';
     // Validation d'un créneau (ligne de temps unique — le docteur ne peut être qu'à un endroit à la fois).
     // excludeIdx = index du RDV en cours de report (ignoré dans le test de chevauchement).
     function slotConflict(date, start, end, excludeIdx) {
@@ -564,18 +588,22 @@
         if (k === excludeIdx) continue;
         const r = RDV[k];
         if (r.date !== date || r.status === 'cancelled') continue;
-        if (s < toMin(r.end) && e > toMin(r.start)) return true; // chevauchement RDV
-      }
-      for (const b of (BLOCKS || [])) {
-        if (b.date !== date) continue;
-        if (s < toMin(b.end) && e > toMin(b.start)) return true; // chevauchement indisponibilité
+        if (s < toMin(r.end) && e > toMin(r.start)) return true; // chevauchement RDV ou indisponibilité (les blocs sont dans RDV)
       }
       return false;
     }
+    // Nombre de RDV patients (non annulés) chevauchant un créneau — pour l'avertissement au blocage.
+    function overlappedPatients(date, start, end) {
+      const s = toMin(start), e = toMin(end);
+      const locSel = (LOCS.length > 1 && document.getElementById('cLoc')) ? document.getElementById('cLoc').value : null;
+      return RDV.filter(r => r.date === date && r.status !== 'cancelled' && hasPatient(r)
+        && (!locSel || !r.loc || r.loc === locSel)
+        && s < toMin(r.end) && e > toMin(r.start)).length;
+    }
     function validateSlot(date, start, end, excludeIdx) {
-      if (toMin(end) <= toMin(start)) { toast(T('docrdv.err_endbefore')); return false; }
-      if (date < TODAY) { toast(T('docrdv.err_past')); return false; }
-      if (slotConflict(date, start, end, excludeIdx)) { toast(T('docrdv.err_overlap')); return false; }
+      if (toMin(end) <= toMin(start)) { toast(T('docrdv.err_endbefore'), 'error'); return false; }
+      if (date < TODAY) { toast(T('docrdv.err_past'), 'error'); return false; }
+      if (slotConflict(date, start, end, excludeIdx)) { toast(T('docrdv.err_overlap'), 'error'); return false; }
       return true;
     }
 
@@ -638,25 +666,33 @@
         const ds = iso(d), wknd = i >= 5;
         return '<div class="wk-dh' + (ds === TODAY ? ' today' : '') + (wknd ? ' weekend' : '') + '"><div class="dn">' + dn[i] + '</div><div class="dd">' + d.getDate() + '</div></div>';
       }).join('');
-      const H = (END - START) * HH;
+      // Bornes d'affichage : plancher 08–19, étendu à l'enveloppe des horaires ET à tout RDV/bloc de la semaine visible ; borné à [06 h, 21 h].
+      const wb = workBounds();
+      let minM = Math.min(START * 60, wb[0]), maxM = Math.max(END * 60, wb[1]);
+      const weekSet = new Set(days.map(d => iso(d)));
+      RDV.forEach(r => { if (r.status !== 'cancelled' && weekSet.has(r.date)) { minM = Math.min(minM, toMin(r.start)); maxM = Math.max(maxM, toMin(r.end)); } });
+      gStartH = Math.max(6, Math.floor(minM / 60));
+      gEndH = Math.min(21, Math.ceil(maxM / 60));
+      const H = (gEndH - gStartH) * HH;
       let gutter = '<div class="wk-gutter" style="height:' + H + 'px">';
-      for (let h = START; h < END; h++) gutter += '<div class="wk-hr" style="top:' + ((h - START) * HH) + 'px">' + String(h).padStart(2, '0') + ':00</div>';
+      for (let h = gStartH; h < gEndH; h++) gutter += '<div class="wk-hr" style="top:' + ((h - gStartH) * HH) + 'px">' + String(h).padStart(2, '0') + ':00</div>';
       gutter += '</div>';
-      const gridH = (END - START) * HH;
+      const gridH = (gEndH - gStartH) * HH;
       const cols = days.map((d, i) => {
         const ds = iso(d), wknd = i >= 5, dk = DAY_KEYS[i];
         const availHtml = availFor(dk).map(rg => {
-          const top = Math.max(0, (toMin(rg[0]) - START * 60) / 60 * HH);
+          const top = Math.max(0, (toMin(rg[0]) - gStartH * 60) / 60 * HH);
           const h = Math.min(gridH - top, (toMin(rg[1]) - toMin(rg[0])) / 60 * HH);
           return h > 0 ? '<div class="wk-avail" style="top:' + top + 'px;height:' + h + 'px"></div>' : '';
         }).join('');
-        const blockHtml = BLOCKS.map((b, bi) => ({ b, bi })).filter(o => o.b.date === ds && matchLoc(o.b)).map(o => {
-          const b = o.b; const top = Math.max(0, (toMin(b.start) - START * 60) / 60 * HH);
-          const h = Math.min(gridH - top, Math.max(20, (toMin(b.end) - toMin(b.start)) / 60 * HH - 2));
-          return '<div class="wk-block" style="top:' + top + 'px;height:' + h + 'px" onclick="openBlockDetail(' + o.bi + ')"><i class="fa fa-ban"></i>' + T('docrdv.unavailable') + (b.reason ? ' · ' + b.reason : '') + '</div>';
-        }).join('');
-        const rdvHtml = RDV.map((r, idx) => ({ r, idx })).filter(o => o.r.date === ds && pass(o.r)).map(o => {
-          const r = o.r; const top = (toMin(r.start) - START * 60) / 60 * HH;
+        const rdvHtml = RDV.map((r, idx) => ({ r, idx })).filter(o => o.r.date === ds && pass(o.r))
+          .sort((a, b) => (isBlock(a.r) ? 0 : 1) - (isBlock(b.r) ? 0 : 1)) // blocs « Indisponible » peints en premier (derrière les cartes)
+          .map(o => {
+          const r = o.r; const top = Math.max(0, (toMin(r.start) - gStartH * 60) / 60 * HH);
+          if (isBlock(r)) {
+            const h = Math.min(gridH - top, Math.max(20, (toMin(r.end) - toMin(r.start)) / 60 * HH - 2));
+            return '<div class="wk-block" style="top:' + top + 'px;height:' + h + 'px" onclick="openDetail(' + o.idx + ')"><i class="fa fa-ban"></i>' + T('docrdv.unavailable') + (r.name ? ' · ' + escL(r.name) : '') + '</div>';
+          }
           const hgt = Math.max(26, (toMin(r.end) - toMin(r.start)) / 60 * HH - 3);
           const c = labelOf(r.nature).color;
           const isNew = r.booked && r.status !== 'cancelled' && !seenSet.has(r.apptId);
@@ -664,7 +700,7 @@
             (isNew ? '<span class="new-dot"></span>' : '') +
             '<div class="rt">' + r.start + '</div><div class="rs">' + escL(rdvName(r)) + '</div></div>';
         }).join('');
-        return '<div class="wk-col' + (ds === TODAY ? ' today' : '') + (wknd ? ' weekend' : '') + '" style="height:' + H + 'px" onclick="colClick(event,\'' + ds + '\')" title="' + T('docrdv.slot_new') + '">' + availHtml + blockHtml + rdvHtml + '</div>';
+        return '<div class="wk-col' + (ds === TODAY ? ' today' : '') + (wknd ? ' weekend' : '') + '" style="height:' + H + 'px" onclick="colClick(event,\'' + ds + '\')" title="' + T('docrdv.slot_new') + '">' + availHtml + rdvHtml + '</div>';
       }).join('');
       document.getElementById('calCard').innerHTML =
         '<div class="wk-head">' + head + '</div><div class="wk-body">' + gutter + cols + '</div>';
@@ -675,9 +711,8 @@
       const d = dObj(cur); const year = d.getFullYear(), month = d.getMonth();
       const startDow = (new Date(year, month, 1).getDay() + 6) % 7;
       const dim = new Date(year, month + 1, 0).getDate();
-      const byDate = {}; const blk = {};
+      const byDate = {};
       RDV.filter(pass).forEach(r => { (byDate[r.date] = byDate[r.date] || []).push(r); });
-      BLOCKS.forEach(b => { if (matchLoc(b)) blk[b.date] = true; });
       const cells = [];
       for (let i = 0; i < startDow; i++) cells.push({ dt:new Date(year, month, 1 - (startDow - i)), out:true });
       for (let dd = 1; dd <= dim; dd++) cells.push({ dt:new Date(year, month, dd), out:false });
@@ -687,7 +722,6 @@
         let dots = '';
         items.slice(0, 4).forEach(r => dots += '<span class="cal-dot" style="background:' + labelOf(r.nature).color + '"></span>');
         if (items.length > 4) dots += '<span class="cal-more">+' + (items.length - 4) + '</span>';
-        if (blk[ds]) dots += '<span class="cal-dot" style="background:#cbd5e1" title="' + T('docrdv.unavailable') + '"></span>';
         return '<div class="cal-cell' + (c.out ? ' out' : '') + (ds === TODAY ? ' today' : '') + '" onclick="pickDay(\'' + ds + '\')"><div class="cal-num">' + c.dt.getDate() + '</div><div class="cal-appts">' + dots + '</div></div>';
       }).join('');
       document.getElementById('calCard').innerHTML =
@@ -699,7 +733,6 @@
       // Agenda « à partir de la date sélectionnée » (r.date >= cur), borné à listLimit + « Charger plus ».
       const items = [];
       RDV.forEach((r, idx) => { if (pass(r) && r.date >= cur) items.push({ t:'rdv', date:r.date, start:r.start, r, idx }); });
-      BLOCKS.forEach((b, bi) => { if (b.date >= cur && matchLoc(b)) items.push({ t:'blk', date:b.date, start:b.start, b, bi }); });
       items.sort((a, b) => (a.date + a.start).localeCompare(b.date + b.start));
       const box = document.getElementById('calCard');
       if (!items.length) { box.innerHTML = '<div class="list-pad text-center text-muted py-5"><i class="fa fa-calendar-xmark fa-2x mb-2 d-block"></i>' + T('docrdv.empty_list') + '</div>'; return; }
@@ -707,19 +740,18 @@
       let html = '<div class="list-pad">', curD = '';
       shown.forEach(o => {
         if (o.date !== curD) { curD = o.date; html += '<div class="list-dh">' + dObj(o.date).toLocaleDateString(lang(), { weekday:'long', day:'numeric', month:'long' }) + (o.date === TODAY ? ' · ' + T('docrdv.today_btn') : '') + '</div>'; }
-        if (o.t === 'rdv') {
-          const r = o.r;
+        const r = o.r;
+        if (isBlock(r)) {
+          html += '<div class="list-row" onclick="openDetail(' + o.idx + ')">' +
+            '<div class="list-time">' + r.start + ' <span class="e">→ ' + r.end + '</span></div>' +
+            '<div class="list-body"><div class="list-t text-muted"><i class="fa fa-ban me-1"></i>' + T('docrdv.unavailable') + '</div><div class="list-m">' + escL(r.name || '') + '</div></div>' +
+            '<span class="nat-tag" style="background:#eef2f6;color:#64748b;">' + T('docrdv.unavailable') + '</span></div>';
+        } else {
           const isNew = r.booked && r.status !== 'cancelled' && !seenSet.has(r.apptId);
           html += '<div class="list-row" onclick="openDetail(' + o.idx + ')">' +
             '<div class="list-time">' + r.start + ' <span class="e">→ ' + r.end + '</span></div>' +
             '<div class="list-body"><div class="list-t">' + escL(rdvName(r)) + (isNew ? '<span class="new-badge">' + T('docrdv.new_badge') + '</span>' : '') + '</div><div class="list-m">' + escL(r.motif) + '</div></div>' +
             labelTag(r.nature) + '</div>';
-        } else {
-          const b = o.b;
-          html += '<div class="list-row" onclick="openBlockDetail(' + o.bi + ')">' +
-            '<div class="list-time">' + b.start + ' <span class="e">→ ' + b.end + '</span></div>' +
-            '<div class="list-body"><div class="list-t text-muted"><i class="fa fa-ban me-1"></i>' + T('docrdv.unavailable') + '</div><div class="list-m">' + (b.reason || '') + '</div></div>' +
-            '<span class="nat-tag" style="background:#eef2f6;color:#64748b;">' + T('docrdv.unavailable') + '</span></div>';
         }
       });
       if (rest > 0) html += '<div class="list-more-wrap"><button class="list-more-btn" onclick="loadMoreList()"><i class="fa fa-chevron-down me-1"></i>' + T('docrdv.load_more').replace('{n}', rest) + '</button></div>';
@@ -730,21 +762,26 @@
       document.getElementById('sideToday').innerHTML = '<i class="fa fa-bolt me-1"></i>' + T('docrdv.today_btn') + ' — ' + dObj(TODAY).toLocaleDateString(lang(), { day:'numeric', month:'long' });
       const today = RDV.filter(r => r.date === TODAY && r.status !== 'cancelled').sort((a, b) => a.start.localeCompare(b.start));
       // Panneau résumé : on n'affiche que les 3 premiers du jour + un lien vers le listing complet.
-      let todayHtml = today.slice(0, 3).map(r =>
-        '<div class="today-rdv" style="border-left-color:' + labelOf(r.nature).color + '"><div class="tt">' + r.start + ' — ' + r.end + '</div><div class="tn">' + escL(rdvName(r)) + '</div><div class="tm">' + escL(labelOf(r.nature).name) + (r.motif ? ' · ' + escL(r.motif) : '') + '</div></div>'
-      ).join('');
+      let todayHtml = today.slice(0, 3).map(r => {
+        const nm = isBlock(r) ? escL(r.name || T('docrdv.unavailable')) : escL(rdvName(r));
+        const lbl = isBlock(r) ? T('docrdv.unavailable') : escL(labelOf(r.nature).name);
+        return '<div class="today-rdv" style="border-left-color:' + labelOf(r.nature).color + '"><div class="tt">' + r.start + ' — ' + r.end + '</div><div class="tn">' + nm + '</div><div class="tm">' + lbl + (r.motif ? ' · ' + escL(r.motif) : '') + '</div></div>';
+      }).join('');
       if (today.length > 3) todayHtml += '<div class="today-more" onclick="viewFullDay()">' + T('docrdv.see_full_day').replace('{n}', today.length) + '</div>';
       document.getElementById('todayList').innerHTML = today.length ? todayHtml : '<div class="text-muted small">' + T('docrdv.empty_day') + '</div>';
-      document.getElementById('legend').innerHTML = LABELS.map(l => {
+      // Ordre : étiquettes système d'abord (Consultation, Indisponible), puis personnalisées (proches du bouton « + Nouvelle »). Tri stable → conserve l'ordre dans chaque groupe.
+      document.getElementById('legend').innerHTML = LABELS.filter(l => !l.patientOnly).sort((a, b) => (b.system ? 1 : 0) - (a.system ? 1 : 0)).map(l => {
         const off = hiddenLabels.has(l.id);
+        const nm = l.block ? T('docrdv.unavailable') : l.name;
+        const suffix = (l.id === 'consultation') ? ' <span class="lbl-sys">· ' + T('docrdv.lbl_patients') + '</span>' : '';
         return '<div class="legend-row' + (off ? ' off' : '') + '" onclick="toggleLabelVis(\'' + l.id + '\')" title="' + T(off ? 'docrdv.legend_show' : 'docrdv.legend_hide') + '">' +
           '<span class="legend-dot" style="' + (off ? 'background:#fff;border:2px solid ' + l.color : 'background:' + l.color + ';border:2px solid ' + l.color) + '">' + (off ? '' : '<i class="fa fa-check"></i>') + '</span>' +
-          '<span class="flex-grow-1">' + escL(l.name) + (l.system ? ' <span class="lbl-sys">· ' + T('docrdv.lbl_patients') + '</span>' : '') + '</span>' +
+          '<span class="flex-grow-1">' + escL(nm) + suffix + '</span>' +
           (l.system ? '' : '<span class="lbl-del" title="' + T('docrdv.act_cancel') + '" onclick="event.stopPropagation();removeLabel(\'' + l.id + '\')">×</span>') +
         '</div>';
       }).join('');
       // Cap des étiquettes personnalisées = taille de la palette (8) ; au-delà, ajout désactivé.
-      const atLabelLimit = LABELS.filter(l => !l.system).length >= 8;
+      const atLabelLimit = LABELS.filter(l => !l.system && !l.patientOnly).length >= 8;
       const addBtn = document.getElementById('addLabelBtn'); if (addBtn) addBtn.disabled = atLabelLimit;
       const limitHint = document.getElementById('labelLimitHint'); if (limitHint) limitHint.classList.toggle('d-none', !atLabelLimit);
     }
@@ -760,11 +797,11 @@
     }
 
     function stats() {
-      document.getElementById('stToday').textContent = RDV.filter(r => r.date === TODAY && r.status !== 'cancelled').length;
+      document.getElementById('stToday').textContent = RDV.filter(r => r.date === TODAY && r.status !== 'cancelled' && !isBlock(r)).length;
       const end = dObj(TODAY); end.setDate(end.getDate() + 7);
-      document.getElementById('stWeek').textContent = RDV.filter(r => r.date >= TODAY && r.date <= iso(end) && r.status !== 'cancelled').length;
+      document.getElementById('stWeek').textContent = RDV.filter(r => r.date >= TODAY && r.date <= iso(end) && r.status !== 'cancelled' && !isBlock(r)).length;
       // Prochain RDV : le plus proche à venir (heure si aujourd'hui, sinon jj/mm · heure)
-      const upcoming = RDV.filter(r => r.date >= TODAY && r.status !== 'cancelled')
+      const upcoming = RDV.filter(r => r.date >= TODAY && r.status !== 'cancelled' && !isBlock(r))
         .sort((a, b) => (a.date + a.start).localeCompare(b.date + b.start))[0];
       document.getElementById('stNext').textContent = upcoming
         ? (upcoming.date === TODAY ? upcoming.start : upcoming.date.slice(8, 10) + '/' + upcoming.date.slice(5, 7) + ' · ' + upcoming.start)
@@ -775,6 +812,7 @@
     let detailModal, createModal;
     function openDetail(i) {
       const r = RDV[i];
+      if (isBlock(r)) { openBlockView(i, r); return; } // créneau « Indisponible » → vue dédiée (Débloquer)
       const isConsult = hasPatient(r); // RDV lié à un patient (consultation / domicile / réservé en ligne) → Documenter + fiche patient
       const wasNew = r.booked && r.status !== 'cancelled' && !seenSet.has(r.apptId);
       document.getElementById('detailBody').innerHTML =
@@ -787,8 +825,8 @@
         (r.loc && LOC_IDS.has(r.loc) ? '<div class="dkv"><span class="k">' + T('docrdv.d_loc') + '</span><span class="v">' + locNameById(r.loc) + '</span></div>' : '') +
         (r.phone ? '<div class="dkv"><span class="k">' + T('docrdv.d_phone') + '</span><span class="v"><a href="tel:' + escL(r.phone).replace(/[^\d+]/g, '') + '" style="color:#155e75;text-decoration:none;">' + escL(r.phone) + '</a></span></div>' : '') +
         (r.note ? '<div class="d-note"><div class="d-note-k"><i class="fa fa-comment-dots me-1"></i>' + T('docrdv.patient_note') + '</div><div class="d-note-v">' + escL(r.note) + '</div></div>' : '') +
-        (r.status !== 'cancelled' && r.date >= TODAY && r.nature !== 'reunion' ? '<div class="modify-info mt-3"><i class="fa fa-circle-info me-1"></i>' + T('docrdv.modify_info').replace('{h}', MODIFY_CUTOFF_H) + '</div>' : '') +
-        (r.status !== 'cancelled' ? '<div id="reschedPanel" class="d-none mt-3 p-3" data-idx="' + i + '" data-od="' + r.date + '" data-os="' + r.start + '" data-oe="' + r.end + '" style="background:#f8fafc;border-radius:10px;">' +
+        (r.status !== 'cancelled' && r.date >= TODAY && isConsult ? '<div class="modify-info mt-3"><i class="fa fa-circle-info me-1"></i>' + T('docrdv.modify_info').replace('{h}', MODIFY_CUTOFF_H) + '</div>' : '') +
+        (r.status !== 'cancelled' && isConsult ? '<div id="reschedPanel" class="d-none mt-3 p-3" data-idx="' + i + '" data-od="' + r.date + '" data-os="' + r.start + '" data-oe="' + r.end + '" style="background:#f8fafc;border-radius:10px;">' +
             '<div class="fw-semibold small mb-2">' + T('docrdv.resched_title') + '</div>' +
             '<div class="d-flex gap-2">' +
               '<div style="flex:1.5;min-width:0"><label class="form-label small text-muted mb-1">' + T('docrdv.m_date') + '</label><input type="date" lang="fr-FR" min="' + TODAY + '" class="form-control form-control-sm" id="rsDate" value="' + r.date + '" onchange="rsCheck()"></div>' +
@@ -801,10 +839,17 @@
           '</div>' : '');
       let foot = '';
       if (r.status !== 'cancelled') {
-        if (isConsult) foot += '<a class="btn btn-sm" style="background:#155e75;color:#fff;" href="25-doctor-consultation.html?patient=' + encodeURIComponent(rdvName(r)) + '&motif=' + encodeURIComponent(r.motif) + '"><i class="fa fa-notes-medical me-1"></i>' + T('docrdv.document') + '</a>';
-        if (isConsult) foot += '<a class="btn btn-outline-secondary btn-sm" href="26-doctor-records.html?patient=' + encodeURIComponent(rdvName(r)) + '"><i class="fa fa-folder-open me-1"></i>' + T('docrdv.view_patient') + '</a>';
-        foot += '<button class="btn btn-outline-secondary btn-sm" onclick="toggleResched()"><i class="fa fa-clock-rotate-left me-1"></i>' + T('docrdv.resched') + '</button>';
-        foot += '<button class="btn btn-outline-danger btn-sm" onclick="askCancel(' + i + ')"><i class="fa fa-ban me-1"></i>' + T('docrdv.cancel_appt') + '</button>';
+        if (isConsult) {
+          // RDV patient : Documenter / Voir fiche / Reporter (notifie le patient) / Annuler.
+          foot += '<a class="btn btn-sm" style="background:#155e75;color:#fff;" href="25-doctor-consultation.html?patient=' + encodeURIComponent(rdvName(r)) + '&motif=' + encodeURIComponent(r.motif) + '"><i class="fa fa-notes-medical me-1"></i>' + T('docrdv.document') + '</a>';
+          foot += '<a class="btn btn-outline-secondary btn-sm" href="26-doctor-records.html?patient=' + encodeURIComponent(rdvName(r)) + '"><i class="fa fa-folder-open me-1"></i>' + T('docrdv.view_patient') + '</a>';
+          foot += '<button class="btn btn-outline-secondary btn-sm" onclick="toggleResched()"><i class="fa fa-clock-rotate-left me-1"></i>' + T('docrdv.resched') + '</button>';
+          foot += '<button class="btn btn-outline-danger btn-sm" onclick="askCancel(' + i + ')"><i class="fa fa-ban me-1"></i>' + T('docrdv.cancel_appt') + '</button>';
+        } else {
+          // Événement interne (pas de patient) : édition complète (titre + étiquette + date/heure) + suppression.
+          foot += '<button class="btn btn-outline-secondary btn-sm" onclick="openEdit(' + i + ')"><i class="fa fa-pen me-1"></i>' + T('docrdv.edit') + '</button>';
+          foot += '<button class="btn btn-outline-danger btn-sm" onclick="askDelete(' + i + ')"><i class="fa fa-trash me-1"></i>' + T('docrdv.delete') + '</button>';
+        }
       }
       document.getElementById('detailFoot').innerHTML = foot;
       detailModal = detailModal || new bootstrap.Offcanvas(document.getElementById('rdvDetail'));
@@ -827,6 +872,16 @@
       render();
       toast(T(s === 'confirmed' ? 'docrdv.confirm_toast' : 'docrdv.cancel_toast'));
     }
+    // Suppression d'un événement interne (pas de patient à notifier) → confirmation inline, puis retrait.
+    function askDelete(i) {
+      document.getElementById('detailFoot').innerHTML =
+        '<div class="w-100"><div class="small mb-2"><i class="fa fa-triangle-exclamation me-1" style="color:#dc2626;"></i>' + T('docrdv.delete_confirm_q') + '</div>' +
+        '<div class="d-flex gap-2">' +
+          '<button class="btn btn-outline-danger btn-sm" onclick="deleteEntry(' + i + ')"><i class="fa fa-trash me-1"></i>' + T('docrdv.delete_yes') + '</button>' +
+          '<button class="btn btn-light btn-sm" onclick="openDetail(' + i + ')">' + T('docrdv.cancel_back') + '</button>' +
+        '</div></div>';
+    }
+    function deleteEntry(i) { RDV.splice(i, 1); if (detailModal) detailModal.hide(); render(); toast(T('docrdv.delete_toast')); }
     function toggleResched() { const p = document.getElementById('reschedPanel'); if (p) p.classList.toggle('d-none'); }
     // Le début change → reconstruit les options de fin (> début) en gardant une fin valide.
     function onReschedStart() {
@@ -866,12 +921,16 @@
     let createTab = 'patient';
     let eventLabel = 'reunion';
     function openCreate(date, start, end) {
-      eventLabel = (LABELS.find(l => !l.system) || {}).id || 'reunion';
-      // Étiquettes proposées à l'événement = toutes sauf l'étiquette système « Consultation ».
-      document.getElementById('eventPills').innerHTML = LABELS.filter(l => !l.system).map(l =>
-        '<span class="np' + (l.id === eventLabel ? ' sel' : '') + '" data-lid="' + l.id + '" onclick="pickEventLabel(\'' + l.id + '\')"><span class="np-dot" style="background:' + l.color + '"></span>' + escL(l.name) + '</span>'
-      ).join('');
+      editIdx = -1; setCreateMode(false); // création (réinitialise un éventuel mode édition)
+      eventLabel = (LABELS.find(l => !l.system && !l.patientOnly) || {}).id || 'reunion';
+      document.getElementById('evNewForm').classList.add('d-none');
+      renderEventPills();
+      // Lieu (multi-lieux uniquement) : défaut = filtre actif, sinon 1er lieu.
+      const defLoc = (fLoc !== 'all') ? fLoc : (LOCS[0] ? LOCS[0].id : '');
+      document.getElementById('cLoc').innerHTML = LOCS.map(l => '<option value="' + l.id + '"' + (l.id === defLoc ? ' selected' : '') + '>' + escL(locLabel(l)) + '</option>').join('');
+      document.getElementById('cLocWrap').style.display = LOCS.length > 1 ? '' : 'none';
       const cd = document.getElementById('cDate'); cd.min = TODAY; cd.value = date || cur;
+      const be = document.getElementById('cBlockDateEnd'); if (be) { be.min = date || cur; be.value = ''; } // plage de blocage réinitialisée
       const st = start || '09:00', en = end || '09:30';
       document.getElementById('cStart').innerHTML = timeOptions(st);
       document.getElementById('cEnd').innerHTML = endOptions(st, en);
@@ -880,6 +939,33 @@
       cCheck();
       createModal = createModal || new bootstrap.Modal(document.getElementById('rdvCreate'));
       createModal.show();
+    }
+    // Bascule création ↔ édition : libellés du bouton / titre, et masque les onglets en édition (on ne change pas le type).
+    function setCreateMode(edit) {
+      const t = document.querySelector('#rdvCreate .modal-title'); if (t) t.textContent = T(edit ? 'docrdv.edit' : 'docrdv.new_rdv');
+      const b = document.querySelector('#createBtn span'); if (b) b.textContent = T(edit ? 'docrdv.save' : 'docrdv.m_create');
+      const tabs = document.querySelector('#rdvCreate .create-tabs'); if (tabs) tabs.style.display = edit ? 'none' : '';
+    }
+    // Édition d'un événement ou d'un blocage via la même modale (pré-remplie), en place à l'enregistrement.
+    function openEdit(i) {
+      const r = RDV[i];
+      let startDate = r.date, endDate = '';
+      if (isBlock(r) && r.bgroup) { const ds = RDV.filter(x => x.bgroup === r.bgroup).map(x => x.date).sort(); startDate = ds[0]; endDate = ds[ds.length - 1]; }
+      if (detailModal) detailModal.hide();
+      openCreate(startDate, r.start, r.end); // configure la modale + met editIdx à -1
+      if (isBlock(r)) {
+        setCreateTab('block');
+        document.getElementById('cBlockReason').value = r.name || '';
+        if (endDate) { const md = document.getElementById('cMultiDay'); if (md) md.checked = true; onMultiDay(true); const be = document.getElementById('cBlockDateEnd'); if (be) be.value = endDate; } // plage → révèle la date de fin
+      } else {
+        setCreateTab('event');
+        document.getElementById('cTitle').value = r.name || '';
+        eventLabel = r.nature; renderEventPills();
+      }
+      const cl = document.getElementById('cLoc'); if (cl && r.loc) cl.value = r.loc;
+      editIdx = i;
+      setCreateMode(true);
+      cCheck();
     }
     // Début change → reconstruit les options de fin (> début).
     function onCreateStart() {
@@ -891,31 +977,116 @@
     // Validation en direct du créneau à la création : erreur inline + « Créer » désactivé si invalide (pas de toaster).
     function cCheck() {
       const date = document.getElementById('cDate').value, start = document.getElementById('cStart').value, end = document.getElementById('cEnd').value;
+      const block = createTab === 'block';
+      const beEl = document.getElementById('cBlockDateEnd');
+      const de = (block && beEl && beEl.value) ? beEl.value : date; // date de fin d'un blocage multi-jours (= début si vide)
       let err = '';
       if (!date || date < TODAY) err = T('docrdv.err_past');
       else if (toMin(end) <= toMin(start)) err = T('docrdv.err_endbefore');
-      else if (slotConflict(date, start, end, -1)) err = T('docrdv.err_overlap');
+      else if (block && de < date) err = T('docrdv.err_daterange');
+      else if (block && blockDayCount(date, de) > BLOCK_RANGE_MAX) err = T('docrdv.err_rangecap').replace('{max}', BLOCK_RANGE_MAX);
+      else if (!block && slotConflict(date, start, end, editIdx)) err = T('docrdv.err_overlap'); // un bloc PEUT chevaucher un RDV (c'est son objet) → pas d'erreur ; editIdx exclut le RDV édité
       const el = document.getElementById('cError'); if (el) { el.textContent = err; el.style.display = err ? '' : 'none'; }
       const btn = document.getElementById('createBtn'); if (btn) btn.disabled = !!err;
+      // Avertissement non bloquant : un bloc qui chevauche des RDV patients ne les annule pas → à gérer un par un (cumulé sur toute la plage).
+      const warn = document.getElementById('cBlockWarn');
+      if (warn) {
+        let msg = '';
+        if (block && !err) { let n = 0; eachDate(date, de, ds => { n += overlappedPatients(ds, start, end); }); if (n) msg = T('docrdv.block_overlap_warn').replace('{n}', n); }
+        warn.innerHTML = msg ? '<i class="fa fa-triangle-exclamation me-1"></i>' + msg : '';
+        warn.style.cssText = 'display:' + (msg ? 'block' : 'none') + ';background:#fff7ed;color:#7c5410;border:1px solid #fde8cf;border-radius:10px;padding:8px 10px;';
+      }
     }
     function setCreateTab(t) {
       createTab = t;
       document.querySelectorAll('#rdvCreate .create-tab').forEach(b => b.classList.toggle('active', b.dataset.ctab === t));
       document.getElementById('panePatient').classList.toggle('d-none', t !== 'patient');
       document.getElementById('paneEvent').classList.toggle('d-none', t !== 'event');
-      document.getElementById('cNotifRow').style.display = (t === 'patient') ? '' : 'none'; // e-mail au patient : onglet patient seulement
+      document.getElementById('paneBlock').classList.toggle('d-none', t !== 'block');
+      // Options « Journée entière » / « Plusieurs jours » propres à l'indisponibilité : masquées et réinitialisées ailleurs.
+      const opts = document.getElementById('cBlockOpts'); if (opts) opts.classList.toggle('d-none', t !== 'block');
+      if (t !== 'block') {
+        const ad = document.getElementById('cAllDay'); if (ad) ad.checked = false; onCreateAllDay(false); // réactive Début/Fin
+        const md = document.getElementById('cMultiDay'); if (md) md.checked = false; onMultiDay(false);   // referme la plage de dates
+      }
+      updateNotif(); // e-mail au patient : onglet patient seulement, et selon patient FUENI ou non
+      cCheck();      // revalide selon l'onglet (l'onglet Indisponible assouplit le chevauchement)
     }
-    function pickEventLabel(id) {
+    // La confirmation e-mail ne part qu'à un patient FUENI (compte + adresse). Un « Nouveau patient »
+    // (non enregistré) ne reçoit rien → message adapté.
+    function updateNotif() {
+      const row = document.getElementById('cNotifRow'); if (!row) return;
+      if (createTab !== 'patient') { row.style.display = 'none'; return; }
+      row.style.display = '';
+      const box = row.querySelector('.alert'); if (!box) return;
+      const val = (document.getElementById('cPatient').value || '').trim();
+      const isNew = val && !PATIENT_LIST.some(p => ptNorm(p) === ptNorm(val));
+      if (isNew) {
+        box.style.cssText = 'background:#fff7ed;color:#7c5410;border:1px solid #fde8cf;border-radius:10px;';
+        box.innerHTML = '<i class="fa fa-circle-info me-1"></i>' + T('docrdv.m_notif_new');
+      } else {
+        box.style.cssText = 'background:#ecfeff;color:#155e75;border:1px solid #a5f3fc;border-radius:10px;';
+        box.innerHTML = '<i class="fa fa-bell me-1"></i>' + T('docrdv.m_notif');
+      }
+    }
+    // Étiquettes proposées à l'événement = toutes sauf système (« Consultation ») et « patient » (Visite à domicile).
+    function renderEventPills() {
+      const opts = LABELS.filter(l => !l.system && !l.patientOnly);
+      let html = opts.map(l => '<span class="np' + (l.id === eventLabel ? ' sel' : '') + '" data-lid="' + l.id + '" onclick="pickEventLabel(\'' + l.id + '\')"><span class="np-dot" style="background:' + l.color + '"></span>' + escL(l.name) + '</span>').join('');
+      if (LABELS.filter(l => !l.system && !l.patientOnly).length < 8) html += '<span class="np np-add" onclick="evToggleNew()"><i class="fa fa-plus me-1"></i>' + T('docrdv.new_label') + '</span>';
+      document.getElementById('eventPills').innerHTML = html;
+    }
+    function pickEventLabel(id) { eventLabel = id; renderEventPills(); }
+    // « Journée entière » (onglet Indisponible) : cale début/fin sur la journée de travail et fige les sélecteurs.
+    function onCreateAllDay(on) {
+      const s = document.getElementById('cStart'), en = document.getElementById('cEnd');
+      if (!s || !en) return;
+      if (on) { const wb = workBounds(), st = hhmm(wb[0]), et = hhmm(wb[1]); s.innerHTML = timeOptions(st); en.innerHTML = endOptions(st, et); s.disabled = true; en.disabled = true; }
+      else { s.disabled = false; en.disabled = false; }
+      cCheck();
+    }
+    // « Plusieurs jours » : révèle la date de fin ; décoché → replie et efface la plage.
+    function onMultiDay(on) {
+      const row = document.getElementById('cBlockRangeRow'); if (row) row.classList.toggle('d-none', !on);
+      const be = document.getElementById('cBlockDateEnd');
+      if (be) { if (on) { be.min = document.getElementById('cDate').value || TODAY; be.focus(); } else { be.value = ''; } }
+      cCheck();
+    }
+    // Création d'étiquette en ligne dans l'onglet Événement (évite de sortir du formulaire).
+    let evLabelColor = SWATCHES[1];
+    function renderEvSwatches() {
+      document.getElementById('evSwatches').innerHTML = SWATCHES.map(c => '<span class="sw' + (c === evLabelColor ? ' sel' : '') + '" style="background:' + c + '" onclick="pickEvSwatch(\'' + c + '\')"></span>').join('');
+    }
+    function pickEvSwatch(c) { evLabelColor = c; renderEvSwatches(); }
+    function evToggleNew() {
+      const f = document.getElementById('evNewForm'); const opening = f.classList.contains('d-none');
+      f.classList.toggle('d-none');
+      if (opening) {
+        document.getElementById('evNewName').value = '';
+        const used = new Set(LABELS.map(l => l.color));
+        evLabelColor = SWATCHES.find(c => !used.has(c)) || SWATCHES[1]; // 1re couleur libre
+        renderEvSwatches();
+        document.getElementById('evNewName').focus();
+      }
+    }
+    function evAddLabel() {
+      const name = document.getElementById('evNewName').value.trim(); if (!name) return;
+      if (labelNameTaken(name)) { toast(T('docrdv.label_dup').replace('{name}', name), 'error'); return; }
+      if (LABELS.filter(l => !l.system && !l.patientOnly).length >= 8) { toast(T('docrdv.label_limit'), 'error'); return; } // cap = palette (8)
+      const id = 'lbl' + Date.now();
+      LABELS.push({ id: id, name: name, color: evLabelColor });
       eventLabel = id;
-      document.querySelectorAll('#eventPills .np').forEach(p => p.classList.toggle('sel', p.dataset.lid === id));
+      document.getElementById('evNewForm').classList.add('d-none');
+      renderEventPills();
+      render(); // met à jour la légende du panneau latéral (nouvelle étiquette)
     }
     // Clic sur un créneau vide de la semaine → nouveau RDV pré-rempli (jour + heure arrondie)
     function colClick(e, ds) {
       if (e.target.closest('.rdv-card') || e.target.closest('.wk-block')) return; // événements/blocs : action propre
       const rect = e.currentTarget.getBoundingClientRect();
-      let mins = START * 60 + Math.round(((e.clientY - rect.top) / HH) * 60);
-      mins = Math.round(mins / 30) * 30;                          // pas de 30 min
-      mins = Math.max(START * 60, Math.min(END * 60 - 30, mins)); // borné à la grille
+      let mins = gStartH * 60 + Math.round(((e.clientY - rect.top) / HH) * 60);
+      mins = Math.round(mins / 30) * 30;                              // pas de 30 min
+      mins = Math.max(gStartH * 60, Math.min(gEndH * 60 - 30, mins)); // borné à la grille visible
       const f2 = t => String(Math.floor(t / 60)).padStart(2, '0') + ':' + String(t % 60).padStart(2, '0');
       openCreate(ds, f2(mins), f2(mins + 30));
     }
@@ -929,17 +1100,42 @@
         name = patientVal;
         nature = document.getElementById('cDomicile').checked ? 'domicile' : 'consultation';
         motif = document.getElementById('cMotif').value.trim();
+      } else if (createTab === 'block') {
+        nature = 'bloque'; motif = '';
+        name = document.getElementById('cBlockReason').value.trim(); // motif d'indisponibilité (facultatif)
       } else {
+        nature = eventLabel; motif = ''; // événement : pas de patient, pas de motif
         const titleVal = document.getElementById('cTitle').value.trim();
         if (!titleVal) { const inp = document.getElementById('cTitle'); inp.classList.add('is-invalid'); inp.focus(); return; }
-        name = titleVal; nature = eventLabel; motif = ''; // événement : pas de patient, pas de motif
+        name = titleVal;
       }
-      if (date < TODAY || toMin(end) <= toMin(start) || slotConflict(date, start, end, -1)) { cCheck(); return; } // garde silencieuse (bouton déjà désactivé)
-      RDV.push({ date, start, end, ini:name.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase(), name, motif, nature, status:'confirmed', patient: (createTab === 'patient'), loc: (fLoc === 'all' ? LOCS[0].id : fLoc) });
+      const block = createTab === 'block';
+      const wasEdit = editIdx >= 0;
+      const beEl = document.getElementById('cBlockDateEnd');
+      const de = (block && beEl && beEl.value) ? beEl.value : date; // date de fin d'un blocage multi-jours
+      if (date < TODAY || toMin(end) <= toMin(start) || (block && (de < date || blockDayCount(date, de) > BLOCK_RANGE_MAX)) || (!block && slotConflict(date, start, end, editIdx))) { cCheck(); return; } // garde silencieuse (bouton déjà désactivé)
+      const loc = (document.getElementById('cLoc') && document.getElementById('cLoc').value) || (fLoc === 'all' ? LOCS[0].id : fLoc);
+      const ini = (name || '').split(' ').filter(Boolean).map(w => w[0]).slice(0, 2).join('').toUpperCase();
+      if (block) {
+        // Édition d'un bloc : retirer l'ancien (ou tout son groupe) avant de ré-étendre la plage.
+        if (wasEdit) {
+          const old = RDV[editIdx];
+          if (old && old.bgroup) { const g = old.bgroup; for (let k = RDV.length - 1; k >= 0; k--) if (RDV[k].bgroup === g) RDV.splice(k, 1); }
+          else if (old) RDV.splice(editIdx, 1);
+        }
+        const bgroup = (de > date) ? 'bg' + Date.now() : null; // groupe partagé si plage multi-jours (Débloquer retire tout le groupe)
+        eachDate(date, de, ds => RDV.push({ date: ds, start, end, ini:'', name, motif:'', nature:'bloque', status:'confirmed', patient:false, loc, bgroup }));
+      } else if (wasEdit) {
+        const o = RDV[editIdx]; // édition d'un événement en place (le drapeau patient reste inchangé)
+        o.date = date; o.start = start; o.end = end; o.name = name; o.nature = nature; o.motif = motif; o.ini = ini; o.loc = loc;
+      } else {
+        RDV.push({ date, start, end, ini, name, motif, nature, status:'confirmed', patient: (createTab === 'patient'), loc });
+      }
       if (createModal) createModal.hide();
       cur = date; render();
-      toast(T('docrdv.create_toast'));
+      toast(T(wasEdit ? 'docrdv.edit_toast' : (block ? 'docrdv.block_toast' : 'docrdv.create_toast')));
       document.getElementById('createForm').reset();
+      editIdx = -1; setCreateMode(false);
       setCreateTab('patient');
     }
 
@@ -963,65 +1159,70 @@
     function ptPick(name) {
       const inp = document.getElementById('cPatient'); if (inp) { inp.value = name; inp.classList.remove('is-invalid'); }
       const menu = document.getElementById('ptMenu'); if (menu) menu.classList.add('d-none');
+      updateNotif();
     }
     function ptKey(e) { if (e.key === 'Escape') { const m = document.getElementById('ptMenu'); if (m) m.classList.add('d-none'); } }
     document.addEventListener('click', function (e) { if (!e.target.closest('#ptCombo')) { const m = document.getElementById('ptMenu'); if (m) m.classList.add('d-none'); } });
 
-    /* ---- Bloquer un créneau ---- */
-    let blockModal;
+    /* ---- Bloquer un créneau : raccourci → modale unifiée, onglet « Indisponible » ---- */
     function openBlock() {
-      document.getElementById('bDate').value = cur;
-      document.getElementById('bAllDay').checked = false;
-      const s = document.getElementById('bStart'), en = document.getElementById('bEnd');
-      s.innerHTML = timeOptions('12:00'); en.innerHTML = timeOptions('14:00'); s.disabled = false; en.disabled = false;
-      document.getElementById('bReason').value = '';
-      const wrap = document.getElementById('bLocWrap'), bl = document.getElementById('bLoc');
-      if (LOCS.length > 1) {
-        wrap.style.display = '';
-        bl.innerHTML = '<option value="all">' + T('docrdv.block_loc_all') + '</option>' +
-          LOCS.map(l => '<option value="' + l.id + '"' + (l.id === fLoc ? ' selected' : '') + '>' + locLabel(l) + '</option>').join('');
-      } else { wrap.style.display = 'none'; }
-      blockModal = blockModal || new bootstrap.Modal(document.getElementById('blockModal'));
-      blockModal.show();
+      openCreate(cur, '12:00', '14:00');
+      setCreateTab('block');
     }
-    function onAllDay(on) {
-      const s = document.getElementById('bStart'), en = document.getElementById('bEnd');
-      if (on) { s.value = String(START).padStart(2, '0') + ':00'; en.value = String(END).padStart(2, '0') + ':00'; s.disabled = true; en.disabled = true; }
-      else { s.disabled = false; en.disabled = false; }
-    }
-    function submitBlock() {
-      const date = document.getElementById('bDate').value, start = document.getElementById('bStart').value, end = document.getElementById('bEnd').value, reason = document.getElementById('bReason').value.trim();
-      if (!date || !start || !end) return;
-      const bl = document.getElementById('bLoc'), lv = (LOCS.length > 1 && bl) ? bl.value : 'all';
-      const blk = { date, start, end, reason };
-      if (lv && lv !== 'all') blk.loc = lv;
-      BLOCKS.push(blk);
-      if (blockModal) blockModal.hide();
-      cur = date; render();
-      toast(T('docrdv.block_toast'));
-    }
-    function openBlockDetail(bi) {
-      const b = BLOCKS[bi];
+    function openBlockView(i, r) {
+      // Blocage multi-jours : on résout tout le groupe pour afficher la plage « du … au … ».
+      const grouped = r.bgroup ? RDV.filter(x => x.bgroup === r.bgroup) : [r];
+      const dates = grouped.map(x => x.date).sort();
+      const isRange = dates.length > 1;
+      const fmt = ds => dObj(ds).toLocaleDateString(lang(), { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+      const whenHtml = isRange
+        ? '<div class="mt-2"><i class="fa fa-calendar-day me-2 text-muted"></i>' + T('docrdv.block_from_to').replace('{d1}', fmt(dates[0])).replace('{d2}', fmt(dates[dates.length - 1])) + ' <span class="text-muted">(' + dates.length + ' ' + T('docrdv.days') + ')</span></div>'
+        : '<div class="mt-2"><i class="fa fa-calendar-day me-2 text-muted"></i>' + fmt(r.date) + '</div>';
       document.getElementById('detailBody').innerHTML =
         '<div class="mb-3"><span class="nat-tag" style="background:#eef2f6;color:#64748b;"><i class="fa fa-ban me-1"></i>' + T('docrdv.unavailable') + '</span></div>' +
-        (b.reason ? '<div class="fw-bold" style="font-size:1.05rem;">' + b.reason + '</div>' : '') +
-        '<div class="mt-2"><i class="fa fa-calendar-day me-2 text-muted"></i>' + dObj(b.date).toLocaleDateString(lang(), { weekday:'long', day:'numeric', month:'long', year:'numeric' }) + '</div>' +
-        '<div class="mt-1"><i class="fa fa-clock me-2 text-muted"></i>' + b.start + ' → ' + b.end + '</div>';
-      document.getElementById('detailFoot').innerHTML = '<button class="btn btn-outline-secondary btn-sm" onclick="removeBlock(' + bi + ')"><i class="fa fa-rotate-left me-1"></i>' + T('docrdv.unblock') + '</button>';
+        (r.name ? '<div class="fw-bold" style="font-size:1.05rem;">' + escL(r.name) + '</div>' : '') +
+        whenHtml +
+        '<div class="mt-1"><i class="fa fa-clock me-2 text-muted"></i>' + r.start + ' → ' + r.end + '</div>' +
+        (r.loc && LOC_IDS.has(r.loc) ? '<div class="mt-1"><i class="fa fa-location-dot me-2 text-muted"></i>' + locNameById(r.loc) + '</div>' : '');
+      document.getElementById('detailFoot').innerHTML =
+        '<button class="btn btn-outline-secondary btn-sm" onclick="openEdit(' + i + ')"><i class="fa fa-pen me-1"></i>' + T('docrdv.edit') + '</button>' +
+        '<button class="btn btn-outline-secondary btn-sm" onclick="removeBlock(' + i + ')"><i class="fa fa-rotate-left me-1"></i>' + T('docrdv.unblock') + '</button>';
       detailModal = detailModal || new bootstrap.Offcanvas(document.getElementById('rdvDetail'));
       detailModal.show();
     }
-    function removeBlock(bi) { BLOCKS.splice(bi, 1); if (detailModal) detailModal.hide(); render(); toast(T('docrdv.unblock_toast')); }
+    // Débloquer : retire le bloc du jour, ou tout le groupe s'il s'agit d'un blocage multi-jours.
+    function removeBlock(i) {
+      const r = RDV[i];
+      if (r && r.bgroup) { const g = r.bgroup; for (let k = RDV.length - 1; k >= 0; k--) if (RDV[k].bgroup === g) RDV.splice(k, 1); }
+      else RDV.splice(i, 1);
+      if (detailModal) detailModal.hide(); render(); toast(T('docrdv.unblock_toast'));
+    }
 
     let tt;
-    function toast(msg) {
+    function toast(msg, type) {
       const t = document.getElementById('rdvToast');
+      const err = type === 'error';
       document.getElementById('rdvToastMsg').textContent = msg;
+      document.getElementById('rdvToastIcon').className = 'fa ' + (err ? 'fa-circle-exclamation' : 'fa-circle-check');
+      t.classList.toggle('toast-err', err);
       t.style.display = 'flex'; clearTimeout(tt); tt = setTimeout(() => { t.style.display = 'none'; }, 2400);
     }
 
     document.addEventListener('fueni:langchange', render);
-    document.addEventListener('DOMContentLoaded', render);
+    // Arrivée depuis un autre écran (ex. fiche patient → « Nouveau rendez-vous ») : ouvre directement « Ajouter au planning »
+    // sur l'onglet patient, pré-rempli avec le patient passé en paramètre (?new=1&patient=…).
+    function openFromParams() {
+      try {
+        const q = new URLSearchParams(location.search);
+        if (q.get('new') !== '1') return;
+        openCreate();
+        setCreateTab('patient');
+        const patient = q.get('patient') || '';
+        if (patient) { const inp = document.getElementById('cPatient'); if (inp) { inp.value = patient; inp.classList.remove('is-invalid'); } updateNotif(); }
+        if (history.replaceState) history.replaceState(null, '', location.pathname); // nettoie l'URL → pas de ré-ouverture au rechargement
+      } catch (e) {}
+    }
+    document.addEventListener('DOMContentLoaded', function () { render(); openFromParams(); });
   </script>
 <!-- Prototype version badge -->
 <script>(function(){if(window.__pv)return;window.__pv=1;var v=document.createElement('div');v.style.cssText='position:fixed;top:0;left:50%;transform:translateX(-50%);background:#155e75;color:#fff;padding:6px 20px;border-radius:0 0 16px 16px;font:600 12px/1 system-ui,-apple-system,sans-serif;letter-spacing:.6px;z-index:99999;box-shadow:0 3px 10px rgba(0,0,0,.2);text-transform:uppercase;display:flex;align-items:center;gap:8px';v.innerHTML='🧪 Prototype <span style="background:#f59e0b;color:#1a1a1a;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:4px">v1.4.0</span><span style="background:#facc15;color:#1a1a1a;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:4px;text-transform:none;letter-spacing:0">⏳ À valider</span>';document.body.appendChild(v);})();</script>

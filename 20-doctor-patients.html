@@ -58,6 +58,12 @@
     .kv { display:flex; justify-content:space-between; gap:12px; padding:7px 0; border-bottom:1px solid #f4f7fa; font-size:0.88rem; }
     .kv .k { color:#94a3b8; }
     .kv .v { color:#334155; font-weight:600; text-align:right; }
+    .contact-row { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:9px 0; border-bottom:1px solid #f4f7fa; font-size:0.88rem; }
+    .contact-row .cr-k { color:#94a3b8; font-weight:600; display:flex; align-items:center; gap:8px; flex-shrink:0; }
+    .contact-row .cr-k i { width:16px; text-align:center; }
+    .contact-row .v { color:#334155; font-weight:600; text-align:right; word-break:break-word; }
+    .np-err { color:#dc2626; font-size:0.78rem; margin-top:4px; }
+    .form-control.is-invalid, .form-select.is-invalid { border-color:#dc2626; }
     .tl-item { padding:9px 0 9px 18px; border-left:2px solid #e2e8f0; position:relative; margin-left:4px; }
     .tl-item:before { content:''; position:absolute; left:-6px; top:13px; width:10px; height:10px; border-radius:50%; background:#155e75; }
     .doc-chip { display:flex; align-items:center; gap:10px; padding:9px 12px; border:1px solid #eef2f6; border-radius:10px; margin-bottom:7px; font-size:0.85rem; }
@@ -182,20 +188,20 @@
     <div class="offcanvas-body">
       <div class="drawer-sec">
         <h6 data-i18n="docpat.d_contact">Coordonnées</h6>
-        <div class="kv"><span class="k"><i class="fa fa-phone me-1"></i></span><span class="v" id="dPhone"></span></div>
-        <div class="kv"><span class="k"><i class="fa fa-envelope me-1"></i></span><span class="v" id="dEmail"></span></div>
+        <div class="contact-row"><span class="cr-k"><i class="fa fa-phone"></i><span data-i18n="docpat.np_phone">Téléphone</span></span><span class="v" id="dPhone"></span></div>
+        <div class="contact-row"><span class="cr-k"><i class="fa fa-envelope"></i><span data-i18n="docpat.np_email">E-mail</span></span><span class="v" id="dEmail"></span></div>
       </div>
-      <div class="drawer-sec">
+      <div class="drawer-sec" id="dVisitsSec">
         <h6 data-i18n="docpat.d_last_visits">Dernières consultations</h6>
         <div id="dVisits"></div>
       </div>
-      <div class="drawer-sec">
+      <div class="drawer-sec" id="dDocsSec">
         <h6><span data-i18n="docpat.d_docs">Documents partagés</span> <span id="dDocsBadge"></span></h6>
         <div id="dDocs"></div>
       </div>
       <div class="d-grid gap-2 mt-4">
         <a class="topbar-btn" id="dRecordLink" style="justify-content:center;" href="26-doctor-records.html"><i class="fa fa-file-medical"></i><span data-i18n="docpat.view_record">Ouvrir le dossier médical</span></a>
-        <a href="24-doctor-rendezvous.html" class="mini-btn text-center" style="padding:9px;"><i class="fa fa-calendar-plus me-1"></i><span data-i18n="docpat.new_rdv">Nouveau rendez-vous</span></a>
+        <a id="dNewRdvLink" href="24-doctor-rendezvous.html" class="mini-btn text-center" style="padding:9px;"><i class="fa fa-calendar-plus me-1"></i><span data-i18n="docpat.new_rdv">Nouveau rendez-vous</span></a>
       </div>
     </div>
   </div>
@@ -209,13 +215,17 @@
           <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
         <div class="modal-body pt-2">
-          <form id="npForm" onsubmit="event.preventDefault(); submitNewPatient();">
+          <form id="npForm" novalidate onsubmit="event.preventDefault(); submitNewPatient();">
             <div class="row g-3">
-              <div class="col-12"><label class="form-label small fw-semibold" data-i18n="docpat.np_name">Nom complet</label><input type="text" class="form-control" id="npName" required></div>
-              <div class="col-4"><label class="form-label small fw-semibold" data-i18n="docpat.np_sex">Sexe</label><select class="form-select" id="npSex"><option value="F" data-i18n="docpat.sex_F">F</option><option value="M" data-i18n="docpat.sex_M">H</option></select></div>
-              <div class="col-8"><label class="form-label small fw-semibold" data-i18n="docpat.np_age">Âge</label><input type="number" class="form-control" id="npAge" min="0" max="120"></div>
-              <div class="col-12"><label class="form-label small fw-semibold" data-i18n="docpat.np_phone">Téléphone</label><input type="tel" class="form-control" id="npPhone" placeholder="+221 …"></div>
-              <div class="col-12"><label class="form-label small fw-semibold" data-i18n="docpat.np_email">E-mail</label><input type="email" class="form-control" id="npEmail"></div>
+              <div class="col-6"><label class="form-label small fw-semibold" data-i18n="docpat.np_firstname">Prénom</label><input type="text" class="form-control" id="npFirst" maxlength="80" oninput="clearNpErr('npFirst')"><div class="np-err d-none" id="err-npFirst"></div></div>
+              <div class="col-6"><label class="form-label small fw-semibold" data-i18n="docpat.np_lastname">Nom</label><input type="text" class="form-control" id="npLast" maxlength="80" oninput="clearNpErr('npLast')"><div class="np-err d-none" id="err-npLast"></div></div>
+              <div class="col-6"><label class="form-label small fw-semibold" data-i18n="docpat.np_sex">Sexe à la naissance</label><select class="form-select" id="npSex"><option value="F" data-i18n="docpat.sex_female">Féminin</option><option value="M" data-i18n="docpat.sex_male">Masculin</option></select></div>
+              <div class="col-6"><label class="form-label small fw-semibold" data-i18n="docpat.np_dob">Date de naissance</label><input type="date" lang="fr-FR" class="form-control" id="npDob" oninput="clearNpErr('npDob')"><div class="np-err d-none" id="err-npDob"></div></div>
+              <div class="col-12"><label class="form-label small fw-semibold" data-i18n="docpat.np_phone">Téléphone</label>
+                <div class="d-flex gap-2"><select class="form-select" id="npCC" style="max-width:130px;flex-shrink:0;" onchange="clearNpErr('npPhone')"></select><input type="tel" class="form-control" id="npPhone" inputmode="tel" placeholder="77 123 45 67" oninput="clearNpErr('npPhone')"></div>
+                <div class="np-err d-none" id="err-npPhone"></div></div>
+              <div class="col-12"><label class="form-label small fw-semibold" data-i18n="docpat.np_email">E-mail</label><input type="email" class="form-control" id="npEmail" oninput="clearNpErr('npEmail')"><div class="np-err d-none" id="err-npEmail"></div></div>
+              <div class="col-12"><div class="small text-muted" style="background:#f8fafc;border-radius:8px;padding:8px 10px;"><i class="fa fa-circle-info me-1"></i><span data-i18n="docpat.np_manual_note">Fiche créée par le praticien — non rattachée à un compte FUENI (rattachement possible si le patient s'inscrit).</span></div></div>
             </div>
           </form>
         </div>
@@ -262,7 +272,7 @@
       document.getElementById('ptBody').innerHTML = slice.map(p => (
         '<tr onclick="openPatient(\'' + p.id + '\')">' +
           '<td><div class="d-flex align-items-center gap-2"><div class="pt-avatar">' + p.ini + '</div><span class="fw-semibold">' + p.name + '</span></div></td>' +
-          '<td>' + (p.age ? p.age + ' ' + T('docpat.years') + ' · ' : '') + '<span class="sex-tag sex-' + p.sex + '">' + T('docpat.sex_' + p.sex) + '</span></td>' +
+          '<td>' + (ageOf(p) !== '' ? ageOf(p) + ' ' + T('docpat.years') + ' · ' : '') + '<span class="sex-tag sex-' + p.sex + '">' + T('docpat.sex_' + p.sex) + '</span></td>' +
           '<td>' + (p.last ? fmtDate(p.last) + '<div class="small text-muted">' + p.lastMotif + '</div>' : '<span class="text-muted">' + T('docpat.never') + '</span>') + '</td>' +
           '<td>' + (p.next ? '<span style="color:#155e75;font-weight:600;">' + fmtDate(p.next) + '</span><div class="small text-muted">' + (p.nextMotif || '') + '</div>' : '<span class="text-muted">—</span>') + '</td>' +
           '<td class="small text-muted">' + p.phone + '</td>' +
@@ -291,13 +301,20 @@
       currentPid = id;
       document.getElementById('dAvatar').textContent = p.ini;
       document.getElementById('dName').textContent = p.name;
-      document.getElementById('dSub').textContent = (p.age ? p.age + ' ' + T('docpat.years') + ' · ' : '') + T('docpat.sex_' + p.sex);
-      document.getElementById('dPhone').textContent = p.phone || '—';
-      document.getElementById('dEmail').textContent = p.email || '—';
+      const _a = ageOf(p);
+      document.getElementById('dSub').innerHTML = (_a !== '' ? _a + ' ' + T('docpat.years') + ' · ' : '') + T('docpat.sex_' + p.sex) +
+        (p.manual ? ' <span style="background:#eef2f6;color:#64748b;border-radius:6px;padding:1px 7px;font-size:0.7rem;font-weight:600;margin-left:4px;">' + T('docpat.manual_badge') + '</span>' : '');
+      document.getElementById('dPhone').innerHTML = p.phone ? '<a href="tel:' + esc(p.phone).replace(/[^\d+]/g, '') + '" style="color:#155e75;text-decoration:none;">' + esc(p.phone) + '</a>' : '—';
+      document.getElementById('dEmail').innerHTML = p.email ? '<a href="mailto:' + esc(p.email) + '" style="color:#155e75;text-decoration:none;">' + esc(p.email) + '</a>' : '—';
       document.getElementById('dRecordLink').href = '26-doctor-records.html?patient=' + encodeURIComponent(p.name);
-      document.getElementById('dVisits').innerHTML = p.last
-        ? '<div class="tl-item"><div class="fw-semibold small">' + fmtDate(p.last) + '</div><div class="text-muted small">' + p.lastMotif + '</div></div>'
-        : '<div class="text-muted small">' + T('docpat.no_visits') + '</div>';
+      document.getElementById('dNewRdvLink').href = '24-doctor-rendezvous.html?new=1&patient=' + encodeURIComponent(p.name); // ouvre « Ajouter au planning » pré-rempli sur ce patient
+      // Historique : jusqu'aux 3 dernières consultations (repli sur last/lastMotif si le détail n'est pas disponible).
+      const visits = (p.consults && p.consults.length) ? p.consults : (p.last ? [{ date: p.last, motif: p.lastMotif }] : []);
+      document.getElementById('dVisitsSec').style.display = visits.length ? '' : 'none'; // section masquée si aucune consultation
+      document.getElementById('dVisits').innerHTML = visits.slice(0, 3).map(c => '<div class="tl-item"><div class="fw-semibold small">' + fmtDate(c.date) + '</div><div class="text-muted small">' + esc(c.motif || '') + (c.diag ? ' · ' + esc(c.diag) : '') + '</div></div>').join('')
+        + (visits.length > 3 ? '<div class="text-muted small mt-2" style="padding-left:22px;">+ ' + (visits.length - 3) + ' ' + T('docpat.more_visits') + '</div>' : '');
+      refusingIdx = -1;
+      document.getElementById('dDocsSec').style.display = (p.docs && p.docs.length) ? '' : 'none'; // section masquée si aucun document partagé
       refreshDocs(p);
       drawer = drawer || new bootstrap.Offcanvas(document.getElementById('ptDrawer'));
       drawer.show();
@@ -310,9 +327,14 @@
     function docChip(d, i, actionable) {
       const stTag = (d.st === 'refused') ? '<span class="doc-st no">' + T('docpat.doc_st_refused') + '</span>'
         : (d.st === 'pending') ? '' : '<span class="doc-st ok">' + T('docpat.doc_st_validated') + '</span>';
-      const actions = actionable
-        ? '<div class="doc-actions"><button class="doc-btn ok" onclick="validateDoc(' + i + ')"><i class="fa fa-check me-1"></i>' + T('docpat.doc_validate') + '</button>' +
-          '<button class="doc-btn no" onclick="refuseDoc(' + i + ')"><i class="fa fa-xmark me-1"></i>' + T('docpat.doc_refuse') + '</button></div>' : '';
+      const actions = !actionable ? ''
+        : (i === refusingIdx
+          // Mode refus : saisie du motif en ligne (remplace le window.prompt natif) — cohérent avec les confirmations inline de l'app.
+          ? '<div class="mt-2"><input type="text" class="form-control form-control-sm mb-2" id="refuseReason" placeholder="' + T('docpat.doc_refuse_ph') + '" onkeydown="if(event.key===\'Enter\'){event.preventDefault();confirmRefuse(' + i + ');}">' +
+            '<div class="doc-actions"><button class="doc-btn no" onclick="confirmRefuse(' + i + ')"><i class="fa fa-xmark me-1"></i>' + T('docpat.doc_refuse_confirm') + '</button>' +
+            '<button class="doc-btn" onclick="cancelRefuse()">' + T('docpat.doc_refuse_cancel') + '</button></div></div>'
+          : '<div class="doc-actions"><button class="doc-btn ok" onclick="validateDoc(' + i + ')"><i class="fa fa-check me-1"></i>' + T('docpat.doc_validate') + '</button>' +
+            '<button class="doc-btn no" onclick="askRefuse(' + i + ')"><i class="fa fa-xmark me-1"></i>' + T('docpat.doc_refuse') + '</button></div>');
       const motif = (d.st === 'refused' && d.motif) ? ' · ' + T('docpat.doc_motif') + ' ' + esc(d.motif) : '';
       return '<div class="doc-chip2' + (actionable ? ' pending' : '') + '">' +
         '<div class="dc-top"><i class="fa ' + (DOC_IC[d.t] || 'fa-file') + '" style="color:#155e75;"></i>' +
@@ -339,31 +361,89 @@
     }
     function validateDoc(i) {
       const p = byId[currentPid]; if (!p || !p.docs[i]) return;
+      refusingIdx = -1;
       p.docs[i].st = 'validated'; delete p.docs[i].motif;
       refreshDocs(p); render(); ptToast(T('docpat.doc_validate_toast'));
     }
-    function refuseDoc(i) {
+    // Refus = motif saisi en ligne dans la fiche du document (pas de window.prompt natif).
+    let refusingIdx = -1;
+    function askRefuse(i) { refusingIdx = i; const p = byId[currentPid]; if (p) refreshDocs(p); const el = document.getElementById('refuseReason'); if (el) el.focus(); }
+    function cancelRefuse() { refusingIdx = -1; const p = byId[currentPid]; if (p) refreshDocs(p); }
+    function confirmRefuse(i) {
       const p = byId[currentPid]; if (!p || !p.docs[i]) return;
-      const m = window.prompt(T('docpat.doc_refuse_prompt')); if (m === null) return; // annulé
-      p.docs[i].st = 'refused'; p.docs[i].motif = (m || '').trim();
+      const el = document.getElementById('refuseReason');
+      p.docs[i].st = 'refused'; p.docs[i].motif = (el ? el.value : '').trim();
+      refusingIdx = -1;
       refreshDocs(p); render(); ptToast(T('docpat.doc_refuse_toast'));
     }
 
     let npModal;
+    const NP_FIELDS = ['npFirst', 'npLast', 'npDob', 'npPhone', 'npEmail'];
+    // Indicatifs pays — sous-ensemble MVP (miroir des pays « mvp » de l'inscription, Sénégal par défaut).
+    const NP_CC = [
+      { dial:'+221', flag:'🇸🇳', len:9 }, { dial:'+225', flag:'🇨🇮', len:10 }, { dial:'+223', flag:'🇲🇱', len:8 },
+      { dial:'+229', flag:'🇧🇯', len:8 }, { dial:'+228', flag:'🇹🇬', len:8 }, { dial:'+226', flag:'🇧🇫', len:8 },
+      { dial:'+227', flag:'🇳🇪', len:8 }, { dial:'+237', flag:'🇨🇲', len:9 }, { dial:'+243', flag:'🇨🇩', len:9 }
+    ];
+    function fillCC() {
+      const sel = document.getElementById('npCC'); if (!sel || sel.options.length) return;
+      sel.innerHTML = NP_CC.map(c => '<option value="' + c.dial + '" data-len="' + c.len + '">' + c.flag + ' ' + c.dial + '</option>').join('');
+    }
     function openNewPatient() {
+      fillCC();
       document.getElementById('npForm').reset();
+      NP_FIELDS.forEach(clearNpErr);
       npModal = npModal || new bootstrap.Modal(document.getElementById('npModal'));
       npModal.show();
     }
+    // Erreur inline par champ (motif : le formulaire est en novalidate → validation JS cohérente, style écran d'inscription).
+    function npErr(id, key) {
+      const el = document.getElementById('err-' + id); if (el) { el.textContent = key ? T(key) : ''; el.classList.toggle('d-none', !key); }
+      const inp = document.getElementById(id); if (inp) inp.classList.toggle('is-invalid', !!key);
+    }
+    function clearNpErr(id) { npErr(id, ''); }
+    // Validation « douce » : Prénom/Nom requis ; DOB / e-mail / téléphone contrôlés seulement s'ils sont renseignés
+    // (pas de règle « 18 ans », ni e-mail/téléphone obligatoires : une fiche praticien peut concerner un mineur ou un patient sans e-mail).
+    function validateNewPatient() {
+      const v = id => document.getElementById(id).value.trim();
+      const first = v('npFirst'), lastN = v('npLast'), dob = document.getElementById('npDob').value, phone = v('npPhone'), email = v('npEmail');
+      let focusEl = null; const fail = id => { if (!focusEl) focusEl = document.getElementById(id); };
+      npErr('npFirst', first ? '' : 'docpat.np_err_required'); if (!first) fail('npFirst');
+      npErr('npLast', lastN ? '' : 'docpat.np_err_required'); if (!lastN) fail('npLast');
+      const dobBad = dob && (new Date(dob + 'T00:00:00') > new Date() || ageFromDob(dob) === '');
+      npErr('npDob', dobBad ? 'docpat.np_err_dob' : ''); if (dobBad) fail('npDob');
+      const mailBad = email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+      npErr('npEmail', mailBad ? 'docpat.np_err_email' : ''); if (mailBad) fail('npEmail');
+      const ccOpt = document.getElementById('npCC').selectedOptions[0];
+      const expLen = ccOpt ? +ccOpt.dataset.len : 0;
+      const digits = phone.replace(/[^\d]/g, '');
+      const phoneBad = phone && (expLen ? digits.length !== expLen : digits.length < 6); // longueur attendue selon le pays (ex. Sénégal = 9 chiffres)
+      npErr('npPhone', phoneBad ? 'docpat.np_err_phone' : ''); if (phoneBad) fail('npPhone');
+      if (focusEl) focusEl.focus();
+      return !focusEl;
+    }
+    // Âge dérivé de la date de naissance (jamais stocké « en dur » : il resterait figé). Repli sur p.age pour les fiches démo.
+    function ageFromDob(dob) {
+      if (!dob) return '';
+      const b = new Date(dob + 'T00:00:00'); if (isNaN(b.getTime())) return '';
+      const t = new Date(); let a = t.getFullYear() - b.getFullYear();
+      if (t.getMonth() < b.getMonth() || (t.getMonth() === b.getMonth() && t.getDate() < b.getDate())) a--;
+      return a >= 0 && a <= 130 ? a : '';
+    }
+    const ageOf = p => p.dob ? ageFromDob(p.dob) : (p.age != null ? p.age : '');
     function submitNewPatient() {
-      const name = document.getElementById('npName').value.trim(); if (!name) return;
+      if (!validateNewPatient()) return;
+      const first = document.getElementById('npFirst').value.trim(), lastN = document.getElementById('npLast').value.trim();
       const sex = document.getElementById('npSex').value;
-      const age = +document.getElementById('npAge').value || '';
-      const phone = document.getElementById('npPhone').value.trim();
+      const dob = document.getElementById('npDob').value;
+      const rawPhone = document.getElementById('npPhone').value.trim();
+      const phone = rawPhone ? (document.getElementById('npCC').value + ' ' + rawPhone) : ''; // indicatif + numéro local, stocké normalisé
       const email = document.getElementById('npEmail').value.trim();
-      const ini = name.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
+      const name = (first + ' ' + lastN).trim();
+      const ini = ((first[0] || '') + (lastN[0] || '')).toUpperCase();
       const id = 'p' + Date.now();
-      const p = { id, ini, name, sex, age, last:'', lastMotif:'', next:'', nextMotif:'', phone, email, blood:'', allergies:[], ant:[], family:[], consults:[], docs:[] };
+      // Modèle aligné sur l'inscription patient (prénom / nom / date de naissance / sexe à la naissance) ; fiche « manuelle » (non rattachée à un compte FUENI).
+      const p = { id, ini, firstName: first, lastName: lastN, name, sex, dob, manual: true, last:'', lastMotif:'', next:'', nextMotif:'', phone, email, blood:'', allergies:[], ant:[], family:[], consults:[], docs:[] };
       PATIENTS.unshift(p); byId[id] = p;
       if (npModal) npModal.hide();
       filter = 'all'; page = 1;
@@ -376,6 +456,13 @@
 
     document.addEventListener('fueni:langchange', render);
     document.addEventListener('DOMContentLoaded', render);
+    // Le sélecteur de langue global (injecté par naz-i18n.js, fixé en haut à droite) recouvrirait le tiroir → on le masque tant qu'il est ouvert.
+    (function () {
+      const el = document.getElementById('ptDrawer'); if (!el) return;
+      const tgl = () => document.getElementById('fueni-lang-toggle');
+      el.addEventListener('show.bs.offcanvas', () => { const t = tgl(); if (t) t.style.display = 'none'; });
+      el.addEventListener('hidden.bs.offcanvas', () => { const t = tgl(); if (t) t.style.display = ''; });
+    })();
   </script>
 <!-- Prototype version badge -->
 <script>(function(){if(window.__pv)return;window.__pv=1;var v=document.createElement('div');v.style.cssText='position:fixed;top:0;left:50%;transform:translateX(-50%);background:#155e75;color:#fff;padding:6px 20px;border-radius:0 0 16px 16px;font:600 12px/1 system-ui,-apple-system,sans-serif;letter-spacing:.6px;z-index:99999;box-shadow:0 3px 10px rgba(0,0,0,.2);text-transform:uppercase;display:flex;align-items:center;gap:8px';v.innerHTML='🧪 Prototype <span style="background:#f59e0b;color:#1a1a1a;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:4px">v1.4.0</span><span style="background:#facc15;color:#1a1a1a;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:4px;text-transform:none;letter-spacing:0">⏳ À valider</span>';document.body.appendChild(v);})();</script>
