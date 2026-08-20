@@ -841,7 +841,8 @@
       if (r.status !== 'cancelled') {
         if (isConsult) {
           // RDV patient : Documenter / Voir fiche / Reporter (notifie le patient) / Annuler.
-          foot += '<a class="btn btn-sm" style="background:#155e75;color:#fff;" href="25-doctor-consultation.html?patient=' + encodeURIComponent(rdvName(r)) + '&motif=' + encodeURIComponent(r.motif) + '"><i class="fa fa-notes-medical me-1"></i>' + T('docrdv.document') + '</a>';
+          const rdvRef = r.apptId || ('RDV-' + r.date.replace(/-/g, '') + '-' + r.start.replace(':', '')); // réf. en ligne si réservé, sinon dérivée (stable) de la date + heure
+          foot += '<a class="btn btn-sm" style="background:#155e75;color:#fff;" href="25-doctor-consultation.html?patient=' + encodeURIComponent(rdvName(r)) + '&motif=' + encodeURIComponent(r.motif) + '&date=' + r.date + '&time=' + encodeURIComponent(r.start) + '&rdvId=' + encodeURIComponent(rdvRef) + '"><i class="fa fa-notes-medical me-1"></i>' + T('docrdv.document') + '</a>';
           foot += '<a class="btn btn-outline-secondary btn-sm" href="26-doctor-records.html?patient=' + encodeURIComponent(rdvName(r)) + '"><i class="fa fa-folder-open me-1"></i>' + T('docrdv.view_patient') + '</a>';
           foot += '<button class="btn btn-outline-secondary btn-sm" onclick="toggleResched()"><i class="fa fa-clock-rotate-left me-1"></i>' + T('docrdv.resched') + '</button>';
           foot += '<button class="btn btn-outline-danger btn-sm" onclick="askCancel(' + i + ')"><i class="fa fa-ban me-1"></i>' + T('docrdv.cancel_appt') + '</button>';

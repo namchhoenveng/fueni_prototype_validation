@@ -257,6 +257,8 @@
       return a >= 0 && a <= 130 ? a : '';
     }
     const ageOf = p => p.dob ? ageFromDob(p.dob) : (p.age != null ? p.age : '');
+    // N° dossier = référence patient unique et lisible (dérivée de l'id). Sert notamment à distinguer deux homonymes.
+    const dossierNo = p => { const n = (p.id || '').replace(/[^0-9]/g, ''); return 'DOS-' + (n ? n.slice(-6).padStart(6, '0') : '000000'); };
 
     const PATIENTS = window.NazPatients;
     const byId = Object.fromEntries(PATIENTS.map(p => [p.id, p]));
@@ -275,7 +277,7 @@
       document.getElementById('recList').innerHTML = list.map(p =>
         '<div class="rec-item' + (p.id === sel ? ' sel' : '') + '" onclick="select(\'' + p.id + '\')">' +
           '<div class="rec-av">' + p.ini + '</div>' +
-          '<div class="flex-grow-1"><div class="nm">' + esc(p.name) + '</div><div class="mt">' + (ageOf(p) !== '' ? ageOf(p) + ' ' + T('docpat.years') + ' · ' : '') + T('docpat.sex_' + p.sex) + '</div></div>' +
+          '<div class="flex-grow-1"><div class="nm">' + esc(p.name) + '</div><div class="mt">' + (ageOf(p) !== '' ? ageOf(p) + ' ' + T('docpat.years') + ' · ' : '') + T('docpat.sex_' + p.sex) + ' · ' + dossierNo(p) + '</div></div>' +
           (pendingCount(p) > 0 ? '<span class="pend-badge" title="' + T('docpat.to_validate') + '">' + pendingCount(p) + '</span>' : '') +
         '</div>'
       ).join('') || '<div class="muted p-3">' + T('docpat.empty') + '</div>';
@@ -408,15 +410,23 @@
     const ALLERGENS = ['Pénicilline', 'Amoxicilline', 'AINS', 'Aspirine', 'Iode / produits de contraste', 'Latex', 'Arachide', 'Fruits de mer', 'Œuf', 'Lait', 'Sulfamides', 'Anesthésiques locaux', 'Pollen', 'Acariens'];
     const CONDITIONS = ['Hypertension artérielle (HTA)', 'Diabète type 2', 'Diabète type 1', 'Asthme', 'Drépanocytose', 'Insuffisance rénale chronique', 'Cardiopathie', 'AVC', 'Épilepsie', 'Ulcère gastroduodénal', 'Tuberculose', 'VIH', 'Hépatite B', 'Cancer', 'Hypothyroïdie', 'Dépression'];
     const RELATIONS = ['Père', 'Mère', 'Frère', 'Sœur', 'Grand-père', 'Grand-mère', 'Oncle', 'Tante', 'Autre'];
+    // Professions — liste indicative couvrant les grands groupes CITP/ISCO (OIT). Combobox + saisie libre ; codage CITP en V2.
+    const PROFESSIONS = ['Agriculteur / Éleveur', 'Pêcheur', 'Commerçant / Vendeur', 'Enseignant(e)', 'Fonctionnaire', 'Employé(e) de bureau', 'Chauffeur', 'Ouvrier / Manœuvre', 'Artisan', 'Maçon', 'Couturier(ère)', 'Coiffeur(euse)', 'Infirmier(ère)', 'Médecin', 'Cadre / Dirigeant', 'Technicien(ne)', 'Mécanicien', 'Chef d\'entreprise / Indépendant', 'Militaire / Forces de l\'ordre', 'Étudiant(e) / Élève', 'Ménagère / Au foyer', 'Retraité(e)', 'Sans emploi', 'Autre'];
     // Antécédent perso = { cond, year } (année de diagnostic, facultative) ; repli sur les chaînes des fiches démo.
     const antStr = a => (typeof a === 'string') ? a : ((a.cond || '') + (a.year ? ' (' + a.year + ')' : ''));
     // Combobox « créable » (style annuaire) : déclencheur type select → panneau partagé avec recherche + liste + « Ajouter « X » » (valeur libre).
     const escA = s => (s == null ? '' : String(s)).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
-    const MED_LISTS = { al: ALLERGENS, cond: CONDITIONS, rel: RELATIONS };
+    const MED_LISTS = { al: ALLERGENS, cond: CONDITIONS, rel: RELATIONS, prof: PROFESSIONS };
     let cbxTrigger = null;
     function cbxTriggerHtml(listKey, coll, idx, field, value, placeholder, style) {
       const has = !!value;
       return '<div class="cbx"' + (style ? ' style="' + style + '"' : '') + ' data-list="' + listKey + '" data-coll="' + coll + '" data-idx="' + idx + '" data-field="' + (field || '') + '" onclick="cbxOpen(this)">' +
+        '<span class="cbx-val' + (has ? '' : ' placeholder') + '">' + (has ? esc(value) : (placeholder || '—')) + '</span><i class="fa fa-chevron-down"></i></div>';
+    }
+    // Variante « champ scalaire » (ex. p.profession) : lie directement une propriété du patient (pas un tableau).
+    function cbxScalar(listKey, prop, value, placeholder, style) {
+      const has = !!value;
+      return '<div class="cbx"' + (style ? ' style="' + style + '"' : '') + ' data-list="' + listKey + '" data-scalar="1" data-coll="' + prop + '" onclick="cbxOpen(this)">' +
         '<span class="cbx-val' + (has ? '' : ' placeholder') + '">' + (has ? esc(value) : (placeholder || '—')) + '</span><i class="fa fa-chevron-down"></i></div>';
     }
     function cbxOpen(trigger) {
@@ -440,8 +450,9 @@
     function cbxPick(e, value) {
       if (e) e.preventDefault();
       if (!cbxTrigger) return;
-      const p = byId[sel], coll = cbxTrigger.dataset.coll, idx = +cbxTrigger.dataset.idx, field = cbxTrigger.dataset.field;
-      if (field) { if (p[coll][idx]) p[coll][idx][field] = value; } else { p[coll][idx] = value; }
+      const p = byId[sel];
+      if (cbxTrigger.dataset.scalar) { p[cbxTrigger.dataset.coll] = value; } // champ scalaire (ex. profession)
+      else { const coll = cbxTrigger.dataset.coll, idx = +cbxTrigger.dataset.idx, field = cbxTrigger.dataset.field; if (field) { if (p[coll][idx]) p[coll][idx][field] = value; } else { p[coll][idx] = value; } }
       cbxClose(); renderRecord();
     }
     function cbxKey(e) {
@@ -467,6 +478,7 @@
           '<button class="mr-edit-btn" onclick="editMedInfo()"><i class="fa fa-pen me-1"></i>' + T('docpp.edit') + '</button></div>' +
           '<div class="perso-list">' +
             chipKv(T('docmr.blood'), p.blood || T('docmr.blood_unknown')) +
+            chipKv(T('docmr.profession'), p.profession ? esc(p.profession) : '<span class="muted">' + T('docmr.none') + '</span>') +
             chipKv(T('docmr.allergies'), allergies, true) +
             chipKv(T('docmr.ant_perso'), ant, true) +
             chipKv(T('docmr.ant_family'), fam, true) +
@@ -480,6 +492,8 @@
       const famRows = (p.family || []).map((f, i) => '<div class="me-row">' + cbxTriggerHtml('rel', 'family', i, 'rel', f.rel, T('docmr.rel_ph'), 'flex:0 0 160px') + cbxTriggerHtml('cond', 'family', i, 'cond', f.cond, T('docmr.cond_ph'), 'flex:1') + '<button class="btn-del" onclick="rmFam(' + i + ')"><i class="fa fa-trash-can"></i></button></div>').join('');
       return '<h6 class="rec-sec-title">' + T('docmr.med_info') + '</h6>' +
         '<div class="me-lbl">' + T('docmr.blood') + '</div><div class="me-row">' + bloodSel + '</div>' +
+        '<div class="me-lbl">' + T('docmr.profession') + '</div><div class="me-row">' + cbxScalar('prof', 'profession', p.profession || '', T('docmr.profession_ph'), 'flex:1;max-width:440px') + '</div>' +
+        '<div style="font-size:0.72rem;color:#94a3b8;margin:-2px 0 4px;">' + T('docmr.profession_ref') + '</div>' +
         '<div class="me-lbl">' + T('docmr.allergies') + '</div>' + alRows + '<button class="mr-add" onclick="addAllergy()"><i class="fa fa-plus me-1"></i>' + T('docmr.add') + '</button>' +
         '<div class="me-lbl">' + T('docmr.ant_perso') + '</div>' + antRows + '<button class="mr-add" onclick="addAnt()"><i class="fa fa-plus me-1"></i>' + T('docmr.add') + '</button>' +
         '<div class="me-lbl">' + T('docmr.ant_family') + '</div>' + famRows + '<button class="mr-add" onclick="addFam()"><i class="fa fa-plus me-1"></i>' + T('docmr.add') + '</button>' +
@@ -592,8 +606,9 @@
 
       box.innerHTML =
         '<div class="rec-head"><div class="av">' + p.ini + '</div>' +
-          '<div class="flex-grow-1"><div class="nm">' + esc(p.name) + '</div><div class="mt">' + (ageOf(p) !== '' ? ageOf(p) + ' ' + T('docpat.years') + ' · ' : '') + T('docpat.sex_' + p.sex) + (p.phone ? ' · ' + esc(p.phone) : '') + '</div></div>' +
-          '<a class="rec-cta" href="25-doctor-consultation.html?patient=' + encodeURIComponent(p.name) + '&from=records"><i class="fa fa-notes-medical"></i>' + T('docmr.doc_action') + '</a>' +
+          '<div class="flex-grow-1"><div class="nm">' + esc(p.name) + '</div><div class="mt">' + (ageOf(p) !== '' ? ageOf(p) + ' ' + T('docpat.years') + ' · ' : '') + T('docpat.sex_' + p.sex) + (p.phone ? ' · ' + esc(p.phone) : '') + '</div>' +
+            '<div class="mt" style="font-size:0.72rem;color:#94a3b8;">' + T('docmr.dossier_no') + ' ' + dossierNo(p) + '</div></div>' +
+          '<a class="rec-cta" href="25-doctor-consultation.html?patient=' + encodeURIComponent(p.name) + '&dossier=' + encodeURIComponent(dossierNo(p)) + '&from=records"><i class="fa fa-notes-medical"></i>' + T('docmr.doc_action') + '</a>' +
         '</div>' +
         '<div class="rec-body">' + banner +
           '<div class="rec-tabs">' +

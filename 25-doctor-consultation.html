@@ -264,8 +264,18 @@
 
     const patient = params.get('patient') || 'Mariam Diallo';
     const rdvMotif = params.get('motif') || 'Consultation générale';
+    // Rendez-vous documenté : date + heure + référence passées par le planning (« Documenter »). Repli sur aujourd'hui = note hors RDV (ex. ouverte depuis le dossier).
+    const CDATE = params.get('date') || TODAY;
+    const rdvTime = params.get('time') || '';
+    const rdvId = params.get('rdvId') || params.get('apptId') || '';
+    const linkedRdv = !!params.get('date');
+    // Référence du document de consultation (numéro du document, distinct de la réf. du RDV).
+    const CONS_REF = 'CONS-' + CDATE.replace(/-/g, '') + (rdvTime ? '-' + rdvTime.replace(':', '') : '');
+    // N° dossier du patient : transmis par le dossier, sinon déduit d'une correspondance de nom unique (les homonymes doivent venir avec le n° explicite).
+    let patDossier = params.get('dossier') || '';
+    if (!patDossier) { const m = (window.NazPatients || []).filter(x => x.name === patient); if (m.length === 1) { const n = (m[0].id || '').replace(/[^0-9]/g, ''); patDossier = 'DOS-' + (n ? n.slice(-6).padStart(6, '0') : '000000'); } }
     let tab = 'note';
-    const C = { note: { motif: rdvMotif, exam: '', diags: [], cat: '' }, vitals: { temp: '', ta: '', pouls: '', spo2: '', poids: '' }, rx: [{ med: '', poso: '', duree: '' }], labo: [], img: [], ref: [] };
+    const C = { rdvId: rdvId, date: CDATE, time: rdvTime, note: { motif: rdvMotif, exam: '', diags: [], cat: '' }, vitals: { temp: '', ta: '', pouls: '', spo2: '', poids: '' }, rx: [{ med: '', poso: '', duree: '' }], labo: [], img: [], ref: [] };
     // Référentiels de démonstration (V2 : LOINC pour la biologie, référentiel imagerie à confirmer)
     const LAB_REF = ['Numération formule sanguine (NFS)', 'Glycémie à jeun', 'Hémoglobine glyquée (HbA1c)', 'Bilan lipidique', 'Ionogramme sanguin', 'Créatininémie (DFG)', 'Bilan hépatique (ASAT/ALAT)', 'CRP', 'TSH', 'ECBU', 'Sérologie VIH', 'β-hCG (test de grossesse)', 'Groupe sanguin — Rhésus', 'TP / INR', 'Ferritinémie'];
     const IMG_REF = ['Radiographie thoracique', 'Radiographie osseuse', 'Échographie abdominale', 'Échographie pelvienne', 'Échographie obstétricale', 'Échographie cardiaque (ETT)', 'Scanner (TDM) cérébral', 'Scanner thoraco-abdomino-pelvien', 'IRM cérébrale', 'IRM du rachis', 'Mammographie'];
@@ -390,13 +400,15 @@
       return '<div class="doc-head"><div><div class="doc-dr">' + DR.title + ' ' + esc(DR.name) + '</div>' +
         '<small>' + esc(DR.spec) + ' · ' + T('docc.ordre_no') + ' ' + esc(DR.ordre) + '</small>' +
         '<small>' + esc(DR.ordreBody) + '</small></div>' +
-        '<div class="doc-brand"><i class="fa fa-shield-halved"></i> ' + T('docc.verified') + '<br>' + esc(DR.city) + ' · ' + fmtLong(TODAY) + '</div></div>';
+        '<div class="doc-brand"><i class="fa fa-shield-halved"></i> ' + T('docc.verified') + '<br>' + esc(DR.city) + ' · ' + fmtLong(CDATE) + '</div></div>';
     }
     function ph(v) { return v && v.trim() ? esc(v) : '<span class="muted-ph">' + T('docc.empty') + '</span>'; }
 
     function renderPreview() {
       const box = document.getElementById('docPreview');
-      const meta = '<div class="doc-meta"><div><strong>' + T('docc.patient') + '</strong> ' + esc(patient) + '</div><div>' + fmtLong(TODAY) + '</div></div>';
+      const meta = '<div class="doc-meta"><div><strong>' + T('docc.patient') + '</strong> ' + esc(patient) + (patDossier ? ' · ' + esc(patDossier) : '') +
+        '<br><span style="font-size:0.8em;color:#94a3b8;">' + T('docc.doc_ref') + ' ' + esc(CONS_REF) + '</span>' +
+        '</div><div>' + fmtLong(CDATE) + (linkedRdv && rdvTime ? ' · ' + rdvTime : '') + '</div></div>';
       const sign = '<div class="doc-sign"><div class="s-name">' + DR.title + ' ' + esc(DR.name) + '</div><div class="s-note">' + T('docc.generated') + '</div></div>';
       const buildDoc = (title, content) => letterhead() + '<div class="doc-title">' + title + '</div>' + meta + content + sign;
       updateCounts();
@@ -542,11 +554,11 @@
     function hydrate() {
       document.getElementById('pbAvatar').textContent = ini(patient);
       document.getElementById('pbName').textContent = patient;
-      document.getElementById('pbMeta').textContent = rdvMotif + ' · ' + fmtLong(TODAY);
+      document.getElementById('pbMeta').textContent = rdvMotif + ' · ' + (linkedRdv ? T('docc.rdv_of') + ' ' : '') + fmtLong(CDATE) + (linkedRdv && rdvTime ? ' à ' + rdvTime : '') + (rdvId ? ' · ' + T('docc.rdv_ref') + ' ' + rdvId : '');
       document.getElementById('nMotif').value = C.note.motif;
       setBack(); renderDiagChips(); renderAllergy(); renderPresc(); renderPreview();
     }
-    document.addEventListener('fueni:langchange', () => { document.getElementById('pbMeta').textContent = rdvMotif + ' · ' + fmtLong(TODAY); setBack(); renderAllergy(); renderPresc(); renderPreview(); });
+    document.addEventListener('fueni:langchange', () => { document.getElementById('pbMeta').textContent = rdvMotif + ' · ' + (linkedRdv ? T('docc.rdv_of') + ' ' : '') + fmtLong(CDATE) + (linkedRdv && rdvTime ? ' à ' + rdvTime : '') + (rdvId ? ' · ' + T('docc.rdv_ref') + ' ' + rdvId : ''); setBack(); renderAllergy(); renderPresc(); renderPreview(); });
     document.addEventListener('DOMContentLoaded', hydrate);
   </script>
 <!-- Prototype version badge -->

@@ -18,7 +18,7 @@
   window.NazPatients = [
     {
       id: 'p1', ini: 'MD', name: 'Mariam Diallo', sex: 'F', age: 34,
-      phone: '+221 77 123 45 67', email: 'm.diallo@exemple.sn',
+      phone: '+221 77 123 45 67', email: 'm.diallo@exemple.sn', profession: 'Enseignante',
       last: '2026-07-02', lastMotif: 'Consultation générale', next: '2026-07-15', nextMotif: 'Contrôle',
       blood: 'O+', allergies: [{ name: 'Pénicilline', sev: 'high' }],
       ant: ['HTA (2022)'], family: [{ rel: 'Père', cond: 'Diabète type 2' }, { rel: 'Mère', cond: 'HTA' }],
