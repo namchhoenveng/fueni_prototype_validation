@@ -75,6 +75,7 @@
     .doc-sec { margin-bottom:14px; }
     .doc-sec .lbl { font-weight:700; color:#155e75; font-size:0.8rem; text-transform:uppercase; letter-spacing:0.4px; }
     .doc-sec .val { white-space:pre-line; margin-top:2px; }
+    .doc-allergy { background:#fef2f2; border:1px solid #fecaca; color:#991b1b; border-radius:8px; padding:8px 12px; font-size:0.85rem; margin-bottom:14px; }
     .doc-rx-line { padding:8px 0; border-bottom:1px dashed #e2e8f0; }
     .doc-rx-line .m { font-weight:700; }
     .doc-rx-line .s { font-size:0.85rem; color:#475569; }
@@ -253,13 +254,17 @@
     const TODAY = '2026-07-10';
     const params = new URLSearchParams(location.search);
 
-    // Identité du praticien depuis le profil public (données vérifiées KYC)
-    function profile() { try { const r = localStorage.getItem('fueni_pubprofile'); if (r) return JSON.parse(r); } catch (e) {} return {}; }
+    // Identité du praticien depuis le profil public (données vérifiées KYC + lieu principal déclaré)
+    function profile() { try { const r = localStorage.getItem('fueni_pubprofile_v2') || localStorage.getItem('fueni_pubprofile'); if (r) return JSON.parse(r); } catch (e) {} return {}; }
     const PR = profile();
+    // Adresse = lieu d'exercice principal (profil public) ; repli sur un lieu par défaut pour la démo.
+    const primLoc = (PR.locations || []).find(l => l.primary) || (PR.locations || [])[0] || {};
     const DR = {
       title: PR.title || 'Dr', name: PR.name || 'Aboubacar Diallo', spec: PR.spec || 'Médecine générale',
       ordre: PR.ordre || 'ONMS-2024-00871', ordreBody: PR.ordreBody || 'Ordre des Médecins du Sénégal',
-      city: PR.city || 'Dakar'
+      city: primLoc.city || PR.city || 'Dakar',
+      address: [primLoc.street || PR.street || 'Avenue Cheikh Anta Diop', primLoc.city || PR.city || 'Dakar', primLoc.country || PR.country || 'Sénégal'].filter(Boolean).join(', '),
+      phone: primLoc.phone || PR.phone || '+221 33 800 00 00'
     };
 
     const patient = params.get('patient') || 'Mariam Diallo';
@@ -274,6 +279,10 @@
     // N° dossier du patient : transmis par le dossier, sinon déduit d'une correspondance de nom unique (les homonymes doivent venir avec le n° explicite).
     let patDossier = params.get('dossier') || '';
     if (!patDossier) { const m = (window.NazPatients || []).filter(x => x.name === patient); if (m.length === 1) { const n = (m[0].id || '').replace(/[^0-9]/g, ''); patDossier = 'DOS-' + (n ? n.slice(-6).padStart(6, '0') : '000000'); } }
+    // Dossier patient (identité + allergies) pour l'en-tête des documents.
+    const patRec = (window.NazPatients || []).find(p => p.name === patient) || {};
+    function patAgeOf(p) { if (p.age != null && p.age !== '') return p.age; if (p.dob) { const b = new Date(p.dob + 'T00:00:00'); if (!isNaN(b.getTime())) { const t = new Date(); let a = t.getFullYear() - b.getFullYear(); if (t.getMonth() < b.getMonth() || (t.getMonth() === b.getMonth() && t.getDate() < b.getDate())) a--; return a >= 0 ? a : ''; } } return ''; }
+    const patAge = patAgeOf(patRec);
     let tab = 'note';
     const C = { rdvId: rdvId, date: CDATE, time: rdvTime, note: { motif: rdvMotif, exam: '', diags: [], cat: '' }, vitals: { temp: '', ta: '', pouls: '', spo2: '', poids: '' }, rx: [{ med: '', poso: '', duree: '' }], labo: [], img: [], ref: [] };
     // Référentiels de démonstration (V2 : LOINC pour la biologie, référentiel imagerie à confirmer)
@@ -399,16 +408,26 @@
     function letterhead() {
       return '<div class="doc-head"><div><div class="doc-dr">' + DR.title + ' ' + esc(DR.name) + '</div>' +
         '<small>' + esc(DR.spec) + ' · ' + T('docc.ordre_no') + ' ' + esc(DR.ordre) + '</small>' +
-        '<small>' + esc(DR.ordreBody) + '</small></div>' +
-        '<div class="doc-brand"><i class="fa fa-shield-halved"></i> ' + T('docc.verified') + '<br>' + esc(DR.city) + ' · ' + fmtLong(CDATE) + '</div></div>';
+        '<small>' + esc(DR.ordreBody) + '</small>' +
+        '<small><i class="fa fa-location-dot me-1"></i>' + esc(DR.address) + '</small>' +
+        '<small><i class="fa fa-phone me-1"></i>' + esc(DR.phone) + '</small></div>' +
+        '<div class="doc-brand"><i class="fa fa-shield-halved"></i> ' + T('docc.verified') + '<br>' + fmtLong(CDATE) + '</div></div>';
     }
     function ph(v) { return v && v.trim() ? esc(v) : '<span class="muted-ph">' + T('docc.empty') + '</span>'; }
 
     function renderPreview() {
       const box = document.getElementById('docPreview');
-      const meta = '<div class="doc-meta"><div><strong>' + T('docc.patient') + '</strong> ' + esc(patient) + (patDossier ? ' · ' + esc(patDossier) : '') +
+      // Identité patient : nom · âge · sexe · n° dossier (identification standard sur un document médical).
+      const idBits = [esc(patient)];
+      if (patAge !== '') idBits.push(patAge + ' ' + T('docpat.years'));
+      if (patRec.sex) idBits.push(T('docpat.sex_' + (patRec.sex === 'M' ? 'male' : 'female')));
+      if (patDossier) idBits.push(esc(patDossier));
+      const meta = '<div class="doc-meta"><div><strong>' + T('docc.patient') + '</strong> ' + idBits.join(' · ') +
         '<br><span style="font-size:0.8em;color:#94a3b8;">' + T('docc.doc_ref') + ' ' + esc(CONS_REF) + '</span>' +
         '</div><div>' + fmtLong(CDATE) + (linkedRdv && rdvTime ? ' · ' + rdvTime : '') + '</div></div>';
+      // Bandeau allergies — pour l'ordonnance (garde-fou de dispensation).
+      const alg = (patRec.allergies || []).filter(a => a && a.name);
+      const allergyLine = alg.length ? '<div class="doc-allergy"><i class="fa fa-triangle-exclamation me-1"></i><strong>' + T('docc.allergies_known') + ' :</strong> ' + alg.map(a => esc(a.name)).join(', ') + '</div>' : '';
       const sign = '<div class="doc-sign"><div class="s-name">' + DR.title + ' ' + esc(DR.name) + '</div><div class="s-note">' + T('docc.generated') + '</div></div>';
       const buildDoc = (title, content) => letterhead() + '<div class="doc-title">' + title + '</div>' + meta + content + sign;
       updateCounts();
@@ -432,7 +451,7 @@
         // Un document distinct par type de prescription renseigné
         const docs = [];
         const meds = C.rx.filter(r => r.med.trim());
-        if (meds.length) docs.push(buildDoc(T('docc.doc_rx'), meds.map(r =>
+        if (meds.length) docs.push(buildDoc(T('docc.doc_rx'), allergyLine + meds.map(r =>
           '<div class="doc-rx-line"><div class="m">' + esc(r.med) + '</div><div class="s">' + [esc(r.poso), esc(r.duree)].filter(Boolean).join(' · ') + '</div></div>'
         ).join('')));
         const labo = C.labo.filter(r => r.name.trim());

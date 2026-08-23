@@ -40,7 +40,7 @@
     /* Tiroir de détail : structure clé/valeur alignée sur l'écran patient (08). */
     .d-patient-name { font-size:1.15rem; font-weight:800; color:#0f172a; margin:2px 0 8px; }
     .dkv { display:flex; gap:14px; padding:11px 0; border-bottom:1px solid #f1f5f9; }
-    .dkv .k { color:#94a3b8; font-size:0.85rem; flex:0 0 104px; }
+    .dkv .k { color:#94a3b8; font-size:0.85rem; flex:0 0 130px; white-space:nowrap; }
     .dkv .v { color:#1e293b; font-weight:600; font-size:0.9rem; }
     .d-note { margin-top:14px; }
     .d-note-k { color:#94a3b8; font-size:0.85rem; font-weight:600; margin-bottom:6px; }
@@ -116,9 +116,12 @@
     /* List */
     .list-pad { padding:6px 18px 14px; }
     .list-dh { font-size:0.76rem; font-weight:700; color:#475569; text-transform:uppercase; letter-spacing:0.6px; padding:16px 0 8px; border-bottom:1px solid #e2e8f0; }
-    .list-row { padding:12px 0; border-bottom:1px solid #f1f5f9; display:flex; align-items:center; gap:14px; cursor:pointer; }
-    .list-row:hover { background:#f8fafc; }
+    .list-row { padding:12px 10px; border-bottom:1px solid #f1f5f9; display:flex; align-items:center; gap:14px; cursor:pointer; border-radius:8px; transition:background .12s; }
+    .list-row:hover { background:#eef4f6; }
     .list-row:last-child { border-bottom:0; }
+    /* Affordance « cliquable » : chevron révélé au survol (ouvre le détail du rendez-vous). */
+    .list-row::after { content:'\203A'; flex-shrink:0; color:#cbd5e1; font-size:1.25rem; font-weight:700; line-height:1; opacity:0; transition:opacity .12s, color .12s; }
+    .list-row:hover::after { opacity:1; color:#155e75; }
     .list-time { font-weight:700; color:#0f172a; min-width:120px; }
     .list-time .e { color:#64748b; font-weight:500; font-size:0.85rem; }
     .list-body { flex:1; min-width:0; }
@@ -269,7 +272,7 @@
   </div>
 
   <!-- Detail drawer (panneau latéral, cohérent avec Mes patients) -->
-  <div class="offcanvas offcanvas-end" tabindex="-1" id="rdvDetail" style="width:440px;max-width:94vw;">
+  <div class="offcanvas offcanvas-end" tabindex="-1" id="rdvDetail" style="width:470px;max-width:94vw;">
     <div class="offcanvas-header border-bottom">
       <h5 class="mb-0 fw-bold" style="font-size:1.05rem;" data-i18n="docrdv.detail_title">Détail du rendez-vous</h5>
       <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
@@ -312,7 +315,7 @@
                   </div>
                   <div class="col-12">
                     <label class="d-inline-flex align-items-center gap-2" style="cursor:pointer;font-size:0.9rem;color:#334155;">
-                      <input type="checkbox" id="cDomicile"> <i class="fa fa-house-medical" style="color:#7c3aed;"></i> <span data-i18n="docrdv.m_domicile">Rendez-vous à domicile</span>
+                      <input type="checkbox" id="cDomicile"> <i class="fa fa-house-medical" style="color:#7c3aed;"></i> <span data-i18n="docrdv.m_domicile">Visite à domicile</span>
                     </label>
                   </div>
                 </div>
@@ -430,28 +433,35 @@
     }
     function pickSwatch(c) { newLabelColor = c; renderSwatches(); }
     // Nom d'étiquette déjà pris ? (insensible à la casse et aux accents, y compris système/réservées)
-    function labelNameTaken(name) { return LABELS.some(l => ptNorm(l.name) === ptNorm(name)); }
+    function labelNameTaken(name) { return LABELS.some(l => !l.archived && ptNorm(l.name) === ptNorm(name)); }
     function addLabel() {
       const name = document.getElementById('newLabelName').value.trim(); if (!name) return;
       if (labelNameTaken(name)) { toast(T('docrdv.label_dup').replace('{name}', name), 'error'); return; }
-      if (LABELS.filter(l => !l.system && !l.patientOnly).length >= 8) { toast(T('docrdv.label_limit'), 'error'); return; } // cap = palette (8)
+      if (LABELS.filter(l => !l.system && !l.patientOnly && !l.archived).length >= 8) { toast(T('docrdv.label_limit'), 'error'); return; } // cap = palette (8)
       LABELS.push({ id: 'lbl' + Date.now(), name: name, color: newLabelColor });
       toggleAddLabel(); render();
     }
-    function removeLabel(id) {
-      const lab = labelOf(id); if (!lab || lab.system) return;
-      const used = RDV.filter(r => r.nature === id).length;
-      if (used > 0) { toast('« ' + lab.name + ' » — ' + used + ' ' + T('docrdv.lbl_del_inuse'), 'error'); return; } // bloqué si utilisée
-      if (!window.confirm(T('docrdv.lbl_del_confirm_pre') + lab.name + T('docrdv.lbl_del_confirm_post'))) return;
-      LABELS = LABELS.filter(l => l.id !== id);
+    // Suppression d'une étiquette personnalisée : confirmation inline dans la légende.
+    let confirmDelLabel = null;
+    function askRemoveLabel(id) { const lab = labelOf(id); if (!lab || lab.system) return; confirmDelLabel = id; render(); }
+    function cancelRemoveLabel() { confirmDelLabel = null; render(); }
+    function doRemoveLabel(id) {
+      const lab = LABELS.find(l => l.id === id); confirmDelLabel = null;
+      if (!lab || lab.system) { render(); return; }
       hiddenLabels.delete(id);
-      render();
-      toast(T('docrdv.lbl_del_toast'));
+      const used = RDV.filter(r => r.nature === id).length;
+      if (used > 0) {
+        // Utilisée → on l'ARCHIVE : retirée de la légende / du sélecteur / du plafond, mais conservée pour que les événements existants gardent leur étiquette (nom + couleur).
+        lab.archived = true; render(); toast(T('docrdv.lbl_archive_toast'));
+      } else {
+        // Inutilisée → suppression définitive.
+        LABELS = LABELS.filter(l => l.id !== id); render(); toast(T('docrdv.lbl_del_toast'));
+      }
     }
 
     // Rendez-vous de démo (semaine du 6 au 12 juillet 2026 ; aujourd'hui = ven. 10)
     const RDV = [
-      { date:'2026-07-06', start:'09:00', end:'10:30', ini:'AD', name:'Aïssatou Diop',  motif:'Consultation générale', nature:'consultation', status:'confirmed', loc:'loc1', phone:'+221 77 512 34 89', note:'Fatiguée depuis une dizaine de jours, maux de tête fréquents le matin.' },
+      { date:'2026-07-06', start:'09:00', end:'10:30', ini:'AD', name:'Aïssatou Diop',  motif:'Consultation générale', nature:'consultation', status:'confirmed', loc:'loc1', phone:'+221 77 512 34 89', emerg:{ name:'Mamadou Diop', rel:'Époux', phone:'+221 77 512 00 42' }, note:'Fatiguée depuis une dizaine de jours, maux de tête fréquents le matin.' },
       { date:'2026-07-06', start:'15:00', end:'16:00', ini:'AR', name:'Antoine Rousseau', motif:'Bilan lipidique',      nature:'consultation', status:'confirmed', loc:'loc1', phone:'+221 78 903 45 12', note:"Suite au bilan sanguin, cholestérol élevé signalé par le laboratoire.\nJe prends du Tahor 10 mg depuis six mois. J'aimerais savoir si le dosage doit être ajusté et refaire un contrôle." },
       { date:'2026-07-07', start:'09:00', end:'10:00', ini:'FM', name:'François Moreau', motif:'Suivi cardio',          nature:'consultation', status:'confirmed', loc:'loc1' },
       { date:'2026-07-07', start:'11:00', end:'12:00', ini:'FN', name:'Fatou Ndiaye',    motif:'Asthme',                nature:'consultation', status:'confirmed', loc:'loc1' },
@@ -459,7 +469,8 @@
       { date:'2026-07-09', start:'15:00', end:'16:00', ini:'IS', name:'Ibrahima Sow',    motif:'Drépanocytose',         nature:'consultation', status:'confirmed', loc:'loc1' },
       { date:'2026-07-10', start:'09:00', end:'10:00', ini:'MD', name:'Mamadou Diallo',  motif:'Décompensation diabétique', nature:'consultation', status:'confirmed', loc:'loc1' },
       { date:'2026-07-10', start:'11:00', end:'12:00', ini:'RH', name:'Réunion hebdomadaire', motif:'', nature:'reunion', status:'confirmed', patient:false, loc:'loc1' },
-      { date:'2026-07-10', start:'10:00', end:'11:00', ini:'RD', name:'Rokhaya Diop',    motif:'Suivi grossesse',       nature:'consultation', status:'confirmed', loc:'loc1' },
+      { date:'2026-07-10', start:'10:00', end:'11:00', ini:'RD', name:'Rokhaya Diop',    motif:'Suivi grossesse',       nature:'consultation', status:'confirmed', loc:'loc1', phone:'+221 77 889 00 11', emerg:{ name:'Awa Diop', rel:'Sœur', phone:'+221 76 889 44 55' } },
+      { date:'2026-07-10', start:'14:30', end:'15:00', ini:'BS', name:'Binta Sarr',      motif:'Consultation générale', nature:'consultation', status:'confirmed', patient:true, booked:true, apptId:'A-20260710-1430', loc:'loc1', phone:'+221 77 402 18 55', note:'Toux persistante depuis une semaine, gênée surtout la nuit.' },
       { date:'2026-07-14', start:'15:00', end:'15:30', ini:'MC', name:'Modou Cissé',     motif:'Renouvellement',        nature:'consultation', status:'confirmed', loc:'loc1' },
       // Créneaux « Indisponible » (blocs) — désormais dans RDV (nature:'bloque', patient:false). name = motif (facultatif). loc absent = tous les lieux (ex. congé).
       { date:'2026-07-08', start:'13:00', end:'19:00', name:'Formation', nature:'bloque', status:'confirmed', patient:false },
@@ -490,13 +501,14 @@
     const hhmm = m => String(Math.floor(m / 60)).padStart(2, '0') + ':' + String(m % 60).padStart(2, '0');
     function timeOptions(sel) {
       let o = '';
-      for (let m = 6 * 60; m <= 21 * 60; m += 15) { const t = hhmm(m); o += '<option value="' + t + '"' + (t === sel ? ' selected' : '') + '>' + t + '</option>'; }
+      // Journée complète 00:00 → 23:45 (pas de plafond) : téléconsultation tardive, garde matinale, etc.
+      for (let m = 0; m <= 23 * 60 + 45; m += 15) { const t = hhmm(m); o += '<option value="' + t + '"' + (t === sel ? ' selected' : '') + '>' + t + '</option>'; }
       return o;
     }
-    // Options d'heure de FIN : uniquement > début (l'heure de fin est donc toujours postérieure au début, par construction).
+    // Options d'heure de FIN : uniquement > début (l'heure de fin est donc toujours postérieure au début, par construction) ; jusqu'à 24:00 (minuit).
     function endOptions(startStr, sel) {
       const min = toMin(startStr); let o = '';
-      for (let m = min + 15; m <= 21 * 60; m += 15) { const t = hhmm(m); o += '<option value="' + t + '"' + (t === sel ? ' selected' : '') + '>' + t + '</option>'; }
+      for (let m = min + 15; m <= 24 * 60; m += 15) { const t = hhmm(m); o += '<option value="' + t + '"' + (t === sel ? ' selected' : '') + '>' + t + '</option>'; }
       return o;
     }
     // Filtre de lieu actif seulement si plusieurs lieux ET si les RDV portent des ids connus
@@ -523,7 +535,7 @@
     const toMin = t => (+t.slice(0, 2)) * 60 + (+t.slice(3, 5));
     const lang = () => (window.NazI18n && NazI18n.getLang() === 'en') ? 'en-GB' : 'fr-FR';
     const isEn = () => window.NazI18n && NazI18n.getLang() === 'en';
-    const START = 8, END = 19, HH = 54; // START/END = plancher d'affichage (08–19) ; la grille s'étend au besoin
+    const START = 6, END = 21, HH = 54; // START/END = plancher d'affichage (06–21) ; la grille s'étend au besoin (sans plafond)
     let gStartH = START, gEndH = END;   // bornes d'affichage dynamiques de la grille semaine (recalculées à chaque rendu)
     // Enveloppe « journée de travail » = union des horaires de tous les lieux (repli 08–19) — sert à « Journée entière ».
     function workBounds() {
@@ -591,6 +603,12 @@
         if (s < toMin(r.end) && e > toMin(r.start)) return true; // chevauchement RDV ou indisponibilité (les blocs sont dans RDV)
       }
       return false;
+    }
+    // Premier créneau libre d'une durée donnée sur une date (à partir de `base`) : évite d'ouvrir « Ajouter au planning » déjà en erreur de chevauchement.
+    function nextFreeSlot(date, dur, base) {
+      dur = dur || 30; const b = toMin(base || '09:00'), limit = 21 * 60;
+      for (let t = b; t + dur <= limit; t += 15) { const st = hhmm(t), en = hhmm(t + dur); if (!slotConflict(date, st, en, -1)) return [st, en]; }
+      return [hhmm(b), hhmm(b + dur)]; // repli : journée pleine → défaut habituel (l'erreur inline guidera l'utilisateur)
     }
     // Nombre de RDV patients (non annulés) chevauchant un créneau — pour l'avertissement au blocage.
     function overlappedPatients(date, start, end) {
@@ -666,13 +684,14 @@
         const ds = iso(d), wknd = i >= 5;
         return '<div class="wk-dh' + (ds === TODAY ? ' today' : '') + (wknd ? ' weekend' : '') + '"><div class="dn">' + dn[i] + '</div><div class="dd">' + d.getDate() + '</div></div>';
       }).join('');
-      // Bornes d'affichage : plancher 08–19, étendu à l'enveloppe des horaires ET à tout RDV/bloc de la semaine visible ; borné à [06 h, 21 h].
+      // Bornes d'affichage : plancher 08–19, étendu à l'enveloppe des horaires ET à tout RDV/bloc de la semaine visible.
+      // Pas de plafond artificiel : la grille couvre toujours toute entrée réelle (aucune entrée « hors grille »), bornée seulement à la journée [00 h, 24 h].
       const wb = workBounds();
       let minM = Math.min(START * 60, wb[0]), maxM = Math.max(END * 60, wb[1]);
       const weekSet = new Set(days.map(d => iso(d)));
       RDV.forEach(r => { if (r.status !== 'cancelled' && weekSet.has(r.date)) { minM = Math.min(minM, toMin(r.start)); maxM = Math.max(maxM, toMin(r.end)); } });
-      gStartH = Math.max(6, Math.floor(minM / 60));
-      gEndH = Math.min(21, Math.ceil(maxM / 60));
+      gStartH = Math.max(0, Math.floor(minM / 60));
+      gEndH = Math.min(24, Math.ceil(maxM / 60));
       const H = (gEndH - gStartH) * HH;
       let gutter = '<div class="wk-gutter" style="height:' + H + 'px">';
       for (let h = gStartH; h < gEndH; h++) gutter += '<div class="wk-hr" style="top:' + ((h - gStartH) * HH) + 'px">' + String(h).padStart(2, '0') + ':00</div>';
@@ -770,18 +789,25 @@
       if (today.length > 3) todayHtml += '<div class="today-more" onclick="viewFullDay()">' + T('docrdv.see_full_day').replace('{n}', today.length) + '</div>';
       document.getElementById('todayList').innerHTML = today.length ? todayHtml : '<div class="text-muted small">' + T('docrdv.empty_day') + '</div>';
       // Ordre : étiquettes système d'abord (Consultation, Indisponible), puis personnalisées (proches du bouton « + Nouvelle »). Tri stable → conserve l'ordre dans chaque groupe.
-      document.getElementById('legend').innerHTML = LABELS.filter(l => !l.patientOnly).sort((a, b) => (b.system ? 1 : 0) - (a.system ? 1 : 0)).map(l => {
+      document.getElementById('legend').innerHTML = LABELS.filter(l => !l.patientOnly && !l.archived).sort((a, b) => (b.system ? 1 : 0) - (a.system ? 1 : 0)).map(l => {
+        if (l.id === confirmDelLabel) {
+          return '<div class="legend-row" style="flex-wrap:wrap;gap:6px;cursor:default;">' +
+            '<div class="small" style="width:100%;color:#334155;"><i class="fa fa-triangle-exclamation me-1" style="color:#dc2626;"></i>' + T('docrdv.lbl_del_q').replace('{name}', escL(l.name)) + '</div>' +
+            '<button class="btn btn-outline-danger btn-sm" onclick="event.stopPropagation();doRemoveLabel(\'' + l.id + '\')"><i class="fa fa-trash-can me-1"></i>' + T('docrdv.lbl_del_yes') + '</button>' +
+            '<button class="btn btn-light btn-sm" onclick="event.stopPropagation();cancelRemoveLabel()">' + T('docrdv.act_cancel') + '</button>' +
+          '</div>';
+        }
         const off = hiddenLabels.has(l.id);
         const nm = l.block ? T('docrdv.unavailable') : l.name;
         const suffix = (l.id === 'consultation') ? ' <span class="lbl-sys">· ' + T('docrdv.lbl_patients') + '</span>' : '';
         return '<div class="legend-row' + (off ? ' off' : '') + '" onclick="toggleLabelVis(\'' + l.id + '\')" title="' + T(off ? 'docrdv.legend_show' : 'docrdv.legend_hide') + '">' +
           '<span class="legend-dot" style="' + (off ? 'background:#fff;border:2px solid ' + l.color : 'background:' + l.color + ';border:2px solid ' + l.color) + '">' + (off ? '' : '<i class="fa fa-check"></i>') + '</span>' +
           '<span class="flex-grow-1">' + escL(nm) + suffix + '</span>' +
-          (l.system ? '' : '<span class="lbl-del" title="' + T('docrdv.act_cancel') + '" onclick="event.stopPropagation();removeLabel(\'' + l.id + '\')">×</span>') +
+          (l.system ? '' : '<span class="lbl-del" title="' + T('docrdv.act_cancel') + '" onclick="event.stopPropagation();askRemoveLabel(\'' + l.id + '\')">×</span>') +
         '</div>';
       }).join('');
       // Cap des étiquettes personnalisées = taille de la palette (8) ; au-delà, ajout désactivé.
-      const atLabelLimit = LABELS.filter(l => !l.system && !l.patientOnly).length >= 8;
+      const atLabelLimit = LABELS.filter(l => !l.system && !l.patientOnly && !l.archived).length >= 8;
       const addBtn = document.getElementById('addLabelBtn'); if (addBtn) addBtn.disabled = atLabelLimit;
       const limitHint = document.getElementById('labelLimitHint'); if (limitHint) limitHint.classList.toggle('d-none', !atLabelLimit);
     }
@@ -824,6 +850,7 @@
         '<div class="dkv"><span class="k">' + T('docrdv.d_when') + '</span><span class="v">' + dObj(r.date).toLocaleDateString(lang(), { weekday:'long', day:'numeric', month:'long', year:'numeric' }) + ' · ' + r.start + ' → ' + r.end + ' <span class="text-muted" style="font-weight:400">(' + (toMin(r.end) - toMin(r.start)) + ' ' + T('docrdv.min') + ')</span></span></div>' +
         (r.loc && LOC_IDS.has(r.loc) ? '<div class="dkv"><span class="k">' + T('docrdv.d_loc') + '</span><span class="v">' + locNameById(r.loc) + '</span></div>' : '') +
         (r.phone ? '<div class="dkv"><span class="k">' + T('docrdv.d_phone') + '</span><span class="v"><a href="tel:' + escL(r.phone).replace(/[^\d+]/g, '') + '" style="color:#155e75;text-decoration:none;">' + escL(r.phone) + '</a></span></div>' : '') +
+        (r.emerg && (r.emerg.name || r.emerg.phone) ? '<div class="dkv"><span class="k">' + T('prof.emerg.title') + '</span><span class="v">' + (r.emerg.name ? escL(r.emerg.name) : '') + (r.emerg.rel ? ' <span class="text-muted" style="font-weight:400">· ' + escL(r.emerg.rel) + '</span>' : '') + (r.emerg.phone ? '<br><a href="tel:' + escL(r.emerg.phone).replace(/[^\d+]/g, '') + '" style="color:#155e75;text-decoration:none;">' + escL(r.emerg.phone) + '</a>' : '') + '</span></div>' : '') +
         (r.note ? '<div class="d-note"><div class="d-note-k"><i class="fa fa-comment-dots me-1"></i>' + T('docrdv.patient_note') + '</div><div class="d-note-v">' + escL(r.note) + '</div></div>' : '') +
         (r.status !== 'cancelled' && r.date >= TODAY && isConsult ? '<div class="modify-info mt-3"><i class="fa fa-circle-info me-1"></i>' + T('docrdv.modify_info').replace('{h}', MODIFY_CUTOFF_H) + '</div>' : '') +
         (r.status !== 'cancelled' && isConsult ? '<div id="reschedPanel" class="d-none mt-3 p-3" data-idx="' + i + '" data-od="' + r.date + '" data-os="' + r.start + '" data-oe="' + r.end + '" style="background:#f8fafc;border-radius:10px;">' +
@@ -887,7 +914,7 @@
     // Le début change → reconstruit les options de fin (> début) en gardant une fin valide.
     function onReschedStart() {
       const start = document.getElementById('rsStart').value, es = document.getElementById('rsEnd');
-      const keep = toMin(es.value) > toMin(start) ? es.value : hhmm(Math.min(21 * 60, toMin(start) + 30));
+      const keep = toMin(es.value) > toMin(start) ? es.value : hhmm(Math.min(24 * 60, toMin(start) + 30));
       es.innerHTML = endOptions(start, keep);
       rsCheck();
     }
@@ -923,7 +950,7 @@
     let eventLabel = 'reunion';
     function openCreate(date, start, end) {
       editIdx = -1; setCreateMode(false); // création (réinitialise un éventuel mode édition)
-      eventLabel = (LABELS.find(l => !l.system && !l.patientOnly) || {}).id || 'reunion';
+      eventLabel = (LABELS.find(l => !l.system && !l.patientOnly && !l.archived) || {}).id || 'reunion';
       document.getElementById('evNewForm').classList.add('d-none');
       renderEventPills();
       // Lieu (multi-lieux uniquement) : défaut = filtre actif, sinon 1er lieu.
@@ -932,7 +959,10 @@
       document.getElementById('cLocWrap').style.display = LOCS.length > 1 ? '' : 'none';
       const cd = document.getElementById('cDate'); cd.min = TODAY; cd.value = date || cur;
       const be = document.getElementById('cBlockDateEnd'); if (be) { be.min = date || cur; be.value = ''; } // plage de blocage réinitialisée
-      const st = start || '09:00', en = end || '09:30';
+      // Créneau pré-rempli : celui cliqué dans la grille (déjà libre), sinon le 1er créneau libre du jour (jamais un chevauchement à l'ouverture).
+      let st, en;
+      if (start) { st = start; en = end || hhmm(toMin(start) + 30); }
+      else { const fs = nextFreeSlot(cd.value, 30, '09:00'); st = fs[0]; en = fs[1]; }
       document.getElementById('cStart').innerHTML = timeOptions(st);
       document.getElementById('cEnd').innerHTML = endOptions(st, en);
       document.getElementById('ptMenu').classList.add('d-none');
@@ -971,7 +1001,7 @@
     // Début change → reconstruit les options de fin (> début).
     function onCreateStart() {
       const start = document.getElementById('cStart').value, es = document.getElementById('cEnd');
-      const keep = toMin(es.value) > toMin(start) ? es.value : hhmm(Math.min(21 * 60, toMin(start) + 30));
+      const keep = toMin(es.value) > toMin(start) ? es.value : hhmm(Math.min(24 * 60, toMin(start) + 30));
       es.innerHTML = endOptions(start, keep);
       cCheck();
     }
@@ -1032,9 +1062,9 @@
     }
     // Étiquettes proposées à l'événement = toutes sauf système (« Consultation ») et « patient » (Visite à domicile).
     function renderEventPills() {
-      const opts = LABELS.filter(l => !l.system && !l.patientOnly);
+      const opts = LABELS.filter(l => !l.system && !l.patientOnly && !l.archived);
       let html = opts.map(l => '<span class="np' + (l.id === eventLabel ? ' sel' : '') + '" data-lid="' + l.id + '" onclick="pickEventLabel(\'' + l.id + '\')"><span class="np-dot" style="background:' + l.color + '"></span>' + escL(l.name) + '</span>').join('');
-      if (LABELS.filter(l => !l.system && !l.patientOnly).length < 8) html += '<span class="np np-add" onclick="evToggleNew()"><i class="fa fa-plus me-1"></i>' + T('docrdv.new_label') + '</span>';
+      if (LABELS.filter(l => !l.system && !l.patientOnly && !l.archived).length < 8) html += '<span class="np np-add" onclick="evToggleNew()"><i class="fa fa-plus me-1"></i>' + T('docrdv.new_label') + '</span>';
       document.getElementById('eventPills').innerHTML = html;
     }
     function pickEventLabel(id) { eventLabel = id; renderEventPills(); }
@@ -1073,7 +1103,7 @@
     function evAddLabel() {
       const name = document.getElementById('evNewName').value.trim(); if (!name) return;
       if (labelNameTaken(name)) { toast(T('docrdv.label_dup').replace('{name}', name), 'error'); return; }
-      if (LABELS.filter(l => !l.system && !l.patientOnly).length >= 8) { toast(T('docrdv.label_limit'), 'error'); return; } // cap = palette (8)
+      if (LABELS.filter(l => !l.system && !l.patientOnly && !l.archived).length >= 8) { toast(T('docrdv.label_limit'), 'error'); return; } // cap = palette (8)
       const id = 'lbl' + Date.now();
       LABELS.push({ id: id, name: name, color: evLabelColor });
       eventLabel = id;

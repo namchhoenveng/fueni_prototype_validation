@@ -5,28 +5,31 @@
  * servi par l'API ; ces écrans en sont des vues.
  *
  * Champs :
- *   Identité   : id, ini, name, sex ('F'|'M'), age, phone, email
+ *   Identité   : id, ini, name, sex ('F'|'M'), age, phone, email,
+ *                emerg?{name,rel,phone} (contact d'urgence — optionnel, saisi par le patient)
  *   Annuaire   : last (dernière consult., 'YYYY-MM-DD'|''), lastMotif,
  *                next (prochain RDV|''), nextMotif
  *   Dossier    : blood, allergies[{name,sev:'high'|'medium'|'low'}],
  *                ant[] (perso), family[{rel,cond}],
  *                consults[{date,motif,diag,note,rx[]}],
- *                docs[{n,t,date, st?:'pending'|'validated'|'refused', by?:'Dr X'(auteur si repartagé), motif?}]
- *                (st absent ⇒ déjà au dossier ; by absent ⇒ téléversé par le patient)
+ *                docs[{n,t,date, st?:'pending'|'validated'|'refused', by?:'Dr X'(auteur si repartagé), motif?, origin?:'doctor'}]
+ *                (st absent ⇒ déjà au dossier ; by absent ⇒ téléversé par le patient ;
+ *                 origin:'doctor' ⇒ document émis par le praticien — au dossier, sans validation)
  */
 (function () {
   window.NazPatients = [
     {
       id: 'p1', ini: 'MD', name: 'Mariam Diallo', sex: 'F', age: 34,
       phone: '+221 77 123 45 67', email: 'm.diallo@exemple.sn', profession: 'Enseignante',
+      emerg: { name: 'Ousmane Diallo', rel: 'Époux', phone: '+221 77 200 11 22' },
       last: '2026-07-02', lastMotif: 'Consultation générale', next: '2026-07-15', nextMotif: 'Contrôle',
-      blood: 'O+', allergies: [{ name: 'Pénicilline', sev: 'high' }],
+      blood: 'O+', allergies: [{ name: 'Pénicilline', sev: 'high' }, { name: 'Aspirine', sev: 'medium' }, { name: 'Arachide', sev: 'low' }],
       ant: ['HTA (2022)'], family: [{ rel: 'Père', cond: 'Diabète type 2' }, { rel: 'Mère', cond: 'HTA' }],
       consults: [
         { date: '2026-07-02', motif: 'Consultation générale', diag: 'Rhinopharyngite aiguë', note: 'État général conservé. Fièvre à 38,2 °C, rhinorrhée. Auscultation libre.', rx: ['Paracétamol 1 g × 3/j — 5 j', 'Sérum physiologique — nez'] },
         { date: '2026-05-12', motif: 'Suivi hypertension', diag: 'HTA équilibrée', note: 'TA 130/80. Bonne observance. Poursuite du traitement.', rx: ['Amlodipine 5 mg — 3 mois'] }
       ],
-      docs: [{ n: 'Analyse — bilan lipidique', t: 'lab', date: '2026-07-10', st: 'pending' }, { n: 'Compte-rendu cardiologie', t: 'doc', date: '2026-07-08', st: 'pending', by: 'Dr Sow' }, { n: 'Ordonnance', t: 'rx', date: '2026-07-02' }, { n: 'Compte-rendu de consultation', t: 'doc', date: '2026-07-02' }, { n: 'Analyses sanguines', t: 'lab', date: '2026-06-30' }]
+      docs: [{ n: 'Analyse — bilan lipidique', t: 'lab', date: '2026-07-10', st: 'pending' }, { n: 'Compte-rendu cardiologie', t: 'doc', date: '2026-07-08', st: 'pending', by: 'Dr Sow' }, { n: 'Ordonnance', t: 'rx', date: '2026-07-02', origin: 'doctor' }, { n: 'Compte-rendu de consultation', t: 'doc', date: '2026-07-02', origin: 'doctor' }, { n: 'Analyses sanguines', t: 'lab', date: '2026-06-30' }]
     },
     {
       id: 'p2', ini: 'OS', name: 'Ousmane Sow', sex: 'M', age: 52,
@@ -34,15 +37,16 @@
       last: '2026-06-28', lastMotif: 'Suivi hypertension', next: '2026-07-18', nextMotif: 'Suivi hypertension',
       blood: 'A+', allergies: [], ant: ['Diabète type 2 (2019)', 'HTA'], family: [],
       consults: [{ date: '2026-06-28', motif: 'Suivi hypertension', diag: 'HTA · adaptation', note: 'TA 145/90. Majoration posologie.', rx: ['Amlodipine 10 mg — 3 mois'] }],
-      docs: [{ n: 'Ordonnance — Dr Ndiaye', t: 'rx', date: '2026-07-05', st: 'pending', by: 'Dr Ndiaye' }, { n: 'Ordonnance', t: 'rx', date: '2026-06-28' }]
+      docs: [{ n: 'Ordonnance — Dr Ndiaye', t: 'rx', date: '2026-07-05', st: 'pending', by: 'Dr Ndiaye' }, { n: 'Ordonnance', t: 'rx', date: '2026-06-28', origin: 'doctor' }]
     },
     {
       id: 'p3', ini: 'AF', name: 'Awa Faye', sex: 'F', age: 29,
       phone: '+221 78 445 67 89', email: 'a.faye@exemple.sn',
+      emerg: { name: 'Bineta Faye', rel: 'Mère', phone: '+221 78 445 00 11' },
       last: '2026-06-21', lastMotif: 'Téléconsultation', next: '2026-07-22', nextMotif: 'Téléconsultation',
       blood: 'B+', allergies: [], ant: [], family: [{ rel: 'Mère', cond: 'Migraine' }],
       consults: [{ date: '2026-06-21', motif: 'Téléconsultation', diag: 'Migraine', note: 'Céphalées récurrentes, pas de signe d\'alarme.', rx: ['Ibuprofène 400 mg — si crise'] }],
-      docs: [{ n: 'Ordonnance', t: 'rx', date: '2026-06-21' }]
+      docs: [{ n: 'Ordonnance', t: 'rx', date: '2026-06-21', origin: 'doctor' }]
     },
     {
       id: 'p4', ini: 'IB', name: 'Ibrahima Bâ', sex: 'M', age: 41,
@@ -50,7 +54,7 @@
       last: '2026-06-15', lastMotif: 'Consultation générale', next: '', nextMotif: '',
       blood: 'O-', allergies: [{ name: 'Aspirine', sev: 'medium' }], ant: [], family: [],
       consults: [{ date: '2026-06-15', motif: 'Consultation générale', diag: 'Lombalgie commune', note: 'Effort récent. Examen neuro normal.', rx: ['Paracétamol 1 g × 3/j — 7 j'] }],
-      docs: [{ n: 'Compte-rendu de consultation', t: 'doc', date: '2026-06-15' }, { n: 'Radiographie lombaire', t: 'img', date: '2026-06-14' }]
+      docs: [{ n: 'Compte-rendu de consultation', t: 'doc', date: '2026-06-15', origin: 'doctor' }, { n: 'Radiographie lombaire', t: 'img', date: '2026-06-14' }]
     },
     {
       id: 'p5', ini: 'FN', name: 'Fatou Ndiaye', sex: 'F', age: 38,
@@ -65,7 +69,7 @@
       phone: '+221 76 112 44 55', email: 'm.cisse@exemple.sn',
       last: '2026-05-30', lastMotif: 'Renouvellement', next: '', nextMotif: '',
       blood: 'B-', allergies: [], ant: ['Diabète type 2'], family: [],
-      consults: [], docs: [{ n: 'Ordonnance', t: 'rx', date: '2026-05-30' }]
+      consults: [], docs: [{ n: 'Ordonnance', t: 'rx', date: '2026-05-30', origin: 'doctor' }]
     },
     {
       id: 'p7', ini: 'RD', name: 'Rokhaya Diop', sex: 'F', age: 47,
@@ -78,7 +82,7 @@
       phone: '+221 78 334 55 66', email: 's.gueye@exemple.sn',
       last: '2026-05-14', lastMotif: 'Téléconsultation', next: '', nextMotif: '',
       blood: 'O+', allergies: [], ant: [], family: [], consults: [],
-      docs: [{ n: 'Ordonnance', t: 'rx', date: '2026-05-14' }, { n: 'Certificat', t: 'doc', date: '2026-05-14' }]
+      docs: [{ n: 'Ordonnance', t: 'rx', date: '2026-05-14', origin: 'doctor' }, { n: 'Certificat', t: 'doc', date: '2026-05-14', origin: 'doctor' }]
     },
     {
       id: 'p9', ini: 'KT', name: 'Khady Touré', sex: 'F', age: 25,
@@ -104,7 +108,7 @@
       phone: '+221 78 220 66 77', email: 'b.dieng@exemple.sn',
       last: '2026-04-05', lastMotif: 'Renouvellement', next: '', nextMotif: '',
       blood: '', allergies: [], ant: [], family: [], consults: [],
-      docs: [{ n: 'Ordonnance', t: 'rx', date: '2026-04-05' }]
+      docs: [{ n: 'Ordonnance', t: 'rx', date: '2026-04-05', origin: 'doctor' }]
     }
   ];
 })();

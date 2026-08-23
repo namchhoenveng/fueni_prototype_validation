@@ -217,15 +217,15 @@
         <div class="modal-body pt-2">
           <form id="npForm" novalidate onsubmit="event.preventDefault(); submitNewPatient();">
             <div class="row g-3">
-              <div class="col-6"><label class="form-label small fw-semibold" data-i18n="docpat.np_firstname">Prénom</label><input type="text" class="form-control" id="npFirst" maxlength="80" oninput="clearNpErr('npFirst')"><div class="np-err d-none" id="err-npFirst"></div></div>
-              <div class="col-6"><label class="form-label small fw-semibold" data-i18n="docpat.np_lastname">Nom</label><input type="text" class="form-control" id="npLast" maxlength="80" oninput="clearNpErr('npLast')"><div class="np-err d-none" id="err-npLast"></div></div>
+              <div class="col-6"><label class="form-label small fw-semibold" data-i18n="docpat.np_firstname">Prénom</label><input type="text" class="form-control" id="npFirst" maxlength="80" data-i18n-placeholder="docpat.np_firstname_ph" placeholder="Ex : Aïssatou" oninput="clearNpErr('npFirst')"><div class="np-err d-none" id="err-npFirst"></div></div>
+              <div class="col-6"><label class="form-label small fw-semibold" data-i18n="docpat.np_lastname">Nom</label><input type="text" class="form-control" id="npLast" maxlength="80" data-i18n-placeholder="docpat.np_lastname_ph" placeholder="Ex : Diop" oninput="clearNpErr('npLast')"><div class="np-err d-none" id="err-npLast"></div></div>
               <div class="col-6"><label class="form-label small fw-semibold" data-i18n="docpat.np_sex">Sexe à la naissance</label><select class="form-select" id="npSex"><option value="F" data-i18n="docpat.sex_female">Féminin</option><option value="M" data-i18n="docpat.sex_male">Masculin</option></select></div>
               <div class="col-6"><label class="form-label small fw-semibold" data-i18n="docpat.np_dob">Date de naissance</label><input type="date" lang="fr-FR" class="form-control" id="npDob" oninput="clearNpErr('npDob')"><div class="np-err d-none" id="err-npDob"></div></div>
               <div class="col-12"><label class="form-label small fw-semibold" data-i18n="docpat.np_phone">Téléphone</label>
-                <div class="d-flex gap-2"><select class="form-select" id="npCC" style="max-width:130px;flex-shrink:0;" onchange="clearNpErr('npPhone')"></select><input type="tel" class="form-control" id="npPhone" inputmode="tel" placeholder="77 123 45 67" oninput="clearNpErr('npPhone')"></div>
+                <div class="d-flex gap-2"><select class="form-select" id="npCC" style="max-width:130px;flex-shrink:0;" onchange="clearNpErr('npPhone')"></select><input type="tel" class="form-control" id="npPhone" inputmode="tel" data-i18n-placeholder="docpat.np_phone_ph" placeholder="Ex : 77 123 45 67" oninput="clearNpErr('npPhone')"></div>
                 <div class="np-err d-none" id="err-npPhone"></div></div>
-              <div class="col-12"><label class="form-label small fw-semibold" data-i18n="docpat.np_email">E-mail</label><input type="email" class="form-control" id="npEmail" oninput="clearNpErr('npEmail')"><div class="np-err d-none" id="err-npEmail"></div></div>
-              <div class="col-12"><div class="small text-muted" style="background:#f8fafc;border-radius:8px;padding:8px 10px;"><i class="fa fa-circle-info me-1"></i><span data-i18n="docpat.np_manual_note">Fiche créée par le praticien — non rattachée à un compte FUENI (rattachement possible si le patient s'inscrit).</span></div></div>
+              <div class="col-12"><label class="form-label small fw-semibold" data-i18n="docpat.np_email">E-mail</label><input type="email" class="form-control" id="npEmail" data-i18n-placeholder="docpat.np_email_ph" placeholder="Ex : aissatou.diop@example.com" oninput="clearNpErr('npEmail')"><div class="np-err d-none" id="err-npEmail"></div></div>
+              <div class="col-12"><div class="small text-muted" style="background:#f8fafc;border-radius:8px;padding:8px 10px;"><i class="fa fa-circle-info me-1"></i><span data-i18n="docpat.np_manual_note">Patient créé par le praticien — sans compte FUENI.</span></div></div>
             </div>
           </form>
         </div>

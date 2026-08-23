@@ -389,6 +389,7 @@
             <select class="form-select form-select-sm" id="ppCurrency" style="max-width:120px" onchange="setCurrency(this.value)"></select>
           </div>
           <div id="ppMotifs"></div>
+          <div id="ppMotifsErr" class="text-danger small mt-2 d-none"></div>
           <button class="btn btn-ghost btn-sm mt-1" id="addMotifBtn" onclick="addMotif()"><i class="fa fa-plus me-1"></i><span data-i18n="docpp.add_motif">Ajouter un motif</span></button>
         </div>
         <div class="card-foot">
@@ -573,6 +574,8 @@
     }
     function saveCard(key) {
       if (key === 'location' && !validateLocations()) return;
+      if (key === 'hours' && !validateHours()) return;      // pas de créneaux qui se chevauchent le même jour
+      if (key === 'motifs' && !validateMotifs()) return;    // chaque acte : intitulé + tarif > 0
       if (!persist()) return;
       delete snaps[key];
       const el = document.querySelector('[data-card="' + key + '"]'); if (el) el.classList.remove('editing');
@@ -1113,13 +1116,42 @@
       }));
       return out;
     }
+    // Chevauchements de créneaux AU SEIN d'un même jour (même lieu) : deux plages ne peuvent se recouvrir.
+    function hoursSelfOverlaps(li) {
+      const L = P.locations[li]; const out = [];
+      DAYS.forEach(([k]) => {
+        const rs = (L.hours[k] || []);
+        for (let i = 0; i < rs.length; i++) for (let j = i + 1; j < rs.length; j++) {
+          const a1 = hMin(rs[i][0]), a2 = hMin(rs[i][1]), b1 = hMin(rs[j][0]), b2 = hMin(rs[j][1]);
+          if (a1 < b2 && b1 < a2) out.push({ k, a: rs[i], b: rs[j] });
+        }
+      });
+      return out;
+    }
     function renderHoursWarn() {
       const box = document.getElementById('ppHoursWarn'); if (!box) return;
+      const self = hoursSelfOverlaps(hoursLoc);
       const c = hoursConflicts(hoursLoc);
-      if (!c.length) { box.classList.add('d-none'); box.innerHTML = ''; return; }
-      const items = c.slice(0, 4).map(x => T('docpp.day_' + x.k) + ' ' + x.r[0] + '–' + x.r[1] + ' ↔ ' + e(x.other) + ' ' + x.or[0] + '–' + x.or[1]).join(' · ');
+      if (!self.length && !c.length) { box.classList.add('d-none'); box.innerHTML = ''; return; }
+      let html = '';
+      if (self.length) {
+        const items = self.slice(0, 4).map(x => T('docpp.day_' + x.k) + ' ' + x.a[0] + '–' + x.a[1] + ' ↔ ' + x.b[0] + '–' + x.b[1]).join(' · ');
+        html += '<div><i class="fa fa-triangle-exclamation me-1"></i><strong>' + T('docpp.hours_selfoverlap') + '</strong> ' + items + '</div>';
+      }
+      if (c.length) {
+        const items = c.slice(0, 4).map(x => T('docpp.day_' + x.k) + ' ' + x.r[0] + '–' + x.r[1] + ' ↔ ' + e(x.other) + ' ' + x.or[0] + '–' + x.or[1]).join(' · ');
+        html += '<div' + (self.length ? ' class="mt-1"' : '') + '><i class="fa fa-triangle-exclamation me-1"></i><strong>' + T('docpp.hours_conflict') + '</strong> ' + items + '</div>';
+      }
       box.classList.remove('d-none');
-      box.innerHTML = '<i class="fa fa-triangle-exclamation me-1"></i><strong>' + T('docpp.hours_conflict') + '</strong> ' + items;
+      box.innerHTML = html;
+    }
+    // Enregistrement bloqué tant qu'un jour contient des créneaux qui se chevauchent (tous lieux réservables).
+    function validateHours() {
+      for (let i = 0; i < P.locations.length; i++) {
+        if (!P.locations[i].bookable) continue;
+        if (hoursSelfOverlaps(i).length) { hoursLoc = i; renderHours(); return false; }
+      }
+      return true;
     }
     function setHour(k, ri, idx, val) { P.locations[hoursLoc].hours[k][ri][idx] = val; renderHoursWarn(); }
     function addRange(k) { P.locations[hoursLoc].hours[k].push(['14:00', '18:00']); renderHours(); }
@@ -1138,9 +1170,9 @@
       const L = P.locations[motifsLoc];
       box.innerHTML = locPicker(motifsLoc, 'setMotifsLoc') + L.motifs.map((m, i) =>
         '<div class="motif-row">' +
-          '<input type="text" class="form-control form-control-sm m-label" value="' + e(m.label) + '" oninput="P.locations[' + motifsLoc + '].motifs[' + i + '].label=this.value" placeholder="Motif">' +
+          '<input type="text" class="form-control form-control-sm m-label" maxlength="100" value="' + e(m.label) + '" oninput="P.locations[' + motifsLoc + '].motifs[' + i + '].label=this.value;this.classList.remove(\'is-invalid\');hideMotifErr()" placeholder="Motif">' +
           durField(i, m) +
-          '<div class="input-group input-group-sm m-price"><input type="number" class="form-control" value="' + m.price + '" min="0" step="500" oninput="P.locations[' + motifsLoc + '].motifs[' + i + '].price=+this.value"><span class="input-group-text">' + (P.currency || 'XOF') + '</span></div>' +
+          '<div class="input-group input-group-sm m-price"><input type="number" class="form-control" value="' + m.price + '" min="0" step="500" oninput="P.locations[' + motifsLoc + '].motifs[' + i + '].price=+this.value;this.classList.remove(\'is-invalid\');hideMotifErr()"><span class="input-group-text">' + (P.currency || 'XOF') + '</span></div>' +
           '<button class="btn-del" title="' + T('docrdv.act_cancel') + '" onclick="removeMotif(' + i + ')"><i class="fa fa-trash-can"></i></button>' +
         '</div>'
       ).join('');
@@ -1163,7 +1195,31 @@
       renderMotifs();
     }
     function addMotif() { P.locations[motifsLoc].motifs.push({ label:'', dur:30, price:0 }); renderMotifs(); }
-    function removeMotif(i) { P.locations[motifsLoc].motifs.splice(i, 1); renderMotifs(); }
+    function removeMotif(i) { P.locations[motifsLoc].motifs.splice(i, 1); renderMotifs(); hideMotifErr(); }
+    function hideMotifErr() { const el = document.getElementById('ppMotifsErr'); if (el) el.classList.add('d-none'); }
+    // Chaque acte doit avoir un intitulé ET un tarif > 0 (durée valide) — pas de ligne vide / à 0.
+    function validateMotifs() {
+      for (let li = 0; li < P.locations.length; li++) {
+        const L = P.locations[li]; if (!L.bookable) continue;
+        const bad = (L.motifs || []).some(m => !(m.label || '').trim() || !(m.price > 0) || !(m.dur > 0));
+        if (bad) { motifsLoc = li; renderMotifs(); markInvalidMotifs(); return false; }
+      }
+      return true;
+    }
+    function markInvalidMotifs() {
+      const L = P.locations[motifsLoc];
+      const rows = document.querySelectorAll('#ppMotifs .motif-row');
+      let first = null;
+      (L.motifs || []).forEach((m, i) => {
+        const row = rows[i]; if (!row) return;
+        const label = row.querySelector('.m-label'), price = row.querySelector('.m-price input');
+        if (label && !(m.label || '').trim()) { label.classList.add('is-invalid'); if (!first) first = label; }
+        if (price && !(m.price > 0)) { price.classList.add('is-invalid'); if (!first) first = price; }
+      });
+      const err = document.getElementById('ppMotifsErr');
+      if (err) { err.textContent = T('docpp.motif_invalid'); err.classList.remove('d-none'); }
+      if (first) first.focus();
+    }
     function renderCurrency() {
       const sel = document.getElementById('ppCurrency'); if (!sel) return;
       if (!P.currency) P.currency = 'XOF';
