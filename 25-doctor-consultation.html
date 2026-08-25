@@ -35,6 +35,16 @@
     .safety-banner.crit { background:#fee2e2; border:1px solid #fca5a5; color:#991b1b; }
     .safety-banner.warn { background:#fff8f1; border:1px solid #faddc0; color:#9a3412; }
     .safety-banner i { font-size:1rem; }
+    /* Bandeau allergies « toutes les allergies en pastilles » (aligné sur le dossier patient, écran 26) */
+    .al-sev { display:inline-flex; align-items:center; gap:5px; border-radius:20px; padding:2px 10px; font-size:0.78rem; font-weight:600; margin:2px 4px 0 0; }
+    .al-sev.high { background:#fee2e2; color:#b91c1c; } .al-sev.medium { background:#fef3c7; color:#92400e; } .al-sev.low { background:#eef2f6; color:#475569; }
+    .safety-banner.alg { background:#fff; align-items:flex-start; }
+    .safety-banner.alg i { margin-top:2px; }
+    .safety-banner.alg.crit { border:1px solid #fecaca; border-left:4px solid #dc2626; color:#334155; }
+    .safety-banner.alg.warn { border:1px solid #fed7aa; border-left:4px solid #ea580c; color:#334155; }
+    .safety-banner .alg-body { display:flex; flex-direction:column; gap:7px; min-width:0; }
+    .safety-banner .alg-title { font-weight:700; }
+    .safety-banner .alg-chips { display:flex; flex-wrap:wrap; }
     .vitals-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(108px,1fr)); gap:10px; }
     .vitals-grid label { font-size:0.72rem; color:#64748b; font-weight:600; display:block; margin-bottom:3px; }
     .seg { display:inline-flex; background:#eef2f6; border-radius:10px; padding:4px; gap:2px; margin-bottom:16px; }
@@ -66,9 +76,17 @@
     @media print { .doc-sep { border:0; page-break-before:always; margin:0; } }
     .btn-del { background:none; border:0; color:#cbd5e1; font-size:1rem; padding:6px 8px; cursor:pointer; }
     .btn-del:hover { color:#dc3545; }
-    .btn-ghost { background:#f1f5f9; border:0; color:#475569; font-weight:600; }
-    .btn-doctor { background:#155e75; border:0; color:#fff; font-weight:600; }
-    .btn-doctor:hover { background:#114c5f; color:#fff; }
+    .btn-ghost { background:#fff; border:1px solid #cbd5e1; color:#475569; font-weight:600; }
+    .btn-ghost:hover { background:#f8fafc; border-color:#94a3b8; color:#334155; }
+    .btn-doctor { background:#155e75; border:1px solid #155e75; color:#fff; font-weight:600; }
+    .btn-doctor:hover { background:#114c5f; border-color:#114c5f; color:#fff; }
+    /* Bloc actions (Imprimer + Enregistrer + aide) : l'aide s'aligne EXACTEMENT sur la largeur combinée des deux boutons (texte à gauche, retour à la ligne si besoin). */
+    .save-actions { margin-top:0.75rem; }
+    .save-actions .save-hint { text-align:left; }
+    @media (min-width:576px){
+      .save-actions { width:fit-content; max-width:100%; margin-left:auto; }
+      .save-actions .save-hint { width:0; min-width:100%; } /* largeur = boutons, sans élargir le conteneur */
+    }
     /* Document preview */
     .doc { background:#fff; border:1px solid #e2e8f0; border-radius:6px; padding:34px 38px; font-size:0.9rem; color:#1e293b; min-height:520px; }
     .doc-head { display:flex; justify-content:space-between; border-bottom:2px solid #155e75; padding-bottom:12px; margin-bottom:18px; }
@@ -187,11 +205,11 @@
             <div class="mb-3"><label class="form-label" data-i18n="docc.n_exam">Examen clinique / observations</label><textarea class="form-control" id="nExam" rows="4" maxlength="3000" oninput="C.note.exam=this.value;renderPreview();noteCount(this,'examCount')"></textarea><div class="char-count" id="examCount"></div></div>
             <div class="mb-3"><label class="form-label" data-i18n="docc.vitals">Constantes</label>
               <div class="vitals-grid">
-                <div><label data-i18n="docc.v_temp">Température (°C)</label><input type="text" inputmode="decimal" maxlength="5" class="form-control form-control-sm" id="vTemp" placeholder="37,0" oninput="vSet(this,'temp',true)" onblur="vClamp(this,'temp',30,45)"></div>
+                <div><label data-i18n="docc.v_temp">Température (°C)</label><input type="text" inputmode="decimal" maxlength="5" class="form-control form-control-sm" id="vTemp" placeholder="37,0" oninput="vSet(this,'temp',true)" onblur="vClamp(this,'temp',30,50)"></div>
                 <div><label data-i18n="docc.v_ta">Tension (mmHg)</label><input type="text" inputmode="numeric" maxlength="7" class="form-control form-control-sm" id="vTa" placeholder="120/80" oninput="this.value=this.value.replace(/[^0-9/]/g,'');C.vitals.ta=this.value;renderPreview()" onblur="vTaClamp(this)"></div>
                 <div><label data-i18n="docc.v_pouls">Pouls (bpm)</label><input type="text" inputmode="numeric" maxlength="3" class="form-control form-control-sm" id="vPouls" placeholder="72" oninput="vSet(this,'pouls',false)" onblur="vClamp(this,'pouls',0,300)"></div>
                 <div><label data-i18n="docc.v_spo2">SpO₂ (%)</label><input type="text" inputmode="numeric" maxlength="3" class="form-control form-control-sm" id="vSpo2" placeholder="98" oninput="vSet(this,'spo2',false)" onblur="vClamp(this,'spo2',0,100)"></div>
-                <div><label data-i18n="docc.v_poids">Poids (kg)</label><input type="text" inputmode="decimal" maxlength="5" class="form-control form-control-sm" id="vPoids" placeholder="70" oninput="vSet(this,'poids',true)" onblur="vClamp(this,'poids',0,400)"></div>
+                <div><label data-i18n="docc.v_poids">Poids (kg)</label><input type="text" inputmode="decimal" maxlength="5" class="form-control form-control-sm" id="vPoids" placeholder="70" oninput="vSet(this,'poids',true)" onblur="vClamp(this,'poids',0,700)"></div>
               </div>
             </div>
             <div class="mb-3"><label class="form-label" data-i18n="docc.n_diag">Diagnostic</label>
@@ -246,9 +264,12 @@
         <!-- Live preview -->
         <div>
           <div class="doc" id="docPreview"></div>
-          <div class="mt-3 no-print d-flex flex-column flex-sm-row gap-2 justify-content-sm-end">
-            <button class="btn btn-ghost flex-sm-grow-0" onclick="window.print()"><i class="fa fa-print me-1"></i><span data-i18n="docc.print_btn">Imprimer / PDF</span></button>
-            <button class="btn btn-doctor flex-sm-grow-0" onclick="openSaveModal()"><i class="fa fa-check me-1"></i><span data-i18n="docc.save_btn">Enregistrer la consultation</span></button>
+          <div class="save-actions no-print">
+            <div class="d-flex flex-column flex-sm-row gap-2">
+              <button class="btn btn-ghost" onclick="window.print()"><i class="fa fa-print me-1"></i><span data-i18n="docc.print_btn">Imprimer / PDF</span></button>
+              <button class="btn btn-doctor" onclick="openSaveModal()"><i class="fa fa-check me-1"></i><span data-i18n="docc.save_btn">Finaliser et enregistrer</span></button>
+            </div>
+            <div class="small text-muted mt-2 save-hint"><i class="fa fa-circle-info me-1"></i><span data-i18n="docc.save_hint">Enregistre la note ET les prescriptions en une seule fois.</span></div>
           </div>
         </div>
       </div>
@@ -262,12 +283,13 @@
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title fw-bold" style="font-size:1.05rem;"><i class="fa fa-folder-plus me-2" style="color:#155e75;"></i><span data-i18n="docc.save_title">Enregistrer la consultation</span></h5>
+          <h5 class="modal-title fw-bold" style="font-size:1.05rem;"><i class="fa fa-folder-plus me-2" style="color:#155e75;"></i><span data-i18n="docc.save_title">Finaliser la consultation</span></h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
-          <p class="small text-muted mb-3" data-i18n="docc.save_intro">Ces documents sont ajoutés au dossier du patient. Cochez ceux à partager avec le patient (« Mes documents »).</p>
+          <p class="small text-muted mb-3" data-i18n="docc.save_intro">Cochez ceux à partager avec le patient.</p>
           <div id="saveDocList"></div>
+          <div class="small mt-3" style="color:#9a3412;background:#fff8f1;border:1px solid #faddc0;border-radius:8px;padding:8px 11px;"><i class="fa fa-lock me-1"></i><span data-i18n="docc.save_final_note">Après enregistrement, la consultation est en lecture seule.</span></div>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-ghost btn-sm" data-bs-dismiss="modal" data-i18n="docc.save_cancel">Annuler</button>
@@ -297,7 +319,7 @@
     };
 
     const patient = params.get('patient') || 'Mariam Diallo';
-    const rdvMotif = params.get('motif') || 'Consultation générale';
+    const rdvMotif = params.get('motif') || ''; // motif transmis par le RDV ; vide hors RDV (le praticien le choisit → placeholder « Rechercher… »)
     // Rendez-vous documenté : date + heure + référence passées par le planning (« Documenter »). Repli sur aujourd'hui = note hors RDV (ex. ouverte depuis le dossier).
     const CDATE = params.get('date') || TODAY;
     const rdvTime = params.get('time') || '';
@@ -618,6 +640,12 @@
       document.getElementById('cToastMsg').textContent = msg;
       el.style.display = 'flex'; clearTimeout(ct); ct = setTimeout(() => { el.style.display = 'none'; }, 2800);
     }
+    function showCToastWarn(msg) { // toast d'alerte (ambre)
+      const el = document.getElementById('cToast'); if (!el) return;
+      el.classList.add('toast-warn');
+      document.getElementById('cToastMsg').textContent = msg;
+      el.style.display = 'flex'; clearTimeout(ct); ct = setTimeout(() => { el.style.display = 'none'; el.classList.remove('toast-warn'); }, 2800);
+    }
     // TOUTE la consultation (compte-rendu + prescriptions renseignées) — l'enregistrement ne dépend pas de l'onglet actif.
     function allDocEntries() {
       const base = { patient: patient, dossier: patDossier, date: CDATE, ref: CONS_REF, by: (DR.title + ' ' + DR.name).trim() };
@@ -637,6 +665,11 @@
     let saveModal = null;
     const SAVE_IC = { cr: 'fa-file-lines', rx: 'fa-prescription', lab: 'fa-flask-vial', img: 'fa-x-ray', ref: 'fa-user-doctor' };
     function openSaveModal() {
+      // Garde-fou : refuser l'enregistrement d'une consultation totalement vide (aucun contenu clinique saisi).
+      const hasContent = (C.note.motif || '').trim() || (C.note.exam || '').trim() || (C.note.cat || '').trim() || C.note.diags.length ||
+        Object.keys(C.vitals).some(k => (C.vitals[k] || '').trim()) ||
+        C.rx.some(r => r.med.trim()) || C.labo.some(r => r.name.trim()) || C.img.some(r => r.name.trim()) || C.ref.some(r => r.spec);
+      if (!hasContent) { showCToastWarn(T('docc.empty_consult')); return; }
       document.getElementById('saveDocList').innerHTML = allDocEntries().map(e => {
         const checked = e.kind !== 'cr' ? 'checked' : ''; // prescriptions partagées par défaut ; note de consultation décochée
         return '<div class="save-doc-row"><div class="sd-name"><i class="fa ' + (SAVE_IC[e.kind] || 'fa-file') + ' me-2" style="color:#155e75;"></i>' + esc(e.n) + '</div>' +
@@ -670,10 +703,14 @@
       const al = patientAllergies(patient);
       const box = document.getElementById('cAllergy');
       if (!al.length) { box.innerHTML = ''; return; }
-      const hi = al.filter(a => a.sev === 'high');
-      box.innerHTML = hi.length
-        ? '<div class="safety-banner crit"><i class="fa fa-triangle-exclamation"></i><div><strong>' + T('docmr.allergy_severe') + ' :</strong> ' + hi.map(a => a.name).join(', ') + '</div></div>'
-        : '<div class="safety-banner warn"><i class="fa fa-triangle-exclamation"></i>' + T('docmr.allergy_warn') + '</div>';
+      // Garde-fou prescription : TOUTES les allergies (pas seulement les sévères), triées par sévérité (élevée → moyenne → faible), en pastilles colorées. Cadre rouge si ≥ 1 sévère.
+      const sevRank = { high: 0, medium: 1, low: 2 };
+      const alSorted = al.slice().sort((a, b) => (sevRank[a.sev] != null ? sevRank[a.sev] : 3) - (sevRank[b.sev] != null ? sevRank[b.sev] : 3));
+      const crit = al.some(a => a.sev === 'high');
+      const chips = alSorted.map(a => '<span class="al-sev ' + a.sev + '">' + esc(a.name) + ' · ' + T('docmr.sev_' + a.sev) + '</span>').join('');
+      box.innerHTML = '<div class="safety-banner alg ' + (crit ? 'crit' : 'warn') + '"><i class="fa fa-triangle-exclamation"></i>' +
+        '<div class="alg-body"><span class="alg-title">' + T('docmr.allergy_warn') + '</span>' +
+        '<span class="alg-chips">' + chips + '</span></div></div>';
     }
     // Bouton retour contextuel : dossier médical si l'on vient de « Documenter une consultation », sinon planning
     const fromRecords = (params.get('from') === 'records');
@@ -815,14 +852,19 @@
     function medInput(i, v) { C.rx[i].med = v; renderPreview(); showMedMenu(i, v); }
     function showMedMenu(i, q) {
       const menu = document.getElementById('rxMenu' + i); if (!menu) return;
-      q = (q || '').trim().toLowerCase();
+      const raw = (q || '').trim();
+      const ql = raw.toLowerCase();
       // Exclure les médicaments déjà présents sur une autre ligne (pas de doublon).
       const taken = new Set(C.rx.filter((r, j) => j !== i && r.med.trim()).map(r => medNorm(r.med)));
       let res = MED_REF.slice().filter(m => !taken.has(medNorm(medFull(m)))); // copie : le tri ne réordonne pas MED_REF (indexOf valide)
-      if (q) res = res.filter(m => (m.dci + ' ' + m.dose + ' ' + m.form).toLowerCase().includes(q));
+      if (ql) res = res.filter(m => (m.dci + ' ' + m.dose + ' ' + m.form).toLowerCase().includes(ql));
       res = res.sort((a, b) => medLabel(a).localeCompare(medLabel(b), 'fr')).slice(0, 50); // tri alphabétique (DCI + dosage) ; liste défilante
-      menu.innerHTML = res.map(m => '<div class="diag-opt" onmousedown="event.preventDefault();pickMed(' + i + ',' + MED_REF.indexOf(m) + ')"><span class="lbl">' + esc(medLabel(m)) + '</span><span class="mform">' + esc(m.form) + '</span></div>').join('');
-      menu.style.display = res.length ? '' : 'none';
+      let html = res.map(m => '<div class="diag-opt" onmousedown="event.preventDefault();pickMed(' + i + ',' + MED_REF.indexOf(m) + ')"><span class="lbl">' + esc(medLabel(m)) + '</span><span class="mform">' + esc(m.form) + '</span></div>').join('');
+      // Médicament hors liste (non Vidal) → ajout en texte libre, cohérent avec analyses / imagerie / diagnostic.
+      const exact = ql && MED_REF.some(m => medFull(m).toLowerCase() === ql);
+      if (raw && !exact) html += '<div class="diag-opt diag-add" onmousedown="event.preventDefault();pickMedFree(' + i + ')"><span class="plus"><i class="fa fa-plus"></i></span><span class="lbl">' + T('docc.diag_add').replace('{v}', esc(raw)) + '</span></div>';
+      menu.innerHTML = html;
+      menu.style.display = html ? '' : 'none';
     }
     function pickMed(i, idx) {
       const m = MED_REF[idx]; if (!m) return;
@@ -830,6 +872,11 @@
       if (C.rx.some((r, j) => j !== i && medNorm(r.med) === medNorm(full))) { hideAllMedMenus(); return; } // déjà dans l'ordonnance (garde-fou)
       C.rx[i].med = full;
       C.rx[i].atc = m.atc || ''; C.rx[i].vidalId = m.vidalId || null; // codes Vidal/ATC portés sur la ligne d'ordonnance
+      renderRx(); renderPreview();
+    }
+    function pickMedFree(i) { // médicament hors liste (non codé Vidal)
+      C.rx[i].med = (C.rx[i].med || '').trim();
+      C.rx[i].atc = ''; C.rx[i].vidalId = null;
       renderRx(); renderPreview();
     }
     function hideAllMedMenus() { document.querySelectorAll('.rx-menu').forEach(m => m.style.display = 'none'); }
@@ -844,7 +891,7 @@
       const restored = restoreDraft(); // brouillon éventuel (saisie précédente non finalisée)
       document.getElementById('pbAvatar').textContent = ini(patient);
       document.getElementById('pbName').textContent = patient;
-      document.getElementById('pbMeta').textContent = rdvMotif + ' · ' + (linkedRdv ? T('docc.rdv_of') + ' ' : '') + fmtLong(CDATE) + (linkedRdv && rdvTime ? ' à ' + rdvTime : '') + (rdvId ? ' · ' + T('docc.rdv_ref') + ' ' + rdvId : '');
+      document.getElementById('pbMeta').textContent = (rdvMotif || T('docc.new_consult')) + ' · ' + (linkedRdv ? T('docc.rdv_of') + ' ' : '') + fmtLong(CDATE) + (linkedRdv && rdvTime ? ' à ' + rdvTime : '') + (rdvId ? ' · ' + T('docc.rdv_ref') + ' ' + rdvId : '');
       document.getElementById('nMotif').value = C.note.motif || '';
       document.getElementById('nExam').value = C.note.exam || '';
       document.getElementById('nCat').value = C.note.cat || '';
@@ -854,7 +901,7 @@
       setBack(); renderDiagChips(); renderAllergy(); renderPresc(); renderPreview();
       if (restored) showCToast(T('docc.draft_restored')); // indicateur : la saisie précédente non finalisée a été reprise
     }
-    document.addEventListener('fueni:langchange', () => { document.getElementById('pbMeta').textContent = rdvMotif + ' · ' + (linkedRdv ? T('docc.rdv_of') + ' ' : '') + fmtLong(CDATE) + (linkedRdv && rdvTime ? ' à ' + rdvTime : '') + (rdvId ? ' · ' + T('docc.rdv_ref') + ' ' + rdvId : ''); setBack(); renderAllergy(); renderPresc(); renderPreview(); });
+    document.addEventListener('fueni:langchange', () => { document.getElementById('pbMeta').textContent = (rdvMotif || T('docc.new_consult')) + ' · ' + (linkedRdv ? T('docc.rdv_of') + ' ' : '') + fmtLong(CDATE) + (linkedRdv && rdvTime ? ' à ' + rdvTime : '') + (rdvId ? ' · ' + T('docc.rdv_ref') + ' ' + rdvId : ''); setBack(); renderAllergy(); renderPresc(); renderPreview(); });
     document.addEventListener('DOMContentLoaded', hydrate);
   </script>
 <!-- Prototype version badge -->

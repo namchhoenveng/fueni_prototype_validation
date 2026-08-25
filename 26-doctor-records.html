@@ -149,23 +149,24 @@
     .doc-btn.share { color:#155e75; } .doc-btn.share:hover { background:#e0f2f1; border-color:#155e75; }
     .pend-badge { display:inline-block; background:#fef3c7; color:#b45309; font-size:0.68rem; font-weight:700; border-radius:10px; padding:1px 7px; }
     /* Hauteur / bord / rayon uniformes pour tous les champs de la ligne (combobox + selects + inputs). min-height (pas height fixe) → pas de rognage du texte des selects. */
-    .me-row .cbx, .me-row .form-select, .me-row .form-control { min-height:40px; border-radius:8px; }
+    .me-row .form-select, .me-row .form-control { min-height:40px; border-radius:8px; }
     .me-row .form-select, .me-row .form-control { border:1px solid #cbd5e1; }
-    .cbx { display:flex; align-items:center; justify-content:space-between; gap:8px; padding:8px 11px; min-height:40px; border:1px solid #cbd5e1; border-radius:8px; background:#fff; cursor:pointer; font-size:0.85rem; color:#334155; }
-    .cbx:hover { border-color:#94a3b8; }
-    .cbx .cbx-val { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-    .cbx .cbx-val.placeholder { color:#94a3b8; }
-    .cbx > .fa-chevron-down { color:#94a3b8; font-size:0.68rem; flex-shrink:0; }
-    .cbx-panel { position:fixed; z-index:3500; background:#fff; border:1px solid #e2e8f0; border-radius:12px; box-shadow:0 10px 30px rgba(0,0,0,0.16); padding:8px; }
-    .cbx-search { width:100%; border:1px solid #cbd5e1; border-radius:8px; padding:8px 11px; font-size:0.85rem; outline:none; margin-bottom:6px; }
-    .cbx-search:focus { border-color:#155e75; box-shadow:0 0 0 3px rgba(21,94,117,0.12); }
-    .cbx-list { max-height:230px; overflow:auto; }
-    .cbx-opt { padding:8px 12px; border-radius:8px; font-size:0.85rem; color:#334155; cursor:pointer; }
+    /* Autocomplete « saisie directe » (identique à l'écran de consultation) : champ texte + menu déroulant sous le champ. */
+    .ac-box { position:relative; }
+    .ac-box .ac-input { width:100%; }
+    .ac-input.is-invalid, .year-inp.is-invalid { border-color:#dc3545 !important; background-image:none; padding-right:0.9rem; } /* signalement de champ invalide (sans l'icône Bootstrap) */
+    .me-sec-err { display:flex; align-items:center; gap:7px; background:#fef2f2; border:1px solid #fecaca; color:#b91c1c; border-radius:8px; padding:7px 11px; font-size:0.8rem; font-weight:600; margin:4px 0 2px; }
+    .me-sec-err .fa { flex-shrink:0; }
+    .cbx-panel { position:fixed; z-index:3500; background:#fff; border:1px solid #e2e8f0; border-radius:10px; box-shadow:0 8px 24px rgba(0,0,0,0.12); overflow:hidden; }
+    .cbx-list { max-height:240px; overflow:auto; }
+    .cbx-opt { padding:9px 12px; font-size:0.88rem; color:#334155; cursor:pointer; border-bottom:1px solid #f6f8fa; }
+    .cbx-opt:last-child { border-bottom:0; }
     .cbx-opt:hover, .cbx-opt.active { background:#eef5f7; color:#155e75; }
-    .cbx-add { display:flex; align-items:center; gap:11px; padding:9px 12px; margin-top:4px; border:1.5px dashed #cbd5e1; border-radius:10px; color:#155e75; font-weight:600; font-size:0.85rem; cursor:pointer; }
-    .cbx-add:hover, .cbx-add.active { background:#f8fafc; border-color:#155e75; }
-    .cbx-add .plus { width:26px; height:26px; border-radius:50%; background:#155e75; color:#fff; display:inline-flex; align-items:center; justify-content:center; flex-shrink:0; }
-    .cbx-empty { padding:9px 12px; color:#94a3b8; font-size:0.82rem; }
+    .cbx-add { display:flex; align-items:center; gap:10px; padding:9px 12px; font-size:0.88rem; color:#155e75; font-weight:600; cursor:pointer; border-bottom:1px solid #f6f8fa; }
+    .cbx-add:last-child { border-bottom:0; }
+    .cbx-add:hover, .cbx-add.active { background:#eef5f7; }
+    .cbx-add .plus { width:20px; height:20px; border-radius:50%; background:#155e75; color:#fff; display:inline-flex; align-items:center; justify-content:center; font-size:0.68rem; flex-shrink:0; }
+    .cbx-empty { padding:9px 12px; color:#94a3b8; font-size:0.86rem; }
     @media (max-width:900px){ .records-grid { grid-template-columns:1fr; } .sidebar{display:none;} .main{margin-left:0;} .main-topbar{left:0;} }
   </style>
 </head>
@@ -245,9 +246,26 @@
     </div>
   </div>
 
-  <!-- Panneau partagé du combobox « créable » (allergies / antécédents) -->
+  <!-- Garde « modifications non enregistrées » : demandé avant de quitter un patient en cours d'édition médicale -->
+  <div class="modal fade" id="leaveModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content" style="border:0;border-radius:16px;">
+        <div class="modal-header border-0 pb-0">
+          <h5 class="modal-title fw-bold" style="font-size:1.05rem;"><i class="fa fa-triangle-exclamation me-2" style="color:#f59e0b;"></i><span data-i18n="docmr.leave_title">Modifications non enregistrées</span></h5>
+        </div>
+        <div class="modal-body pt-2">
+          <p class="small text-muted mb-0" data-i18n="docmr.leave_body">Vous avez des modifications non enregistrées dans les informations médicales. Que souhaitez-vous faire ?</p>
+        </div>
+        <div class="modal-footer border-0 pt-0 d-flex gap-2 justify-content-end">
+          <button type="button" class="btn btn-light" onclick="leaveCancel()" data-i18n="docmr.leave_stay">Annuler</button>
+          <button type="button" class="btn btn-light" style="color:#b91c1c;white-space:nowrap;" onclick="leaveDiscard()" data-i18n="docmr.leave_discard">Quitter sans enregistrer</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Menu déroulant partagé de l'autocomplete « saisie directe » (allergies / antécédents / profession / famille) — positionné sous le champ actif -->
   <div id="cbxPanel" class="cbx-panel d-none">
-    <input type="text" class="cbx-search" id="cbxSearch" autocomplete="off" maxlength="60" oninput="cbxFilter()" onkeydown="cbxKey(event)">
     <div class="cbx-list" id="cbxList"></div>
   </div>
 
@@ -276,7 +294,8 @@
     let sel = PATIENTS[0].id;
     // Ouverture depuis « Mes patients » : ?patient={nom}
     (function () { const pn = new URLSearchParams(location.search).get('patient'); if (pn) { const f = PATIENTS.find(p => p.name === decodeURIComponent(pn)); if (f) sel = f.id; } })();
-    let editMed = false, snapMed = null;
+    let editMed = false, medDraft = null, medBase = null; // édition « staged » : medDraft = copie de travail (commit au « Enregistrer »), medBase = état initial (détection de modification). Le modèle byId[sel] n'est PAS touché tant qu'on n'enregistre pas.
+    let medBad = new Map(); // section d'infos médicales → clé du message à afficher (ligne incomplète ou doublon)
     let recTab = 'history';
     let editPersoMode = false; // édition de l'onglet « Informations personnelles » (fiches créées par le praticien uniquement)
     function setRecTab(t) { recTab = t; editPersoMode = false; if (typeof cbxClose === 'function') cbxClose(); renderRecord(); }
@@ -293,7 +312,44 @@
         '</div>'
       ).join('') || '<div class="muted p-3">' + T('docpat.empty') + '</div>';
     }
-    function select(id) { sel = id; editMed = false; snapMed = null; editPersoMode = false; refusingIdx = -1; cbxClose(); renderList(); renderRecord(); }
+    let leaveModal = null, pendingSel = null, pendingNav = null;
+    function anyDirty() { return medDirty() || persoDirty(); }
+    // Modifications médicales non enregistrées ? (édition « staged » → comparaison de la copie de travail à son état initial)
+    function medDirty() { return !!(editMed && medDraft && medBase) && JSON.stringify(medDraft) !== JSON.stringify(medBase); }
+    // Modifications « Informations personnelles » non enregistrées ? (édition « staged » → comparaison des champs du formulaire au modèle)
+    function persoDirty() {
+      if (!editPersoMode) return false;
+      const p = byId[sel], ccEl = document.getElementById('pePhoneCC'); if (!p || !ccEl) return false;
+      const g = id => { const el = document.getElementById(id); return el ? el.value.trim() : ''; };
+      const norm = s => (s || '').replace(/\s+/g, '');
+      const local = g('pePhone'), phone = local ? (ccEl.value + ' ' + local) : '';
+      if (norm(phone) !== norm(p.phone)) return true;
+      if (g('peEmail') !== (p.email || '').trim()) return true;
+      if (document.getElementById('peDob').value !== (p.dob || '')) return true;
+      if (document.getElementById('peSex').value !== (p.sex || '')) return true;
+      const em = p.emerg || {};
+      if (g('peEmergName') !== (em.name || '').trim() || g('peEmergRel') !== (em.rel || '').trim() || norm(g('peEmergPhone')) !== norm(em.phone)) return true;
+      return false;
+    }
+    function applySelect(id) { sel = id; editMed = false; medDraft = null; medBase = null; editPersoMode = false; medBad = new Map(); refusingIdx = -1; cbxClose(); renderList(); renderRecord(); }
+    function dropEdits() { editMed = false; medDraft = null; medBase = null; editPersoMode = false; medBad = new Map(); } // écarte les brouillons (sans re-rendu) — pour que beforeunload ne redemande pas après un abandon
+    // Garde unifiée « modifications non enregistrées » : même confirmation pour changer de patient OU quitter l'écran (liens du menu, déconnexion). action = {sel} | {nav}.
+    function guardLeave(action) {
+      if (!anyDirty()) return false;
+      pendingSel = (action && action.sel != null) ? action.sel : null;
+      pendingNav = (action && action.nav) ? action.nav : null;
+      leaveModal = leaveModal || new bootstrap.Modal(document.getElementById('leaveModal'));
+      leaveModal.show();
+      return true;
+    }
+    function proceedLeave() { // exécute l'action en attente (navigation vers une page, ou sélection d'un autre patient)
+      if (pendingNav) { const url = pendingNav; pendingNav = pendingSel = null; window.location.href = url; }
+      else { const id = pendingSel; pendingNav = pendingSel = null; applySelect(id); }
+    }
+    function select(id) { if (guardLeave({ sel: id })) return; applySelect(id); }
+    function navGuard(url) { if (guardLeave({ nav: url })) return; window.location.href = url; } // navigation d'écran passée par la garde
+    function leaveCancel() { if (leaveModal) leaveModal.hide(); pendingSel = pendingNav = null; } // rester
+    function leaveDiscard() { if (leaveModal) leaveModal.hide(); dropEdits(); proceedLeave(); } // quitter sans enregistrer : brouillons « staged » écartés ; le modèle n'a jamais été touché. Pour enregistrer : « Annuler » puis le bouton Enregistrer du formulaire.
 
     let mrt;
     function mrToast(msg) { const t = document.getElementById('mrToast'); document.getElementById('mrToastMsg').textContent = msg; t.style.display = 'flex'; clearTimeout(mrt); mrt = setTimeout(() => { t.style.display = 'none'; }, 2400); }
@@ -362,7 +418,7 @@
     function sharedDocsFor(p) {
       let store = []; try { store = JSON.parse(localStorage.getItem('fueni_shared_docs') || '[]'); } catch (e) {}
       const dossier = dossierNo(p), K = { cr: 'doc', rx: 'rx', lab: 'lab', img: 'img', ref: 'doc' };
-      return store.filter(d => d.dossier === dossier || d.patient === p.name)
+      return store.filter(d => d.kind !== 'add' && (d.dossier === dossier || d.patient === p.name))
         .map(d => ({ n: d.n, t: K[d.kind] || 'doc', date: d.date, origin: 'doctor', shared: !!d.shared, kind: d.kind, ref: d.ref }));
     }
     // Consultations enregistrées à l'écran de consultation (25) — magasin partagé (localStorage).
@@ -396,12 +452,15 @@
           : '<div class="doc-actions"><button class="doc-btn ok" onclick="validateDoc(' + i + ')"><i class="fa fa-check me-1"></i>' + T('docpat.doc_validate') + '</button>' +
             '<button class="doc-btn no" onclick="askRefuse(' + i + ')"><i class="fa fa-xmark me-1"></i>' + T('docpat.doc_refuse') + '</button></div>');
       const motif = (d.st === 'refused' && d.motif) ? ' · ' + T('docpat.doc_motif') + ' ' + esc(d.motif) : '';
+      // Référence du document : distingue deux pièces de même type. Documents du praticien issus d'une même consultation → même référence.
+      const dref = d.ref || (d.origin === 'doctor' && d.date ? 'CONS-' + d.date.replace(/-/g, '') : '');
+      const refBit = dref ? T('docmr.doc_ref') + ' ' + esc(dref) + ' · ' : '';
       return '<div class="doc-chip2' + (actionable ? ' pending' : '') + '">' +
         '<div class="dc-top"><i class="fa ' + (DOC_IC[d.t] || 'fa-file') + '" style="color:#155e75;"></i>' +
         '<span class="dc-name">' + esc(d.n) + '</span>' + stTag +
         '<a class="dc-dl" title="' + T('docpat.action_view') + '" onclick="event.preventDefault();"><i class="fa fa-eye"></i></a>' +
         '<a class="dc-dl" onclick="event.preventDefault();"><i class="fa fa-download"></i></a></div>' +
-        '<div class="dc-meta">' + (d.date ? fmtDate(d.date) + ' · ' : '') + docProvenance(d) + motif + '</div>' +
+        '<div class="dc-meta">' + (d.date ? fmtDate(d.date) + ' · ' : '') + refBit + docProvenance(d) + motif + '</div>' +
         actions + shareRow + '</div>';
     }
     // Partage a posteriori (sens unique) : un document classé « Au dossier » non partagé peut être envoyé au patient plus tard.
@@ -444,17 +503,71 @@
       renderRecord(); renderList(); mrToast(T('docpat.doc_refuse_toast'));
     }
 
-    function editMedInfo() { const p = byId[sel]; snapMed = JSON.parse(JSON.stringify({ blood: p.blood, allergies: p.allergies, ant: p.ant, family: p.family })); p.ant = (p.ant || []).map(a => typeof a === 'string' ? { cond: a, year: '' } : a); editMed = true; renderRecord(); }
-    function cancelMedInfo() { const p = byId[sel]; if (snapMed) { p.blood = snapMed.blood; p.allergies = snapMed.allergies; p.ant = snapMed.ant; p.family = snapMed.family; } snapMed = null; editMed = false; renderRecord(); }
-    function saveMedInfo() { snapMed = null; editMed = false; renderRecord(); mrToast(T('docmr.saved')); }
+    function editMedInfo() {
+      const p = byId[sel]; // copie de travail normalisée (antécédents : chaînes démo → objets {cond, year, code})
+      medDraft = {
+        blood: p.blood || '', profession: p.profession || '',
+        allergies: (p.allergies || []).map(a => ({ name: a.name || '', sev: a.sev || 'medium', code: a.code || '' })),
+        ant: (p.ant || []).map(a => (typeof a === 'string') ? { cond: a, year: '', code: '' } : { cond: a.cond || '', year: a.year || '', code: a.code || '' }),
+        family: (p.family || []).map(f => ({ rel: f.rel || '', cond: f.cond || '' }))
+      };
+      medBase = JSON.parse(JSON.stringify(medDraft)); // état initial pour la détection de modification
+      editMed = true; medBad = new Map(); renderRecord();
+    }
+    function cancelMedInfo() { editMed = false; medDraft = null; medBase = null; medBad = new Map(); renderRecord(); } // abandon : le modèle n'a jamais été modifié
+    function saveMedInfo() {
+      const d = medDraft; if (!d) { editMed = false; medBad = new Map(); renderRecord(); return; }
+      // Validation explicite (sur la copie de travail) : les lignes vides / incomplètes sont signalées (message + champ en rouge) et bloquent l'enregistrement.
+      const bad = []; const secMsg = new Map(); // secMsg : section → clé de message (incomplet prioritaire sur doublon)
+      (d.allergies || []).forEach((a, i) => { if (!(a.name || '').trim()) { bad.push({ coll: 'allergies', idx: i, field: 'name' }); secMsg.set('allergies', 'docmr.row_incomplete'); } });
+      (d.ant || []).forEach((a, i) => { if (!(a.cond || '').trim()) { bad.push({ coll: 'ant', idx: i, field: 'cond' }); secMsg.set('ant', 'docmr.row_incomplete'); } });
+      (d.family || []).forEach((f, i) => { let inc = false; if (!(f.rel || '').trim()) { bad.push({ coll: 'family', idx: i, field: 'rel' }); inc = true; } if (!(f.cond || '').trim()) { bad.push({ coll: 'family', idx: i, field: 'cond' }); inc = true; } if (inc) secMsg.set('family', 'docmr.row_incomplete'); });
+      // Doublon EXACT d'antécédent familial (même lien + même affection) : redondant → bloqué. (Même affection chez des proches différents = autorisé.)
+      const famSeen = new Set();
+      (d.family || []).forEach((f, i) => {
+        const rel = (f.rel || '').trim(), cond = (f.cond || '').trim(); if (!rel || !cond) return;
+        const key = alNorm(rel) + '|' + alNorm(cond);
+        if (famSeen.has(key)) { bad.push({ coll: 'family', idx: i, field: 'rel' }); bad.push({ coll: 'family', idx: i, field: 'cond' }); if (!secMsg.has('family')) secMsg.set('family', 'docmr.row_duplicate'); }
+        else famSeen.add(key);
+      });
+      // Année de diagnostic invalide (si renseignée) : 4 chiffres entre 1900 et l'année en cours → signalée en ligne et bloquante, comme le reste (plus de recadrage automatique).
+      const curYear = new Date().getFullYear();
+      (d.ant || []).forEach((a, i) => {
+        const y = (a.year || '').trim(); if (!y) return;
+        const n = parseInt(y, 10);
+        if (y.length !== 4 || isNaN(n) || n < 1900 || n > curYear) { bad.push({ coll: 'ant', idx: i, year: true }); if (!secMsg.has('ant')) secMsg.set('ant', 'docmr.year_invalid'); }
+      });
+      if (bad.length) {
+        medBad = secMsg; // sections concernées → message inline
+        renderRecord(); // ré-affiche avec les messages de section
+        let first = null; // surbrillance des champs concernés + défilement vers le premier
+        bad.forEach(b => { const el = b.year ? document.querySelector('.year-inp[data-yidx="' + b.idx + '"]') : document.querySelector('.ac-input[data-coll="' + b.coll + '"][data-idx="' + b.idx + '"][data-field="' + b.field + '"]'); if (el) { el.classList.add('is-invalid'); if (!first) first = el; } });
+        // NB : on NE met PAS le focus (onfocus ouvrirait le menu déroulant et masquerait le message) ; on fait juste défiler jusqu'au champ.
+        if (first) first.scrollIntoView({ block: 'center' });
+        return; // enregistrement bloqué
+      }
+      // Validation OK → commit de la copie de travail vers le modèle.
+      const p = byId[sel];
+      p.blood = d.blood; p.profession = d.profession; p.allergies = d.allergies; p.ant = d.ant; p.family = d.family;
+      medBad = new Map(); medDraft = null; medBase = null; editMed = false; renderRecord(); renderList(); mrToast(T('docmr.saved'));
+    }
     const AL_MAX = 15; // plafond « souple » d'allergies : évite les saisies aberrantes sans jamais empêcher une allergie réelle (garde-fou prescription)
     const alNorm = s => (s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim(); // comparaison insensible casse/accents (anti-doublon)
-    function addAllergy() { const a = (byId[sel].allergies = byId[sel].allergies || []); if (a.length >= AL_MAX) return; a.push({ name: '', sev: 'medium' }); renderRecord(); }
-    function rmAllergy(i) { byId[sel].allergies.splice(i, 1); renderRecord(); }
-    function addAnt() { (byId[sel].ant = byId[sel].ant || []).push({ cond: '', year: '' }); renderRecord(); }
-    function rmAnt(i) { byId[sel].ant.splice(i, 1); renderRecord(); }
-    function addFam() { (byId[sel].family = byId[sel].family || []).push({ rel: '', cond: '' }); renderRecord(); }
-    function rmFam(i) { byId[sel].family.splice(i, 1); renderRecord(); }
+    function addAllergy() { const a = (medDraft.allergies = medDraft.allergies || []); if (a.length >= AL_MAX) return; a.push({ name: '', sev: 'medium', code: '' }); renderRecord(); }
+    function rmAllergy(i) { medDraft.allergies.splice(i, 1); renderRecord(); }
+    function addAnt() { (medDraft.ant = medDraft.ant || []).push({ cond: '', year: '', code: '' }); renderRecord(); }
+    // Efface le signalement (champs en rouge + messages de section) dès que le praticien corrige.
+    function clearMedErrors() { medBad = new Map(); document.querySelectorAll('.ac-input.is-invalid, .year-inp.is-invalid').forEach(x => x.classList.remove('is-invalid')); document.querySelectorAll('.me-sec-err').forEach(x => x.remove()); }
+    // Année d'antécédent : chiffres uniquement à la saisie ; la validation de plage (1900–année en cours) se fait à l'enregistrement (signalement inline), plus de recadrage auto.
+    function antYearInput(el, i) {
+      el.value = el.value.replace(/[^0-9]/g, '');
+      if (medDraft && medDraft.ant[i]) medDraft.ant[i].year = el.value;
+      el.classList.remove('is-invalid');
+      if (medBad.size) clearMedErrors();
+    }
+    function rmAnt(i) { medDraft.ant.splice(i, 1); renderRecord(); }
+    function addFam() { (medDraft.family = medDraft.family || []).push({ rel: '', cond: '' }); renderRecord(); }
+    function rmFam(i) { medDraft.family.splice(i, 1); renderRecord(); }
 
     // Référentiels cliniques = SNOMED CT (system http://snomed.info/sct). Structure FHIR Coding : { code = SCTID, display = terme FR }.
     // Sous-ensemble « plus utilisés » (démo). ⚠️ Codes SCTID INDICATIFS — à valider contre la release SNOMED CT licenciée (édition internationale + extension FR).
@@ -513,24 +626,41 @@
     const escA = s => (s == null ? '' : String(s)).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
     const MED_LISTS = { al: ALLERGENS, cond: CONDITIONS, rel: RELATIONS, prof: PROFESSIONS };
     let cbxTrigger = null;
+    // Autocomplete « saisie directe » : le champ EST la recherche ; le menu (fixe) s'ouvre sous le champ. Aligné sur l'écran de consultation.
+    function acField(attrs, value, placeholder, style) {
+      // Placeholder uniforme « Rechercher ou saisir… » (comme l'écran de consultation) ; l'intitulé de section au-dessus précise le champ.
+      return '<div class="ac-box"' + (style ? ' style="' + style + '"' : '') + '>' +
+        '<input type="text" class="form-control form-control-sm ac-input" autocomplete="off" maxlength="60" ' + attrs +
+        ' value="' + esc(value || '').replace(/"/g, '&quot;') + '" placeholder="' + esc(T('docmr.search_in_list')) + '"' +
+        ' oninput="acInput(this)" onfocus="acOpen(this)" onkeydown="cbxKey(event)"></div>';
+    }
     function cbxTriggerHtml(listKey, coll, idx, field, value, placeholder, style) {
-      const has = !!value;
-      return '<div class="cbx"' + (style ? ' style="' + style + '"' : '') + ' data-list="' + listKey + '" data-coll="' + coll + '" data-idx="' + idx + '" data-field="' + (field || '') + '" onclick="cbxOpen(this)">' +
-        '<span class="cbx-val' + (has ? '' : ' placeholder') + '">' + (has ? esc(value) : (placeholder || '—')) + '</span><i class="fa fa-chevron-down"></i></div>';
+      return acField('data-list="' + listKey + '" data-coll="' + coll + '" data-idx="' + idx + '" data-field="' + (field || '') + '"', value, placeholder, style);
     }
     // Variante « champ scalaire » (ex. p.profession) : lie directement une propriété du patient (pas un tableau).
     function cbxScalar(listKey, prop, value, placeholder, style) {
-      const has = !!value;
-      return '<div class="cbx"' + (style ? ' style="' + style + '"' : '') + ' data-list="' + listKey + '" data-scalar="1" data-coll="' + prop + '" onclick="cbxOpen(this)">' +
-        '<span class="cbx-val' + (has ? '' : ' placeholder') + '">' + (has ? esc(value) : (placeholder || '—')) + '</span><i class="fa fa-chevron-down"></i></div>';
+      return acField('data-list="' + listKey + '" data-scalar="1" data-coll="' + prop + '"', value, placeholder, style);
     }
-    function cbxOpen(trigger) {
-      cbxTrigger = trigger;
-      const panel = document.getElementById('cbxPanel'), r = trigger.getBoundingClientRect();
+    function acOpen(el) { // positionne + affiche le menu sous le champ actif
+      cbxTrigger = el;
+      const panel = document.getElementById('cbxPanel'), r = el.getBoundingClientRect();
       panel.style.left = r.left + 'px'; panel.style.top = (r.bottom + 4) + 'px'; panel.style.width = Math.max(r.width, 240) + 'px';
       panel.classList.remove('d-none');
-      const s = document.getElementById('cbxSearch'); s.value = ''; s.placeholder = T('docmr.search_in_list');
-      cbxFilter(); s.focus();
+      cbxFilter();
+    }
+    function acInput(el) { // saisie directe : met à jour le modèle (texte libre → non codé jusqu'à sélection) puis filtre
+      cbxTrigger = el;
+      // Efface le signalement dès que le praticien corrige : champ(s) en rouge + messages de section.
+      if (medBad.size || el.classList.contains('is-invalid')) clearMedErrors();
+      const p = medDraft; if (!p) return; // édition « staged » : on écrit dans la copie de travail, pas dans le modèle
+      const v = el.value;
+      if (el.dataset.scalar) { p[el.dataset.coll] = v; }
+      else {
+        const coll = el.dataset.coll, idx = +el.dataset.idx, field = el.dataset.field;
+        if (field) { if (p[coll][idx]) p[coll][idx][field] = v; } else { p[coll][idx] = v; }
+        if (p[coll][idx] && (coll === 'allergies' || coll === 'ant')) p[coll][idx].code = '';
+      }
+      acOpen(el);
     }
     function cbxClose() { const p = document.getElementById('cbxPanel'); if (p) p.classList.add('d-none'); cbxTrigger = null; }
     function cbxFilter() {
@@ -538,16 +668,17 @@
       // Listes mixtes : chaînes simples (relation, profession) ou objets SNOMED { code, display }. On normalise en { label, code }.
       const raw = MED_LISTS[cbxTrigger.dataset.list] || [];
       const list = raw.map(x => (typeof x === 'string') ? { label: x, code: '' } : { label: x.display, code: x.code });
-      const coll = cbxTrigger.dataset.coll, idx = +cbxTrigger.dataset.idx, isAl = coll === 'allergies';
-      // Allergies : masquer les allergènes déjà saisis (autres lignes) → pas de doublon proposé.
-      const taken = isAl ? new Set((byId[sel].allergies || []).filter((_, j) => j !== idx).map(a => alNorm(a.name)).filter(Boolean)) : null;
-      const q = document.getElementById('cbxSearch').value.trim(), nq = q.toLowerCase();
+      const coll = cbxTrigger.dataset.coll, idx = +cbxTrigger.dataset.idx;
+      // Anti-doublon : allergies (par nom) et antécédents perso (par affection). PAS la famille (une même affection peut concerner plusieurs proches).
+      const dedupKey = coll === 'allergies' ? 'name' : (coll === 'ant' ? 'cond' : null);
+      const taken = dedupKey ? new Set(((medDraft && medDraft[coll]) || []).filter((_, j) => j !== idx).map(a => alNorm(typeof a === 'string' ? a : (a[dedupKey] || ''))).filter(Boolean)) : null;
+      const q = (cbxTrigger.value || '').trim(), nq = q.toLowerCase();
       let matches = list.filter(it => it.label.toLowerCase().includes(nq));
-      if (isAl) matches = matches.filter(it => !taken.has(alNorm(it.label)));
+      if (taken) matches = matches.filter(it => !taken.has(alNorm(it.label)));
       const lk = cbxTrigger.dataset.list;
-      if (lk === 'al' || lk === 'cond') matches.sort((a, b) => a.label.localeCompare(b.label, 'fr')); // listes cliniques triées alphabétiquement (relation/profession gardent leur ordre)
+      if (lk === 'al' || lk === 'cond') matches.sort((a, b) => a.label.localeCompare(b.label, 'fr'));
       let html = matches.map(it => '<div class="cbx-opt" onmousedown="cbxPick(event,\'' + escA(it.label) + '\',\'' + escA(it.code) + '\')">' + esc(it.label) + '</div>').join('');
-      const dup = isAl && q && taken.has(alNorm(q)); // saisie libre = doublon d'une allergie déjà présente
+      const dup = taken && q && taken.has(alNorm(q));
       if (q && !list.some(it => it.label.toLowerCase() === nq) && !dup) html += '<div class="cbx-add" onmousedown="cbxPick(event,\'' + escA(q) + '\',\'\')"><span class="plus"><i class="fa fa-plus"></i></span>' + T('docmr.add_value').replace('{v}', esc(q)) + '</div>';
       if (dup) html += '<div class="cbx-empty">' + T('docmr.al_dup_hint') + '</div>';
       if (!html) html = '<div class="cbx-empty">' + T('docmr.no_result') + '</div>';
@@ -556,19 +687,16 @@
     function cbxPick(e, value, code) {
       if (e) e.preventDefault();
       if (!cbxTrigger) return;
-      const p = byId[sel];
-      if (cbxTrigger.dataset.scalar) { p[cbxTrigger.dataset.coll] = value; } // champ scalaire (ex. profession)
+      const el = cbxTrigger, p = medDraft; if (!p) return; // édition « staged » : sélection écrite dans la copie de travail
+      if (el.dataset.scalar) { p[el.dataset.coll] = value; }
       else {
-        const coll = cbxTrigger.dataset.coll, idx = +cbxTrigger.dataset.idx, field = cbxTrigger.dataset.field;
-        // Anti-doublon d'allergie (insensible casse/accents) : ne pas ajouter deux fois le même allergène.
-        if (coll === 'allergies' && (p.allergies || []).some((a, j) => j !== idx && alNorm(a.name) === alNorm(value))) {
-          cbxClose(); mrToast(T('docmr.al_dup').replace('{v}', value)); return;
-        }
+        const coll = el.dataset.coll, idx = +el.dataset.idx, field = el.dataset.field;
+        if (coll === 'allergies' && (p.allergies || []).some((a, j) => j !== idx && alNorm(a.name) === alNorm(value))) { cbxClose(); mrToast(T('docmr.al_dup').replace('{v}', value)); return; }
         if (field) { if (p[coll][idx]) p[coll][idx][field] = value; } else { p[coll][idx] = value; }
-        // Code SNOMED CT (vide pour une saisie libre) — porté sur l'enregistrement pour l'interopérabilité.
         if (p[coll][idx] && (coll === 'allergies' || coll === 'ant')) p[coll][idx].code = code || '';
       }
-      cbxClose(); renderRecord();
+      el.value = value; // refléter la sélection dans le champ
+      cbxClose();
     }
     function cbxKey(e) {
       if (e.key === 'Escape') { cbxClose(); return; }
@@ -581,7 +709,7 @@
       else return;
       opts.forEach(o => o.classList.remove('active')); opts[idx].classList.add('active'); opts[idx].scrollIntoView({ block: 'nearest' });
     }
-    document.addEventListener('mousedown', function (e) { if (cbxTrigger && !e.target.closest('#cbxPanel') && !e.target.closest('.cbx')) cbxClose(); });
+    document.addEventListener('mousedown', function (e) { if (cbxTrigger && !e.target.closest('#cbxPanel') && !e.target.closest('.ac-box')) cbxClose(); });
     function medInfoHtml(p) {
       if (!editMed) {
         const al = p.allergies || [];
@@ -599,19 +727,20 @@
             chipKv(T('docmr.ant_family'), fam, true) +
           '</div>';
       }
+      const d = medDraft || p; // copie de travail (édition « staged ») — le formulaire lit/écrit medDraft, jamais byId[sel]
       const bloods = ['O+', 'O-', 'A+', 'A-', 'B+', 'B-', 'AB+', 'AB-'];
-      const bloodSel = '<select class="form-select form-select-sm" style="max-width:150px" onchange="byId[sel].blood=this.value"><option value=""' + (p.blood ? '' : ' selected') + '>' + T('docmr.blood_unknown') + '</option>' + bloods.map(b => '<option' + (p.blood === b ? ' selected' : '') + '>' + b + '</option>').join('') + '</select>';
+      const bloodSel = '<select class="form-select form-select-sm" style="max-width:150px" onchange="medDraft.blood=this.value"><option value=""' + (d.blood ? '' : ' selected') + '>' + T('docmr.blood_unknown') + '</option>' + bloods.map(b => '<option' + (d.blood === b ? ' selected' : '') + '>' + b + '</option>').join('') + '</select>';
       const sevOpts = s => ['high', 'medium', 'low'].map(x => '<option value="' + x + '"' + (s === x ? ' selected' : '') + '>' + T('docmr.sev_' + x) + '</option>').join('');
-      const alRows = (p.allergies || []).map((a, i) => '<div class="me-row">' + cbxTriggerHtml('al', 'allergies', i, 'name', a.name, T('docmr.al_name_ph'), 'flex:1') + '<select class="form-select form-select-sm" style="max-width:130px" onchange="byId[sel].allergies[' + i + '].sev=this.value">' + sevOpts(a.sev) + '</select><button class="btn-del" onclick="rmAllergy(' + i + ')"><i class="fa fa-trash-can"></i></button></div>').join('');
-      const antRows = (p.ant || []).map((a, i) => { const c = (typeof a === 'string') ? a : (a.cond || ''), yr = (typeof a === 'string') ? '' : (a.year || ''); return '<div class="me-row">' + cbxTriggerHtml('cond', 'ant', i, 'cond', c, T('docmr.ant_ph'), 'flex:1') + '<input type="text" class="form-control form-control-sm" style="max-width:90px" inputmode="numeric" maxlength="4" placeholder="' + T('docmr.year_ph') + '" value="' + esc(yr).replace(/"/g, '&quot;') + '" oninput="byId[sel].ant[' + i + '].year=this.value"><button class="btn-del" onclick="rmAnt(' + i + ')"><i class="fa fa-trash-can"></i></button></div>'; }).join('');
-      const famRows = (p.family || []).map((f, i) => '<div class="me-row">' + cbxTriggerHtml('rel', 'family', i, 'rel', f.rel, T('docmr.rel_ph'), 'flex:0 0 160px') + cbxTriggerHtml('cond', 'family', i, 'cond', f.cond, T('docmr.cond_ph'), 'flex:1') + '<button class="btn-del" onclick="rmFam(' + i + ')"><i class="fa fa-trash-can"></i></button></div>').join('');
+      const alRows = (d.allergies || []).map((a, i) => '<div class="me-row">' + cbxTriggerHtml('al', 'allergies', i, 'name', a.name, T('docmr.al_name_ph'), 'flex:1') + '<select class="form-select form-select-sm" style="max-width:130px" onchange="medDraft.allergies[' + i + '].sev=this.value">' + sevOpts(a.sev) + '</select><button class="btn-del" onclick="rmAllergy(' + i + ')"><i class="fa fa-trash-can"></i></button></div>').join('');
+      const antRows = (d.ant || []).map((a, i) => { const c = (typeof a === 'string') ? a : (a.cond || ''), yr = (typeof a === 'string') ? '' : (a.year || ''); return '<div class="me-row">' + cbxTriggerHtml('cond', 'ant', i, 'cond', c, T('docmr.ant_ph'), 'flex:1') + '<input type="text" class="form-control form-control-sm year-inp" data-yidx="' + i + '" style="max-width:90px" inputmode="numeric" maxlength="4" placeholder="' + T('docmr.year_ph') + '" value="' + esc(yr).replace(/"/g, '&quot;') + '" oninput="antYearInput(this,' + i + ')"><button class="btn-del" onclick="rmAnt(' + i + ')"><i class="fa fa-trash-can"></i></button></div>'; }).join('');
+      const famRows = (d.family || []).map((f, i) => '<div class="me-row">' + cbxTriggerHtml('rel', 'family', i, 'rel', f.rel, T('docmr.rel_ph'), 'flex:0 0 160px') + cbxTriggerHtml('cond', 'family', i, 'cond', f.cond, T('docmr.cond_ph'), 'flex:1') + '<button class="btn-del" onclick="rmFam(' + i + ')"><i class="fa fa-trash-can"></i></button></div>').join('');
+      const secErr = c => medBad.has(c) ? '<div class="me-sec-err"><i class="fa fa-circle-exclamation"></i><span>' + T(medBad.get(c)) + '</span></div>' : '';
       return '<h6 class="rec-sec-title">' + T('docmr.med_info') + '</h6>' +
         '<div class="me-lbl">' + T('docmr.blood') + '</div><div class="me-row">' + bloodSel + '</div>' +
-        '<div class="me-lbl">' + T('docmr.profession') + '</div><div class="me-row">' + cbxScalar('prof', 'profession', p.profession || '', T('docmr.profession_ph'), 'flex:1;max-width:440px') + '</div>' +
-        '<div style="font-size:0.72rem;color:#94a3b8;margin:-2px 0 4px;">' + T('docmr.profession_ref') + '</div>' +
-        '<div class="me-lbl">' + T('docmr.allergies') + '</div>' + alRows + ((p.allergies || []).length >= AL_MAX ? '<div class="mr-limit"><i class="fa fa-circle-info me-1"></i>' + T('docmr.al_limit').replace('{n}', AL_MAX) + '</div>' : '<button class="mr-add" onclick="addAllergy()"><i class="fa fa-plus me-1"></i>' + T('docmr.add') + '</button>') +
-        '<div class="me-lbl">' + T('docmr.ant_perso') + '</div>' + antRows + '<button class="mr-add" onclick="addAnt()"><i class="fa fa-plus me-1"></i>' + T('docmr.add') + '</button>' +
-        '<div class="me-lbl">' + T('docmr.ant_family') + '</div>' + famRows + '<button class="mr-add" onclick="addFam()"><i class="fa fa-plus me-1"></i>' + T('docmr.add') + '</button>' +
+        '<div class="me-lbl">' + T('docmr.profession') + '</div><div class="me-row">' + cbxScalar('prof', 'profession', d.profession || '', T('docmr.profession_ph'), 'flex:1;max-width:440px') + '</div>' +
+        '<div class="me-lbl">' + T('docmr.allergies') + '</div>' + alRows + secErr('allergies') + ((d.allergies || []).length >= AL_MAX ? '<div class="mr-limit"><i class="fa fa-circle-info me-1"></i>' + T('docmr.al_limit').replace('{n}', AL_MAX) + '</div>' : '<button class="mr-add" onclick="addAllergy()"><i class="fa fa-plus me-1"></i>' + T('docmr.add') + '</button>') +
+        '<div class="me-lbl">' + T('docmr.ant_perso') + '</div>' + antRows + secErr('ant') + '<button class="mr-add" onclick="addAnt()"><i class="fa fa-plus me-1"></i>' + T('docmr.add') + '</button>' +
+        '<div class="me-lbl">' + T('docmr.ant_family') + '</div>' + famRows + secErr('family') + '<button class="mr-add" onclick="addFam()"><i class="fa fa-plus me-1"></i>' + T('docmr.add') + '</button>' +
         '<div class="mr-foot"><button class="btn btn-ghost btn-sm" onclick="cancelMedInfo()">' + T('docpp.cancel') + '</button><button class="btn btn-teal btn-sm" onclick="saveMedInfo()"><i class="fa fa-check me-1"></i>' + T('docpp.save_btn') + '</button></div>';
     }
 
@@ -660,6 +789,7 @@
       const ccOpts = NP_CC.map(c => '<option value="' + c.dial + '" data-len="' + c.len + '"' + (c.dial === cc ? ' selected' : '') + '>' + c.flag + ' ' + c.dial + '</option>').join('');
       const sexOpts = [['F', 'female'], ['M', 'male']].map(s => '<option value="' + s[0] + '"' + (p.sex === s[0] ? ' selected' : '') + '>' + T('docpat.sex_' + s[1]) + '</option>').join('');
       const q = s => esc(s || '').replace(/"/g, '&quot;');
+      const em = p.emerg || {};
       return '<div class="synth-card">' +
         '<h6 class="rec-sec-title" style="margin-top:0">' + T('docmr.perso_info') + '</h6>' +
         '<div class="me-lbl">' + T('docpat.np_phone') + '</div>' +
@@ -667,6 +797,10 @@
         '<div class="me-lbl">' + T('docpat.np_email') + '</div><input type="email" class="form-control form-control-sm" id="peEmail" style="max-width:420px;" value="' + q(p.email) + '">' +
         '<div class="me-lbl">' + T('docpat.np_dob') + '</div><input type="date" lang="fr-FR" class="form-control form-control-sm" id="peDob" style="max-width:220px;" value="' + (p.dob || '') + '">' +
         '<div class="me-lbl">' + T('docpat.np_sex') + '</div><select class="form-select form-select-sm" id="peSex" style="max-width:220px;">' + sexOpts + '</select>' +
+        '<div class="me-lbl">' + T('prof.emerg.title') + '</div>' +
+        '<input type="text" class="form-control form-control-sm mb-2" id="peEmergName" style="max-width:420px;" placeholder="' + T('prof.emerg.name') + '" value="' + q(em.name) + '">' +
+        '<input type="text" class="form-control form-control-sm mb-2" id="peEmergRel" style="max-width:420px;" placeholder="' + T('prof.emerg.relation') + '" value="' + q(em.rel) + '">' +
+        '<input type="tel" class="form-control form-control-sm" id="peEmergPhone" style="max-width:420px;" placeholder="' + T('prof.emerg.phone') + '" value="' + q(em.phone) + '">' +
         '<div class="np-err d-none mt-2" id="peErr"></div>' +
         '<div class="mr-foot"><button class="btn btn-ghost btn-sm" onclick="cancelPerso()">' + T('docpp.cancel') + '</button><button class="btn btn-teal btn-sm" onclick="savePerso()"><i class="fa fa-check me-1"></i>' + T('docpp.save_btn') + '</button></div>' +
       '</div>';
@@ -679,14 +813,20 @@
       const local = document.getElementById('pePhone').value.trim();
       const email = document.getElementById('peEmail').value.trim();
       const dob = document.getElementById('peDob').value, sex = document.getElementById('peSex').value;
+      // Contact d'urgence (fiche praticien) : lu ici pour être inclus dans la validation.
+      const emName = document.getElementById('peEmergName').value.trim();
+      const emRel = document.getElementById('peEmergRel').value.trim();
+      const emPhone = document.getElementById('peEmergPhone').value.trim();
       // Validation « douce » (cohérente avec le formulaire d'ajout) : e-mail / téléphone / date de naissance contrôlés si renseignés.
-      let err = '';
+      let err = '', focusId = '';
       if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) err = 'docpat.np_err_email';
       else if (dob && (new Date(dob + 'T00:00:00') > new Date() || ageFromDob(dob) === '')) err = 'docpat.np_err_dob';
       else if (local) { const opt = cc && cc.selectedOptions[0], len = opt ? +opt.dataset.len : 0, d = local.replace(/[^\d]/g, ''); if (len ? d.length !== len : d.length < 6) err = 'docpat.np_err_phone'; }
+      else if ((emRel || emPhone) && !emName) { err = 'docmr.emerg_name_req'; focusId = 'peEmergName'; } // contact d'urgence commencé sans nom → refus explicite (plutôt que suppression silencieuse)
       const el = document.getElementById('peErr');
-      if (err) { if (el) { el.textContent = T(err); el.classList.remove('d-none'); } return; }
+      if (err) { if (el) { el.textContent = T(err); el.classList.remove('d-none'); } const fe = focusId && document.getElementById(focusId); if (fe) fe.focus(); return; }
       p.phone = local ? (ccVal + ' ' + local) : ''; p.email = email; p.dob = dob; p.sex = sex;
+      p.emerg = (emName || emPhone) ? { name: emName, rel: emRel, phone: emPhone } : null; // conservé si un nom ou un téléphone est renseigné, sinon effacé
       editPersoMode = false;
       renderRecord(); renderList(); mrToast(T('docmr.saved'));
     }
@@ -754,8 +894,23 @@
         '</div>';
     }
 
+    // Navigations d'écran (menu latéral, logo, déconnexion) → passer par la MÊME garde que le changement de patient (dialogue Rester / Ne pas enregistrer / Enregistrer).
+    document.addEventListener('click', function (e) {
+      const a = e.target.closest('a.nav-link-side, a.brand-logo');
+      if (!a) return;
+      const href = a.getAttribute('href');
+      if (!href || href.charAt(0) === '#' || /^(tel:|mailto:|javascript:)/i.test(href)) return; // ancre / lien courant / non-navigation
+      if (!anyDirty()) return; // rien à protéger → lien normal
+      e.preventDefault();
+      navGuard(href);
+    });
+    // Filet de sécurité pour les sorties NON interceptables (rechargement, fermeture d'onglet, URL tapée) : invite native du navigateur.
+    window.addEventListener('beforeunload', function (e) { if (anyDirty()) { e.preventDefault(); e.returnValue = ''; } });
     document.addEventListener('fueni:langchange', () => { renderList(); renderRecord(); });
     document.addEventListener('DOMContentLoaded', () => {
+      // Nettoyage : le type « addendum » a été retiré du MVP — purge d'éventuelles entrées résiduelles (tests antérieurs).
+      try { const ds = JSON.parse(localStorage.getItem('fueni_shared_docs') || '[]'); const cleaned = ds.filter(d => d.kind !== 'add'); if (cleaned.length !== ds.length) localStorage.setItem('fueni_shared_docs', JSON.stringify(cleaned)); } catch (e) {}
+      try { localStorage.removeItem('fueni_consult_addenda'); } catch (e) {}
       const q = new URLSearchParams(location.search);
       const tb = q.get('tab'); if (['history', 'perso', 'med', 'docs'].includes(tb)) recTab = tb; // onglet ciblé (ex. retour de consultation → Documents)
       renderList(); renderRecord();

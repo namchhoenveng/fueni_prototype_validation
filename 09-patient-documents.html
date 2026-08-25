@@ -460,6 +460,7 @@
       };
       store.forEach(d => {
         if (!d.shared) return; // seuls les documents explicitement partagés au patient apparaissent dans son coffre
+        if (d.kind === 'add') return; // type « addendum » retiré du MVP — ignore d'éventuelles entrées résiduelles
         const m = KMAP[d.kind] || KMAP.cr;
         const tr = document.createElement('tr');
         tr.dataset.type = m.type; tr.dataset.origin = 'fueni'; tr.dataset.status = 'nouveau'; tr.dataset.date = d.date || ''; tr.dataset.name = (d.n || '').toLowerCase();

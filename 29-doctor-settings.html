@@ -589,12 +589,18 @@
     });
 
     function verifyPhone() {
+      // Vérifier un numéro déjà enregistré : envoi d'un code par SMS au numéro affiché, à confirmer (OTP).
+      // Pas de ré-authentification par mot de passe : la réception du SMS est la preuve de possession.
+      pendingApply = applyPhoneVerified;
+      openOtp('prof.otp.desc_phone');
+    }
+    function applyPhoneVerified() {
       const chip = document.getElementById('phoneChip');
       if (chip) { chip.className = 'chip-ok'; chip.innerHTML = '<i class="fa fa-circle-check me-1"></i>' + T('dset.verified'); }
       const link = document.getElementById('phoneVerifyLink'); if (link) link.style.display = 'none';
       const banner = document.getElementById('phoneBanner'); if (banner) banner.style.display = 'none';
       phoneVerified2fa = true; refreshMfaSms(); // numéro vérifié → 2FA par SMS activable
-      toast();
+      toast('dset.phone_verified_toast');
     }
 
     /* ---- 2FA : e-mail (défaut, toujours actif) + SMS optionnel (numéro vérifié) ---- */
