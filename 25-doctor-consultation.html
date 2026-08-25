@@ -46,13 +46,18 @@
     .form-label { font-size:0.82rem; font-weight:600; color:#334155; }
     .rx-row { display:flex; gap:8px; align-items:center; margin-bottom:8px; }
     .rx-row .rx-med { flex:1 1 auto; } .rx-row .rx-p { width:150px; } .rx-row .rx-d { width:120px; }
-    .presc-sec { border:1px solid #e2e8f0; border-radius:12px; margin-bottom:10px; overflow:hidden; }
-    .presc-head { width:100%; display:flex; align-items:center; gap:10px; background:#f8fafc; border:0; padding:12px 14px; font-weight:700; color:#0f172a; font-size:0.9rem; cursor:pointer; text-align:left; }
+    .rx-head { display:flex; gap:8px; align-items:center; margin-bottom:6px; padding:0 2px; }
+    .rx-head > div { font-size:0.7rem; font-weight:700; color:#94a3b8; text-transform:uppercase; letter-spacing:0.4px; }
+    .rx-head .rx-h-med { flex:1 1 auto; min-width:0; } .rx-head .rx-h-p { width:150px; } .rx-head .rx-h-d { width:120px; } .rx-head .rx-h-spacer { width:30px; flex-shrink:0; }
+    /* Pas d'overflow:hidden : sinon les listes déroulantes (médicaments) sont coupées par la section. Les coins sont arrondis sur l'en-tête/le corps. */
+    .presc-sec { border:1px solid #e2e8f0; border-radius:12px; margin-bottom:10px; }
+    .presc-head { width:100%; display:flex; align-items:center; gap:10px; background:#f8fafc; border:0; border-radius:11px; padding:12px 14px; font-weight:700; color:#0f172a; font-size:0.9rem; cursor:pointer; text-align:left; }
+    .presc-head.open { border-radius:11px 11px 0 0; }
     .presc-head > i:first-child { color:#155e75; width:18px; text-align:center; }
     .presc-head .presc-count { margin-left:auto; background:#e0f2f1; color:#0e7490; border-radius:20px; padding:1px 9px; font-size:0.72rem; font-weight:700; }
     .presc-head .chev { color:#94a3b8; transition:transform .15s; margin-left:8px; }
     .presc-head.open .chev { transform:rotate(180deg); }
-    .presc-body { padding:14px; border-top:1px solid #eef2f6; }
+    .presc-body { padding:14px; border-top:1px solid #eef2f6; border-radius:0 0 11px 11px; }
     .lab-row { display:flex; gap:8px; align-items:center; margin-bottom:8px; }
     .lab-row .lab-main, .lab-row .ref-reason { flex:1 1 auto; min-width:0; }
     .lab-row .lab-region { width:180px; } .lab-row .ref-spec { width:220px; }
@@ -75,7 +80,6 @@
     .doc-sec { margin-bottom:14px; }
     .doc-sec .lbl { font-weight:700; color:#155e75; font-size:0.8rem; text-transform:uppercase; letter-spacing:0.4px; }
     .doc-sec .val { white-space:pre-line; margin-top:2px; }
-    .doc-allergy { background:#fef2f2; border:1px solid #fecaca; color:#991b1b; border-radius:8px; padding:8px 12px; font-size:0.85rem; margin-bottom:14px; }
     .doc-rx-line { padding:8px 0; border-bottom:1px dashed #e2e8f0; }
     .doc-rx-line .m { font-weight:700; }
     .doc-rx-line .s { font-size:0.85rem; color:#475569; }
@@ -84,6 +88,13 @@
     .doc-sign .s-note { font-size:0.72rem; color:#94a3b8; margin-top:26px; border-top:1px solid #eef2f6; padding-top:6px; }
     .muted-ph { color:#cbd5e1; font-style:italic; }
     .toast-ok { position:fixed; bottom:24px; left:50%; transform:translateX(-50%); background:#0f5132; color:#fff; padding:12px 22px; border-radius:10px; font-size:0.9rem; font-weight:600; box-shadow:0 6px 20px rgba(0,0,0,0.25); z-index:3000; display:none; align-items:center; gap:9px; }
+    .toast-ok.toast-warn { background:#b42318; }
+    .save-doc-row { display:flex; justify-content:space-between; align-items:center; gap:12px; padding:11px 2px; border-bottom:1px solid #f1f5f9; }
+    .save-doc-row:last-child { border-bottom:0; }
+    .save-doc-row .sd-name { font-weight:600; color:#334155; font-size:0.9rem; }
+    .save-doc-row .sd-share { display:inline-flex; align-items:center; gap:6px; font-size:0.82rem; color:#155e75; font-weight:600; cursor:pointer; white-space:nowrap; margin:0; }
+    .char-count { font-size:0.72rem; color:#94a3b8; text-align:right; margin-top:3px; }
+    .char-count.near { color:#b45309; font-weight:600; }
     /* Diagnostic picker (référentiel codifié) */
     .diag-box { position:relative; }
     .diag-menu { position:absolute; z-index:20; left:0; right:0; top:calc(100% + 4px); background:#fff; border:1px solid #e2e8f0; border-radius:10px; box-shadow:0 8px 24px rgba(0,0,0,0.12); max-height:260px; overflow-y:auto; }
@@ -93,6 +104,9 @@
     .diag-opt .code { font-weight:800; color:#155e75; font-size:0.78rem; min-width:54px; }
     .diag-opt .lbl { color:#334155; font-size:0.88rem; }
     .diag-opt .none { color:#94a3b8; font-size:0.86rem; }
+    .diag-opt.diag-add { align-items:center; }
+    .diag-opt.diag-add .lbl { color:#155e75; font-weight:600; }
+    .diag-opt.diag-add .plus { width:20px; height:20px; border-radius:50%; background:#155e75; color:#fff; display:inline-flex; align-items:center; justify-content:center; font-size:0.68rem; flex-shrink:0; }
     .diag-ref { font-size:0.72rem; color:#94a3b8; margin-top:6px; }
     .diag-chips { display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; }
     .diag-chip { display:inline-flex; align-items:center; gap:8px; background:#e0f2f1; color:#0e7490; border-radius:20px; padding:5px 8px 5px 6px; font-size:0.84rem; font-weight:600; }
@@ -102,7 +116,7 @@
     .diag-opt .mform { margin-left:auto; color:#94a3b8; font-size:0.78rem; white-space:nowrap; padding-left:10px; }
     /* Médicament : autocomplétion par ligne d'ordonnance */
     .rx-med-box { flex:1 1 auto; position:relative; min-width:0; }
-    .rx-med-box .rx-med { width:100%; }
+    .rx-med-box .rx-med, .rx-med-box .lab-main { width:100%; }
     .rx-menu { position:absolute; z-index:20; left:0; right:0; top:calc(100% + 4px); background:#fff; border:1px solid #e2e8f0; border-radius:10px; box-shadow:0 8px 24px rgba(0,0,0,0.12); max-height:240px; overflow-y:auto; }
     @media (max-width:960px){ .work { grid-template-columns:1fr; } }
     @media (max-width:820px){ .sidebar{display:none;} .main{margin-left:0;} .main-topbar{left:0;} }
@@ -169,15 +183,15 @@
           <!-- Note editor -->
           <div id="noteEditor">
             <h6 data-i18n="docc.tab_note">Note de consultation</h6>
-            <div class="mb-3"><label class="form-label" data-i18n="docc.n_motif">Motif</label><input type="text" class="form-control" id="nMotif" oninput="C.note.motif=this.value;renderPreview()"></div>
-            <div class="mb-3"><label class="form-label" data-i18n="docc.n_exam">Examen clinique / observations</label><textarea class="form-control" id="nExam" rows="4" oninput="C.note.exam=this.value;renderPreview()"></textarea></div>
+            <div class="mb-3"><label class="form-label" data-i18n="docc.n_motif">Motif</label><div class="rx-med-box"><input type="text" autocomplete="off" class="form-control" id="nMotif" maxlength="100" data-i18n-placeholder="docc.motif_ph" placeholder="Rechercher ou saisir un motif…" oninput="motifInput(this.value)" onfocus="showMotifMenu(this.value)"><div class="rx-menu" id="motifMenu" style="display:none;"></div></div></div>
+            <div class="mb-3"><label class="form-label" data-i18n="docc.n_exam">Examen clinique / observations</label><textarea class="form-control" id="nExam" rows="4" maxlength="3000" oninput="C.note.exam=this.value;renderPreview();noteCount(this,'examCount')"></textarea><div class="char-count" id="examCount"></div></div>
             <div class="mb-3"><label class="form-label" data-i18n="docc.vitals">Constantes</label>
               <div class="vitals-grid">
-                <div><label data-i18n="docc.v_temp">Température (°C)</label><input type="number" inputmode="decimal" step="0.1" min="30" max="45" class="form-control form-control-sm" id="vTemp" placeholder="37,0" oninput="C.vitals.temp=this.value;renderPreview()"></div>
-                <div><label data-i18n="docc.v_ta">Tension (mmHg)</label><input type="text" inputmode="numeric" maxlength="7" class="form-control form-control-sm" id="vTa" placeholder="120/80" oninput="this.value=this.value.replace(/[^0-9/]/g,'');C.vitals.ta=this.value;renderPreview()"></div>
-                <div><label data-i18n="docc.v_pouls">Pouls (bpm)</label><input type="number" inputmode="numeric" step="1" min="0" max="300" class="form-control form-control-sm" id="vPouls" placeholder="72" oninput="C.vitals.pouls=this.value;renderPreview()"></div>
-                <div><label data-i18n="docc.v_spo2">SpO₂ (%)</label><input type="number" inputmode="numeric" step="1" min="0" max="100" class="form-control form-control-sm" id="vSpo2" placeholder="98" oninput="C.vitals.spo2=this.value;renderPreview()"></div>
-                <div><label data-i18n="docc.v_poids">Poids (kg)</label><input type="number" inputmode="decimal" step="0.1" min="0" max="400" class="form-control form-control-sm" id="vPoids" placeholder="70" oninput="C.vitals.poids=this.value;renderPreview()"></div>
+                <div><label data-i18n="docc.v_temp">Température (°C)</label><input type="text" inputmode="decimal" maxlength="5" class="form-control form-control-sm" id="vTemp" placeholder="37,0" oninput="vSet(this,'temp',true)" onblur="vClamp(this,'temp',30,45)"></div>
+                <div><label data-i18n="docc.v_ta">Tension (mmHg)</label><input type="text" inputmode="numeric" maxlength="7" class="form-control form-control-sm" id="vTa" placeholder="120/80" oninput="this.value=this.value.replace(/[^0-9/]/g,'');C.vitals.ta=this.value;renderPreview()" onblur="vTaClamp(this)"></div>
+                <div><label data-i18n="docc.v_pouls">Pouls (bpm)</label><input type="text" inputmode="numeric" maxlength="3" class="form-control form-control-sm" id="vPouls" placeholder="72" oninput="vSet(this,'pouls',false)" onblur="vClamp(this,'pouls',0,300)"></div>
+                <div><label data-i18n="docc.v_spo2">SpO₂ (%)</label><input type="text" inputmode="numeric" maxlength="3" class="form-control form-control-sm" id="vSpo2" placeholder="98" oninput="vSet(this,'spo2',false)" onblur="vClamp(this,'spo2',0,100)"></div>
+                <div><label data-i18n="docc.v_poids">Poids (kg)</label><input type="text" inputmode="decimal" maxlength="5" class="form-control form-control-sm" id="vPoids" placeholder="70" oninput="vSet(this,'poids',true)" onblur="vClamp(this,'poids',0,400)"></div>
               </div>
             </div>
             <div class="mb-3"><label class="form-label" data-i18n="docc.n_diag">Diagnostic</label>
@@ -185,10 +199,9 @@
                 <input type="text" class="form-control" id="nDiagSearch" autocomplete="off" data-i18n-placeholder="docc.diag_search_ph" placeholder="Rechercher un diagnostic…" oninput="filterDiag(this.value)" onfocus="filterDiag(this.value)">
                 <div class="diag-menu" id="diagMenu" style="display:none;"></div>
               </div>
-              <div class="diag-ref" data-i18n="docc.diag_ref">Référentiel officiel — CIM-10 / SNOMED CT (à confirmer)</div>
               <div id="diagChips" class="diag-chips"></div>
             </div>
-            <div class="mb-1"><label class="form-label" data-i18n="docc.n_cat">Conduite à tenir</label><textarea class="form-control" id="nCat" rows="3" oninput="C.note.cat=this.value;renderPreview()"></textarea></div>
+            <div class="mb-1"><label class="form-label" data-i18n="docc.n_cat">Conduite à tenir</label><textarea class="form-control" id="nCat" rows="3" maxlength="3000" oninput="C.note.cat=this.value;renderPreview();noteCount(this,'catCount')"></textarea><div class="char-count" id="catCount"></div></div>
           </div>
           <!-- Prescription editor : 4 types, chacun génère un document distinct -->
           <div id="rxEditor" style="display:none;">
@@ -197,7 +210,7 @@
             <div class="presc-sec">
               <button type="button" class="presc-head open" onclick="togglePresc('meds')"><i class="fa fa-pills"></i><span data-i18n="docc.ps_meds">Médicaments</span><span class="presc-count" id="pcMeds"></span><i class="fa fa-chevron-down chev"></i></button>
               <div class="presc-body" id="body-meds">
-                <div class="diag-ref mb-2" data-i18n="docc.rx_ref">Prescription en DCI · référentiel officiel — OMS (DCI/ATC) / SNOMED CT (à confirmer)</div>
+                <div class="rx-head"><div class="rx-h-med" data-i18n="docc.rx_med">Médicament</div><div class="rx-h-p" data-i18n="docc.rx_col_poso">Posologie</div><div class="rx-h-d" data-i18n="docc.rx_col_duree">Durée</div><div class="rx-h-spacer"></div></div>
                 <div id="rxLines"></div>
                 <button class="btn btn-ghost btn-sm mt-1" onclick="addRx()"><i class="fa fa-plus me-1"></i><span data-i18n="docc.rx_add">Ajouter un médicament</span></button>
               </div>
@@ -206,20 +219,16 @@
             <div class="presc-sec">
               <button type="button" class="presc-head" onclick="togglePresc('labo')"><i class="fa fa-flask-vial"></i><span data-i18n="docc.ps_labo">Examens de laboratoire</span><span class="presc-count" id="pcLabo"></span><i class="fa fa-chevron-down chev"></i></button>
               <div class="presc-body d-none" id="body-labo">
-                <div class="diag-ref mb-2" data-i18n="docc.labo_ref">Référentiel officiel — LOINC (à confirmer)</div>
                 <div id="laboLines"></div>
                 <button class="btn btn-ghost btn-sm mt-1" onclick="addLabo()"><i class="fa fa-plus me-1"></i><span data-i18n="docc.labo_add">Ajouter un examen</span></button>
-                <datalist id="laboList"></datalist>
               </div>
             </div>
 
             <div class="presc-sec">
               <button type="button" class="presc-head" onclick="togglePresc('img')"><i class="fa fa-x-ray"></i><span data-i18n="docc.ps_img">Imagerie médicale</span><span class="presc-count" id="pcImg"></span><i class="fa fa-chevron-down chev"></i></button>
               <div class="presc-body d-none" id="body-img">
-                <div class="diag-ref mb-2" data-i18n="docc.img_ref">Référentiel officiel — à confirmer</div>
                 <div id="imgLines"></div>
                 <button class="btn btn-ghost btn-sm mt-1" onclick="addImg()"><i class="fa fa-plus me-1"></i><span data-i18n="docc.img_add">Ajouter un examen</span></button>
-                <datalist id="imgList"></datalist>
               </div>
             </div>
 
@@ -237,9 +246,9 @@
         <!-- Live preview -->
         <div>
           <div class="doc" id="docPreview"></div>
-          <div class="d-flex gap-2 justify-content-end mt-3 no-print">
-            <button class="btn btn-ghost" onclick="window.print()"><i class="fa fa-print me-1"></i><span data-i18n="docc.print_btn">Imprimer / PDF</span></button>
-            <button class="btn btn-doctor" onclick="share()"><i class="fa fa-share-nodes me-1"></i><span data-i18n="docc.share_btn">Partager au patient</span></button>
+          <div class="mt-3 no-print d-flex flex-column flex-sm-row gap-2 justify-content-sm-end">
+            <button class="btn btn-ghost flex-sm-grow-0" onclick="window.print()"><i class="fa fa-print me-1"></i><span data-i18n="docc.print_btn">Imprimer / PDF</span></button>
+            <button class="btn btn-doctor flex-sm-grow-0" onclick="openSaveModal()"><i class="fa fa-check me-1"></i><span data-i18n="docc.save_btn">Enregistrer la consultation</span></button>
           </div>
         </div>
       </div>
@@ -247,6 +256,26 @@
   </div>
 
   <div class="toast-ok" id="cToast"><i class="fa fa-circle-check"></i><span id="cToastMsg"></span></div>
+
+  <!-- Récapitulatif d'enregistrement : au dossier + partage par document -->
+  <div class="modal fade" id="saveModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title fw-bold" style="font-size:1.05rem;"><i class="fa fa-folder-plus me-2" style="color:#155e75;"></i><span data-i18n="docc.save_title">Enregistrer la consultation</span></h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p class="small text-muted mb-3" data-i18n="docc.save_intro">Ces documents sont ajoutés au dossier du patient. Cochez ceux à partager avec le patient (« Mes documents »).</p>
+          <div id="saveDocList"></div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-ghost btn-sm" data-bs-dismiss="modal" data-i18n="docc.save_cancel">Annuler</button>
+          <button type="button" class="btn btn-doctor btn-sm" onclick="confirmSave()"><i class="fa fa-check me-1"></i><span data-i18n="docc.save_confirm">Enregistrer</span></button>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script>
@@ -284,37 +313,128 @@
     function patAgeOf(p) { if (p.age != null && p.age !== '') return p.age; if (p.dob) { const b = new Date(p.dob + 'T00:00:00'); if (!isNaN(b.getTime())) { const t = new Date(); let a = t.getFullYear() - b.getFullYear(); if (t.getMonth() < b.getMonth() || (t.getMonth() === b.getMonth() && t.getDate() < b.getDate())) a--; return a >= 0 ? a : ''; } } return ''; }
     const patAge = patAgeOf(patRec);
     let tab = 'note';
-    const C = { rdvId: rdvId, date: CDATE, time: rdvTime, note: { motif: rdvMotif, exam: '', diags: [], cat: '' }, vitals: { temp: '', ta: '', pouls: '', spo2: '', poids: '' }, rx: [{ med: '', poso: '', duree: '' }], labo: [], img: [], ref: [] };
-    // Référentiels de démonstration (V2 : LOINC pour la biologie, référentiel imagerie à confirmer)
-    const LAB_REF = ['Numération formule sanguine (NFS)', 'Glycémie à jeun', 'Hémoglobine glyquée (HbA1c)', 'Bilan lipidique', 'Ionogramme sanguin', 'Créatininémie (DFG)', 'Bilan hépatique (ASAT/ALAT)', 'CRP', 'TSH', 'ECBU', 'Sérologie VIH', 'β-hCG (test de grossesse)', 'Groupe sanguin — Rhésus', 'TP / INR', 'Ferritinémie'];
-    const IMG_REF = ['Radiographie thoracique', 'Radiographie osseuse', 'Échographie abdominale', 'Échographie pelvienne', 'Échographie obstétricale', 'Échographie cardiaque (ETT)', 'Scanner (TDM) cérébral', 'Scanner thoraco-abdomino-pelvien', 'IRM cérébrale', 'IRM du rachis', 'Mammographie'];
-    // Référentiel de diagnostics codifiés (sous-ensemble de démo).
-    // V2 : appel à une API officielle — WHO ICD (CIM-10/11) ou SNOMED CT — choix en attente de validation client.
+    const C = { rdvId: rdvId, date: CDATE, time: rdvTime, note: { motif: rdvMotif, exam: '', diags: [], cat: '' }, vitals: { temp: '', ta: '', pouls: '', spo2: '', poids: '' }, rx: [{ med: '', poso: '', duree: '' }], labo: [{ name: '' }], img: [{ name: '', region: '' }], ref: [{ spec: '', reason: '' }] };
+    // Examens de biologie = LOINC (référentiel officiel, gratuit — Regenstrief). Structure { code = code LOINC, label = terme FR }.
+    // Sous-ensemble « plus prescrits » (démo). ⚠️ Codes LOINC INDICATIFS — à valider contre la base LOINC.
+    const LAB_REF = [
+      { code: '58410-2', label: 'Numération formule sanguine (NFS)' },
+      { code: '718-7', label: 'Hémoglobine' },
+      { code: '777-3', label: 'Numération des plaquettes' },
+      { code: '1558-6', label: 'Glycémie à jeun' },
+      { code: '2345-7', label: 'Glycémie' },
+      { code: '4548-4', label: 'Hémoglobine glyquée (HbA1c)' },
+      { code: '24331-1', label: 'Bilan lipidique' },
+      { code: '55231-5', label: 'Ionogramme sanguin' },
+      { code: '2160-0', label: 'Créatininémie' },
+      { code: '33914-3', label: 'Débit de filtration glomérulaire (DFG estimé)' },
+      { code: '1742-6', label: 'ALAT (transaminase ALT)' },
+      { code: '1920-8', label: 'ASAT (transaminase AST)' },
+      { code: '1988-5', label: 'Protéine C réactive (CRP)' },
+      { code: '3016-3', label: 'TSH' },
+      { code: '630-4', label: 'ECBU (culture urinaire)' },
+      { code: '75622-1', label: 'Sérologie VIH (Ag/Ac)' },
+      { code: '19080-1', label: 'β-hCG (test de grossesse)' },
+      { code: '883-9', label: 'Groupe sanguin ABO' },
+      { code: '10331-7', label: 'Rhésus (Rh)' },
+      { code: '6301-6', label: 'TP / INR' },
+      { code: '2276-4', label: 'Ferritinémie' },
+      { code: '3084-1', label: 'Uricémie (acide urique)' },
+      { code: '17861-6', label: 'Calcémie' },
+      { code: '2857-1', label: 'PSA (antigène prostatique)' }
+    ];
+    // Imagerie = SNOMED CT (hiérarchie « procédure », system http://snomed.info/sct). Structure { code = SCTID, label = terme FR }.
+    // Sous-ensemble « plus prescrits » (démo). ⚠️ Codes SCTID INDICATIFS — à valider contre la release SNOMED CT licenciée.
+    const IMG_REF = [
+      { code: '399208008', label: 'Radiographie thoracique' },
+      { code: '168537006', label: 'Radiographie osseuse' },
+      { code: '168731009', label: 'Radiographie abdominale' },
+      { code: '45036003', label: 'Échographie abdominale' },
+      { code: '304566008', label: 'Échographie pelvienne' },
+      { code: '394982000', label: 'Échographie obstétricale' },
+      { code: '40701008', label: 'Échographie cardiaque (ETT)' },
+      { code: '426653008', label: 'Écho-Doppler vasculaire' },
+      { code: '303653007', label: 'Scanner (TDM) cérébral' },
+      { code: '169069000', label: 'Scanner thoraco-abdomino-pelvien' },
+      { code: '241601008', label: 'IRM cérébrale' },
+      { code: '241645005', label: 'IRM du rachis' },
+      { code: '71651007', label: 'Mammographie' }
+    ];
+    // Résolution du code depuis le libellé choisi (datalist natif) — code vide si saisie libre.
+    // Autocomplétion « liste de l'application » (comme les médicaments) pour biologie & imagerie — capture le code.
+    function laboInput(i, v) { C.labo[i].name = v; C.labo[i].code = ''; renderPreview(); showLaboMenu(i, v); }
+    function showLaboMenu(i, q) {
+      const menu = document.getElementById('laboMenu' + i); if (!menu) return;
+      const raw = (q || '').trim(), ql = raw.toLowerCase();
+      const taken = new Set(C.labo.filter((r, j) => j !== i && r.name.trim()).map(r => medNorm(r.name))); // pas deux fois le même examen
+      let res = LAB_REF.slice().filter(x => !taken.has(medNorm(x.label)));
+      if (ql) res = res.filter(x => x.label.toLowerCase().includes(ql));
+      res = res.sort((a, b) => a.label.localeCompare(b.label, 'fr')).slice(0, 50);
+      let html = res.map(x => '<div class="diag-opt" onmousedown="event.preventDefault();pickLabo(' + i + ',' + LAB_REF.indexOf(x) + ')"><span class="lbl">' + esc(x.label) + '</span></div>').join('');
+      const exact = ql && LAB_REF.some(x => x.label.toLowerCase() === ql); // examen hors liste → ajout en texte libre
+      if (raw && !exact) html += '<div class="diag-opt diag-add" onmousedown="event.preventDefault();pickLaboFree(' + i + ')"><span class="plus"><i class="fa fa-plus"></i></span><span class="lbl">' + T('docc.diag_add').replace('{v}', esc(raw)) + '</span></div>';
+      menu.innerHTML = html;
+      menu.style.display = html ? '' : 'none';
+    }
+    function pickLabo(i, idx) { const x = LAB_REF[idx]; if (!x) return;
+      if (C.labo.some((r, j) => j !== i && medNorm(r.name) === medNorm(x.label))) { hideAllMedMenus(); return; } // déjà demandé
+      C.labo[i].name = x.label; C.labo[i].code = x.code; renderLabo(); renderPreview(); }
+    function pickLaboFree(i) { C.labo[i].name = (C.labo[i].name || '').trim(); C.labo[i].code = ''; renderLabo(); renderPreview(); } // examen hors liste (non codé)
+    function imgInput(i, v) { C.img[i].name = v; C.img[i].code = ''; renderPreview(); showImgMenu(i, v); }
+    function showImgMenu(i, q) {
+      const menu = document.getElementById('imgMenu' + i); if (!menu) return;
+      const raw = (q || '').trim(), ql = raw.toLowerCase();
+      let res = IMG_REF.slice();
+      if (ql) res = res.filter(x => x.label.toLowerCase().includes(ql));
+      res = res.sort((a, b) => a.label.localeCompare(b.label, 'fr')).slice(0, 50);
+      let html = res.map(x => '<div class="diag-opt" onmousedown="event.preventDefault();pickImg(' + i + ',' + IMG_REF.indexOf(x) + ')"><span class="lbl">' + esc(x.label) + '</span></div>').join('');
+      const exact = ql && IMG_REF.some(x => x.label.toLowerCase() === ql);
+      if (raw && !exact) html += '<div class="diag-opt diag-add" onmousedown="event.preventDefault();pickImgFree(' + i + ')"><span class="plus"><i class="fa fa-plus"></i></span><span class="lbl">' + T('docc.diag_add').replace('{v}', esc(raw)) + '</span></div>';
+      menu.innerHTML = html;
+      menu.style.display = html ? '' : 'none';
+    }
+    function pickImgFree(i) { C.img[i].name = (C.img[i].name || '').trim(); C.img[i].code = ''; renderImg(); renderPreview(); }
+    // Contrôle du doublon EXACT à la saisie de la région (l'examen + la région forment l'identité) : si la ligne devient identique à une autre, on annule la région saisie.
+    function imgRegionBlur(i) {
+      const r = C.img[i]; if (!r || !(r.name || '').trim()) return;
+      const dup = C.img.some((o, j) => j !== i && medNorm(o.name) === medNorm(r.name) && medNorm(o.region) === medNorm(r.region));
+      if (dup) {
+        r.region = '';
+        renderImg(); renderPreview();
+        const el = document.getElementById('cToast'); if (el) { el.classList.add('toast-warn'); document.getElementById('cToastMsg').textContent = T('docc.img_dup'); el.style.display = 'flex'; clearTimeout(ct); ct = setTimeout(() => { el.style.display = 'none'; el.classList.remove('toast-warn'); }, 2800); }
+      }
+    }
+    function pickImg(i, idx) { const x = IMG_REF[idx]; if (!x) return;
+      // Bloque uniquement le doublon EXACT (même examen ET même région) — la région différencie deux examens légitimes.
+      if (C.img.some((r, j) => j !== i && medNorm(r.name) === medNorm(x.label) && medNorm(r.region) === medNorm(C.img[i].region))) { hideAllMedMenus(); return; }
+      C.img[i].name = x.label; C.img[i].code = x.code; renderImg(); renderPreview(); }
+    // Référentiel de diagnostics = SNOMED CT (system http://snomed.info/sct). Structure { code = SCTID, label = terme FR }.
+    // Sous-ensemble « plus utilisés » (démo). ⚠️ Codes SCTID INDICATIFS — à valider contre la release SNOMED CT licenciée (édition FR).
     const DIAG_REF = [
-      { code: 'J00', label: 'Rhinopharyngite aiguë (rhume banal)' },
-      { code: 'J02.9', label: 'Pharyngite aiguë, sans précision' },
-      { code: 'J03.9', label: 'Amygdalite aiguë, sans précision' },
-      { code: 'J06.9', label: 'Infection aiguë des voies respiratoires supérieures' },
-      { code: 'J20', label: 'Bronchite aiguë' },
-      { code: 'J45', label: 'Asthme' },
-      { code: 'I10', label: 'Hypertension essentielle (primitive)' },
-      { code: 'E78.5', label: 'Hyperlipidémie, sans précision' },
-      { code: 'E11', label: 'Diabète sucré de type 2' },
-      { code: 'E10', label: 'Diabète sucré de type 1' },
-      { code: 'G43', label: 'Migraine' },
-      { code: 'R51', label: 'Céphalée' },
-      { code: 'M54.5', label: 'Lombalgie basse' },
-      { code: 'M54', label: 'Dorsalgie' },
-      { code: 'A09', label: 'Diarrhée et gastro-entérite présumées infectieuses' },
-      { code: 'K29', label: 'Gastrite et duodénite' },
-      { code: 'N39.0', label: 'Infection des voies urinaires, siège non précisé' },
-      { code: 'B54', label: 'Paludisme, sans précision' },
-      { code: 'H66', label: 'Otite moyenne suppurée et sans précision' },
-      { code: 'L23', label: 'Dermatite allergique de contact' },
-      { code: 'Z34', label: "Surveillance d'une grossesse normale" },
-      { code: 'D50', label: 'Anémie par carence en fer' },
-      { code: 'F41', label: 'Autres troubles anxieux' },
-      { code: 'F32', label: 'Épisode dépressif' }
+      { code: '82272006', label: 'Rhinopharyngite aiguë (rhume banal)' },
+      { code: '363746003', label: 'Pharyngite aiguë' },
+      { code: '90176007', label: 'Amygdalite aiguë' },
+      { code: '54150009', label: 'Infection aiguë des voies respiratoires supérieures' },
+      { code: '10509002', label: 'Bronchite aiguë' },
+      { code: '195967001', label: 'Asthme' },
+      { code: '59621000', label: 'Hypertension essentielle (primitive)' },
+      { code: '55822004', label: 'Hyperlipidémie' },
+      { code: '44054006', label: 'Diabète sucré de type 2' },
+      { code: '46635009', label: 'Diabète sucré de type 1' },
+      { code: '37796009', label: 'Migraine' },
+      { code: '25064002', label: 'Céphalée' },
+      { code: '279039007', label: 'Lombalgie basse' },
+      { code: '161891005', label: 'Dorsalgie' },
+      { code: '25374005', label: 'Gastro-entérite présumée infectieuse' },
+      { code: '4556007', label: 'Gastrite' },
+      { code: '68566005', label: 'Infection des voies urinaires' },
+      { code: '61462000', label: 'Paludisme' },
+      { code: '65363002', label: 'Otite moyenne' },
+      { code: '40275004', label: 'Dermatite de contact' },
+      { code: '72892002', label: 'Grossesse normale (surveillance)' },
+      { code: '87522002', label: 'Anémie par carence en fer' },
+      { code: '197480006', label: 'Trouble anxieux' },
+      { code: '35489007', label: 'Épisode dépressif' },
+      { code: '56717001', label: 'Tuberculose' }
     ];
     // Allergies connues — lues depuis le dossier patient partagé (garde-fou à la prescription)
     function patientAllergies(name) {
@@ -339,11 +459,11 @@
       document.getElementById('rxLines').innerHTML = C.rx.map((r, i) =>
         '<div class="rx-row">' +
           '<div class="rx-med-box">' +
-            '<input type="text" autocomplete="off" class="form-control form-control-sm rx-med" value="' + esc(r.med).replace(/"/g,'&quot;') + '" placeholder="' + T('docc.rx_med') + '" oninput="medInput(' + i + ',this.value)" onfocus="showMedMenu(' + i + ',this.value)">' +
+            '<input type="text" autocomplete="off" class="form-control form-control-sm rx-med" maxlength="100" value="' + esc(r.med).replace(/"/g,'&quot;') + '" placeholder="' + T('docc.rx_med_ph') + '" oninput="medInput(' + i + ',this.value)" onfocus="showMedMenu(' + i + ',this.value)">' +
             '<div class="rx-menu" id="rxMenu' + i + '" style="display:none;"></div>' +
           '</div>' +
-          '<input type="text" class="form-control form-control-sm rx-p" value="' + esc(r.poso).replace(/"/g,'&quot;') + '" placeholder="' + T('docc.rx_poso') + '" oninput="C.rx[' + i + '].poso=this.value;renderPreview()">' +
-          '<input type="text" class="form-control form-control-sm rx-d" value="' + esc(r.duree).replace(/"/g,'&quot;') + '" placeholder="' + T('docc.rx_duree') + '" oninput="C.rx[' + i + '].duree=this.value;renderPreview()">' +
+          '<input type="text" class="form-control form-control-sm rx-p" maxlength="150" value="' + esc(r.poso).replace(/"/g,'&quot;') + '" placeholder="' + T('docc.rx_poso') + '" oninput="C.rx[' + i + '].poso=this.value;renderPreview()">' +
+          '<input type="text" class="form-control form-control-sm rx-d" maxlength="40" value="' + esc(r.duree).replace(/"/g,'&quot;') + '" placeholder="' + T('docc.rx_duree') + '" oninput="C.rx[' + i + '].duree=this.value;renderPreview()">' +
           '<button class="btn-del" onclick="removeRx(' + i + ')"><i class="fa fa-trash-can"></i></button>' +
         '</div>'
       ).join('');
@@ -363,25 +483,27 @@
     function renderLabo() {
       const box = document.getElementById('laboLines'); if (!box) return;
       box.innerHTML = C.labo.map((r, i) =>
-        '<div class="lab-row"><input type="text" list="laboList" class="form-control form-control-sm lab-main" value="' + esc(r.name).replace(/"/g,'&quot;') + '" placeholder="' + T('docc.labo_ph') + '" oninput="C.labo[' + i + '].name=this.value;renderPreview()">' +
-        '<button class="btn-del" onclick="removeLabo(' + i + ')"><i class="fa fa-trash-can"></i></button></div>'
+        '<div class="lab-row">' +
+          '<div class="rx-med-box"><input type="text" autocomplete="off" class="form-control form-control-sm lab-main" maxlength="120" value="' + esc(r.name).replace(/"/g,'&quot;') + '" placeholder="' + T('docc.labo_ph') + '" oninput="laboInput(' + i + ',this.value)" onfocus="showLaboMenu(' + i + ',this.value)">' +
+          '<div class="rx-menu" id="laboMenu' + i + '" style="display:none;"></div></div>' +
+          '<button class="btn-del" onclick="removeLabo(' + i + ')"><i class="fa fa-trash-can"></i></button></div>'
       ).join('');
-      const dl = document.getElementById('laboList'); if (dl) dl.innerHTML = LAB_REF.map(x => '<option value="' + esc(x).replace(/"/g,'&quot;') + '">').join('');
     }
     function addLabo() { C.labo.push({ name:'' }); renderLabo(); renderPreview(); }
-    function removeLabo(i) { C.labo.splice(i, 1); renderLabo(); renderPreview(); }
+    function removeLabo(i) { C.labo.splice(i, 1); if (!C.labo.length) C.labo.push({ name:'' }); renderLabo(); renderPreview(); }
 
     function renderImg() {
       const box = document.getElementById('imgLines'); if (!box) return;
       box.innerHTML = C.img.map((r, i) =>
-        '<div class="lab-row"><input type="text" list="imgList" class="form-control form-control-sm lab-main" value="' + esc(r.name).replace(/"/g,'&quot;') + '" placeholder="' + T('docc.img_ph') + '" oninput="C.img[' + i + '].name=this.value;renderPreview()">' +
-        '<input type="text" class="form-control form-control-sm lab-region" value="' + esc(r.region || '').replace(/"/g,'&quot;') + '" placeholder="' + T('docc.img_region_ph') + '" oninput="C.img[' + i + '].region=this.value;renderPreview()">' +
-        '<button class="btn-del" onclick="removeImg(' + i + ')"><i class="fa fa-trash-can"></i></button></div>'
+        '<div class="lab-row">' +
+          '<div class="rx-med-box"><input type="text" autocomplete="off" class="form-control form-control-sm lab-main" maxlength="120" value="' + esc(r.name).replace(/"/g,'&quot;') + '" placeholder="' + T('docc.img_ph') + '" oninput="imgInput(' + i + ',this.value)" onfocus="showImgMenu(' + i + ',this.value)">' +
+          '<div class="rx-menu" id="imgMenu' + i + '" style="display:none;"></div></div>' +
+          '<input type="text" class="form-control form-control-sm lab-region" maxlength="60" value="' + esc(r.region || '').replace(/"/g,'&quot;') + '" placeholder="' + T('docc.img_region_ph') + '" oninput="C.img[' + i + '].region=this.value;renderPreview()" onblur="imgRegionBlur(' + i + ')">' +
+          '<button class="btn-del" onclick="removeImg(' + i + ')"><i class="fa fa-trash-can"></i></button></div>'
       ).join('');
-      const dl = document.getElementById('imgList'); if (dl) dl.innerHTML = IMG_REF.map(x => '<option value="' + esc(x).replace(/"/g,'&quot;') + '">').join('');
     }
     function addImg() { C.img.push({ name:'', region:'' }); renderImg(); renderPreview(); }
-    function removeImg(i) { C.img.splice(i, 1); renderImg(); renderPreview(); }
+    function removeImg(i) { C.img.splice(i, 1); if (!C.img.length) C.img.push({ name:'', region:'' }); renderImg(); renderPreview(); }
 
     function renderRef() {
       const box = document.getElementById('refLines'); if (!box) return;
@@ -390,12 +512,12 @@
       const opts = sel => '<option value="">' + T('docc.ref_spec_ph') + '</option>' + specs.map(x => '<option value="' + esc(x.fr) + '"' + (sel === x.fr ? ' selected' : '') + '>' + esc(x[lang] || x.fr) + '</option>').join('');
       box.innerHTML = C.ref.map((r, i) =>
         '<div class="lab-row"><select class="form-select form-select-sm ref-spec" onchange="C.ref[' + i + '].spec=this.value;renderPreview()">' + opts(r.spec) + '</select>' +
-        '<input type="text" class="form-control form-control-sm ref-reason" value="' + esc(r.reason || '').replace(/"/g,'&quot;') + '" placeholder="' + T('docc.ref_reason_ph') + '" oninput="C.ref[' + i + '].reason=this.value;renderPreview()">' +
+        '<input type="text" class="form-control form-control-sm ref-reason" maxlength="200" value="' + esc(r.reason || '').replace(/"/g,'&quot;') + '" placeholder="' + T('docc.ref_reason_ph') + '" oninput="C.ref[' + i + '].reason=this.value;renderPreview()">' +
         '<button class="btn-del" onclick="removeRef(' + i + ')"><i class="fa fa-trash-can"></i></button></div>'
       ).join('');
     }
     function addRef() { C.ref.push({ spec:'', reason:'' }); renderRef(); renderPreview(); }
-    function removeRef(i) { C.ref.splice(i, 1); renderRef(); renderPreview(); }
+    function removeRef(i) { C.ref.splice(i, 1); if (!C.ref.length) C.ref.push({ spec:'', reason:'' }); renderRef(); renderPreview(); }
 
     function updateCounts() {
       const set = (id, n) => { const e = document.getElementById(id); if (e) { e.textContent = n; e.style.display = n ? '' : 'none'; } };
@@ -425,9 +547,8 @@
       const meta = '<div class="doc-meta"><div><strong>' + T('docc.patient') + '</strong> ' + idBits.join(' · ') +
         '<br><span style="font-size:0.8em;color:#94a3b8;">' + T('docc.doc_ref') + ' ' + esc(CONS_REF) + '</span>' +
         '</div><div>' + fmtLong(CDATE) + (linkedRdv && rdvTime ? ' · ' + rdvTime : '') + '</div></div>';
-      // Bandeau allergies — pour l'ordonnance (garde-fou de dispensation).
-      const alg = (patRec.allergies || []).filter(a => a && a.name);
-      const allergyLine = alg.length ? '<div class="doc-allergy"><i class="fa fa-triangle-exclamation me-1"></i><strong>' + T('docc.allergies_known') + ' :</strong> ' + alg.map(a => esc(a.name)).join(', ') + '</div>' : '';
+      // Les allergies ne figurent PAS sur les documents générés : garde-fou réservé à l'écran de saisie (bandeau renderAllergy).
+      // Confidentialité / minimisation — l'ordonnance circule (pharmacie, tiers) ; le rappel allergies reste côté praticien.
       const sign = '<div class="doc-sign"><div class="s-name">' + DR.title + ' ' + esc(DR.name) + '</div><div class="s-note">' + T('docc.generated') + '</div></div>';
       const buildDoc = (title, content) => letterhead() + '<div class="doc-title">' + title + '</div>' + meta + content + sign;
       updateCounts();
@@ -439,19 +560,23 @@
         if (v.pouls) vParts.push('Pouls ' + esc(v.pouls) + ' bpm');
         if (v.spo2) vParts.push('SpO₂ ' + esc(v.spo2) + ' %');
         if (v.poids) vParts.push('Poids ' + esc(v.poids) + ' kg');
+        // Sections omises si vides (document propre — cohérent avec les constantes) ; les champs restent visibles dans le formulaire de gauche.
+        const secIf = (label, val) => val ? '<div class="doc-sec"><div class="lbl">' + label + '</div><div class="val">' + val + '</div></div>' : '';
         const vitalsSec = vParts.length ? '<div class="doc-sec"><div class="lbl">' + T('docc.vitals') + '</div><div class="val">' + vParts.join(' · ') + '</div></div>' : '';
+        const diagV = C.note.diags.length ? C.note.diags.map(d => (d.code ? '<strong style="color:#155e75">' + d.code + '</strong> — ' : '') + esc(d.label)).join('<br>') : '';
+        const secs = secIf(T('docc.n_motif'), (C.note.motif || '').trim() ? esc(C.note.motif) : '') +
+          secIf(T('docc.n_exam'), (C.note.exam || '').trim() ? esc(C.note.exam) : '') +
+          vitalsSec +
+          secIf(T('docc.n_diag'), diagV) +
+          secIf(T('docc.n_cat'), (C.note.cat || '').trim() ? esc(C.note.cat) : '');
         box.innerHTML = letterhead() +
           '<div class="doc-title">' + T('docc.doc_note') + '</div>' + meta +
-          '<div class="doc-sec"><div class="lbl">' + T('docc.n_motif') + '</div><div class="val">' + ph(C.note.motif) + '</div></div>' +
-          '<div class="doc-sec"><div class="lbl">' + T('docc.n_exam') + '</div><div class="val">' + ph(C.note.exam) + '</div></div>' +
-          vitalsSec +
-          '<div class="doc-sec"><div class="lbl">' + T('docc.n_diag') + '</div><div class="val">' + (C.note.diags.length ? C.note.diags.map(d => '<strong style="color:#155e75">' + d.code + '</strong> — ' + esc(d.label)).join('<br>') : ph('')) + '</div></div>' +
-          '<div class="doc-sec"><div class="lbl">' + T('docc.n_cat') + '</div><div class="val">' + ph(C.note.cat) + '</div></div>' + sign;
+          (secs || '<div class="doc-sec"><div class="val muted-ph">' + T('docc.note_empty') + '</div></div>') + sign;
       } else {
         // Un document distinct par type de prescription renseigné
         const docs = [];
         const meds = C.rx.filter(r => r.med.trim());
-        if (meds.length) docs.push(buildDoc(T('docc.doc_rx'), allergyLine + meds.map(r =>
+        if (meds.length) docs.push(buildDoc(T('docc.doc_rx'), meds.map(r =>
           '<div class="doc-rx-line"><div class="m">' + esc(r.med) + '</div><div class="s">' + [esc(r.poso), esc(r.duree)].filter(Boolean).join(' · ') + '</div></div>'
         ).join('')));
         const labo = C.labo.filter(r => r.name.trim());
@@ -464,13 +589,81 @@
         ).join('')));
         box.innerHTML = docs.length ? docs.join('<div class="doc-sep"></div>') : '<div class="muted-ph">' + T('docc.presc_empty') + '</div>';
       }
+      saveDraft(); // auto-sauvegarde du brouillon à chaque modification
     }
 
     let ct;
-    function share() {
-      const t = document.getElementById('cToast');
-      document.getElementById('cToastMsg').textContent = T(tab === 'note' ? 'docc.share_note_toast' : 'docc.share_presc_toast');
-      t.style.display = 'flex'; clearTimeout(ct); ct = setTimeout(() => { t.style.display = 'none'; }, 2800);
+    // Brouillon auto-sauvegardé (localStorage) : la saisie n'est jamais perdue en changeant d'écran ou en revenant en arrière.
+    const draftKey = 'fueni_consult_draft_' + (rdvId || (patient + '_' + CDATE));
+    function saveDraft() { try { localStorage.setItem(draftKey, JSON.stringify(C)); } catch (e) {} }
+    function restoreDraft() {
+      try {
+        const d = JSON.parse(localStorage.getItem(draftKey) || 'null');
+        if (!d || typeof d !== 'object') return false;
+        if (d.note) Object.assign(C.note, d.note);
+        if (d.vitals) Object.assign(C.vitals, d.vitals);
+        ['rx', 'labo', 'img', 'ref'].forEach(k => { if (Array.isArray(d[k])) C[k] = d[k]; });
+        // Chaque section garde au moins une ligne (cohérence : une ligne par défaut partout).
+        if (!C.rx.length) C.rx.push({ med: '', poso: '', duree: '' });
+        if (!C.labo.length) C.labo.push({ name: '' });
+        if (!C.img.length) C.img.push({ name: '', region: '' });
+        if (!C.ref.length) C.ref.push({ spec: '', reason: '' });
+        return true; // un brouillon a été restauré → indicateur à l'écran
+      } catch (e) {}
+      return false;
+    }
+    function showCToast(msg) {
+      const el = document.getElementById('cToast'); if (!el) return;
+      el.classList.remove('toast-warn'); // toast d'information (neutre), pas une alerte
+      document.getElementById('cToastMsg').textContent = msg;
+      el.style.display = 'flex'; clearTimeout(ct); ct = setTimeout(() => { el.style.display = 'none'; }, 2800);
+    }
+    // TOUTE la consultation (compte-rendu + prescriptions renseignées) — l'enregistrement ne dépend pas de l'onglet actif.
+    function allDocEntries() {
+      const base = { patient: patient, dossier: patDossier, date: CDATE, ref: CONS_REF, by: (DR.title + ' ' + DR.name).trim() };
+      const out = [Object.assign({}, base, { n: T('docc.doc_note'), kind: 'cr' })];
+      if (C.rx.filter(r => r.med.trim()).length) out.push(Object.assign({}, base, { n: T('docc.doc_rx'), kind: 'rx' }));
+      if (C.labo.filter(r => r.name.trim()).length) out.push(Object.assign({}, base, { n: T('docc.doc_labo'), kind: 'lab' }));
+      if (C.img.filter(r => r.name.trim()).length) out.push(Object.assign({}, base, { n: T('docc.doc_img'), kind: 'img' }));
+      if (C.ref.filter(r => r.spec).length) out.push(Object.assign({}, base, { n: T('docc.doc_ref'), kind: 'ref' }));
+      return out;
+    }
+    function consultEntry() {
+      const meds = C.rx.filter(r => r.med.trim()).map(r => (r.med + (r.poso ? ' ' + r.poso : '') + (r.duree ? ' — ' + r.duree : '')).trim());
+      const diag = C.note.diags.map(d => (d.code ? d.code + ' — ' : '') + d.label).join(' ; ');
+      return { patient: patient, dossier: patDossier, ref: CONS_REF, date: CDATE, motif: C.note.motif || '', diag: diag, note: C.note.exam || '', cat: C.note.cat || '', rx: meds };
+    }
+    // Enregistrement = récapitulatif : tous les documents vont AU DOSSIER ; le partage au patient est choisi document par document.
+    let saveModal = null;
+    const SAVE_IC = { cr: 'fa-file-lines', rx: 'fa-prescription', lab: 'fa-flask-vial', img: 'fa-x-ray', ref: 'fa-user-doctor' };
+    function openSaveModal() {
+      document.getElementById('saveDocList').innerHTML = allDocEntries().map(e => {
+        const checked = e.kind !== 'cr' ? 'checked' : ''; // prescriptions partagées par défaut ; note de consultation décochée
+        return '<div class="save-doc-row"><div class="sd-name"><i class="fa ' + (SAVE_IC[e.kind] || 'fa-file') + ' me-2" style="color:#155e75;"></i>' + esc(e.n) + '</div>' +
+          '<label class="sd-share"><input type="checkbox" class="form-check-input" data-kind="' + e.kind + '" ' + checked + '> ' + esc(T('docc.share_check_short')) + '</label></div>';
+      }).join('');
+      saveModal = saveModal || new bootstrap.Modal(document.getElementById('saveModal'));
+      saveModal.show();
+    }
+    function confirmSave() {
+      const shareMap = {};
+      document.querySelectorAll('#saveDocList input[data-kind]').forEach(cb => { shareMap[cb.dataset.kind] = cb.checked; });
+      const anyShared = Object.keys(shareMap).some(k => shareMap[k]);
+      try {
+        const cs = JSON.parse(localStorage.getItem('fueni_shared_consults') || '[]');
+        const ce = consultEntry();
+        const cix = cs.findIndex(x => x.ref === ce.ref && x.patient === ce.patient);
+        if (cix >= 0) cs[cix] = ce; else cs.push(ce);
+        localStorage.setItem('fueni_shared_consults', JSON.stringify(cs));
+        const ds = JSON.parse(localStorage.getItem('fueni_shared_docs') || '[]');
+        allDocEntries().forEach(e => { e.shared = !!shareMap[e.kind]; const ix = ds.findIndex(x => x.ref === e.ref && x.kind === e.kind && x.patient === e.patient); if (ix >= 0) ds[ix] = e; else ds.push(e); });
+        localStorage.setItem('fueni_shared_docs', JSON.stringify(ds));
+        localStorage.removeItem(draftKey); // consultation finalisée → brouillon effacé
+      } catch (err) {}
+      if (saveModal) saveModal.hide();
+      // Consultation finalisée → retour au dossier patient (onglet Documents), où les pièces classées « Au dossier » et leur statut de partage sont visibles.
+      // Le formulaire n'est pas rouvrable en édition : une correction se fait en émettant un NOUVEAU document (nouvelle consultation), jamais en modifiant la pièce déjà classée/partagée. (Addendum formel = post-MVP.)
+      location.href = '26-doctor-records.html?patient=' + encodeURIComponent(patient) + '&tab=docs&flash=' + (anyShared ? 'saved_shared' : 'saved');
     }
 
     function renderAllergy() {
@@ -496,15 +689,20 @@
       lbl.textContent = T(lbl.getAttribute('data-i18n'));
     }
     function filterDiag(q) {
-      q = (q || '').trim().toLowerCase();
+      const raw = (q || '').trim();
+      q = raw.toLowerCase();
       const menu = document.getElementById('diagMenu');
-      const chosen = new Set(C.note.diags.map(d => d.code));
+      const chosen = new Set(C.note.diags.map(d => d.code).filter(Boolean));
       let res = DIAG_REF.filter(d => !chosen.has(d.code));
       if (q) res = res.filter(d => (d.code + ' ' + d.label).toLowerCase().includes(q));
-      res = res.slice(0, 8);
-      menu.innerHTML = res.length
-        ? res.map(d => '<div class="diag-opt" onclick="pickDiag(\'' + d.code + '\')"><span class="code">' + d.code + '</span><span class="lbl">' + esc(d.label) + '</span></div>').join('')
-        : '<div class="diag-opt"><span class="none">' + T('docc.diag_no_match') + '</span></div>';
+      res = res.sort((a, b) => a.label.localeCompare(b.label, 'fr')).slice(0, 50); // tri alphabétique (libellé) ; liste défilante
+      let html = res.map(d => '<div class="diag-opt" onclick="pickDiag(\'' + d.code + '\')"><span class="code">' + d.code + '</span><span class="lbl">' + esc(d.label) + '</span></div>').join('');
+      // Diagnostic hors liste : ajout en texte libre (non codé) — cohérent avec les comboboxes allergène / antécédent.
+      const exact = q && DIAG_REF.some(d => d.label.toLowerCase() === q);
+      const already = q && C.note.diags.some(d => (d.label || '').toLowerCase() === q);
+      if (raw && !exact && !already) html += '<div class="diag-opt diag-add" onclick="pickDiagFree()"><span class="plus"><i class="fa fa-plus"></i></span><span class="lbl">' + T('docc.diag_add').replace('{v}', esc(raw)) + '</span></div>';
+      if (!html) html = '<div class="diag-opt"><span class="none">' + T('docc.diag_no_match') + '</span></div>';
+      menu.innerHTML = html;
       menu.style.display = '';
     }
     function pickDiag(code) {
@@ -513,53 +711,125 @@
       document.getElementById('nDiagSearch').value = ''; hideDiagMenu();
       renderDiagChips(); renderPreview();
     }
-    function rmDiag(code) { C.note.diags = C.note.diags.filter(d => d.code !== code); renderDiagChips(); renderPreview(); }
+    // Diagnostic saisi hors liste (non codé SNOMED) : lit la valeur de recherche, pas de code.
+    function pickDiagFree() {
+      const label = (document.getElementById('nDiagSearch').value || '').trim(); if (!label) return;
+      if (!C.note.diags.some(d => (d.label || '').toLowerCase() === label.toLowerCase())) C.note.diags.push({ code: '', label: label });
+      document.getElementById('nDiagSearch').value = ''; hideDiagMenu();
+      renderDiagChips(); renderPreview();
+    }
+    function rmDiag(i) { C.note.diags.splice(i, 1); renderDiagChips(); renderPreview(); }
     function hideDiagMenu() { const m = document.getElementById('diagMenu'); if (m) m.style.display = 'none'; }
     function renderDiagChips() {
-      document.getElementById('diagChips').innerHTML = C.note.diags.map(d =>
-        '<span class="diag-chip"><span class="code">' + d.code + '</span>' + esc(d.label) + '<i class="fa fa-xmark x" onclick="rmDiag(\'' + d.code + '\')"></i></span>'
+      document.getElementById('diagChips').innerHTML = C.note.diags.map((d, i) =>
+        '<span class="diag-chip">' + (d.code ? '<span class="code">' + d.code + '</span>' : '') + esc(d.label) + '<i class="fa fa-xmark x" onclick="rmDiag(' + i + ')"></i></span>'
       ).join('');
     }
-    // Référentiel de médicaments (sous-ensemble de démo, DCI + dosage + forme).
-    // V2 : API officielle — OMS (liste des médicaments essentiels / DCI-ATC) ou SNOMED CT — choix en attente de validation client.
+    // Motifs = actes du profil public (« Actes, durée et tarifs ») ; repli sur une liste courante si le profil n'en a pas.
+    const MOTIF_REF = (function () {
+      const seen = new Set(), out = [];
+      try { (PR.locations || []).forEach(L => (L.motifs || []).forEach(m => { const lab = (m.label || '').trim(); if (lab && !seen.has(lab.toLowerCase())) { seen.add(lab.toLowerCase()); out.push(lab); } })); } catch (e) {}
+      return out.length ? out : ['Consultation générale', 'Première consultation', 'Suivi / renouvellement', 'Consultation de contrôle', 'Certificat médical', 'Vaccination', 'Téléconsultation'];
+    })();
+    function motifInput(v) { C.note.motif = v; renderPreview(); showMotifMenu(v); }
+    function showMotifMenu(q) {
+      const menu = document.getElementById('motifMenu'); if (!menu) return;
+      const raw = (q || '').trim(), ql = raw.toLowerCase();
+      let res = MOTIF_REF.slice();
+      if (ql) res = res.filter(x => x.toLowerCase().includes(ql));
+      res = res.sort((a, b) => a.localeCompare(b, 'fr')).slice(0, 50);
+      let html = res.map(x => '<div class="diag-opt" onmousedown="event.preventDefault();pickMotif(' + MOTIF_REF.indexOf(x) + ')"><span class="lbl">' + esc(x) + '</span></div>').join('');
+      const exact = ql && MOTIF_REF.some(x => x.toLowerCase() === ql); // motif hors liste → saisie libre
+      if (raw && !exact) html += '<div class="diag-opt diag-add" onmousedown="event.preventDefault();pickMotifFree()"><span class="plus"><i class="fa fa-plus"></i></span><span class="lbl">' + T('docc.diag_add').replace('{v}', esc(raw)) + '</span></div>';
+      menu.innerHTML = html;
+      menu.style.display = html ? '' : 'none';
+    }
+    function pickMotif(idx) { const label = MOTIF_REF[idx]; if (label == null) return; C.note.motif = label; const el = document.getElementById('nMotif'); if (el) el.value = label; document.getElementById('motifMenu').style.display = 'none'; renderPreview(); }
+    function pickMotifFree() { document.getElementById('motifMenu').style.display = 'none'; } // valeur déjà saisie dans le champ
+    // Constantes : n'accepter que des chiffres (+ décimale) à la saisie, puis borner au [min,max] au blur.
+    // (min/max HTML sur type=number n'empêchent PAS la saisie de valeurs hors bornes ni de « e ».)
+    function vSet(el, key, dec) {
+      let v = el.value;
+      if (dec) { v = v.replace(/[^0-9.,]/g, '').replace(',', '.'); const p = v.split('.'); if (p.length > 2) v = p[0] + '.' + p.slice(1).join(''); }
+      else { v = v.replace(/[^0-9]/g, ''); }
+      el.value = v; C.vitals[key] = v; renderPreview();
+    }
+    function vClamp(el, key, lo, hi) {
+      const s = (el.value || '').replace(',', '.').trim();
+      let out = '';
+      if (s !== '' && s !== '.') { let n = parseFloat(s); if (!isNaN(n)) { if (n > hi) n = hi; if (n < lo) n = lo; out = String(n); } }
+      el.value = out; C.vitals[key] = out; renderPreview();
+    }
+    // Compteur de caractères (discret) : gris, passe en ambre à l'approche de la limite (90 %).
+    const NOTE_MAX = 3000;
+    function noteCount(el, cid) {
+      const c = document.getElementById(cid); if (!c) return;
+      const n = (el.value || '').length;
+      c.textContent = n.toLocaleString('fr-FR') + ' / ' + NOTE_MAX.toLocaleString('fr-FR');
+      c.classList.toggle('near', n >= NOTE_MAX * 0.9);
+    }
+    // Tension « systolique/diastolique » : borne chaque composante (syst. ≤ 300, diast. ≤ 200).
+    function vTaClamp(el) {
+      const parts = (el.value || '').replace(/[^0-9/]/g, '').split('/');
+      const cl = (p, hi) => { if (!p) return ''; const n = parseInt(p, 10); return isNaN(n) ? '' : String(Math.min(n, hi)); };
+      const sys = cl(parts[0], 300), hasDia = parts.length > 1, dia = hasDia ? cl(parts[1], 200) : '';
+      const out = hasDia ? (sys + '/' + dia) : sys;
+      el.value = out; C.vitals.ta = out; renderPreview();
+    }
+    // Référentiel de médicaments = Vidal. Structure : { vidalId (id produit Vidal), dci (DCI/INN), atc (code ATC OMS), dose, form }.
+    // Sous-ensemble « plus prescrits » (démo). ⚠️ vidalId ILLUSTRATIFS ; codes ATC indicatifs — à valider contre la base Vidal licenciée (couverture locale BF/RDC à confirmer).
     const MED_REF = [
-      { dci: 'Paracétamol', dose: '500 mg', form: 'comprimé' },
-      { dci: 'Paracétamol', dose: '1 g', form: 'comprimé' },
-      { dci: 'Paracétamol', dose: '125 mg', form: 'suppositoire' },
-      { dci: 'Ibuprofène', dose: '400 mg', form: 'comprimé' },
-      { dci: 'Amoxicilline', dose: '500 mg', form: 'gélule' },
-      { dci: 'Amoxicilline', dose: '1 g', form: 'comprimé' },
-      { dci: 'Amoxicilline / Acide clavulanique', dose: '1 g', form: 'comprimé' },
-      { dci: 'Azithromycine', dose: '250 mg', form: 'comprimé' },
-      { dci: 'Ciprofloxacine', dose: '500 mg', form: 'comprimé' },
-      { dci: 'Métronidazole', dose: '500 mg', form: 'comprimé' },
-      { dci: 'Ceftriaxone', dose: '1 g', form: 'injectable' },
-      { dci: 'Amlodipine', dose: '5 mg', form: 'comprimé' },
-      { dci: 'Amlodipine', dose: '10 mg', form: 'comprimé' },
-      { dci: 'Metformine', dose: '500 mg', form: 'comprimé' },
-      { dci: 'Metformine', dose: '1000 mg', form: 'comprimé' },
-      { dci: 'Oméprazole', dose: '20 mg', form: 'gélule' },
-      { dci: 'Salbutamol', dose: '100 µg/dose', form: 'inhalateur' },
-      { dci: 'Artéméther / Luméfantrine', dose: '20/120 mg', form: 'comprimé' },
-      { dci: 'Prednisolone', dose: '20 mg', form: 'comprimé' },
-      { dci: 'Loratadine', dose: '10 mg', form: 'comprimé' },
-      { dci: 'Fer + acide folique', dose: '', form: 'comprimé' },
-      { dci: 'Sérum physiologique', dose: '0,9 %', form: 'solution nasale' }
+      { vidalId: 15070, dci: 'Paracétamol', atc: 'N02BE01', dose: '500 mg', form: 'comprimé' },
+      { vidalId: 15071, dci: 'Paracétamol', atc: 'N02BE01', dose: '1 g', form: 'comprimé' },
+      { vidalId: 15072, dci: 'Paracétamol', atc: 'N02BE01', dose: '125 mg', form: 'suppositoire' },
+      { vidalId: 12045, dci: 'Ibuprofène', atc: 'M01AE01', dose: '400 mg', form: 'comprimé' },
+      { vidalId: 12088, dci: 'Diclofénac', atc: 'M01AB05', dose: '50 mg', form: 'comprimé' },
+      { vidalId: 10233, dci: 'Amoxicilline', atc: 'J01CA04', dose: '500 mg', form: 'gélule' },
+      { vidalId: 10234, dci: 'Amoxicilline', atc: 'J01CA04', dose: '1 g', form: 'comprimé' },
+      { vidalId: 10240, dci: 'Amoxicilline / Acide clavulanique', atc: 'J01CR02', dose: '1 g', form: 'comprimé' },
+      { vidalId: 10512, dci: 'Azithromycine', atc: 'J01FA10', dose: '250 mg', form: 'comprimé' },
+      { vidalId: 10305, dci: 'Ciprofloxacine', atc: 'J01MA02', dose: '500 mg', form: 'comprimé' },
+      { vidalId: 10600, dci: 'Métronidazole', atc: 'J01XD01', dose: '500 mg', form: 'comprimé' },
+      { vidalId: 10410, dci: 'Ceftriaxone', atc: 'J01DD04', dose: '1 g', form: 'injectable' },
+      { vidalId: 10450, dci: 'Cotrimoxazole (SMX/TMP)', atc: 'J01EE01', dose: '800/160 mg', form: 'comprimé' },
+      { vidalId: 10260, dci: 'Doxycycline', atc: 'J01AA02', dose: '100 mg', form: 'comprimé' },
+      { vidalId: 13010, dci: 'Amlodipine', atc: 'C08CA01', dose: '5 mg', form: 'comprimé' },
+      { vidalId: 13011, dci: 'Amlodipine', atc: 'C08CA01', dose: '10 mg', form: 'comprimé' },
+      { vidalId: 13120, dci: 'Losartan', atc: 'C09CA01', dose: '50 mg', form: 'comprimé' },
+      { vidalId: 13200, dci: 'Furosémide', atc: 'C03CA01', dose: '40 mg', form: 'comprimé' },
+      { vidalId: 13305, dci: 'Atorvastatine', atc: 'C10AA05', dose: '20 mg', form: 'comprimé' },
+      { vidalId: 14010, dci: 'Metformine', atc: 'A10BA02', dose: '500 mg', form: 'comprimé' },
+      { vidalId: 14011, dci: 'Metformine', atc: 'A10BA02', dose: '1000 mg', form: 'comprimé' },
+      { vidalId: 14520, dci: 'Oméprazole', atc: 'A02BC01', dose: '20 mg', form: 'gélule' },
+      { vidalId: 16010, dci: 'Salbutamol', atc: 'R03AC02', dose: '100 µg/dose', form: 'inhalateur' },
+      { vidalId: 16210, dci: 'Loratadine', atc: 'R06AX13', dose: '10 mg', form: 'comprimé' },
+      { vidalId: 17010, dci: 'Prednisolone', atc: 'H02AB06', dose: '20 mg', form: 'comprimé' },
+      { vidalId: 18305, dci: 'Artéméther / Luméfantrine', atc: 'P01BF01', dose: '20/120 mg', form: 'comprimé' },
+      { vidalId: 19010, dci: 'Fer + acide folique', atc: 'B03AD', dose: '', form: 'comprimé' },
+      { vidalId: 19510, dci: 'Sels de réhydratation orale (SRO)', atc: 'A07CA', dose: '', form: 'sachet' },
+      { vidalId: 19999, dci: 'Sérum physiologique', atc: '', dose: '0,9 %', form: 'solution nasale' }
     ];
     function medLabel(m) { return (m.dci + (m.dose ? ' ' + m.dose : '')).trim(); }
+    const medFull = m => medLabel(m) + (m.form ? ' — ' + m.form : ''); // libellé complet stocké sur la ligne (DCI + dosage + forme)
+    const medNorm = s => (s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim(); // comparaison insensible casse/accents (anti-doublon)
     function medInput(i, v) { C.rx[i].med = v; renderPreview(); showMedMenu(i, v); }
     function showMedMenu(i, q) {
       const menu = document.getElementById('rxMenu' + i); if (!menu) return;
       q = (q || '').trim().toLowerCase();
-      let res = MED_REF;
+      // Exclure les médicaments déjà présents sur une autre ligne (pas de doublon).
+      const taken = new Set(C.rx.filter((r, j) => j !== i && r.med.trim()).map(r => medNorm(r.med)));
+      let res = MED_REF.slice().filter(m => !taken.has(medNorm(medFull(m)))); // copie : le tri ne réordonne pas MED_REF (indexOf valide)
       if (q) res = res.filter(m => (m.dci + ' ' + m.dose + ' ' + m.form).toLowerCase().includes(q));
-      res = res.slice(0, 8);
+      res = res.sort((a, b) => medLabel(a).localeCompare(medLabel(b), 'fr')).slice(0, 50); // tri alphabétique (DCI + dosage) ; liste défilante
       menu.innerHTML = res.map(m => '<div class="diag-opt" onmousedown="event.preventDefault();pickMed(' + i + ',' + MED_REF.indexOf(m) + ')"><span class="lbl">' + esc(medLabel(m)) + '</span><span class="mform">' + esc(m.form) + '</span></div>').join('');
       menu.style.display = res.length ? '' : 'none';
     }
     function pickMed(i, idx) {
       const m = MED_REF[idx]; if (!m) return;
-      C.rx[i].med = medLabel(m) + (m.form ? ' — ' + m.form : '');
+      const full = medFull(m);
+      if (C.rx.some((r, j) => j !== i && medNorm(r.med) === medNorm(full))) { hideAllMedMenus(); return; } // déjà dans l'ordonnance (garde-fou)
+      C.rx[i].med = full;
+      C.rx[i].atc = m.atc || ''; C.rx[i].vidalId = m.vidalId || null; // codes Vidal/ATC portés sur la ligne d'ordonnance
       renderRx(); renderPreview();
     }
     function hideAllMedMenus() { document.querySelectorAll('.rx-menu').forEach(m => m.style.display = 'none'); }
@@ -571,11 +841,18 @@
     });
 
     function hydrate() {
+      const restored = restoreDraft(); // brouillon éventuel (saisie précédente non finalisée)
       document.getElementById('pbAvatar').textContent = ini(patient);
       document.getElementById('pbName').textContent = patient;
       document.getElementById('pbMeta').textContent = rdvMotif + ' · ' + (linkedRdv ? T('docc.rdv_of') + ' ' : '') + fmtLong(CDATE) + (linkedRdv && rdvTime ? ' à ' + rdvTime : '') + (rdvId ? ' · ' + T('docc.rdv_ref') + ' ' + rdvId : '');
-      document.getElementById('nMotif').value = C.note.motif;
+      document.getElementById('nMotif').value = C.note.motif || '';
+      document.getElementById('nExam').value = C.note.exam || '';
+      document.getElementById('nCat').value = C.note.cat || '';
+      noteCount(document.getElementById('nExam'), 'examCount');
+      noteCount(document.getElementById('nCat'), 'catCount');
+      ['Temp', 'Ta', 'Pouls', 'Spo2', 'Poids'].forEach(k => { const el = document.getElementById('v' + k); if (el) el.value = C.vitals[k.toLowerCase()] || ''; });
       setBack(); renderDiagChips(); renderAllergy(); renderPresc(); renderPreview();
+      if (restored) showCToast(T('docc.draft_restored')); // indicateur : la saisie précédente non finalisée a été reprise
     }
     document.addEventListener('fueni:langchange', () => { document.getElementById('pbMeta').textContent = rdvMotif + ' · ' + (linkedRdv ? T('docc.rdv_of') + ' ' : '') + fmtLong(CDATE) + (linkedRdv && rdvTime ? ' à ' + rdvTime : '') + (rdvId ? ' · ' + T('docc.rdv_ref') + ' ' + rdvId : ''); setBack(); renderAllergy(); renderPresc(); renderPreview(); });
     document.addEventListener('DOMContentLoaded', hydrate);

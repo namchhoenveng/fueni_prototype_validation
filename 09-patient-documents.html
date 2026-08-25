@@ -444,6 +444,40 @@
         ico.className = 'sort-ico fa ' + (th.dataset.sortkey === sortKey ? (sortDir === 'asc' ? 'fa-sort-up' : 'fa-sort-down') : 'fa-sort');
       });
     }
+    // Documents reçus d'un praticien (partagés depuis l'écran de consultation) — magasin partagé (localStorage).
+    function injectSharedFromDoctor() {
+      let store = []; try { store = JSON.parse(localStorage.getItem('fueni_shared_docs') || '[]'); } catch (e) {}
+      if (!store.length) return;
+      const tb = document.getElementById('docTbody'); if (!tb) return;
+      const escH = s => (s == null ? '' : String(s)).replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
+      const fmtDMY = s => { const p = (s || '').split('-'); return p.length === 3 ? p[2] + '/' + p[1] + '/' + p[0] : s; };
+      const KMAP = {
+        cr:  { type:'cr',          key:'pdoc.type_cr',          fb:'Compte-rendu', icon:'icon-doc', fa:'fa-file-medical' },
+        rx:  { type:'ordonnance',  key:'pdoc.type_ordonnance',  fb:'Ordonnance',   icon:'icon-pdf', fa:'fa-file-pdf' },
+        lab: { type:'analyses',    key:'pdoc.type_analyses',    fb:'Analyses',     icon:'icon-doc', fa:'fa-file-lines' },
+        img: { type:'imagerie',    key:'pdoc.type_imagerie',    fb:'Imagerie',     icon:'icon-doc', fa:'fa-x-ray' },
+        ref: { type:'orientation', key:'pdoc.type_orientation', fb:'Orientation',  icon:'icon-doc', fa:'fa-user-doctor' }
+      };
+      store.forEach(d => {
+        if (!d.shared) return; // seuls les documents explicitement partagés au patient apparaissent dans son coffre
+        const m = KMAP[d.kind] || KMAP.cr;
+        const tr = document.createElement('tr');
+        tr.dataset.type = m.type; tr.dataset.origin = 'fueni'; tr.dataset.status = 'nouveau'; tr.dataset.date = d.date || ''; tr.dataset.name = (d.n || '').toLowerCase();
+        tr.innerHTML =
+          '<td><div class="file-icon ' + m.icon + '"><i class="fa ' + m.fa + '"></i></div></td>' +
+          '<td><div class="fw-semibold small doc-title">' + escH(d.n) + '</div><div class="small text-muted">' + escH(d.ref || '') + '</div></td>' +
+          '<td><span class="type-badge">' + escH(t(m.key, m.fb)) + '</span></td>' +
+          '<td><div class="small">' + fmtDMY(d.date) + '</div></td>' +
+          '<td><span class="origin-badge origin-shared"><i class="fa fa-share-nodes me-1"></i>' + escH(t('pdoc.origin_shared', 'Partagé')) + ' · ' + escH(d.by || '') + '</span></td>' +
+          '<td><span class="status-pill st-new">' + escH(t('pdoc.st_new', 'Nouveau')) + '</span></td>' +
+          '<td style="text-align:right; white-space:nowrap;">' +
+            '<button class="btn-action" title="' + escH(t('pdoc.act_view', 'Aperçu')) + '"><i class="fa fa-eye"></i></button>' +
+            '<button class="btn-action" title="' + escH(t('pdoc.act_download', 'Télécharger')) + '"><i class="fa fa-download"></i></button>' +
+          '</td>';
+        tb.insertBefore(tr, tb.firstChild);
+      });
+    }
+    injectSharedFromDoctor();
     applySort(); updateSortIndicators();
 
     // Partage patient → praticien (démo)

@@ -141,10 +141,12 @@
     .doc-st { font-size:0.64rem; font-weight:700; padding:2px 8px; border-radius:12px; white-space:nowrap; }
     .doc-st.ok { background:#dcfce7; color:#15803d; }
     .doc-st.no { background:#fee2e2; color:#b91c1c; }
+    .doc-st.off { background:#f1f5f9; color:#64748b; }
     .doc-actions { display:flex; gap:8px; margin-top:9px; }
     .doc-btn { border:1.5px solid #e2e8f0; background:#fff; border-radius:8px; font-size:0.78rem; font-weight:600; padding:5px 12px; cursor:pointer; }
     .doc-btn.ok { color:#15803d; } .doc-btn.ok:hover { background:#dcfce7; border-color:#15803d; }
     .doc-btn.no { color:#b91c1c; } .doc-btn.no:hover { background:#fee2e2; border-color:#b91c1c; }
+    .doc-btn.share { color:#155e75; } .doc-btn.share:hover { background:#e0f2f1; border-color:#155e75; }
     .pend-badge { display:inline-block; background:#fef3c7; color:#b45309; font-size:0.68rem; font-weight:700; border-radius:10px; padding:1px 7px; }
     /* Hauteur / bord / rayon uniformes pour tous les champs de la ligne (combobox + selects + inputs). min-height (pas height fixe) → pas de rognage du texte des selects. */
     .me-row .cbx, .me-row .form-select, .me-row .form-control { min-height:40px; border-radius:8px; }
@@ -356,15 +358,36 @@
 
     /* ---- Documents partagés : revue (validation / refus) — porté depuis « Mes patients » ---- */
     const pendingCount = p => (p.docs || []).filter(d => d.st === 'pending').length;
+    // Documents générés par le praticien à l'écran de consultation (25) puis partagés — magasin partagé (localStorage).
+    function sharedDocsFor(p) {
+      let store = []; try { store = JSON.parse(localStorage.getItem('fueni_shared_docs') || '[]'); } catch (e) {}
+      const dossier = dossierNo(p), K = { cr: 'doc', rx: 'rx', lab: 'lab', img: 'img', ref: 'doc' };
+      return store.filter(d => d.dossier === dossier || d.patient === p.name)
+        .map(d => ({ n: d.n, t: K[d.kind] || 'doc', date: d.date, origin: 'doctor', shared: !!d.shared, kind: d.kind, ref: d.ref }));
+    }
+    // Consultations enregistrées à l'écran de consultation (25) — magasin partagé (localStorage).
+    function sharedConsultsFor(p) {
+      let store = []; try { store = JSON.parse(localStorage.getItem('fueni_shared_consults') || '[]'); } catch (e) {}
+      const dossier = dossierNo(p);
+      return store.filter(c => c.dossier === dossier || c.patient === p.name)
+        .map(c => ({ date: c.date, motif: c.motif, diag: c.diag, note: c.note, rx: c.rx || [] }));
+    }
     let refusingIdx = -1;
     function docProvenance(d) {
       if (d.origin === 'doctor') return T('docpat.doc_by_practitioner'); // document généré par le praticien (consultation / ordonnance…)
       return d.by ? (T('docpat.doc_author').replace('{dr}', d.by) + ' · ' + T('docpat.doc_shared_by_patient')) : T('docpat.doc_from_patient');
     }
     function docChip(d, i, actionable) {
-      const stTag = (d.origin === 'doctor') ? '' // doc émis par le praticien : au dossier par nature, pas de pastille (provenance suffit)
+      // Document produit par la consultation (a un n° de référence) : le partage au patient peut être décidé a posteriori (sens unique).
+      const isDocStore = d.origin === 'doctor' && !!d.ref;
+      const stTag = isDocStore
+        ? (d.shared ? '<span class="doc-st ok">' + T('docmr.doc_shared') + '</span>' : '<span class="doc-st off">' + T('docmr.doc_not_shared') + '</span>')
+        : (d.origin === 'doctor') ? '' // doc de démo émis par le praticien : au dossier (provenance suffit)
         : (d.st === 'refused') ? '<span class="doc-st no">' + T('docpat.doc_st_refused') + '</span>'
         : (d.st === 'pending') ? '' : '<span class="doc-st ok">' + T('docpat.doc_st_validated') + '</span>';
+      const shareRow = (isDocStore && !d.shared)
+        ? '<div class="doc-actions"><button class="doc-btn share" onclick="shareStoreDoc(\'' + esc(d.ref) + '\',\'' + esc(d.kind) + '\')"><i class="fa fa-share-nodes me-1"></i>' + T('docmr.doc_share_now') + '</button></div>'
+        : '';
       const actions = !actionable ? ''
         : (i === refusingIdx
           ? '<div class="mt-2"><input type="text" class="form-control form-control-sm mb-2" id="refuseReason" placeholder="' + T('docpat.doc_refuse_ph') + '" onkeydown="if(event.key===\'Enter\'){event.preventDefault();confirmRefuse(' + i + ');}">' +
@@ -379,12 +402,26 @@
         '<a class="dc-dl" title="' + T('docpat.action_view') + '" onclick="event.preventDefault();"><i class="fa fa-eye"></i></a>' +
         '<a class="dc-dl" onclick="event.preventDefault();"><i class="fa fa-download"></i></a></div>' +
         '<div class="dc-meta">' + (d.date ? fmtDate(d.date) + ' · ' : '') + docProvenance(d) + motif + '</div>' +
-        actions + '</div>';
+        actions + shareRow + '</div>';
+    }
+    // Partage a posteriori (sens unique) : un document classé « Au dossier » non partagé peut être envoyé au patient plus tard.
+    function shareStoreDoc(ref, kind) {
+      const p = byId[sel];
+      try {
+        const ds = JSON.parse(localStorage.getItem('fueni_shared_docs') || '[]');
+        const ix = ds.findIndex(x => x.ref === ref && x.kind === kind && (x.patient === p.name || x.dossier === dossierNo(p)));
+        if (ix >= 0 && !ds[ix].shared) { ds[ix].shared = true; localStorage.setItem('fueni_shared_docs', JSON.stringify(ds)); }
+      } catch (e) {}
+      renderRecord(); renderList(); mrToast(T('docmr.doc_shared_toast'));
     }
     function renderDocs(p) {
-      if (!(p.docs || []).length) return '<div class="muted">' + T('docmr.no_docs') + '</div>';
+      // Documents du patient (à valider/validés/refusés) + documents partagés par le praticien (au dossier) — indices > longueur = non actionnables.
+      const all = (p.docs || []).concat(sharedDocsFor(p));
+      if (!all.length) return '<div class="muted">' + T('docmr.no_docs') + '</div>';
       const g = { pending: [], validated: [], refused: [] };
-      p.docs.forEach((d, i) => { const s = d.st === 'pending' ? 'pending' : (d.st === 'refused' ? 'refused' : 'validated'); g[s].push({ d, i }); });
+      all.forEach((d, i) => { const s = d.st === 'pending' ? 'pending' : (d.st === 'refused' ? 'refused' : 'validated'); g[s].push({ d, i }); });
+      // Tri par date décroissante (le plus récent d'abord) dans chaque groupe ; l'index d'origine (o.i) est conservé pour les actions.
+      Object.keys(g).forEach(k => g[k].sort((a, b) => (b.d.date || '').localeCompare(a.d.date || '')));
       let h = '';
       if (g.pending.length) h += '<div class="doc-grp-h pending"><i class="fa fa-clock me-1"></i>' + T('docpat.doc_pending') + ' · ' + g.pending.length + '</div>' + g.pending.map(o => docChip(o.d, o.i, true)).join('');
       if (g.validated.length) h += '<div class="doc-grp-h">' + T('docpat.doc_validated') + '</div>' + g.validated.map(o => docChip(o.d, o.i, false)).join('');
@@ -419,9 +456,54 @@
     function addFam() { (byId[sel].family = byId[sel].family || []).push({ rel: '', cond: '' }); renderRecord(); }
     function rmFam(i) { byId[sel].family.splice(i, 1); renderRecord(); }
 
-    // Listes de référence (MVP, français) — combobox à suggestions + saisie libre. En V2 : codage CIM-10 (antécédents) et SNOMED CT / ATC (allergènes).
-    const ALLERGENS = ['Pénicilline', 'Amoxicilline', 'AINS', 'Aspirine', 'Iode / produits de contraste', 'Latex', 'Arachide', 'Fruits de mer', 'Œuf', 'Lait', 'Sulfamides', 'Anesthésiques locaux', 'Pollen', 'Acariens'];
-    const CONDITIONS = ['Hypertension artérielle (HTA)', 'Diabète type 2', 'Diabète type 1', 'Asthme', 'Drépanocytose', 'Insuffisance rénale chronique', 'Cardiopathie', 'AVC', 'Épilepsie', 'Ulcère gastroduodénal', 'Tuberculose', 'VIH', 'Hépatite B', 'Cancer', 'Hypothyroïdie', 'Dépression'];
+    // Référentiels cliniques = SNOMED CT (system http://snomed.info/sct). Structure FHIR Coding : { code = SCTID, display = terme FR }.
+    // Sous-ensemble « plus utilisés » (démo). ⚠️ Codes SCTID INDICATIFS — à valider contre la release SNOMED CT licenciée (édition internationale + extension FR).
+    const ALLERGENS = [
+      { code: '764146007', display: 'Pénicilline' },
+      { code: '27658006', display: 'Amoxicilline' },
+      { code: '372665008', display: 'Anti-inflammatoire non stéroïdien (AINS)' },
+      { code: '387458008', display: 'Aspirine' },
+      { code: '387207008', display: 'Ibuprofène' },
+      { code: '387406002', display: 'Sulfamides' },
+      { code: '372796006', display: 'Anesthésique local' },
+      { code: '111088007', display: 'Latex' },
+      { code: '256349002', display: 'Arachide' },
+      { code: '227037002', display: 'Fruits de mer' },
+      { code: '102263004', display: 'Œuf' },
+      { code: '3718001', display: 'Lait de vache' },
+      { code: '227493005', display: 'Fruits à coque' },
+      { code: '256319008', display: 'Blé / gluten' },
+      { code: '256350002', display: 'Soja' },
+      { code: '256259004', display: 'Pollen' },
+      { code: '260147004', display: 'Acariens' },
+      { code: '13577000', display: 'Venin d\'hyménoptère (piqûre d\'abeille/guêpe)' },
+      { code: '418689008', display: 'Produit de contraste iodé' },
+      { code: '294949004', display: 'Poils d\'animaux' }
+    ];
+    const CONDITIONS = [
+      { code: '38341003', display: 'Hypertension artérielle (HTA)' },
+      { code: '44054006', display: 'Diabète type 2' },
+      { code: '46635009', display: 'Diabète type 1' },
+      { code: '195967001', display: 'Asthme' },
+      { code: '127040003', display: 'Drépanocytose' },
+      { code: '709044004', display: 'Insuffisance rénale chronique' },
+      { code: '56265001', display: 'Cardiopathie' },
+      { code: '230690007', display: 'Accident vasculaire cérébral (AVC)' },
+      { code: '84757009', display: 'Épilepsie' },
+      { code: '13200003', display: 'Ulcère gastroduodénal' },
+      { code: '235595009', display: 'Reflux gastro-œsophagien' },
+      { code: '56717001', display: 'Tuberculose' },
+      { code: '86406008', display: 'Infection à VIH' },
+      { code: '66071002', display: 'Hépatite B' },
+      { code: '363346000', display: 'Cancer' },
+      { code: '40930008', display: 'Hypothyroïdie' },
+      { code: '55822004', display: 'Hyperlipidémie' },
+      { code: '13645005', display: 'BPCO' },
+      { code: '396275006', display: 'Arthrose' },
+      { code: '90560007', display: 'Goutte' },
+      { code: '35489007', display: 'Dépression' },
+      { code: '197480006', display: 'Trouble anxieux' }
+    ];
     const RELATIONS = ['Père', 'Mère', 'Frère', 'Sœur', 'Grand-père', 'Grand-mère', 'Oncle', 'Tante', 'Autre'];
     // Professions — liste indicative couvrant les grands groupes CITP/ISCO (OIT). Combobox + saisie libre ; codage CITP en V2.
     const PROFESSIONS = ['Agriculteur / Éleveur', 'Pêcheur', 'Commerçant / Vendeur', 'Enseignant(e)', 'Fonctionnaire', 'Employé(e) de bureau', 'Chauffeur', 'Ouvrier / Manœuvre', 'Artisan', 'Maçon', 'Couturier(ère)', 'Coiffeur(euse)', 'Infirmier(ère)', 'Médecin', 'Cadre / Dirigeant', 'Technicien(ne)', 'Mécanicien', 'Chef d\'entreprise / Indépendant', 'Militaire / Forces de l\'ordre', 'Étudiant(e) / Élève', 'Ménagère / Au foyer', 'Retraité(e)', 'Sans emploi', 'Autre'];
@@ -453,21 +535,25 @@
     function cbxClose() { const p = document.getElementById('cbxPanel'); if (p) p.classList.add('d-none'); cbxTrigger = null; }
     function cbxFilter() {
       if (!cbxTrigger) return;
-      const list = MED_LISTS[cbxTrigger.dataset.list] || [];
+      // Listes mixtes : chaînes simples (relation, profession) ou objets SNOMED { code, display }. On normalise en { label, code }.
+      const raw = MED_LISTS[cbxTrigger.dataset.list] || [];
+      const list = raw.map(x => (typeof x === 'string') ? { label: x, code: '' } : { label: x.display, code: x.code });
       const coll = cbxTrigger.dataset.coll, idx = +cbxTrigger.dataset.idx, isAl = coll === 'allergies';
       // Allergies : masquer les allergènes déjà saisis (autres lignes) → pas de doublon proposé.
       const taken = isAl ? new Set((byId[sel].allergies || []).filter((_, j) => j !== idx).map(a => alNorm(a.name)).filter(Boolean)) : null;
       const q = document.getElementById('cbxSearch').value.trim(), nq = q.toLowerCase();
-      let matches = list.filter(x => x.toLowerCase().includes(nq));
-      if (isAl) matches = matches.filter(x => !taken.has(alNorm(x)));
-      let html = matches.map(x => '<div class="cbx-opt" onmousedown="cbxPick(event,\'' + escA(x) + '\')">' + esc(x) + '</div>').join('');
+      let matches = list.filter(it => it.label.toLowerCase().includes(nq));
+      if (isAl) matches = matches.filter(it => !taken.has(alNorm(it.label)));
+      const lk = cbxTrigger.dataset.list;
+      if (lk === 'al' || lk === 'cond') matches.sort((a, b) => a.label.localeCompare(b.label, 'fr')); // listes cliniques triées alphabétiquement (relation/profession gardent leur ordre)
+      let html = matches.map(it => '<div class="cbx-opt" onmousedown="cbxPick(event,\'' + escA(it.label) + '\',\'' + escA(it.code) + '\')">' + esc(it.label) + '</div>').join('');
       const dup = isAl && q && taken.has(alNorm(q)); // saisie libre = doublon d'une allergie déjà présente
-      if (q && !list.some(x => x.toLowerCase() === nq) && !dup) html += '<div class="cbx-add" onmousedown="cbxPick(event,\'' + escA(q) + '\')"><span class="plus"><i class="fa fa-plus"></i></span>' + T('docmr.add_value').replace('{v}', esc(q)) + '</div>';
+      if (q && !list.some(it => it.label.toLowerCase() === nq) && !dup) html += '<div class="cbx-add" onmousedown="cbxPick(event,\'' + escA(q) + '\',\'\')"><span class="plus"><i class="fa fa-plus"></i></span>' + T('docmr.add_value').replace('{v}', esc(q)) + '</div>';
       if (dup) html += '<div class="cbx-empty">' + T('docmr.al_dup_hint') + '</div>';
       if (!html) html = '<div class="cbx-empty">' + T('docmr.no_result') + '</div>';
       document.getElementById('cbxList').innerHTML = html;
     }
-    function cbxPick(e, value) {
+    function cbxPick(e, value, code) {
       if (e) e.preventDefault();
       if (!cbxTrigger) return;
       const p = byId[sel];
@@ -479,6 +565,8 @@
           cbxClose(); mrToast(T('docmr.al_dup').replace('{v}', value)); return;
         }
         if (field) { if (p[coll][idx]) p[coll][idx][field] = value; } else { p[coll][idx] = value; }
+        // Code SNOMED CT (vide pour une saisie libre) — porté sur l'enregistrement pour l'interopérabilité.
+        if (p[coll][idx] && (coll === 'allergies' || coll === 'ant')) p[coll][idx].code = code || '';
       }
       cbxClose(); renderRecord();
     }
@@ -625,10 +713,12 @@
           '<span class="alg-chips">' + chips + '</span></div></div>';
       }
 
-      const consults = p.consults.length ? p.consults.map(c =>
+      // Consultations : celles enregistrées à l'écran 25 (magasin partagé) + les démo, triées récentes d'abord.
+      const allConsults = sharedConsultsFor(p).concat(p.consults || []).sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+      const consults = allConsults.length ? allConsults.map(c =>
         '<div class="cons"><div class="cons-head"><span class="cons-date">' + fmtDate(c.date) + '</span><span class="cons-motif">' + esc(c.motif) + '</span></div>' +
-        '<div class="cons-diag"><span class="lbl">' + T('docmr.diag') + ' :</span> ' + esc(c.diag) + '</div>' +
-        '<div class="cons-note">' + esc(c.note) + '</div>' +
+        (c.diag ? '<div class="cons-diag"><span class="lbl">' + T('docmr.diag') + ' :</span> ' + esc(c.diag) + '</div>' : '') +
+        (c.note ? '<div class="cons-note">' + esc(c.note) + '</div>' : '') +
         (c.rx && c.rx.length ? '<div class="cons-rx"><i class="fa fa-prescription me-1" style="color:#6d28d9;"></i>' + c.rx.map(r => '<span class="rx-pill">' + esc(r) + '</span>').join('') + '</div>' : '') +
         '</div>'
       ).join('') : '<div class="muted">' + T('docmr.no_consults') + '</div>';
@@ -644,7 +734,8 @@
 
       const tab = (id, label, count) => '<button class="' + (recTab === id ? 'on' : '') + '" onclick="setRecTab(\'' + id + '\')">' + T(label) + (count != null ? '<span class="cnt">' + count + '</span>' : '') + '</button>';
       const pc = pendingCount(p); // pastille ambre « à valider » sur l'onglet Documents (visible depuis les autres onglets)
-      const docsTab = '<button class="' + (recTab === 'docs' ? 'on' : '') + '" onclick="setRecTab(\'docs\')">' + T('docmr.documents') + (pc > 0 ? '<span class="cnt" style="background:#fef3c7;color:#b45309;">' + pc + '</span>' : (p.docs.length ? '<span class="cnt">' + p.docs.length + '</span>' : '')) + '</button>';
+      const totalDocs = (p.docs || []).length + sharedDocsFor(p).length;
+      const docsTab = '<button class="' + (recTab === 'docs' ? 'on' : '') + '" onclick="setRecTab(\'docs\')">' + T('docmr.documents') + (pc > 0 ? '<span class="cnt" style="background:#fef3c7;color:#b45309;">' + pc + '</span>' : (totalDocs ? '<span class="cnt">' + totalDocs + '</span>' : '')) + '</button>';
 
       box.innerHTML =
         '<div class="rec-head"><div class="av">' + p.ini + '</div>' +
@@ -654,7 +745,7 @@
         '</div>' +
         '<div class="rec-body">' + banner +
           '<div class="rec-tabs">' +
-            tab('history', 'docmr.history', p.consults.length) +
+            tab('history', 'docmr.history', allConsults.length) +
             tab('perso', 'docmr.perso_info', null) +
             tab('med', 'docmr.med_info', null) +
             docsTab +
@@ -664,7 +755,13 @@
     }
 
     document.addEventListener('fueni:langchange', () => { renderList(); renderRecord(); });
-    document.addEventListener('DOMContentLoaded', () => { renderList(); renderRecord(); });
+    document.addEventListener('DOMContentLoaded', () => {
+      const q = new URLSearchParams(location.search);
+      const tb = q.get('tab'); if (['history', 'perso', 'med', 'docs'].includes(tb)) recTab = tb; // onglet ciblé (ex. retour de consultation → Documents)
+      renderList(); renderRecord();
+      const fl = q.get('flash'); // confirmation « consultation enregistrée » portée depuis l'écran 25
+      if (fl === 'saved' || fl === 'saved_shared') mrToast(T(fl === 'saved_shared' ? 'docc.save_shared_toast' : 'docc.save_toast'));
+    });
   </script>
 <!-- Prototype version badge -->
 <script>(function(){if(window.__pv)return;window.__pv=1;var v=document.createElement('div');v.style.cssText='position:fixed;top:0;left:50%;transform:translateX(-50%);background:#155e75;color:#fff;padding:6px 20px;border-radius:0 0 16px 16px;font:600 12px/1 system-ui,-apple-system,sans-serif;letter-spacing:.6px;z-index:99999;box-shadow:0 3px 10px rgba(0,0,0,.2);text-transform:uppercase;display:flex;align-items:center;gap:8px';v.innerHTML='🧪 Prototype <span style="background:#f59e0b;color:#1a1a1a;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:4px">v1.4.0</span><span style="background:#facc15;color:#1a1a1a;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:4px;text-transform:none;letter-spacing:0">⏳ À valider</span>';document.body.appendChild(v);})();</script>
