@@ -32,6 +32,17 @@
       docs: [{ n: 'Analyse — bilan lipidique', t: 'lab', date: '2026-07-10', st: 'pending' }, { n: 'Compte-rendu cardiologie', t: 'doc', date: '2026-07-08', st: 'pending', by: 'Dr Sow' }, { n: 'Ordonnance', t: 'rx', date: '2026-07-02', origin: 'doctor' }, { n: 'Compte-rendu de consultation', t: 'doc', date: '2026-07-02', origin: 'doctor' }, { n: 'Analyses sanguines', t: 'lab', date: '2026-06-30' }]
     },
     {
+      // Fiche créée par le praticien (patient sans compte FUENI) — manual:true.
+      // Sert de cas de démonstration au garde-fou de partage : les documents restent « au dossier ».
+      id: 'p13', ini: 'NB', name: 'Nafissatou Barry', sex: 'F', age: 45, manual: true,
+      phone: '+221 77 654 32 10', email: '',
+      emerg: { name: 'Mamadou Barry', rel: 'Frère', phone: '+221 77 654 00 99' },
+      last: '2026-07-06', lastMotif: 'Consultation générale', next: '', nextMotif: '',
+      blood: 'O+', allergies: [{ name: 'Pénicilline', sev: 'high' }], ant: ['HTA (2021)'], family: [{ rel: 'Mère', cond: 'Diabète type 2' }],
+      consults: [{ date: '2026-07-06', motif: 'Consultation générale', diag: 'Angine érythémateuse', note: 'Fièvre à 38,5 °C, odynophagie. Auscultation libre.', rx: ['Amoxicilline 1 g × 2/j — 6 j'] }],
+      docs: [{ n: 'Compte-rendu de consultation', t: 'doc', date: '2026-07-06', origin: 'doctor' }, { n: 'Ordonnance', t: 'rx', date: '2026-07-06', origin: 'doctor' }]
+    },
+    {
       id: 'p2', ini: 'OS', name: 'Ousmane Sow', sex: 'M', age: 52,
       phone: '+221 76 908 11 22', email: 'o.sow@exemple.sn',
       last: '2026-06-28', lastMotif: 'Suivi hypertension', next: '2026-07-18', nextMotif: 'Suivi hypertension',

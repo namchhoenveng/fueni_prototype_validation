@@ -19,8 +19,17 @@
     .plan-card { border: 2px solid #e9ecef; border-radius: 16px; padding: 28px; transition: all 0.2s; background: white; position: relative; height: 100%; display: flex; flex-direction: column; }
     .plan-card.popular { border-color: #155e75; box-shadow: 0 4px 20px rgba(21,94,117,0.18); }
     .badge-popular { position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: #155e75; color: white; padding: 3px 16px; border-radius: 20px; font-size: 0.72rem; font-weight: 700; white-space: nowrap; }
-    .price-main { font-size: 2.4rem; font-weight: 800; color: #155e75; line-height: 1; }
-    .price-period { font-size: 0.85rem; color: #7f8c8d; }
+    /* Montant + période sur UNE même ligne, à la même taille et graisse (lisibilité, transparence tarifaire) */
+    .price-row { display: flex; align-items: baseline; gap: 2px; flex-wrap: wrap; }
+    .price-main { font-size: 2.4rem; font-weight: 800; color: #155e75; line-height: 1.05; }
+    .price-period { font-size: 2.4rem; font-weight: 800; color: #155e75; line-height: 1.05; }
+    /* Sous-ligne (équivalent mensuel / « pour toujours ») — hauteur réservée pour aligner les deux cartes */
+    .price-sub { font-size: 0.85rem; color: #7f8c8d; min-height: 1.2rem; margin-top: 4px; margin-bottom: 14px; }
+    .price-sub.promo { font-size: 0.8rem; white-space: nowrap; }
+    /* Ligne promo au-dessus du prix : ancien prix barré + remise (style « prix soldé ») */
+    .promo-top { display: flex; align-items: center; gap: 10px; margin-bottom: 3px; }
+    .promo-old { font-size: 1.05rem; font-weight: 700; color: #94a3b8; text-decoration: line-through; }
+    .promo-off { background: #fff4d6; color: #9a5b00; border: 1px solid #fcd670; border-radius: 20px; padding: 2px 12px; font-size: 0.82rem; font-weight: 800; }
     .conversion-line { font-size: 0.78rem; color: #117a65; }
     .feature-list { list-style: none; padding: 0; margin: 0; flex-grow: 1; }
     .feature-list li { padding: 6px 0; font-size: 0.88rem; display: flex; align-items: flex-start; gap: 8px; }
@@ -42,6 +51,7 @@
     .seg button { flex: 1; border: 0; background: transparent; padding: 11px 12px; border-radius: 9px; font-weight: 700; font-size: 0.95rem; color: #334155; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 7px; transition: background .15s, color .15s; }
     .seg button.active { background: #155e75; color: #fff; box-shadow: 0 2px 8px rgba(21,94,117,0.35); }
     .seg .save-badge { font-size: 0.62rem; background: #27ae60; color: #fff; border-radius: 6px; padding: 2px 7px; font-weight: 700; }
+    .seg .save-badge.promo { background: #f59e0b; color: #1a1a1a; }
   </style>
 </head>
 <body data-i18n-pagetitle="doc.plans.page_title" data-i18n-toggle>
@@ -69,7 +79,7 @@
     <div class="text-center mb-3 mt-4">
       <p class="fw-semibold mb-2" style="font-size:1.25rem; color:#155e75;" data-i18n="doc.plans.subtitle">Choisissez la formule qui vous convient — changez à tout moment.</p>
       <div class="seg" id="billingSeg" role="tablist" aria-label="Périodicité">
-        <button type="button" class="active" id="billMonthly" role="tab" onclick="setBilling('monthly')" data-i18n="doc.plans.billing_monthly">Mensuel</button>
+        <button type="button" class="active" id="billMonthly" role="tab" onclick="setBilling('monthly')"><span data-i18n="doc.plans.billing_monthly">Mensuel</span><span class="save-badge promo" id="monthlyPromoBadge" style="display:none;" data-i18n="doc.plans.billing_monthly_badge">−50 %</span></button>
         <button type="button" id="billAnnual" role="tab" onclick="setBilling('annual')">
           <span data-i18n="doc.plans.billing_annual">Annuel</span>
           <span class="save-badge" data-i18n="doc.plans.annual_badge">2 mois offerts</span>
@@ -83,8 +93,8 @@
       <div class="col-md-6">
         <div class="plan-card">
           <div class="text-muted small fw-semibold mb-2 text-uppercase" data-i18n="doc.plans.free_name">Free</div>
-          <div class="price-main">0 €</div>
-          <div class="price-period mb-3" data-i18n="doc.plans.free_period">pour toujours</div>
+          <div class="price-row"><span class="price-main">0 €</span></div>
+          <div class="price-sub" data-i18n="doc.plans.free_period">pour toujours</div>
           <div class="divider"></div>
           <ul class="feature-list">
             <li><i class="fa fa-check icon-ok"></i><span data-i18n="doc.plans.free_f1">Profil médecin public</span></li>
@@ -104,9 +114,9 @@
         <div class="plan-card popular">
           <div class="badge-popular"><i class="fa fa-star me-1"></i><span data-i18n="doc.plans.recommended">Recommandé</span></div>
           <div class="small fw-semibold mb-2 text-uppercase" style="color:#155e75;" data-i18n="doc.plans.solo_name">Solo</div>
-          <div class="price-main" id="solo-price">15 €</div>
-          <div class="price-period" id="solo-period" data-i18n="doc.plans.per_month">/mois</div>
-          <div class="text-success small fw-semibold mt-1 mb-3" id="solo-equiv" style="display:none;"></div>
+          <div class="promo-top" id="solo-promo-top" style="display:none;"><span class="promo-old" id="solo-old"></span><span class="promo-off" id="solo-off" data-i18n="doc.plans.billing_monthly_badge">−50 %</span></div>
+          <div class="price-row"><span class="price-main" id="solo-price">15 €</span><span class="price-period" id="solo-period" data-i18n="doc.plans.per_month">/mois</span></div>
+          <div class="price-sub text-success fw-semibold" id="solo-equiv"></div>
           <div class="divider"></div>
           <ul class="feature-list">
             <li><i class="fa fa-check icon-ok"></i><span data-i18n="doc.plans.solo_f1">Tout le plan Free</span></li>
@@ -155,20 +165,44 @@
       refreshDisplay();
     }
 
+    // Offre d'ouverture : −50 % sur l'abonnement Solo MENSUEL. `until` = dernier jour inclus (affiché tel quel) ;
+    // l'offre reste active jusqu'à la fin de cette journée puis s'auto-désactive. L'annuel n'est pas concerné.
+    const LAUNCH_PROMO = { rate: 0.5, until: '2026-12-31' };
+    function promoActive() { const end = new Date(LAUNCH_PROMO.until + 'T00:00:00'); end.setDate(end.getDate() + 1); return new Date() < end; }
+    function promoDateStr() { const p = LAUNCH_PROMO.until.split('-'); return p[2] + '/' + p[1] + '/' + p[0]; }
+    function fmtEur(n) { return n.toLocaleString('fr-FR', { minimumFractionDigits: Number.isInteger(n) ? 0 : 2, maximumFractionDigits: 2 }) + ' €'; }
+
     function refreshDisplay() {
       const isAnnual = billing === 'annual';
       const zp = ZONE_PRICES.africa;
-      const priceEur = isAnnual ? zp.solo * ANNUAL_MULT : zp.solo;
-      document.getElementById('solo-price').textContent = priceEur.toLocaleString('fr-FR') + ' €';
+      const fullMonthly = zp.solo;
+      const base = isAnnual ? zp.solo * ANNUAL_MULT : zp.solo;
+      const promo = !isAnnual && promoActive(); // offre d'ouverture : mensuel uniquement
+      const shown = promo ? base * (1 - LAUNCH_PROMO.rate) : base;
+
+      document.getElementById('solo-price').textContent = fmtEur(shown);
       document.getElementById('solo-period').textContent = isAnnual ? t('doc.plans.per_year', '/an') : t('doc.plans.per_month', '/mois');
-      // En mode annuel : afficher l'équivalent mensuel (150 €/an ≈ 12,50 €/mois) — la valeur, pas le gros chiffre
+
+      // Ligne promo « prix soldé » (ancien prix barré + remise) au-dessus du prix — mensuel + promo active.
+      const promoTop = document.getElementById('solo-promo-top');
+      if (promoTop) promoTop.style.display = promo ? 'flex' : 'none';
+      if (promo) document.getElementById('solo-old').textContent = fmtEur(fullMonthly);
+      // Badge « −50 % » sur l'onglet Mensuel (tant que la promo court, quel que soit l'onglet actif).
+      const mBadge = document.getElementById('monthlyPromoBadge'); if (mBadge) mBadge.style.display = promoActive() ? 'inline-block' : 'none';
+
       const equiv = document.getElementById('solo-equiv');
       if (isAnnual) {
-        const perMonthStr = (priceEur / 12).toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
-        equiv.textContent = t('doc.plans.solo_equiv', 'soit ≈ {price}/mois').replace('{price}', perMonthStr);
-        equiv.style.display = 'block';
+        // équivalent mensuel de l'annuel (ex. 150 €/an ≈ 12,50 €/mois)
+        equiv.textContent = t('doc.plans.solo_equiv', 'soit ≈ {price}/mois').replace('{price}', fmtEur(base / 12));
+        equiv.className = 'price-sub text-success fw-semibold';
+      } else if (promo) {
+        // libellé de l'offre + échéance (une seule ligne)
+        equiv.textContent = t('doc.plans.promo_badge', 'Offre d\'ouverture') + ' · ' +
+          t('doc.plans.promo_until', 'jusqu\'au {date}').replace('{date}', promoDateStr());
+        equiv.className = 'price-sub promo';
       } else {
-        equiv.style.display = 'none';
+        equiv.textContent = ''; // vidé mais conservé dans le flux (hauteur réservée par .price-sub)
+        equiv.className = 'price-sub';
       }
     }
 

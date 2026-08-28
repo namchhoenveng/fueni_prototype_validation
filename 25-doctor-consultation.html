@@ -47,6 +47,8 @@
     .safety-banner .alg-chips { display:flex; flex-wrap:wrap; }
     .vitals-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(108px,1fr)); gap:10px; }
     .vitals-grid label { font-size:0.72rem; color:#64748b; font-weight:600; display:block; margin-bottom:3px; }
+    .v-err { color:#b02a37; font-size:0.76rem; margin-top:7px; line-height:1.4; }
+    .v-err .fa { margin-right:5px; }
     .seg { display:inline-flex; background:#eef2f6; border-radius:10px; padding:4px; gap:2px; margin-bottom:16px; }
     .seg button { background:none; border:0; padding:8px 18px; border-radius:8px; font-size:0.88rem; font-weight:600; color:#64748b; cursor:pointer; display:inline-flex; gap:7px; align-items:center; }
     .seg button.on { background:#fff; color:#155e75; box-shadow:0 1px 3px rgba(0,0,0,0.08); }
@@ -111,6 +113,10 @@
     .save-doc-row:last-child { border-bottom:0; }
     .save-doc-row .sd-name { font-weight:600; color:#334155; font-size:0.9rem; }
     .save-doc-row .sd-share { display:inline-flex; align-items:center; gap:6px; font-size:0.82rem; color:#155e75; font-weight:600; cursor:pointer; white-space:nowrap; margin:0; }
+    .save-doc-row .sd-onfile { font-size:0.78rem; color:#94a3b8; font-weight:600; white-space:nowrap; }
+    .manual-share-note { background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:11px 13px; font-size:0.83rem; color:#475569; line-height:1.45; margin-bottom:14px; }
+    .manual-share-note .msn-head { display:flex; align-items:flex-start; gap:8px; }
+    .manual-share-note .fa-circle-info { color:#155e75; margin-top:2px; }
     .char-count { font-size:0.72rem; color:#94a3b8; text-align:right; margin-top:3px; }
     .char-count.near { color:#b45309; font-weight:600; }
     /* Diagnostic picker (référentiel codifié) */
@@ -205,12 +211,13 @@
             <div class="mb-3"><label class="form-label" data-i18n="docc.n_exam">Examen clinique / observations</label><textarea class="form-control" id="nExam" rows="4" maxlength="3000" oninput="C.note.exam=this.value;renderPreview();noteCount(this,'examCount')"></textarea><div class="char-count" id="examCount"></div></div>
             <div class="mb-3"><label class="form-label" data-i18n="docc.vitals">Constantes</label>
               <div class="vitals-grid">
-                <div><label data-i18n="docc.v_temp">Température (°C)</label><input type="text" inputmode="decimal" maxlength="5" class="form-control form-control-sm" id="vTemp" placeholder="37,0" oninput="vSet(this,'temp',true)" onblur="vClamp(this,'temp',30,50)"></div>
-                <div><label data-i18n="docc.v_ta">Tension (mmHg)</label><input type="text" inputmode="numeric" maxlength="7" class="form-control form-control-sm" id="vTa" placeholder="120/80" oninput="this.value=this.value.replace(/[^0-9/]/g,'');C.vitals.ta=this.value;renderPreview()" onblur="vTaClamp(this)"></div>
-                <div><label data-i18n="docc.v_pouls">Pouls (bpm)</label><input type="text" inputmode="numeric" maxlength="3" class="form-control form-control-sm" id="vPouls" placeholder="72" oninput="vSet(this,'pouls',false)" onblur="vClamp(this,'pouls',0,300)"></div>
-                <div><label data-i18n="docc.v_spo2">SpO₂ (%)</label><input type="text" inputmode="numeric" maxlength="3" class="form-control form-control-sm" id="vSpo2" placeholder="98" oninput="vSet(this,'spo2',false)" onblur="vClamp(this,'spo2',0,100)"></div>
-                <div><label data-i18n="docc.v_poids">Poids (kg)</label><input type="text" inputmode="decimal" maxlength="5" class="form-control form-control-sm" id="vPoids" placeholder="70" oninput="vSet(this,'poids',true)" onblur="vClamp(this,'poids',0,700)"></div>
+                <div><label data-i18n="docc.v_temp">Température (°C)</label><input type="text" inputmode="decimal" maxlength="5" class="form-control form-control-sm" id="vTemp" placeholder="37,0" oninput="vSet(this,'temp',true)" onblur="vCheck(this,'temp')"></div>
+                <div><label data-i18n="docc.v_ta">Tension (mmHg)</label><input type="text" inputmode="numeric" maxlength="7" class="form-control form-control-sm" id="vTa" placeholder="120/80" oninput="this.value=this.value.replace(/[^0-9/]/g,'');C.vitals.ta=this.value;renderPreview()" onblur="vTaCheck(this)"></div>
+                <div><label data-i18n="docc.v_pouls">Pouls (bpm)</label><input type="text" inputmode="numeric" maxlength="5" class="form-control form-control-sm" id="vPouls" placeholder="72" oninput="vSet(this,'pouls',false)" onblur="vCheck(this,'pouls')"></div>
+                <div><label data-i18n="docc.v_spo2">SpO₂ (%)</label><input type="text" inputmode="numeric" maxlength="5" class="form-control form-control-sm" id="vSpo2" placeholder="98" oninput="vSet(this,'spo2',false)" onblur="vCheck(this,'spo2')"></div>
+                <div><label data-i18n="docc.v_poids">Poids (kg)</label><input type="text" inputmode="decimal" maxlength="5" class="form-control form-control-sm" id="vPoids" placeholder="70" oninput="vSet(this,'poids',true)" onblur="vCheck(this,'poids')"></div>
               </div>
+              <div id="vitalsErr" class="v-err" style="display:none;"></div>
             </div>
             <div class="mb-3"><label class="form-label" data-i18n="docc.n_diag">Diagnostic</label>
               <div class="diag-box">
@@ -287,7 +294,8 @@
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
-          <p class="small text-muted mb-3" data-i18n="docc.save_intro">Cochez ceux à partager avec le patient.</p>
+          <p class="small text-muted mb-3" id="saveIntro" data-i18n="docc.save_intro">Cochez ceux à partager avec le patient.</p>
+          <div id="saveManualBanner"></div>
           <div id="saveDocList"></div>
           <div class="small mt-3" style="color:#9a3412;background:#fff8f1;border:1px solid #faddc0;border-radius:8px;padding:8px 11px;"><i class="fa fa-lock me-1"></i><span data-i18n="docc.save_final_note">Après enregistrement, la consultation est en lecture seule.</span></div>
         </div>
@@ -332,6 +340,9 @@
     if (!patDossier) { const m = (window.NazPatients || []).filter(x => x.name === patient); if (m.length === 1) { const n = (m[0].id || '').replace(/[^0-9]/g, ''); patDossier = 'DOS-' + (n ? n.slice(-6).padStart(6, '0') : '000000'); } }
     // Dossier patient (identité + allergies) pour l'en-tête des documents.
     const patRec = (window.NazPatients || []).find(p => p.name === patient) || {};
+    // Patient créé manuellement par le praticien = sans compte FUENI → aucun espace « Mes documents » pour recevoir un partage.
+    // Les fiches manuelles ne sont pas dans le référentiel statique (naz-patients.js) : le dossier (26) transmet donc l'indicateur via l'URL.
+    const patManual = params.get('manual') === '1' || !!patRec.manual;
     function patAgeOf(p) { if (p.age != null && p.age !== '') return p.age; if (p.dob) { const b = new Date(p.dob + 'T00:00:00'); if (!isNaN(b.getTime())) { const t = new Date(); let a = t.getFullYear() - b.getFullYear(); if (t.getMonth() < b.getMonth() || (t.getMonth() === b.getMonth() && t.getDate() < b.getDate())) a--; return a >= 0 ? a : ''; } } return ''; }
     const patAge = patAgeOf(patRec);
     let tab = 'note';
@@ -670,10 +681,30 @@
         Object.keys(C.vitals).some(k => (C.vitals[k] || '').trim()) ||
         C.rx.some(r => r.med.trim()) || C.labo.some(r => r.name.trim()) || C.img.some(r => r.name.trim()) || C.ref.some(r => r.spec);
       if (!hasContent) { showCToastWarn(T('docc.empty_consult')); return; }
+      // Constantes hors plage : bloquer + signaler (cohérent avec les autres validations — pas d'auto-correction).
+      if (!vitalsValid()) {
+        showCToastWarn(T('docc.vitals_fix'));
+        const first = Object.keys(vBad).find(k => vBad[k]);
+        const bel = first && document.getElementById(V_EL[first]);
+        if (bel) bel.scrollIntoView({ block: 'center' });
+        return;
+      }
+      // Patient sans compte FUENI : pas de partage possible (rien pour recevoir) → tout va au dossier, invitation « bientôt ».
+      const intro = document.getElementById('saveIntro'), banner = document.getElementById('saveManualBanner');
+      if (patManual) {
+        // Un seul message (le bandeau d'information) : l'intro « Cochez ceux à partager » n'a pas de sens sans partage.
+        intro.style.display = 'none';
+        banner.innerHTML = '<div class="manual-share-note"><div class="msn-head"><i class="fa fa-circle-info"></i><span>' + esc(T('docc.share_manual_note')) + '</span></div></div>';
+      } else {
+        intro.style.display = '';
+        intro.textContent = T('docc.save_intro');
+        banner.innerHTML = '';
+      }
       document.getElementById('saveDocList').innerHTML = allDocEntries().map(e => {
-        const checked = e.kind !== 'cr' ? 'checked' : ''; // prescriptions partagées par défaut ; note de consultation décochée
-        return '<div class="save-doc-row"><div class="sd-name"><i class="fa ' + (SAVE_IC[e.kind] || 'fa-file') + ' me-2" style="color:#155e75;"></i>' + esc(e.n) + '</div>' +
-          '<label class="sd-share"><input type="checkbox" class="form-check-input" data-kind="' + e.kind + '" ' + checked + '> ' + esc(T('docc.share_check_short')) + '</label></div>';
+        const share = patManual
+          ? '<span class="sd-onfile"><i class="fa fa-folder me-1"></i>' + esc(T('docc.au_dossier')) + '</span>'
+          : '<label class="sd-share"><input type="checkbox" class="form-check-input" data-kind="' + e.kind + '" ' + (e.kind !== 'cr' ? 'checked' : '') + '> ' + esc(T('docc.share_check_short')) + '</label>';
+        return '<div class="save-doc-row"><div class="sd-name"><i class="fa ' + (SAVE_IC[e.kind] || 'fa-file') + ' me-2" style="color:#155e75;"></i>' + esc(e.n) + '</div>' + share + '</div>';
       }).join('');
       saveModal = saveModal || new bootstrap.Modal(document.getElementById('saveModal'));
       saveModal.show();
@@ -783,19 +814,37 @@
     }
     function pickMotif(idx) { const label = MOTIF_REF[idx]; if (label == null) return; C.note.motif = label; const el = document.getElementById('nMotif'); if (el) el.value = label; document.getElementById('motifMenu').style.display = 'none'; renderPreview(); }
     function pickMotifFree() { document.getElementById('motifMenu').style.display = 'none'; } // valeur déjà saisie dans le champ
-    // Constantes : n'accepter que des chiffres (+ décimale) à la saisie, puis borner au [min,max] au blur.
-    // (min/max HTML sur type=number n'empêchent PAS la saisie de valeurs hors bornes ni de « e ».)
+    // Constantes : n'accepter que des chiffres (+ décimale) à la saisie.
+    // La valeur n'est PAS corrigée : hors plage → bordure rouge + message inline (cohérent avec les autres validations de l'app).
     function vSet(el, key, dec) {
       let v = el.value;
       if (dec) { v = v.replace(/[^0-9.,]/g, '').replace(',', '.'); const p = v.split('.'); if (p.length > 2) v = p[0] + '.' + p.slice(1).join(''); }
       else { v = v.replace(/[^0-9]/g, ''); }
-      el.value = v; C.vitals[key] = v; renderPreview();
+      el.value = v; C.vitals[key] = v; if (vBad[key]) vCheck(el, key); else renderPreview();
     }
-    function vClamp(el, key, lo, hi) {
-      const s = (el.value || '').replace(',', '.').trim();
-      let out = '';
-      if (s !== '' && s !== '.') { let n = parseFloat(s); if (!isNaN(n)) { if (n > hi) n = hi; if (n < lo) n = lo; out = String(n); } }
-      el.value = out; C.vitals[key] = out; renderPreview();
+    // Plages physiologiques (bornes retenues avec Nazounki) — [min, max, unité].
+    const V_RANGE = { temp: [30, 50, '°C'], pouls: [0, 300, 'bpm'], spo2: [0, 100, '%'], poids: [0, 700, 'kg'] };
+    const V_EL = { temp: 'vTemp', ta: 'vTa', pouls: 'vPouls', spo2: 'vSpo2', poids: 'vPoids' };
+    const vBad = {}; // clé de constante → message d'erreur ('' = valide)
+    function vCheck(el, key) { // validation explicite d'une constante numérique (pas d'auto-correction)
+      C.vitals[key] = el.value;
+      const r = V_RANGE[key], s = (el.value || '').replace(',', '.').trim();
+      let bad = '';
+      if (s !== '' && s !== '.') { const n = parseFloat(s); if (isNaN(n) || n < r[0] || n > r[1]) bad = T('docc.v_' + key) + ' : ' + T('docc.v_range').replace('{lo}', r[0]).replace('{hi}', r[1]).replace('{u}', r[2]); }
+      vBad[key] = bad; el.classList.toggle('is-invalid', !!bad);
+      renderVitalsErr(); renderPreview();
+    }
+    function renderVitalsErr() {
+      const box = document.getElementById('vitalsErr'); if (!box) return;
+      const msgs = Object.keys(vBad).filter(k => vBad[k]).map(k => vBad[k]);
+      if (!msgs.length) { box.style.display = 'none'; box.innerHTML = ''; return; }
+      box.style.display = 'block';
+      box.innerHTML = msgs.map(m => '<div><i class="fa fa-circle-exclamation"></i>' + esc(m) + '</div>').join('');
+    }
+    function vitalsValid() { // revalide toutes les constantes (au moment de l'enregistrement)
+      ['temp', 'pouls', 'spo2', 'poids'].forEach(k => { const el = document.getElementById(V_EL[k]); if (el) vCheck(el, k); });
+      const ta = document.getElementById('vTa'); if (ta) vTaCheck(ta);
+      return !Object.keys(vBad).some(k => vBad[k]);
     }
     // Compteur de caractères (discret) : gris, passe en ambre à l'approche de la limite (90 %).
     const NOTE_MAX = 3000;
@@ -805,13 +854,18 @@
       c.textContent = n.toLocaleString('fr-FR') + ' / ' + NOTE_MAX.toLocaleString('fr-FR');
       c.classList.toggle('near', n >= NOTE_MAX * 0.9);
     }
-    // Tension « systolique/diastolique » : borne chaque composante (syst. ≤ 300, diast. ≤ 200).
-    function vTaClamp(el) {
-      const parts = (el.value || '').replace(/[^0-9/]/g, '').split('/');
-      const cl = (p, hi) => { if (!p) return ''; const n = parseInt(p, 10); return isNaN(n) ? '' : String(Math.min(n, hi)); };
-      const sys = cl(parts[0], 300), hasDia = parts.length > 1, dia = hasDia ? cl(parts[1], 200) : '';
-      const out = hasDia ? (sys + '/' + dia) : sys;
-      el.value = out; C.vitals.ta = out; renderPreview();
+    // Tension « systolique/diastolique » : validation explicite (format 120/80, syst. ≤ 300, diast. ≤ 200) — pas d'auto-correction.
+    function vTaCheck(el) {
+      const raw = (el.value || '').replace(/[^0-9/]/g, '');
+      el.value = raw; C.vitals.ta = raw;
+      let bad = '';
+      if (raw !== '') {
+        const parts = raw.split('/'), sys = parseInt(parts[0], 10), dia = (parts.length > 1 && parts[1] !== '') ? parseInt(parts[1], 10) : NaN;
+        const ok = parts.length === 2 && !isNaN(sys) && !isNaN(dia) && sys >= 1 && sys <= 300 && dia >= 1 && dia <= 200;
+        if (!ok) bad = T('docc.v_ta_bad');
+      }
+      vBad.ta = bad; el.classList.toggle('is-invalid', !!bad);
+      renderVitalsErr(); renderPreview();
     }
     // Référentiel de médicaments = Vidal. Structure : { vidalId (id produit Vidal), dci (DCI/INN), atc (code ATC OMS), dose, form }.
     // Sous-ensemble « plus prescrits » (démo). ⚠️ vidalId ILLUSTRATIFS ; codes ATC indicatifs — à valider contre la base Vidal licenciée (couverture locale BF/RDC à confirmer).

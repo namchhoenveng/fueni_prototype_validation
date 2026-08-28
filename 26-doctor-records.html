@@ -143,6 +143,9 @@
     .doc-st.no { background:#fee2e2; color:#b91c1c; }
     .doc-st.off { background:#f1f5f9; color:#64748b; }
     .doc-actions { display:flex; gap:8px; margin-top:9px; }
+    .manual-share-note { background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:11px 13px; font-size:0.83rem; color:#475569; line-height:1.45; margin-bottom:14px; }
+    .manual-share-note .msn-head { display:flex; align-items:flex-start; gap:8px; }
+    .manual-share-note .fa-circle-info { color:#155e75; margin-top:2px; }
     .doc-btn { border:1.5px solid #e2e8f0; background:#fff; border-radius:8px; font-size:0.78rem; font-weight:600; padding:5px 12px; cursor:pointer; }
     .doc-btn.ok { color:#15803d; } .doc-btn.ok:hover { background:#dcfce7; border-color:#15803d; }
     .doc-btn.no { color:#b91c1c; } .doc-btn.no:hover { background:#fee2e2; border-color:#b91c1c; }
@@ -436,12 +439,15 @@
     function docChip(d, i, actionable) {
       // Document produit par la consultation (a un n° de référence) : le partage au patient peut être décidé a posteriori (sens unique).
       const isDocStore = d.origin === 'doctor' && !!d.ref;
+      // Patient sans compte FUENI (fiche manuelle) : pas de partage possible → statut « Au dossier », bouton de partage masqué (invitation gérée par une bannière en tête de section).
+      const pManual = !!(byId[sel] && byId[sel].manual);
       const stTag = isDocStore
-        ? (d.shared ? '<span class="doc-st ok">' + T('docmr.doc_shared') + '</span>' : '<span class="doc-st off">' + T('docmr.doc_not_shared') + '</span>')
+        ? (pManual ? '<span class="doc-st off">' + T('docmr.doc_record_only') + '</span>'
+          : (d.shared ? '<span class="doc-st ok">' + T('docmr.doc_shared') + '</span>' : '<span class="doc-st off">' + T('docmr.doc_not_shared') + '</span>'))
         : (d.origin === 'doctor') ? '' // doc de démo émis par le praticien : au dossier (provenance suffit)
         : (d.st === 'refused') ? '<span class="doc-st no">' + T('docpat.doc_st_refused') + '</span>'
         : (d.st === 'pending') ? '' : '<span class="doc-st ok">' + T('docpat.doc_st_validated') + '</span>';
-      const shareRow = (isDocStore && !d.shared)
+      const shareRow = (isDocStore && !d.shared && !pManual)
         ? '<div class="doc-actions"><button class="doc-btn share" onclick="shareStoreDoc(\'' + esc(d.ref) + '\',\'' + esc(d.kind) + '\')"><i class="fa fa-share-nodes me-1"></i>' + T('docmr.doc_share_now') + '</button></div>'
         : '';
       const actions = !actionable ? ''
@@ -481,7 +487,10 @@
       all.forEach((d, i) => { const s = d.st === 'pending' ? 'pending' : (d.st === 'refused' ? 'refused' : 'validated'); g[s].push({ d, i }); });
       // Tri par date décroissante (le plus récent d'abord) dans chaque groupe ; l'index d'origine (o.i) est conservé pour les actions.
       Object.keys(g).forEach(k => g[k].sort((a, b) => (b.d.date || '').localeCompare(a.d.date || '')));
-      let h = '';
+      // Patient sans compte FUENI : bannière expliquant que les documents restent au dossier (+ invitation « bientôt »).
+      let h = p.manual
+        ? '<div class="manual-share-note"><div class="msn-head"><i class="fa fa-circle-info"></i><span>' + T('docmr.share_manual_note') + '</span></div></div>'
+        : '';
       if (g.pending.length) h += '<div class="doc-grp-h pending"><i class="fa fa-clock me-1"></i>' + T('docpat.doc_pending') + ' · ' + g.pending.length + '</div>' + g.pending.map(o => docChip(o.d, o.i, true)).join('');
       if (g.validated.length) h += '<div class="doc-grp-h">' + T('docpat.doc_validated') + '</div>' + g.validated.map(o => docChip(o.d, o.i, false)).join('');
       if (g.refused.length) h += '<div class="doc-grp-h">' + T('docpat.doc_refused') + '</div>' + g.refused.map(o => docChip(o.d, o.i, false)).join('');
@@ -881,7 +890,7 @@
         '<div class="rec-head"><div class="av">' + p.ini + '</div>' +
           '<div class="flex-grow-1"><div class="nm">' + esc(p.name) + '</div><div class="mt">' + (ageOf(p) !== '' ? ageOf(p) + ' ' + T('docpat.years') + ' · ' : '') + T('docpat.sex_' + p.sex) + (p.phone ? ' · ' + esc(p.phone) : '') + '</div>' +
             '<div class="mt" style="font-size:0.72rem;color:#94a3b8;">' + T('docmr.dossier_no') + ' ' + dossierNo(p) + '</div></div>' +
-          '<a class="rec-cta" href="25-doctor-consultation.html?patient=' + encodeURIComponent(p.name) + '&dossier=' + encodeURIComponent(dossierNo(p)) + '&from=records"><i class="fa fa-notes-medical"></i>' + T('docmr.doc_action') + '</a>' +
+          '<a class="rec-cta" href="25-doctor-consultation.html?patient=' + encodeURIComponent(p.name) + '&dossier=' + encodeURIComponent(dossierNo(p)) + (p.manual ? '&manual=1' : '') + '&from=records"><i class="fa fa-notes-medical"></i>' + T('docmr.doc_action') + '</a>' +
         '</div>' +
         '<div class="rec-body">' + banner +
           '<div class="rec-tabs">' +

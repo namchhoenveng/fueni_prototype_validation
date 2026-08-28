@@ -72,6 +72,7 @@
     .st-private { background: #eef3f7; color: #5d6d7e; }
     .st-pending { background: #fef9e7; color: #b9770e; }
     .st-validated { background: #e8f8f5; color: #117a65; }
+    .st-shared { background: #e8f8f5; color: #0e6f5c; }
     .st-refused { background: #fdedec; color: #c0392b; }
     .st-new { background: #fdebd0; color: #ca6f1e; }
     .st-seen { background: #f0f4f8; color: #5d6d7e; }
@@ -356,14 +357,13 @@
         </div>
         <div class="modal-body">
           <div class="mb-3">
+            <div id="shareCurrentNote" class="small mb-2 d-none" style="color:#0e6f5c;"><i class="fa fa-user-check me-1"></i><span data-i18n="pdoc.share_current">Déjà partagé avec :</span> <span id="shareCurrentList" class="fw-semibold"></span></div>
             <label class="form-label small fw-semibold" data-i18n="pdoc.share_doctor">Praticien *</label>
             <select class="form-select form-select-sm" id="shareDoctor">
               <option value="" data-i18n="pdoc.share_doctor_ph">Choisir un praticien…</option>
-              <option>Dr Mamadou Sow — Cardiologue</option>
-              <option>Dr Fatou Ndiaye — Pédiatre</option>
-              <option>Dr Cheikh Diallo — Médecine générale</option>
             </select>
             <div class="small text-muted mt-1"><i class="fa fa-circle-info me-1"></i><span data-i18n="pdoc.share_linked_note">Seuls les médecins consultés sur FUENI apparaissent ici.</span></div>
+            <div id="shareAlreadyNote" class="small mt-1 d-none" style="color:#9a5b00;"><i class="fa fa-circle-info me-1"></i><span data-i18n="pdoc.share_already">Déjà partagé avec tous vos praticiens disponibles.</span></div>
           </div>
           <div class="mb-3">
             <label class="form-label small fw-semibold"><span data-i18n="pdoc.share_note">Message</span> <span class="text-muted fw-normal" data-i18n="pdoc.up_note_opt">(optionnel)</span></label>
@@ -371,10 +371,11 @@
           </div>
           <div class="small text-muted"><i class="fa fa-circle-info me-1" style="color:#16a085;"></i><span data-i18n="pdoc.share_info">Le praticien devra valider le document avant son intégration à votre dossier.</span></div>
           <div id="shareProvNote" class="small mt-2 d-none" style="color:#0e6f5c;"><i class="fa fa-user-doctor me-1"></i><span data-i18n="pdoc.share_prov_note">Ce document a été établi par un médecin. Son auteur d'origine sera indiqué au destinataire (« Auteur : Dr X · Partagé par le patient »).</span></div>
+          <div class="small mt-2 p-2" style="background:#fff8f1;border:1px solid #faddc0;border-radius:8px;color:#9a3412;line-height:1.4;"><i class="fa fa-triangle-exclamation me-1"></i><span data-i18n="pdoc.share_permanent">Partage définitif : non retirable depuis l'application (retrait éventuel via le support).</span></div>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-link text-muted small" data-bs-dismiss="modal" data-i18n="pdoc.up_cancel">Annuler</button>
-          <button type="button" class="btn btn-patient" onclick="confirmShare()" data-bs-dismiss="modal"><i class="fa fa-share-nodes me-1"></i><span data-i18n="pdoc.share_submit">Partager</span></button>
+          <button type="button" class="btn btn-patient" id="shareSubmitBtn" onclick="confirmShare()"><i class="fa fa-share-nodes me-1"></i><span data-i18n="pdoc.share_submit">Partager</span></button>
         </div>
       </div>
     </div>
@@ -481,36 +482,64 @@
     injectSharedFromDoctor();
     applySort(); updateSortIndicators();
 
-    // Partage patient → praticien (démo)
+    // Partage patient → praticien (démo). Un document peut être partagé à PLUSIEURS praticiens (additif).
+    // Le partage n'est PAS révocable dans l'application (cf. avertissement du modal ; retrait via support).
+    const SHARE_DOCTORS = ['Dr Mamadou Sow — Cardiologue', 'Dr Fatou Ndiaye — Pédiatre', 'Dr Cheikh Diallo — Médecine générale'];
+    function shortDoc(label) { return label.split('—')[0].trim(); } // « Dr Mamadou Sow — Cardiologue » → « Dr Mamadou Sow »
+    function getRecips(tr) { try { return JSON.parse(tr.dataset.recipients || '[]'); } catch (e) { return []; } }
+    function setRecips(tr, arr) { tr.dataset.recipients = JSON.stringify(arr); renderShareState(tr); }
+    // Reflète l'état de partage : bouton « partagé » + (docs personnels) pastille « Partagé · noms ».
+    function renderShareState(tr) {
+      const recips = getRecips(tr);
+      const sb = tr.querySelector('.btn-share');
+      if (sb) sb.classList.toggle('shared', recips.length > 0);
+      if (tr.dataset.origin === 'self') { // les docs reçus d'un médecin gardent leur pastille de réception (Nouveau/Vu)
+        const pill = tr.querySelector('.status-pill');
+        if (pill) {
+          pill.removeAttribute('data-i18n');
+          if (!recips.length) { pill.className = 'status-pill st-private'; pill.textContent = t('pdoc.st_private', 'Privé'); pill.removeAttribute('title'); }
+          else {
+            pill.className = 'status-pill st-shared';
+            pill.title = recips.join(', ');
+            const shown = recips.length === 1 ? recips[0] : (recips[0] + ' +' + (recips.length - 1));
+            pill.textContent = t('pdoc.st_shared', 'Partagé') + ' · ' + shown;
+          }
+          tr.dataset.status = recips.length ? 'partage' : 'prive';
+        }
+      }
+    }
+
     let shareRow = null;
     function shareDoc(btn) {
       shareRow = btn.closest('tr');
+      const recips = getRecips(shareRow);
       // Repartage d'un document reçu d'un médecin (origine fueni) : l'auteur d'origine est préservé (DP7).
       const prov = document.getElementById('shareProvNote');
       if (prov) prov.classList.toggle('d-none', shareRow.dataset.origin !== 'fueni');
+      // Déjà partagé avec…
+      const curNote = document.getElementById('shareCurrentNote');
+      curNote.classList.toggle('d-none', recips.length === 0);
+      document.getElementById('shareCurrentList').textContent = recips.join(', ');
+      // Le sélecteur ne propose que les praticiens PAS encore destinataires.
+      const avail = SHARE_DOCTORS.filter(d => recips.indexOf(shortDoc(d)) === -1);
+      const sel = document.getElementById('shareDoctor');
+      sel.innerHTML = '<option value="">' + t('pdoc.share_doctor_ph', 'Choisir un praticien…') + '</option>' + avail.map(d => '<option>' + d + '</option>').join('');
+      const none = avail.length === 0;
+      sel.disabled = none;
+      document.getElementById('shareSubmitBtn').disabled = none;
+      document.getElementById('shareAlreadyNote').classList.toggle('d-none', !none);
       new bootstrap.Modal(document.getElementById('shareModal')).show();
     }
     function confirmShare() {
       if (!shareRow) return;
-      // Le statut « En attente/Validé » du partage est PAR destinataire. Pour un document `fueni`,
-      // on ne touche pas au statut de réception (Nouveau/Vu) — seul le bouton passe en « partagé ».
-      if (shareRow.dataset.origin !== 'fueni') {
-        const pill = shareRow.querySelector('.status-pill');
-        if (pill) { pill.className = 'status-pill st-pending'; pill.removeAttribute('data-i18n'); pill.textContent = t('pdoc.st_pending', 'En attente de validation'); }
-        shareRow.dataset.status = 'pending';
-      }
-      const sb = shareRow.querySelector('.btn-share');
-      if (sb) { sb.classList.add('shared'); sb.setAttribute('onclick', 'revokeShare(this)'); sb.title = t('pdoc.act_revoke', 'Révoquer le partage'); }
+      const sel = document.getElementById('shareDoctor');
+      if (!sel.value) { sel.focus(); return; } // sélection requise → on garde le modal ouvert
+      const recips = getRecips(shareRow), name = shortDoc(sel.value);
+      if (recips.indexOf(name) === -1) recips.push(name);
+      setRecips(shareRow, recips);
+      const inst = bootstrap.Modal.getInstance(document.getElementById('shareModal'));
+      if (inst) inst.hide();
       shareRow = null;
-    }
-    function revokeShare(btn) {
-      const tr = btn.closest('tr');
-      if (tr.dataset.origin !== 'fueni') {
-        const pill = tr.querySelector('.status-pill');
-        if (pill) { pill.className = 'status-pill st-private'; pill.removeAttribute('data-i18n'); pill.textContent = t('pdoc.st_private', 'Privé'); }
-        tr.dataset.status = 'prive';
-      }
-      btn.classList.remove('shared'); btn.setAttribute('onclick', 'shareDoc(this)'); btn.title = t('pdoc.act_share', 'Partager');
     }
 
     function delDoc(btn) {
