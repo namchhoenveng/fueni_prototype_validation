@@ -310,6 +310,9 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script>
     const T = k => (window.NazI18n ? NazI18n.t(k) : k);
+    // Le DOCUMENT généré (compte-rendu, ordonnance…) est un artefact clinique/légal : sa langue = langue de soins
+    // du pays d'exercice (français pour les 9 pays MVP), PAS la langue d'interface du praticien. Libellés & date figés en FR.
+    const TDoc = k => (window.NazI18n ? NazI18n.t(k, 'fr') : k);
     const TODAY = '2026-07-10';
     const params = new URLSearchParams(location.search);
 
@@ -476,6 +479,8 @@
     }
 
     function fmtLong(s) { try { return new Date(s + 'T00:00:00').toLocaleDateString((window.NazI18n && NazI18n.getLang() === 'en') ? 'en-GB' : 'fr-FR', { day:'numeric', month:'long', year:'numeric' }); } catch (e) { return s; } }
+    // Date affichée SUR le document = toujours en français (cohérent avec la langue du document, §langue).
+    function fmtLongDoc(s) { try { return new Date(s + 'T00:00:00').toLocaleDateString('fr-FR', { day:'numeric', month:'long', year:'numeric' }); } catch (e) { return s; } }
     function ini(n) { return (n || 'P').split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase(); }
     const esc = s => (s == null ? '' : String(s)).replace(/[&<>]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;' }[c]));
 
@@ -562,27 +567,27 @@
 
     function letterhead() {
       return '<div class="doc-head"><div><div class="doc-dr">' + DR.title + ' ' + esc(DR.name) + '</div>' +
-        '<small>' + esc(DR.spec) + ' · ' + T('docc.ordre_no') + ' ' + esc(DR.ordre) + '</small>' +
+        '<small>' + esc(DR.spec) + ' · ' + TDoc('docc.ordre_no') + ' ' + esc(DR.ordre) + '</small>' +
         '<small>' + esc(DR.ordreBody) + '</small>' +
         '<small><i class="fa fa-location-dot me-1"></i>' + esc(DR.address) + '</small>' +
         '<small><i class="fa fa-phone me-1"></i>' + esc(DR.phone) + '</small></div>' +
-        '<div class="doc-brand"><i class="fa fa-shield-halved"></i> ' + T('docc.verified') + '<br>' + fmtLong(CDATE) + '</div></div>';
+        '<div class="doc-brand"><i class="fa fa-shield-halved"></i> ' + TDoc('docc.verified') + '<br>' + fmtLongDoc(CDATE) + '</div></div>';
     }
-    function ph(v) { return v && v.trim() ? esc(v) : '<span class="muted-ph">' + T('docc.empty') + '</span>'; }
+    function ph(v) { return v && v.trim() ? esc(v) : '<span class="muted-ph">' + TDoc('docc.empty') + '</span>'; }
 
     function renderPreview() {
       const box = document.getElementById('docPreview');
       // Identité patient : nom · âge · sexe · n° dossier (identification standard sur un document médical).
       const idBits = [esc(patient)];
-      if (patAge !== '') idBits.push(patAge + ' ' + T('docpat.years'));
-      if (patRec.sex) idBits.push(T('docpat.sex_' + (patRec.sex === 'M' ? 'male' : 'female')));
+      if (patAge !== '') idBits.push(patAge + ' ' + TDoc('docpat.years'));
+      if (patRec.sex) idBits.push(TDoc('docpat.sex_' + (patRec.sex === 'M' ? 'male' : 'female')));
       if (patDossier) idBits.push(esc(patDossier));
-      const meta = '<div class="doc-meta"><div><strong>' + T('docc.patient') + '</strong> ' + idBits.join(' · ') +
-        '<br><span style="font-size:0.8em;color:#94a3b8;">' + T('docc.doc_ref') + ' ' + esc(CONS_REF) + '</span>' +
-        '</div><div>' + fmtLong(CDATE) + (linkedRdv && rdvTime ? ' · ' + rdvTime : '') + '</div></div>';
+      const meta = '<div class="doc-meta"><div><strong>' + TDoc('docc.patient') + '</strong> ' + idBits.join(' · ') +
+        '<br><span style="font-size:0.8em;color:#94a3b8;">' + TDoc('docc.doc_ref') + ' ' + esc(CONS_REF) + '</span>' +
+        '</div><div>' + fmtLongDoc(CDATE) + (linkedRdv && rdvTime ? ' · ' + rdvTime : '') + '</div></div>';
       // Les allergies ne figurent PAS sur les documents générés : garde-fou réservé à l'écran de saisie (bandeau renderAllergy).
       // Confidentialité / minimisation — l'ordonnance circule (pharmacie, tiers) ; le rappel allergies reste côté praticien.
-      const sign = '<div class="doc-sign"><div class="s-name">' + DR.title + ' ' + esc(DR.name) + '</div><div class="s-note">' + T('docc.generated') + '</div></div>';
+      const sign = '<div class="doc-sign"><div class="s-name">' + DR.title + ' ' + esc(DR.name) + '</div><div class="s-note">' + TDoc('docc.generated') + '</div></div>';
       const buildDoc = (title, content) => letterhead() + '<div class="doc-title">' + title + '</div>' + meta + content + sign;
       updateCounts();
       if (tab === 'note') {
@@ -595,32 +600,32 @@
         if (v.poids) vParts.push('Poids ' + esc(v.poids) + ' kg');
         // Sections omises si vides (document propre — cohérent avec les constantes) ; les champs restent visibles dans le formulaire de gauche.
         const secIf = (label, val) => val ? '<div class="doc-sec"><div class="lbl">' + label + '</div><div class="val">' + val + '</div></div>' : '';
-        const vitalsSec = vParts.length ? '<div class="doc-sec"><div class="lbl">' + T('docc.vitals') + '</div><div class="val">' + vParts.join(' · ') + '</div></div>' : '';
+        const vitalsSec = vParts.length ? '<div class="doc-sec"><div class="lbl">' + TDoc('docc.vitals') + '</div><div class="val">' + vParts.join(' · ') + '</div></div>' : '';
         const diagV = C.note.diags.length ? C.note.diags.map(d => (d.code ? '<strong style="color:#155e75">' + d.code + '</strong> — ' : '') + esc(d.label)).join('<br>') : '';
-        const secs = secIf(T('docc.n_motif'), (C.note.motif || '').trim() ? esc(C.note.motif) : '') +
-          secIf(T('docc.n_exam'), (C.note.exam || '').trim() ? esc(C.note.exam) : '') +
+        const secs = secIf(TDoc('docc.n_motif'), (C.note.motif || '').trim() ? esc(C.note.motif) : '') +
+          secIf(TDoc('docc.n_exam'), (C.note.exam || '').trim() ? esc(C.note.exam) : '') +
           vitalsSec +
-          secIf(T('docc.n_diag'), diagV) +
-          secIf(T('docc.n_cat'), (C.note.cat || '').trim() ? esc(C.note.cat) : '');
+          secIf(TDoc('docc.n_diag'), diagV) +
+          secIf(TDoc('docc.n_cat'), (C.note.cat || '').trim() ? esc(C.note.cat) : '');
         box.innerHTML = letterhead() +
-          '<div class="doc-title">' + T('docc.doc_note') + '</div>' + meta +
-          (secs || '<div class="doc-sec"><div class="val muted-ph">' + T('docc.note_empty') + '</div></div>') + sign;
+          '<div class="doc-title">' + TDoc('docc.doc_note') + '</div>' + meta +
+          (secs || '<div class="doc-sec"><div class="val muted-ph">' + TDoc('docc.note_empty') + '</div></div>') + sign;
       } else {
         // Un document distinct par type de prescription renseigné
         const docs = [];
         const meds = C.rx.filter(r => r.med.trim());
-        if (meds.length) docs.push(buildDoc(T('docc.doc_rx'), meds.map(r =>
+        if (meds.length) docs.push(buildDoc(TDoc('docc.doc_rx'), meds.map(r =>
           '<div class="doc-rx-line"><div class="m">' + esc(r.med) + '</div><div class="s">' + [esc(r.poso), esc(r.duree)].filter(Boolean).join(' · ') + '</div></div>'
         ).join('')));
         const labo = C.labo.filter(r => r.name.trim());
-        if (labo.length) docs.push(buildDoc(T('docc.doc_labo'), '<ul class="doc-list">' + labo.map(r => '<li>' + esc(r.name) + '</li>').join('') + '</ul>'));
+        if (labo.length) docs.push(buildDoc(TDoc('docc.doc_labo'), '<ul class="doc-list">' + labo.map(r => '<li>' + esc(r.name) + '</li>').join('') + '</ul>'));
         const img = C.img.filter(r => r.name.trim());
-        if (img.length) docs.push(buildDoc(T('docc.doc_img'), '<ul class="doc-list">' + img.map(r => '<li>' + esc(r.name) + (r.region && r.region.trim() ? ' — ' + esc(r.region) : '') + '</li>').join('') + '</ul>'));
+        if (img.length) docs.push(buildDoc(TDoc('docc.doc_img'), '<ul class="doc-list">' + img.map(r => '<li>' + esc(r.name) + (r.region && r.region.trim() ? ' — ' + esc(r.region) : '') + '</li>').join('') + '</ul>'));
         const ref = C.ref.filter(r => r.spec);
-        if (ref.length) docs.push(buildDoc(T('docc.doc_ref'), ref.map(r =>
+        if (ref.length) docs.push(buildDoc(TDoc('docc.doc_ref'), ref.map(r =>
           '<div class="doc-sec"><div class="lbl">' + esc(r.spec) + '</div><div class="val">' + ph(r.reason) + '</div></div>'
         ).join('')));
-        box.innerHTML = docs.length ? docs.join('<div class="doc-sep"></div>') : '<div class="muted-ph">' + T('docc.presc_empty') + '</div>';
+        box.innerHTML = docs.length ? docs.join('<div class="doc-sep"></div>') : '<div class="muted-ph">' + TDoc('docc.presc_empty') + '</div>';
       }
       saveDraft(); // auto-sauvegarde du brouillon à chaque modification
     }
@@ -660,11 +665,12 @@
     // TOUTE la consultation (compte-rendu + prescriptions renseignées) — l'enregistrement ne dépend pas de l'onglet actif.
     function allDocEntries() {
       const base = { patient: patient, dossier: patDossier, date: CDATE, ref: CONS_REF, by: (DR.title + ' ' + DR.name).trim() };
-      const out = [Object.assign({}, base, { n: T('docc.doc_note'), kind: 'cr' })];
-      if (C.rx.filter(r => r.med.trim()).length) out.push(Object.assign({}, base, { n: T('docc.doc_rx'), kind: 'rx' }));
-      if (C.labo.filter(r => r.name.trim()).length) out.push(Object.assign({}, base, { n: T('docc.doc_labo'), kind: 'lab' }));
-      if (C.img.filter(r => r.name.trim()).length) out.push(Object.assign({}, base, { n: T('docc.doc_img'), kind: 'img' }));
-      if (C.ref.filter(r => r.spec).length) out.push(Object.assign({}, base, { n: T('docc.doc_ref'), kind: 'ref' }));
+      // Le NOM du document fait partie de son identité (affiché au dossier et côté patient) → figé en français, comme le document.
+      const out = [Object.assign({}, base, { n: TDoc('docc.doc_note'), kind: 'cr' })];
+      if (C.rx.filter(r => r.med.trim()).length) out.push(Object.assign({}, base, { n: TDoc('docc.doc_rx'), kind: 'rx' }));
+      if (C.labo.filter(r => r.name.trim()).length) out.push(Object.assign({}, base, { n: TDoc('docc.doc_labo'), kind: 'lab' }));
+      if (C.img.filter(r => r.name.trim()).length) out.push(Object.assign({}, base, { n: TDoc('docc.doc_img'), kind: 'img' }));
+      if (C.ref.filter(r => r.spec).length) out.push(Object.assign({}, base, { n: TDoc('docc.doc_ref'), kind: 'ref' }));
       return out;
     }
     function consultEntry() {

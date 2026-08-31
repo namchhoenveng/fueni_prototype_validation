@@ -25,8 +25,10 @@
     updateToggleUI();
     document.dispatchEvent(new CustomEvent('fueni:langchange', { detail: { lang } }));
   }
-  function t(key) {
-    const lang = getLang();
+  function t(key, forceLang) {
+    // forceLang (optionnel) : renvoie la valeur dans une langue imposée (ex. 'fr' pour un document
+    // dont la langue ne doit PAS suivre l'interface). Sans forceLang → langue d'interface courante.
+    const lang = (forceLang === 'fr' || forceLang === 'en') ? forceLang : getLang();
     const dict = I18N[lang] || {};
     return (dict[key] != null) ? dict[key] : (I18N.fr && I18N.fr[key]) || '';
   }
