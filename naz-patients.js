@@ -43,6 +43,18 @@
       docs: [{ n: 'Compte-rendu de consultation', t: 'doc', date: '2026-07-06', origin: 'doctor' }, { n: 'Ordonnance', t: 'rx', date: '2026-07-06', origin: 'doctor' }]
     },
     {
+      // Prospect — patient ayant réservé sa PREMIÈRE consultation, sans dossier tant qu'elle n'est pas réalisée.
+      // prospect:true ⇒ absent de « Mes patients » (26) jusqu'à la 1re consultation finalisée ; il ne vit que dans le planning (24).
+      // Règle : un patient absent (no-show) à sa 1re venue ne crée PAS de dossier ; la fiche naît de la 1re consultation documentée.
+      // Aucune donnée médicale avant la 1re consultation : l'interrogatoire (allergies, groupe, antécédents) est saisi
+      // par le praticien au début de la consultation (écran 25) — la réservation ne porte que l'identité et le motif.
+      id: 'p14', ini: 'AC', name: 'Aïssatou Camara', sex: 'F', age: 27, prospect: true,
+      phone: '+221 77 810 55 24', email: 'a.camara@exemple.sn',
+      emerg: { name: 'Oumou Camara', rel: 'Sœur', phone: '+221 77 810 22 08' },
+      last: '', lastMotif: '', next: '', nextMotif: '',
+      blood: '', allergies: [], ant: [], family: [], consults: [], docs: []
+    },
+    {
       id: 'p2', ini: 'OS', name: 'Ousmane Sow', sex: 'M', age: 52,
       phone: '+221 76 908 11 22', email: 'o.sow@exemple.sn',
       last: '2026-06-28', lastMotif: 'Suivi hypertension', next: '2026-07-18', nextMotif: 'Suivi hypertension',
@@ -122,4 +134,27 @@
       docs: [{ n: 'Ordonnance', t: 'rx', date: '2026-04-05', origin: 'doctor' }]
     }
   ];
+
+  /* --- Création du dossier au 1er acte -------------------------------------
+   * Un « prospect » (patient sans dossier, première consultation réservée) ne
+   * devient un patient de la file qu'une fois sa PREMIÈRE consultation finalisée
+   * (écran 25). Un no-show ne crée jamais de dossier. Les identifiants promus
+   * sont mémorisés dans localStorage (fueni_patients_created) — en V2, c'est
+   * l'API qui matérialise le dossier à la finalisation du 1er compte-rendu.
+   */
+  window.NazCreatedIds = function () {
+    try { return JSON.parse(localStorage.getItem('fueni_patients_created') || '[]'); } catch (e) { return []; }
+  };
+  window.NazMarkCreated = function (idOrName) {
+    var p = window.NazPatients.find(function (x) { return x.id === idOrName || x.name === idOrName; });
+    var id = p ? p.id : idOrName;
+    var s = window.NazCreatedIds();
+    if (s.indexOf(id) === -1) { s.push(id); try { localStorage.setItem('fueni_patients_created', JSON.stringify(s)); } catch (e) {} }
+    return id;
+  };
+  // Vue « file active » : tous les patients sauf les prospects non encore promus.
+  window.NazVisiblePatients = function () {
+    var created = window.NazCreatedIds();
+    return window.NazPatients.filter(function (p) { return !p.prospect || created.indexOf(p.id) !== -1; });
+  };
 })();

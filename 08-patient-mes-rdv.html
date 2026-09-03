@@ -68,7 +68,11 @@
     .rdv-side { display: flex; flex-direction: column; gap: 12px; align-items: flex-end; justify-content: center; }
     .rdv-status { padding: 4px 12px; border-radius: 20px; font-size: 0.76rem; font-weight: 700; white-space: nowrap; }
     .st-confirmed { background: #e8f8f5; color: #117a65; }
+    /* Statuts côté patient : le temps classe (onglets), l'action du praticien qualifie (pastille).
+       Passé (neutre) = RDV passé non encore clos par le praticien ; Terminé = visite attestée ; Non honoré = absence. */
+    .st-done { background: #e8f8f5; color: #117a65; }
     .st-completed { background: #eef2f6; color: #5d6d7e; }
+    .st-noshow { background: #fef3c7; color: #92400e; }
     .st-cancelled { background: #fdedec; color: #c0392b; }
     .rdv-actions { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
     .btn-act { background: #fff; border: 1px solid #e2e8f0; color: #334155; padding: 6px 12px; border-radius: 8px; font-size: 0.78rem; cursor: pointer; text-decoration: none; white-space: nowrap; }
@@ -201,13 +205,24 @@
     const tzOffOf = a => (window.NazGeo && a.country) ? NazGeo.tzOf(a.country, a.region).off : null;
 
     // Rendez-vous de démonstration (fusionnés avec les réservations réelles du parcours 27).
+    // Dates RELATIVES à aujourd'hui (la démo ne vieillit pas) : Passés = hier « Passé » (non clos), puis « Terminé », puis « Non honoré ».
+    const isoRel = n => { const p2 = x => String(x).padStart(2, '0'); const d = new Date(Date.now() + n * 24 * 3600000); return d.getFullYear() + '-' + p2(d.getMonth() + 1) + '-' + p2(d.getDate()); };
     const DEMO = [
-      { id:'demo_u1', doctor:'Dr Mamadou Sow', spec:'Cardiologie', locationName:'Cabinet Médical Plateau', locationAddr:'Av. Senghor, Dakar', country:'Sénégal', region:'Dakar', phone:'+221 33 821 45 67', motif:'Consultation générale', duration:30, price:10000, currency:'XOF', dateISO:'2026-08-04', time:'15:30', reason:'Depuis environ trois semaines, je ressens des palpitations, surtout en fin de journée et parfois la nuit, avec un léger essoufflement lorsque je monte les escaliers.\nMon médecin traitant a évoqué une possible arythmie et m’a conseillé un avis cardiologique. Je prends de l’amlodipine 5 mg pour l’hypertension depuis deux ans. Antécédent familial : mon père a fait un infarctus à 58 ans. Je souhaiterais faire le point et savoir si des examens complémentaires (Holter, échographie) sont utiles.', status:'CONFIRMED' },
-      { id:'demo_u2', doctor:'Dr Fatou Ndiaye', spec:'Médecine générale', locationName:'Clinique Pasteur', locationAddr:'Médina, Dakar', country:'Sénégal', region:'Dakar', phone:'+221 33 889 12 34', motif:'Suivi / renouvellement', duration:20, price:6000, currency:'XOF', dateISO:'2026-08-11', time:'10:00', reason:'', status:'CONFIRMED' },
-      { id:'demo_p1', doctor:'Dr Cheikh Diop', spec:'Médecine générale', locationName:'Polyclinique Hâtim', locationAddr:'Ouakam, Dakar', country:'Sénégal', region:'Dakar', motif:'Suivi', duration:30, price:8000, currency:'XOF', dateISO:'2026-07-20', time:'09:30', reason:'', status:'COMPLETED' },
-      { id:'demo_p2', doctor:'Dr Aminata Mbaye', spec:'Dermatologie', locationName:'Cabinet Le Patio', locationAddr:'Sacré-Cœur, Dakar', country:'Sénégal', region:'Dakar', motif:'Consultation', duration:20, price:12000, currency:'XOF', dateISO:'2026-07-06', time:'14:00', reason:'', status:'COMPLETED' },
-      { id:'demo_c1', doctor:'Dr Ousmane Ba', spec:'Ophtalmologie', locationName:'Centre Vision', locationAddr:'Plateau, Dakar', country:'Sénégal', region:'Dakar', motif:'Bilan visuel', duration:30, price:15000, currency:'XOF', dateISO:'2026-07-27', time:'11:00', reason:'', status:'CANCELLED' }
+      { id:'demo_u1', doctor:'Dr Mamadou Sow', spec:'Cardiologie', locationName:'Cabinet Médical Plateau', locationAddr:'Av. Senghor, Dakar', country:'Sénégal', region:'Dakar', phone:'+221 33 821 45 67', motif:'Consultation générale', duration:30, price:10000, currency:'XOF', dateISO:isoRel(5), time:'15:30', reason:'Depuis environ trois semaines, je ressens des palpitations, surtout en fin de journée et parfois la nuit, avec un léger essoufflement lorsque je monte les escaliers.\nMon médecin traitant a évoqué une possible arythmie et m’a conseillé un avis cardiologique. Je prends de l’amlodipine 5 mg pour l’hypertension depuis deux ans. Antécédent familial : mon père a fait un infarctus à 58 ans. Je souhaiterais faire le point et savoir si des examens complémentaires (Holter, échographie) sont utiles.', status:'CONFIRMED' },
+      { id:'demo_u2', doctor:'Dr Fatou Ndiaye', spec:'Médecine générale', locationName:'Clinique Pasteur', locationAddr:'Médina, Dakar', country:'Sénégal', region:'Dakar', phone:'+221 33 889 12 34', motif:'Suivi / renouvellement', duration:20, price:6000, currency:'XOF', dateISO:isoRel(12), time:'10:00', reason:'', status:'CONFIRMED' },
+      { id:'demo_p1', doctor:'Dr Cheikh Diop', spec:'Médecine générale', locationName:'Polyclinique Hâtim', locationAddr:'Ouakam, Dakar', country:'Sénégal', region:'Dakar', motif:'Suivi', duration:30, price:8000, currency:'XOF', dateISO:isoRel(-3), time:'09:30', reason:'', status:'COMPLETED' },
+      { id:'demo_p2', doctor:'Dr Aminata Mbaye', spec:'Dermatologie', locationName:'Cabinet Le Patio', locationAddr:'Sacré-Cœur, Dakar', country:'Sénégal', region:'Dakar', motif:'Consultation', duration:20, price:12000, currency:'XOF', dateISO:isoRel(-12), time:'14:00', reason:'', status:'COMPLETED' },
+      { id:'demo_c1', doctor:'Dr Ousmane Ba', spec:'Ophtalmologie', locationName:'Centre Vision', locationAddr:'Plateau, Dakar', country:'Sénégal', region:'Dakar', motif:'Bilan visuel', duration:30, price:15000, currency:'XOF', dateISO:isoRel(-8), time:'11:00', reason:'', status:'CANCELLED', cancelBy:'doctor' },
+      // Absence marquée par le praticien (« Patient absent », écran 24) → côté patient : « Non honoré ».
+      { id:'demo_p3', doctor:'Dr Awa Sène', spec:'Médecine générale', locationName:'Cabinet Liberté 6', locationAddr:'Liberté 6, Dakar', country:'Sénégal', region:'Dakar', motif:'Consultation générale', duration:30, price:8000, currency:'XOF', dateISO:isoRel(-6), time:'16:00', reason:'', status:'NOSHOW' }
     ];
+
+    // RDV d'hier encore « confirmé » (le praticien ne l'a pas clos) → pastille neutre « Passé », jamais « Terminé » d'office.
+    function pastPendingDemo() {
+      const p2 = n => String(n).padStart(2, '0');
+      const d = new Date(Date.now() - 24 * 3600000);
+      return { id: 'demo_past_pending', doctor: 'Dr Aboubacar Diallo', spec: 'Cardiologie', locationName: 'Cabinet Plateau', locationAddr: '12, rue Carnot, Dakar, Dakar, Sénégal', country: 'Sénégal', region: 'Dakar', phone: '+221 33 800 11 22', motif: 'Suivi cardio', duration: 30, price: 8000, currency: 'XOF', dateISO: d.getFullYear() + '-' + p2(d.getMonth() + 1) + '-' + p2(d.getDate()), time: '11:00', reason: '', status: 'CONFIRMED' };
+    }
 
     // RDV de test daté dynamiquement à ~75 min → toujours SOUS le délai de modification (démo du verrouillage report/annulation).
     function soonDemo() {
@@ -248,6 +263,7 @@
       const demo = DEMO.filter(a => !seen.has(a.id)).map(a => Object.assign({}, a));
       APPTS = storedMarked.concat(demo);
       if (!seen.has('demo_soon')) APPTS.push(soonDemo()); // RDV imminent pour tester le délai de modification
+      if (!seen.has('demo_past_pending')) APPTS.push(pastPendingDemo()); // RDV d'hier non clos → pastille « Passé »
       APPTS.forEach(a => { backfillDoc(a); backfillTz(a); });
     }
     function persistStored() {
@@ -276,10 +292,15 @@
       document.getElementById('cCancelled').textContent = c.cancelled;
     }
 
-    function statusPill(bucket) {
+    // Le temps classe le RDV (onglet), l'action du praticien le qualifie (pastille) : un RDV passé encore « confirmé »
+    // n'est PAS affiché « terminé » (personne ne l'a attesté) → pastille neutre « Passé » jusqu'à la clôture côté praticien.
+    function statusPill(a) {
+      const bucket = bucketOf(a);
       if (bucket === 'upcoming') return '<span class="rdv-status st-confirmed"><i class="fa fa-circle-check me-1"></i>' + T('mesrdv.status_confirmed') + '</span>';
       if (bucket === 'cancelled') return '<span class="rdv-status st-cancelled"><i class="fa fa-ban me-1"></i>' + T('mesrdv.status_cancelled') + '</span>';
-      return '<span class="rdv-status st-completed"><i class="fa fa-check me-1"></i>' + T('mesrdv.status_completed') + '</span>';
+      if (a.status === 'COMPLETED') return '<span class="rdv-status st-done"><i class="fa fa-check me-1"></i>' + T('mesrdv.status_completed') + '</span>';
+      if (a.status === 'NOSHOW') return '<span class="rdv-status st-noshow"><i class="fa fa-user-xmark me-1"></i>' + T('mesrdv.status_noshow') + '</span>';
+      return '<span class="rdv-status st-completed"><i class="fa fa-clock me-1"></i>' + T('mesrdv.status_past') + '</span>';
     }
     function dateBox(a, bucket) {
       const dt = dateOf(a);
@@ -315,7 +336,7 @@
             '<div class="meta"><i class="fa fa-location-dot"></i> ' + esc(a.locationName) + (a.locationAddr ? ' · ' + esc(a.locationAddr) : '') + '</div>' +
             '<div class="meta"><i class="fa fa-stethoscope"></i> ' + esc(a.motif || '') + '</div>' +
           '</div>' +
-          '<div class="rdv-side">' + statusPill(b) + '<span class="rdv-more">' + T('mesrdv.act_details') + ' <i class="fa fa-chevron-right"></i></span></div>' +
+          '<div class="rdv-side">' + statusPill(a) + '<span class="rdv-more">' + T('mesrdv.act_details') + ' <i class="fa fa-chevron-right"></i></span></div>' +
         '</div>';
       }).join('');
     }
@@ -341,6 +362,8 @@
       // Téléphone du lieu (facultatif) — cliquable pour joindre le secrétariat.
       const telHref = a.phone ? 'tel:' + String(a.phone).replace(/[^\d+]/g, '') : '';
       if (a.phone) rows.push([T('mesrdv.d_phone'), '<a href="' + telHref + '" style="color:#117a65;text-decoration:none;font-weight:600;">' + esc(a.phone) + '</a>']);
+      // Annulation : par qui — indispensable côté patient (et demain, la matrice de remboursement en dépend).
+      if (b === 'cancelled') rows.push([T('mesrdv.d_cancel'), T(a.cancelBy === 'doctor' ? 'mesrdv.cancel_by_doctor' : 'mesrdv.cancel_by_patient')]);
       let html = rows.map(r => '<div class="kv"><span class="k">' + r[0] + '</span><span class="v">' + r[1] + '</span></div>').join('');
       // Précisions patient : bloc pleine largeur (texte libre, jusqu'à 500 car., retours à la ligne préservés).
       if (a.reason && String(a.reason).trim()) {
@@ -395,6 +418,7 @@
     function cancelAppt(id) {
       const a = byId(id); if (!a) return;
       a.status = 'CANCELLED';
+      a.cancelBy = 'patient'; // attribution : « Annulé par vous » (le praticien verra « Annulé par le patient »)
       persistStored();
       if (detailOff) detailOff.hide();
       curTab = 'cancelled';

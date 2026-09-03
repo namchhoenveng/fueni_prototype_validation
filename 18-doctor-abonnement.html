@@ -59,6 +59,10 @@
     .plan-hero .plan-name { font-size: 1.6rem; line-height: 1; }
     .plan-meta { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 8px; }
     .plan-since { font-size: 0.78rem; color: #94a3b8; margin-top: 8px; }
+    .bdc-btn { display: inline-flex; align-items: center; gap: 6px; border: 1.5px solid #cfe3e9; background: #f4f9fb; color: #155e75; border-radius: 9px; font-size: 0.82rem; font-weight: 700; padding: 7px 14px; text-decoration: none; white-space: nowrap; }
+    .bdc-btn:hover { border-color: #155e75; background: #e9f4f7; color: #155e75; }
+    .bdc-modif-link { display: inline-flex; align-items: center; margin-top: 12px; font-size: 0.84rem; font-weight: 700; color: #155e75; text-decoration: none; }
+    .bdc-modif-link:hover { text-decoration: underline; }
     .plan-price { text-align: right; }
     .plan-price .amt { font-size: 1.6rem; font-weight: 800; color: #0f172a; line-height: 1; }
     .plan-price .per { font-size: 0.82rem; color: #94a3b8; font-weight: 600; }
@@ -202,7 +206,7 @@
             <div class="plan-since"><i class="fa fa-award me-1"></i><span data-i18n="abo.member_since">Membre depuis mars 2026</span></div>
           </div>
           <div class="plan-price">
-            <span id="planPriceLine"><span class="amt">5 000 XOF</span> <span class="per">/ <span data-i18n="abo.per_month">mois</span></span></span>
+            <span id="planPriceLine"><span class="amt">15 €</span> <span class="per">/ <span data-i18n="abo.per_month">mois</span></span></span>
             <div class="next" id="planNext"><span data-i18n="abo.next_renewal">Prochain renouvellement</span> · <strong>15/07/2026</strong></div>
           </div>
         </div>
@@ -224,9 +228,9 @@
         <div class="free-upsell" id="freeUpsell" style="display:none;">
           <div>
             <div class="ab-title"><i class="fa fa-rocket"></i><span data-i18n="abo.free_upsell_title">Débloquez tout avec Solo</span></div>
-            <div class="ab-txt" data-i18n="abo.free_upsell_txt">Agenda en ligne, documents, ordonnances et profil complet — pour 5 000 XOF/mois.</div>
+            <div class="ab-txt" data-i18n="abo.free_upsell_txt">Agenda en ligne, documents, ordonnances et profil complet — pour 15 €/mois.</div>
           </div>
-          <button class="annual-cta" onclick="openRenew()"><i class="fa fa-arrow-up me-1"></i><span data-i18n="abo.free_upsell_cta">Passer à Solo</span></button>
+          <button class="annual-cta" onclick="openRenew(true)"><i class="fa fa-arrow-up me-1"></i><span data-i18n="abo.free_upsell_cta">Passer à Solo</span></button>
         </div>
 
         <!-- Pied de carte : action d'annulation, ancrée et contextualisée -->
@@ -266,14 +270,17 @@
       <div class="annual-banner" id="annualBanner">
         <div>
           <div class="ab-title"><i class="fa fa-piggy-bank"></i><span data-i18n="abo.annual_banner_title">Économisez avec la facturation annuelle</span></div>
-          <div class="ab-txt" data-i18n="abo.annual_banner_txt">50 000 XOF/an au lieu de 60 000 — soit 2 mois offerts.</div>
+          <div class="ab-txt" data-i18n="abo.annual_banner_txt">150 €/an au lieu de 180 € — soit 2 mois offerts.</div>
         </div>
         <button class="annual-cta" onclick="openAnnual()"><i class="fa fa-arrow-right me-1"></i><span data-i18n="abo.annual_banner_cta">Passer à l'annuel</span></button>
       </div>
 
       <!-- Historique de facturation -->
       <div class="card-abo mt-4">
-        <h6 data-i18n="abo.history">Historique de facturation</h6>
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2" style="margin-bottom:16px;">
+          <h6 class="mb-0" data-i18n="abo.history">Historique de facturation</h6>
+          <a class="bdc-btn" id="bdcLink" href="18c-doctor-bon-commande.html?plan=solo" target="_blank"><i class="fa fa-file-signature"></i><span data-i18n="abo.bdc_link">Bon de commande</span></a>
+        </div>
         <div class="inv-scroll">
           <table class="inv">
             <thead>
@@ -292,7 +299,7 @@
                 <td class="fw-semibold" data-i18n-label="abo.th_invoice" data-label="N° facture">FUENI-2026-000142</td>
                 <td data-i18n-label="abo.th_date" data-label="Date">15/06/2026</td>
                 <td data-i18n-label="abo.th_period" data-label="Période">15/06 → 14/07/2026</td>
-                <td data-i18n-label="abo.th_amount" data-label="Montant">5 000 XOF</td>
+                <td data-i18n-label="abo.th_amount" data-label="Montant">15 €</td>
                 <td data-i18n-label="abo.th_method" data-label="Mode">Orange Money</td>
                 <td data-i18n-label="abo.th_status" data-label="Statut"><span class="pill st-paid" data-i18n="abo.paid">Payé</span></td>
                 <td class="text-end dl-cell"><a href="18b-doctor-invoice.html?inv=FUENI-2026-000142" target="_blank" class="dl-btn"><i class="fa fa-download me-1"></i>PDF</a></td>
@@ -301,7 +308,7 @@
                 <td class="fw-semibold" data-i18n-label="abo.th_invoice" data-label="N° facture">FUENI-2026-000098</td>
                 <td data-i18n-label="abo.th_date" data-label="Date">15/05/2026</td>
                 <td data-i18n-label="abo.th_period" data-label="Période">15/05 → 14/06/2026</td>
-                <td data-i18n-label="abo.th_amount" data-label="Montant">5 000 XOF</td>
+                <td data-i18n-label="abo.th_amount" data-label="Montant">15 €</td>
                 <td data-i18n-label="abo.th_method" data-label="Mode">Orange Money</td>
                 <td data-i18n-label="abo.th_status" data-label="Statut"><span class="pill st-paid" data-i18n="abo.paid">Payé</span></td>
                 <td class="text-end dl-cell"><a href="18b-doctor-invoice.html?inv=FUENI-2026-000098" target="_blank" class="dl-btn"><i class="fa fa-download me-1"></i>PDF</a></td>
@@ -310,7 +317,7 @@
                 <td class="fw-semibold" data-i18n-label="abo.th_invoice" data-label="N° facture">FUENI-2026-000061</td>
                 <td data-i18n-label="abo.th_date" data-label="Date">15/04/2026</td>
                 <td data-i18n-label="abo.th_period" data-label="Période">15/04 → 14/05/2026</td>
-                <td data-i18n-label="abo.th_amount" data-label="Montant">5 000 XOF</td>
+                <td data-i18n-label="abo.th_amount" data-label="Montant">15 €</td>
                 <td data-i18n-label="abo.th_method" data-label="Mode">Orange Money</td>
                 <td data-i18n-label="abo.th_status" data-label="Statut"><span class="pill st-paid" data-i18n="abo.paid">Payé</span></td>
                 <td class="text-end dl-cell"><a href="18b-doctor-invoice.html?inv=FUENI-2026-000061" target="_blank" class="dl-btn"><i class="fa fa-download me-1"></i>PDF</a></td>
@@ -319,7 +326,7 @@
                 <td class="fw-semibold" data-i18n-label="abo.th_invoice" data-label="N° facture">FUENI-2026-000024</td>
                 <td data-i18n-label="abo.th_date" data-label="Date">15/03/2026</td>
                 <td data-i18n-label="abo.th_period" data-label="Période">15/03 → 14/04/2026 <span class="text-muted" data-i18n="abo.first_payment">(1ᵉʳ paiement)</span></td>
-                <td data-i18n-label="abo.th_amount" data-label="Montant">5 000 XOF</td>
+                <td data-i18n-label="abo.th_amount" data-label="Montant">15 €</td>
                 <td data-i18n-label="abo.th_method" data-label="Mode">Orange Money</td>
                 <td data-i18n-label="abo.th_status" data-label="Statut"><span class="pill st-paid" data-i18n="abo.paid">Payé</span></td>
                 <td class="text-end dl-cell"><a href="18b-doctor-invoice.html?inv=FUENI-2026-000024" target="_blank" class="dl-btn"><i class="fa fa-download me-1"></i>PDF</a></td>
@@ -359,7 +366,7 @@
             <p class="text-muted small mb-3" data-i18n="abo.renew_confirm_txt">Une demande de paiement va être envoyée sur votre téléphone Orange Money. Validez-la avec votre code PIN pour confirmer le renouvellement.</p>
             <div class="d-flex justify-content-between align-items-center p-3 mb-3" style="background:#f8fafc;border-radius:10px;">
               <span class="text-muted small" data-i18n="abo.renew_amount_lbl">Montant à payer</span>
-              <span class="fw-bold" style="color:#155e75;">5 000 XOF</span>
+              <span class="fw-bold" style="color:#155e75;">15 €</span>
             </div>
             <div class="d-flex justify-content-between align-items-center p-3 mb-1" style="background:#f8fafc;border-radius:10px;">
               <span class="text-muted small" data-i18n="abo.payment_method">Moyen de paiement</span>
@@ -377,6 +384,7 @@
             <div class="renew-ok-icon"><i class="fa fa-check"></i></div>
             <p class="fw-semibold mb-1" data-i18n="abo.renew_ok_t">Paiement confirmé</p>
             <p class="text-muted small mb-0"><span data-i18n="abo.renew_ok_txt">Abonnement renouvelé. Prochaine échéance :</span> <strong>15/08/2026</strong>.</p>
+            <a id="renewBdcLink" href="18c-doctor-bon-commande.html?type=modif&change=free-solo" target="_blank" class="bdc-modif-link d-none"><i class="fa fa-file-signature me-1"></i><span data-i18n="abo.bdc_modif_link">Voir le bon de commande (modificatif)</span></a>
           </div>
         </div>
         <div class="modal-footer border-0 pt-0" id="renewFooter">
@@ -400,17 +408,18 @@
             <p class="text-muted small mb-3" data-i18n="abo.annual_txt">En passant à l'annuel, vous réglez 12 mois en une fois et bénéficiez de −17 % (environ 2 mois offerts). Le changement prend effet à votre prochaine échéance.</p>
             <div class="d-flex justify-content-between align-items-center p-3 mb-2" style="background:#f8fafc;border-radius:10px;">
               <span class="text-muted small" data-i18n="abo.annual_now">Mensuel actuel</span>
-              <span class="fw-semibold">5 000 XOF × 12 = 60 000 XOF</span>
+              <span class="fw-semibold">15 € × 12 = 180 €</span>
             </div>
             <div class="d-flex justify-content-between align-items-center p-3" style="background:#eef5f7;border-radius:10px;border:1px solid #cfe3e9;">
               <span class="fw-semibold" style="color:#155e75;" data-i18n="abo.annual_new">Annuel (−17 %)</span>
-              <span class="fw-bold" style="color:#155e75;">50 000 XOF / <span data-i18n="abo.per_year">an</span></span>
+              <span class="fw-bold" style="color:#155e75;">150 € / <span data-i18n="abo.per_year">an</span></span>
             </div>
           </div>
           <div id="annualSuccess" class="d-none renew-step">
             <div class="renew-ok-icon"><i class="fa fa-check"></i></div>
             <p class="fw-semibold mb-1" data-i18n="abo.annual_ok_t">Modification enregistrée</p>
             <p class="text-muted small mb-0" data-i18n="abo.annual_ok_txt">Votre abonnement passera en facturation annuelle à la prochaine échéance.</p>
+            <a href="18c-doctor-bon-commande.html?type=modif&change=monthly-annual" target="_blank" class="bdc-modif-link"><i class="fa fa-file-signature me-1"></i><span data-i18n="abo.bdc_modif_link">Voir le bon de commande (modificatif)</span></a>
           </div>
         </div>
         <div class="modal-footer border-0 pt-0" id="annualFooter">
@@ -488,6 +497,7 @@
             <div class="renew-ok-icon" style="background:#f8d7da;color:#842029;"><i class="fa fa-circle-check"></i></div>
             <p class="fw-semibold mb-1" data-i18n="abo.cancel_ok_t">Abonnement annulé</p>
             <p class="text-muted small mb-0" data-i18n="abo.cancel_ok_txt">Vous conservez l'accès Solo jusqu'au 15/07/2026, puis passage au plan Free.</p>
+            <a href="18c-doctor-bon-commande.html?type=modif&change=solo-free" target="_blank" class="bdc-modif-link"><i class="fa fa-file-signature me-1"></i><span data-i18n="abo.bdc_modif_link">Voir le bon de commande (modificatif)</span></a>
           </div>
         </div>
         <div class="modal-footer border-0 pt-0" id="cancelFooter">
@@ -501,10 +511,13 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script>
     let renewModal;
-    function openRenew(){
+    let renewUpgrade = false; // true = passage Free → Solo (génère un BdC modificatif) ; false = simple renouvellement (facture seulement).
+    function openRenew(isUpgrade){
+      renewUpgrade = !!isUpgrade;
       document.getElementById('renewConfirm').classList.remove('d-none');
       document.getElementById('renewPending').classList.add('d-none');
       document.getElementById('renewSuccess').classList.add('d-none');
+      document.getElementById('renewBdcLink').classList.add('d-none');
       document.getElementById('renewFooter').classList.remove('d-none');
       renewModal = renewModal || new bootstrap.Modal(document.getElementById('renewModal'));
       renewModal.show();
@@ -516,7 +529,9 @@
       setTimeout(function(){
         document.getElementById('renewPending').classList.add('d-none');
         document.getElementById('renewSuccess').classList.remove('d-none');
-        setTimeout(function(){ if(renewModal) renewModal.hide(); }, 2600);
+        // Passage Free → Solo : afficher le lien vers le BdC modificatif et laisser le modal ouvert ; renouvellement simple : fermeture auto.
+        document.getElementById('renewBdcLink').classList.toggle('d-none', !renewUpgrade);
+        if(!renewUpgrade){ setTimeout(function(){ if(renewModal) renewModal.hide(); }, 2600); }
       }, 2400);
     }
 
@@ -533,7 +548,7 @@
       document.getElementById('annualConfirm').classList.add('d-none');
       document.getElementById('annualFooter').classList.add('d-none');
       document.getElementById('annualSuccess').classList.remove('d-none');
-      setTimeout(function(){ if(annualModal) annualModal.hide(); }, 2600);
+      // Pas de fermeture auto : le lien vers le BdC modificatif reste cliquable (fermer via la croix).
     }
 
     // --- Mettre à jour le paiement ---
@@ -575,7 +590,7 @@
       document.getElementById('cancelConfirm').classList.add('d-none');
       document.getElementById('cancelFooter').classList.add('d-none');
       document.getElementById('cancelSuccess').classList.remove('d-none');
-      setTimeout(function(){ if(cancelModal) cancelModal.hide(); }, 2800);
+      // Pas de fermeture auto : le lien vers le BdC modificatif reste cliquable (fermer via la croix).
     }
 
     document.addEventListener('DOMContentLoaded', function(){
@@ -628,11 +643,13 @@
         cycle === 'annual' ? T('abo.periodicity_annual') : (cycle === 'free' ? T('abo.periodicity_free') : T('abo.periodicity_monthly'));
       var line = document.getElementById('planPriceLine');
       if(plan === 'Free'){ line.innerHTML = '<span class="amt">' + T('abo.price_free') + '</span>'; }
-      else if(cycle === 'annual'){ line.innerHTML = '<span class="amt">50 000 XOF</span> <span class="per">/ ' + T('abo.per_year') + '</span>'; }
-      else { line.innerHTML = '<span class="amt">5 000 XOF</span> <span class="per">/ ' + T('abo.per_month') + '</span>'; }
+      else if(cycle === 'annual'){ line.innerHTML = '<span class="amt">150 €</span> <span class="per">/ ' + T('abo.per_year') + '</span>'; }
+      else { line.innerHTML = '<span class="amt">15 €</span> <span class="per">/ ' + T('abo.per_month') + '</span>'; }
       var next = document.getElementById('planNext');
       if(plan === 'Free'){ next.style.display = 'none'; }
       else { next.style.display = ''; next.innerHTML = '<span>' + T('abo.next_renewal') + '</span> · <strong>' + fmtD(parseD(SUB.nextRenewal)) + '</strong>'; }
+      // Bon de commande de la formule active (Free ou Solo).
+      var bl = document.getElementById('bdcLink'); if(bl) bl.href = '18c-doctor-bon-commande.html?plan=' + (plan === 'Free' ? 'free' : 'solo');
     }
 
     function renderFeatures(){

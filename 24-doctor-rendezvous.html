@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>FUENI — Rendez-vous</title>
   <script src="naz-i18n.js" defer></script>
+  <script src="naz-patients.js"></script>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
   <link rel="stylesheet" href="naz-common.css">
@@ -91,6 +92,17 @@
     .wk-block i { margin-right:4px; }
     .wk-avail { position:absolute; left:0; right:0; z-index:0; background:#f0fbfc; }
     .rdv-card.cancelled { opacity:0.5; text-decoration:line-through; }
+    .rdv-card.rdv-done { opacity:0.82; }
+    .rdv-card.rdv-noshow { opacity:0.72; }
+    .rdv-card .st-mark { float:right; font-size:0.72rem; }
+    .rdv-card.rdv-done .st-mark { color:#15803d; }
+    .rdv-card.rdv-noshow .st-mark { color:#b45309; }
+    .st-badge { display:inline-flex; align-items:center; gap:5px; font-size:0.66rem; font-weight:800; text-transform:uppercase; letter-spacing:0.4px; padding:2px 9px; border-radius:20px; }
+    .st-badge.st-done { background:#dcfce7; color:#15803d; }
+    .st-badge.st-noshow { background:#fef3c7; color:#92400e; }
+    .st-badge.st-cancel { background:#fee2e2; color:#b91c1c; }
+    .st-badge.st-toclose { background:#fff4d6; color:#9a5b00; }
+    .list-row .st-badge { margin-left:auto; }
     .rdv-card .rt { font-weight:700; }
     .rdv-card .rs { opacity:0.85; }
     .nat-consultation { background:#dbeafe; color:#1e40af; border-left:3px solid #2563eb; }
@@ -117,6 +129,8 @@
     .list-pad { padding:6px 18px 14px; }
     .list-dh { font-size:0.76rem; font-weight:700; color:#475569; text-transform:uppercase; letter-spacing:0.6px; padding:16px 0 8px; border-bottom:1px solid #e2e8f0; }
     .list-row { padding:12px 10px; border-bottom:1px solid #f1f5f9; display:flex; align-items:center; gap:14px; cursor:pointer; border-radius:8px; transition:background .12s; }
+    .list-row.cancelled { opacity:.55; }
+    .list-row.cancelled .list-t { text-decoration:line-through; }
     .list-row:hover { background:#eef4f6; }
     .list-row:last-child { border-bottom:0; }
     /* Affordance « cliquable » : chevron révélé au survol (ouvre le détail du rendez-vous). */
@@ -466,6 +480,8 @@
       { date:'2026-07-07', start:'09:00', end:'10:00', ini:'FM', name:'François Moreau', motif:'Suivi cardio',          nature:'consultation', status:'confirmed', loc:'loc1' },
       { date:'2026-07-07', start:'11:00', end:'12:00', ini:'FN', name:'Fatou Ndiaye',    motif:'Asthme',                nature:'consultation', status:'confirmed', loc:'loc1' },
       { date:'2026-07-08', start:'10:00', end:'11:30', ini:'IS', name:'Ibrahima Sarr', motif:'Pansement (à domicile)', nature:'domicile', status:'confirmed', patient:true, phone:'+221 77 645 30 18', loc:'loc1' },
+      { date:'2026-07-09', start:'09:30', end:'10:00', ini:'AC', name:'Aïssatou Camara',  motif:'Première consultation',  nature:'consultation', status:'confirmed', patient:true, firstVisit:true, loc:'loc1', phone:'+221 77 810 55 24', emerg:{ name:'Oumou Camara', rel:'Sœur', phone:'+221 77 810 22 08' }, note:'Première venue. Fatigue et maux de gorge depuis quelques jours.' },
+      { date:'2026-07-09', start:'11:00', end:'11:30', ini:'MK', name:'Moussa Kane',     motif:'Consultation générale', nature:'consultation', status:'confirmed', patient:true, booked:true, apptId:'A-20260709-1100', loc:'loc1', phone:'+221 77 356 20 41', note:'Douleurs abdominales depuis deux jours.' },
       { date:'2026-07-09', start:'15:00', end:'16:00', ini:'IS', name:'Ibrahima Sow',    motif:'Drépanocytose',         nature:'consultation', status:'confirmed', loc:'loc1' },
       { date:'2026-07-10', start:'09:00', end:'10:00', ini:'MD', name:'Mamadou Diallo',  motif:'Décompensation diabétique', nature:'consultation', status:'confirmed', loc:'loc1' },
       { date:'2026-07-10', start:'11:00', end:'12:00', ini:'RH', name:'Réunion hebdomadaire', motif:'', nature:'reunion', status:'confirmed', patient:false, loc:'loc1' },
@@ -570,6 +586,7 @@
           ini: iniOf(a.patient), name: (a.patient || '').trim(),
           motif: a.motif || '', nature: 'consultation',
           status: (a.status === 'CANCELLED') ? 'cancelled' : 'confirmed',
+          cancelBy: a.cancelBy || ((a.status === 'CANCELLED') ? 'patient' : ''), // annulation côté patient (08) → attribuée au patient
           loc: (LOCS[0] ? LOCS[0].id : 'loc1'),
           note: a.reason || '', phone: a.patientPhone || ''
         });
@@ -585,6 +602,26 @@
       if (r.patient === false) return false;
       if (r.booked) return true;
       return r.nature !== 'reunion' && !!r.name && r.name !== '—';
+    }
+
+    // --- Cycle de vie du RDV : confirmé → terminé / absent (ou annulé). Le "terminé" est piloté par le praticien
+    // (finalisation de la consultation OU action manuelle), jamais par le seul écoulement du temps. ---
+    function rdvRefOf(r) { return r.apptId || ('RDV-' + r.date.replace(/-/g, '') + '-' + r.start.replace(':', '')); }
+    // Finaliser une consultation (écran 25) marque son RDV « terminé » — repris ici via un magasin partagé.
+    function syncCompleted() {
+      let done = []; try { done = JSON.parse(localStorage.getItem('fueni_completed_rdv') || '[]'); } catch (e) {}
+      if (!done.length) return;
+      // Couvre aussi le RDV déjà « terminé » manuellement puis documenté après coup : la finalisation vaut documentation (autoDone).
+      RDV.forEach(r => { if ((r.status === 'confirmed' || r.status === 'completed') && hasPatient(r) && done.indexOf(rdvRefOf(r)) !== -1) { r.status = 'completed'; r.autoDone = true; } });
+    }
+    // Un RDV passé (< aujourd'hui) encore « confirmé » attend une clôture (terminé / absent).
+    function isToClose(r) { return r.status === 'confirmed' && hasPatient(r) && r.date < TODAY; }
+    function statusBadge(r) {
+      if (r.status === 'completed') return '<span class="st-badge st-done"><i class="fa fa-circle-check"></i>' + T('docrdv.st_completed') + '</span>';
+      if (r.status === 'noshow')    return '<span class="st-badge st-noshow"><i class="fa fa-user-xmark"></i>' + T('docrdv.st_noshow') + '</span>';
+      if (r.status === 'cancelled') return '<span class="st-badge st-cancel"><i class="fa fa-ban"></i>' + T('docrdv.st_cancelled') + '</span>';
+      if (isToClose(r))             return '<span class="st-badge st-toclose"><i class="fa fa-clock"></i>' + T('docrdv.to_close') + '</span>';
+      return '';
     }
 
     function mondayOf(s) { const d = dObj(s); const off = (d.getDay() + 6) % 7; d.setDate(d.getDate() - off); return d; }
@@ -660,20 +697,33 @@
       else renderList();
       renderSide(); renderFilters(); stats(); renderBanner();
     }
-    // Bandeau « nouveaux RDV réservés en ligne » — nécessaire car la vue s'ouvre sur la semaine courante,
-    // alors qu'un RDV fraîchement réservé peut tomber une autre semaine : le bandeau permet d'y sauter.
+    // Bandeau planning UNIQUE (même digest que le tableau de bord — 17) : nouvelles réservations en ligne
+    // + RDV passés « à clôturer ». Nécessaire car la vue s'ouvre sur la semaine courante, alors que ces RDV
+    // peuvent tomber une autre semaine : chaque segment a son bouton pour y sauter.
     function newBookings() { return RDV.filter(r => r.booked && r.status !== 'cancelled' && !seenSet.has(r.apptId)); }
+    function toCloseList() { return RDV.filter(isToClose); }
     function renderBanner() {
       const box = document.getElementById('newBanner'); if (!box) return;
-      const news = newBookings();
-      if (!news.length) { box.style.display = 'none'; box.innerHTML = ''; return; }
+      const news = newBookings(), toClose = toCloseList();
+      // Compteurs partagés avec le tableau de bord (17) : une seule source de vérité pour le digest planning.
+      try { localStorage.setItem('fueni_planning_counts', JSON.stringify({ newB: news.length, toClose: toClose.length })); } catch (e) {}
+      if (!news.length && !toClose.length) { box.style.display = 'none'; box.innerHTML = ''; return; }
+      const segs = [];
+      if (news.length) segs.push(T('docrdv.new_banner').replace('{n}', news.length));
+      if (toClose.length) segs.push(T('docrdv.toclose_banner').replace('{n}', toClose.length));
       box.style.display = 'flex';
-      box.innerHTML = '<i class="fa fa-bell"></i><span class="flex-grow-1">' + T('docrdv.new_banner').replace('{n}', news.length) + '</span>' +
-        '<button class="nb-btn" onclick="jumpToNew()">' + T('docrdv.new_banner_btn') + '</button>';
+      box.innerHTML = '<i class="fa fa-bell"></i><span class="flex-grow-1">' + segs.join(' · ') + '</span>' +
+        (news.length ? '<button class="nb-btn" onclick="jumpToNew()">' + T('docrdv.new_banner_btn') + '</button>' : '') +
+        (toClose.length ? '<button class="nb-btn" style="background:#b45309;" onclick="jumpToClose()">' + T('docrdv.toclose_banner_btn') + '</button>' : '');
     }
     function jumpToNew() {
       // Liste complète à partir d'aujourd'hui : l'agenda reste entier et les RDV réservés y sont surlignés « Nouveau ».
       cur = TODAY; setView('list');
+    }
+    function jumpToClose() {
+      // Liste à partir du plus ancien RDV à clôturer : les visites passées non closes apparaissent en tête, badge « À clôturer ».
+      const t = toCloseList(); if (!t.length) return;
+      cur = t.map(r => r.date).sort()[0]; setView('list');
     }
 
     function renderWeek() {
@@ -715,9 +765,11 @@
           const hgt = Math.max(26, (toMin(r.end) - toMin(r.start)) / 60 * HH - 3);
           const c = labelOf(r.nature).color;
           const isNew = r.booked && r.status !== 'cancelled' && !seenSet.has(r.apptId);
-          return '<div class="rdv-card' + (r.status === 'cancelled' ? ' cancelled' : '') + (isNew ? ' is-new' : '') + '" style="top:' + top + 'px;height:' + hgt + 'px;border-left:3px solid ' + c + ';background:' + c + '1a" onclick="openDetail(' + o.idx + ')">' +
+          const stCls = r.status === 'cancelled' ? ' cancelled' : r.status === 'completed' ? ' rdv-done' : r.status === 'noshow' ? ' rdv-noshow' : '';
+          const stMark = r.status === 'completed' ? '<i class="fa fa-circle-check st-mark"></i>' : r.status === 'noshow' ? '<i class="fa fa-user-xmark st-mark"></i>' : '';
+          return '<div class="rdv-card' + stCls + (isNew ? ' is-new' : '') + '" style="top:' + top + 'px;height:' + hgt + 'px;border-left:3px solid ' + c + ';background:' + c + '1a" onclick="openDetail(' + o.idx + ')">' +
             (isNew ? '<span class="new-dot"></span>' : '') +
-            '<div class="rt">' + r.start + '</div><div class="rs">' + escL(rdvName(r)) + '</div></div>';
+            '<div class="rt">' + r.start + stMark + '</div><div class="rs">' + escL(rdvName(r)) + '</div></div>';
         }).join('');
         return '<div class="wk-col' + (ds === TODAY ? ' today' : '') + (wknd ? ' weekend' : '') + '" style="height:' + H + 'px" onclick="colClick(event,\'' + ds + '\')" title="' + T('docrdv.slot_new') + '">' + availHtml + rdvHtml + '</div>';
       }).join('');
@@ -750,8 +802,11 @@
 
     function renderList() {
       // Agenda « à partir de la date sélectionnée » (r.date >= cur), borné à listLimit + « Charger plus ».
+      // Le LISTING est un journal : il inclut les RDV annulés (barrés, badge « Annulé », attribution dans le détail) —
+      // la grille semaine/mois les masque, elle, car le créneau est redevenu réservable.
+      const passList = r => matchLoc(r) && !hiddenLabels.has(r.nature);
       const items = [];
-      RDV.forEach((r, idx) => { if (pass(r) && r.date >= cur) items.push({ t:'rdv', date:r.date, start:r.start, r, idx }); });
+      RDV.forEach((r, idx) => { if (passList(r) && r.date >= cur) items.push({ t:'rdv', date:r.date, start:r.start, r, idx }); });
       items.sort((a, b) => (a.date + a.start).localeCompare(b.date + b.start));
       const box = document.getElementById('calCard');
       if (!items.length) { box.innerHTML = '<div class="list-pad text-center text-muted py-5"><i class="fa fa-calendar-xmark fa-2x mb-2 d-block"></i>' + T('docrdv.empty_list') + '</div>'; return; }
@@ -767,10 +822,11 @@
             '<span class="nat-tag" style="background:#eef2f6;color:#64748b;">' + T('docrdv.unavailable') + '</span></div>';
         } else {
           const isNew = r.booked && r.status !== 'cancelled' && !seenSet.has(r.apptId);
-          html += '<div class="list-row" onclick="openDetail(' + o.idx + ')">' +
+          const sb = statusBadge(r);
+          html += '<div class="list-row' + (r.status === 'cancelled' ? ' cancelled' : r.status === 'completed' ? ' rdv-done' : r.status === 'noshow' ? ' rdv-noshow' : '') + '" onclick="openDetail(' + o.idx + ')">' +
             '<div class="list-time">' + r.start + ' <span class="e">→ ' + r.end + '</span></div>' +
             '<div class="list-body"><div class="list-t">' + escL(rdvName(r)) + (isNew ? '<span class="new-badge">' + T('docrdv.new_badge') + '</span>' : '') + '</div><div class="list-m">' + escL(r.motif) + '</div></div>' +
-            labelTag(r.nature) + '</div>';
+            (sb || labelTag(r.nature)) + '</div>';
         }
       });
       if (rest > 0) html += '<div class="list-more-wrap"><button class="list-more-btn" onclick="loadMoreList()"><i class="fa fa-chevron-down me-1"></i>' + T('docrdv.load_more').replace('{n}', rest) + '</button></div>';
@@ -842,8 +898,10 @@
       const isConsult = hasPatient(r); // RDV lié à un patient (consultation / domicile / réservé en ligne) → Documenter + fiche patient
       const wasNew = r.booked && r.status !== 'cancelled' && !seenSet.has(r.apptId);
       document.getElementById('detailBody').innerHTML =
-        '<div class="d-flex align-items-center gap-2 mb-3 flex-wrap">' + labelTag(r.nature) +
-        (r.booked ? '<span class="nat-tag" style="background:#e0f2f1;color:#0e7490;"><i class="fa fa-globe me-1"></i>' + T('docrdv.booked_online') + '</span>' : '') +
+        '<div class="d-flex align-items-center gap-2 mb-3 flex-wrap">' + labelTag(r.nature) + statusBadge(r) +
+        // Origine du RDV toujours explicite : réservé en ligne (patient) vs créé par le praticien.
+        (r.booked ? '<span class="nat-tag" style="background:#e0f2f1;color:#0e7490;"><i class="fa fa-globe me-1"></i>' + T('docrdv.booked_online') + '</span>'
+                  : (isConsult ? '<span class="nat-tag" style="background:#eef2f6;color:#64748b;"><i class="fa fa-user-pen me-1"></i>' + T('docrdv.created_by_you') + '</span>' : '')) +
         (wasNew ? '<span class="new-badge">' + T('docrdv.new_badge') + '</span>' : '') + '</div>' +
         '<div class="d-patient-name">' + escL(rdvName(r)) + '</div>' +
         (r.motif ? '<div class="dkv"><span class="k">' + T('docrdv.d_motif') + '</span><span class="v">' + escL(r.motif) + '</span></div>' : '') +
@@ -852,8 +910,12 @@
         (r.phone ? '<div class="dkv"><span class="k">' + T('docrdv.d_phone') + '</span><span class="v"><a href="tel:' + escL(r.phone).replace(/[^\d+]/g, '') + '" style="color:#155e75;text-decoration:none;">' + escL(r.phone) + '</a></span></div>' : '') +
         (r.emerg && (r.emerg.name || r.emerg.phone) ? '<div class="dkv"><span class="k">' + T('prof.emerg.title') + '</span><span class="v">' + (r.emerg.name ? escL(r.emerg.name) : '') + (r.emerg.rel ? ' <span class="text-muted" style="font-weight:400">· ' + escL(r.emerg.rel) + '</span>' : '') + (r.emerg.phone ? '<br><a href="tel:' + escL(r.emerg.phone).replace(/[^\d+]/g, '') + '" style="color:#155e75;text-decoration:none;">' + escL(r.emerg.phone) + '</a>' : '') + '</span></div>' : '') +
         (r.note ? '<div class="d-note"><div class="d-note-k"><i class="fa fa-comment-dots me-1"></i>' + T('docrdv.patient_note') + '</div><div class="d-note-v">' + escL(r.note) + '</div></div>' : '') +
-        (r.status !== 'cancelled' && r.date >= TODAY && isConsult ? '<div class="modify-info mt-3"><i class="fa fa-circle-info me-1"></i>' + T('docrdv.modify_info').replace('{h}', MODIFY_CUTOFF_H) + '</div>' : '') +
-        (r.status !== 'cancelled' && isConsult ? '<div id="reschedPanel" class="d-none mt-3 p-3" data-idx="' + i + '" data-od="' + r.date + '" data-os="' + r.start + '" data-oe="' + r.end + '" style="background:#f8fafc;border-radius:10px;">' +
+        (r.status === 'completed' && r.autoDone ? '<div class="modify-info mt-3" style="background:#eafaf0;border-color:#b8e6c8;color:#1e8449;"><i class="fa fa-circle-check me-1"></i>' + T('docrdv.done_auto') + '</div>' : '') +
+        (r.status === 'cancelled' && isConsult ? '<div class="modify-info mt-3"><i class="fa fa-ban me-1"></i>' + T(r.cancelBy === 'doctor' ? 'docrdv.cancel_by_doctor' : 'docrdv.cancel_by_patient') + '</div>' : '') +
+        (r.firstVisit && r.status === 'noshow' ? '<div class="modify-info mt-3" style="background:#fff7ed;border-color:#fed7aa;color:#9a5b00;"><i class="fa fa-user-xmark me-1"></i>' + T('docrdv.first_visit_noshow') + '</div>' : '') +
+        (r.firstVisit && r.status === 'confirmed' ? '<div class="modify-info mt-3" style="background:#eff6ff;border-color:#bfdbfe;color:#1d4ed8;"><i class="fa fa-user-plus me-1"></i><strong>' + T('docrdv.first_visit') + '</strong> — ' + T('docrdv.first_visit_note') + '</div>' : '') +
+        (r.status === 'confirmed' && r.date >= TODAY && isConsult ? '<div class="modify-info mt-3"><i class="fa fa-circle-info me-1"></i>' + T('docrdv.modify_info').replace('{h}', MODIFY_CUTOFF_H) + '</div>' : '') +
+        (r.status === 'confirmed' && isConsult ? '<div id="reschedPanel" class="d-none mt-3 p-3" data-idx="' + i + '" data-od="' + r.date + '" data-os="' + r.start + '" data-oe="' + r.end + '" style="background:#f8fafc;border-radius:10px;">' +
             '<div class="fw-semibold small mb-2">' + T('docrdv.resched_title') + '</div>' +
             '<div class="d-flex gap-2">' +
               '<div style="flex:1.5;min-width:0"><label class="form-label small text-muted mb-1">' + T('docrdv.m_date') + '</label><input type="date" lang="fr-FR" min="' + TODAY + '" class="form-control form-control-sm" id="rsDate" value="' + r.date + '" onchange="rsCheck()"></div>' +
@@ -865,19 +927,34 @@
             '<button id="rsConfirm" class="btn btn-sm mt-2 w-100" style="background:#155e75;color:#fff;" disabled onclick="doReschedule(' + i + ')"><i class="fa fa-check me-1"></i>' + T('docrdv.resched_confirm') + '</button>' +
           '</div>' : '');
       let foot = '';
-      if (r.status !== 'cancelled') {
-        if (isConsult) {
-          // RDV patient : Documenter / Voir fiche / Reporter (notifie le patient) / Annuler.
-          const rdvRef = r.apptId || ('RDV-' + r.date.replace(/-/g, '') + '-' + r.start.replace(':', '')); // réf. en ligne si réservé, sinon dérivée (stable) de la date + heure
-          foot += '<a class="btn btn-sm" style="background:#155e75;color:#fff;" href="25-doctor-consultation.html?patient=' + encodeURIComponent(rdvName(r)) + '&motif=' + encodeURIComponent(r.motif) + '&date=' + r.date + '&time=' + encodeURIComponent(r.start) + '&rdvId=' + encodeURIComponent(rdvRef) + '"><i class="fa fa-notes-medical me-1"></i>' + T('docrdv.document') + '</a>';
-          foot += '<a class="btn btn-outline-secondary btn-sm" href="26-doctor-records.html?patient=' + encodeURIComponent(rdvName(r)) + '"><i class="fa fa-folder-open me-1"></i>' + T('docrdv.view_patient') + '</a>';
-          foot += '<button class="btn btn-outline-secondary btn-sm" onclick="toggleResched()"><i class="fa fa-clock-rotate-left me-1"></i>' + T('docrdv.resched') + '</button>';
-          foot += '<button class="btn btn-outline-danger btn-sm" onclick="askCancel(' + i + ')"><i class="fa fa-ban me-1"></i>' + T('docrdv.cancel_appt') + '</button>';
-        } else {
-          // Événement interne (pas de patient) : édition complète (titre + étiquette + date/heure) + suppression.
-          foot += '<button class="btn btn-outline-secondary btn-sm" onclick="openEdit(' + i + ')"><i class="fa fa-pen me-1"></i>' + T('docrdv.edit') + '</button>';
-          foot += '<button class="btn btn-outline-danger btn-sm" onclick="askDelete(' + i + ')"><i class="fa fa-trash me-1"></i>' + T('docrdv.delete') + '</button>';
+      if (isConsult) {
+        const rdvRef = rdvRefOf(r);
+        const docBtn = '<a class="btn btn-sm" style="background:#155e75;color:#fff;" href="25-doctor-consultation.html?patient=' + encodeURIComponent(rdvName(r)) + '&motif=' + encodeURIComponent(r.motif) + '&date=' + r.date + '&time=' + encodeURIComponent(r.start) + '&rdvId=' + encodeURIComponent(rdvRef) + '"><i class="fa fa-notes-medical me-1"></i>' + T('docrdv.document') + '</a>';
+        const fileBtn = '<a class="btn btn-outline-secondary btn-sm" href="26-doctor-records.html?patient=' + encodeURIComponent(rdvName(r)) + '"><i class="fa fa-folder-open me-1"></i>' + T('docrdv.view_patient') + '</a>';
+        // Première visite non finalisée → pas de dossier à ouvrir (il naîtra de la 1re consultation).
+        const showFile = !(r.firstVisit && r.status !== 'completed');
+        if (r.status === 'completed' || r.status === 'noshow') {
+          // RDV clôturé : état DÉFINITIF (pas de réouverture) → la confirmation se fait AVANT l'action (askDone / askNoshow).
+          // Terminé SANS note : « Documenter » reste proposé (clôture immédiate, rédaction en fin de journée) —
+          // la finalisation remplacera l'entrée « sans note » de l'historique et retirera ce bouton.
+          if (r.status === 'completed' && !r.autoDone) foot += docBtn;
+          if (showFile) foot += fileBtn;
+        } else if (r.status !== 'cancelled') { // confirmé
+          foot += docBtn;
+          if (showFile) foot += fileBtn;
+          if (r.date <= TODAY) { // RDV passé / du jour → clôture par le praticien (jamais automatique)
+            foot += '<button class="btn btn-outline-success btn-sm" onclick="askDone(' + i + ')"><i class="fa fa-circle-check me-1"></i>' + T('docrdv.mark_done') + '</button>';
+            foot += '<button class="btn btn-outline-warning btn-sm" onclick="askNoshow(' + i + ')"><i class="fa fa-user-xmark me-1"></i>' + T('docrdv.mark_noshow') + '</button>';
+          }
+          if (r.date >= TODAY) { // RDV à venir / du jour → report / annulation
+            foot += '<button class="btn btn-outline-secondary btn-sm" onclick="toggleResched()"><i class="fa fa-clock-rotate-left me-1"></i>' + T('docrdv.resched') + '</button>';
+            foot += '<button class="btn btn-outline-danger btn-sm" onclick="askCancel(' + i + ')"><i class="fa fa-ban me-1"></i>' + T('docrdv.cancel_appt') + '</button>';
+          }
         }
+      } else if (r.status !== 'cancelled') {
+        // Événement interne (pas de patient) : édition + suppression.
+        foot += '<button class="btn btn-outline-secondary btn-sm" onclick="openEdit(' + i + ')"><i class="fa fa-pen me-1"></i>' + T('docrdv.edit') + '</button>';
+        foot += '<button class="btn btn-outline-danger btn-sm" onclick="askDelete(' + i + ')"><i class="fa fa-trash me-1"></i>' + T('docrdv.delete') + '</button>';
       }
       document.getElementById('detailFoot').innerHTML = foot;
       detailModal = detailModal || new bootstrap.Offcanvas(document.getElementById('rdvDetail'));
@@ -896,9 +973,59 @@
     }
     function setStatus(i, s) {
       RDV[i].status = s;
+      if (s !== 'completed') delete RDV[i].autoDone; // clôture manuelle → efface l'indicateur « auto »
+      if (s === 'cancelled') {
+        RDV[i].cancelBy = 'doctor';
+        // RDV réservé en ligne → l'annulation est répercutée côté patient (« Mes rendez-vous » : Annulé par le cabinet).
+        if (RDV[i].apptId) { try { const arr = JSON.parse(localStorage.getItem(APPT_KEY) || '[]'); const a = arr.find(x => x.id === RDV[i].apptId); if (a) { a.status = 'CANCELLED'; a.cancelBy = 'doctor'; localStorage.setItem(APPT_KEY, JSON.stringify(arr)); } } catch (e) {} }
+      }
       if (detailModal) detailModal.hide();
       render();
-      toast(T(s === 'confirmed' ? 'docrdv.confirm_toast' : 'docrdv.cancel_toast'));
+      const TO = { confirmed: 'docrdv.reopen_toast', cancelled: 'docrdv.cancel_toast', completed: 'docrdv.done_toast', noshow: 'docrdv.noshow_toast' };
+      toast(T(TO[s] || 'docrdv.confirm_toast'));
+    }
+    // « Marquer terminé » sur une PREMIÈRE visite : le patient n'a pas encore de dossier (il naît de la consultation
+    // documentée) → rappel inline avant de clore sans trace. Documenter reste le chemin normal ; terminer sans
+    // documenter reste possible (aucun dossier vide n'est créé). 🟠 Règle à confirmer avec Nazounki.
+    function askDone(i) {
+      const r = RDV[i];
+      // Clôture DÉFINITIVE (pas de réouverture) → confirmation inline avant l'action.
+      if (!r.firstVisit) {
+        document.getElementById('detailFoot').innerHTML =
+          '<div class="small mb-1"><i class="fa fa-circle-info me-1" style="color:#1d4ed8;"></i>' + T('docrdv.done_confirm_q') + '</div>' +
+          '<button class="btn btn-outline-success btn-sm" onclick="setStatus(' + i + ',\'completed\')"><i class="fa fa-circle-check me-1"></i>' + T('docrdv.mark_done') + '</button>' +
+          '<button class="btn btn-light btn-sm" onclick="openDetail(' + i + ')">' + T('docrdv.cancel_back') + '</button>';
+        return;
+      }
+      const docHref = '25-doctor-consultation.html?patient=' + encodeURIComponent(rdvName(r)) + '&motif=' + encodeURIComponent(r.motif) + '&date=' + r.date + '&time=' + encodeURIComponent(r.start) + '&rdvId=' + encodeURIComponent(rdvRefOf(r));
+      // Le pied du tiroir est une grille (d-grid) : le message puis TROIS boutons pleine largeur, alignés et de même gabarit.
+      document.getElementById('detailFoot').innerHTML =
+        '<div class="small mb-1"><i class="fa fa-circle-info me-1" style="color:#1d4ed8;"></i>' + T('docrdv.done_first_q') + '</div>' +
+        '<a class="btn btn-sm" style="background:#155e75;color:#fff;" href="' + docHref + '"><i class="fa fa-notes-medical me-1"></i>' + T('docrdv.document') + '</a>' +
+        '<button class="btn btn-outline-secondary btn-sm" onclick="doneNoDoc(' + i + ')"><i class="fa fa-circle-check me-1"></i>' + T('docrdv.done_first_anyway') + '</button>' +
+        '<button class="btn btn-light btn-sm" onclick="openDetail(' + i + ')">' + T('docrdv.cancel_back') + '</button>';
+    }
+    // « Terminer sans documenter » (1re visite) : la visite a eu lieu → le patient rejoint « Mes patients » avec une
+    // fiche d'identité SEULE (coordonnées de la réservation) — historique et informations médicales vides, remplis plus
+    // tard (dossier ou prochaine consultation). Un « absent » ne crée toujours rien. 🟠 Règle à confirmer avec Nazounki.
+    function doneNoDoc(i) {
+      const r = RDV[i];
+      if (window.NazMarkCreated) NazMarkCreated(rdvName(r));
+      // Visite attestée sans compte-rendu → tracée dans l'historique du dossier (entrée « sans compte-rendu »).
+      try {
+        const uv = JSON.parse(localStorage.getItem('fueni_undoc_visits') || '[]');
+        const ref = rdvRefOf(r);
+        if (!uv.some(v => v.ref === ref)) { uv.push({ ref: ref, patient: rdvName(r), date: r.date, motif: r.motif || '' }); localStorage.setItem('fueni_undoc_visits', JSON.stringify(uv)); }
+      } catch (e) {}
+      setStatus(i, 'completed');
+      toast(T('docrdv.done_added_toast'));
+    }
+    // « Patient absent » : clôture définitive elle aussi → même confirmation inline.
+    function askNoshow(i) {
+      document.getElementById('detailFoot').innerHTML =
+        '<div class="small mb-1"><i class="fa fa-circle-info me-1" style="color:#b45309;"></i>' + T('docrdv.noshow_confirm_q') + '</div>' +
+        '<button class="btn btn-outline-warning btn-sm" onclick="setStatus(' + i + ',\'noshow\')"><i class="fa fa-user-xmark me-1"></i>' + T('docrdv.mark_noshow') + '</button>' +
+        '<button class="btn btn-light btn-sm" onclick="openDetail(' + i + ')">' + T('docrdv.cancel_back') + '</button>';
     }
     // Suppression d'un événement interne (pas de patient à notifier) → confirmation inline, puis retrait.
     function askDelete(i) {
@@ -1253,7 +1380,28 @@
         if (history.replaceState) history.replaceState(null, '', location.pathname); // nettoie l'URL → pas de ré-ouverture au rechargement
       } catch (e) {}
     }
-    document.addEventListener('DOMContentLoaded', function () { render(); openFromParams(); });
+    // DÉMO — scénario « première visite » rejouable : ouvrir/rafraîchir le PLANNING réinitialise Aïssatou Camara
+    // (promotion, infos médicales, clôture du RDV, brouillon et documents de sa consultation). Ciblé sur elle seule —
+    // les autres patients ne sont pas touchés ; les écrans 25/26 ne réinitialisent rien (le parcours reste démontrable).
+    function resetFirstVisitDemo() {
+      try {
+        const name = 'Aïssatou Camara', id = 'p14', ref = 'RDV-20260709-0930';
+        localStorage.setItem('fueni_patients_created', JSON.stringify(JSON.parse(localStorage.getItem('fueni_patients_created') || '[]').filter(x => x !== id)));
+        const ms = JSON.parse(localStorage.getItem('fueni_med_info') || '{}'); delete ms[name];
+        localStorage.setItem('fueni_med_info', JSON.stringify(ms));
+        localStorage.setItem('fueni_completed_rdv', JSON.stringify(JSON.parse(localStorage.getItem('fueni_completed_rdv') || '[]').filter(x => x !== ref)));
+        localStorage.removeItem('fueni_consult_draft_' + ref);
+        localStorage.setItem('fueni_shared_consults', JSON.stringify(JSON.parse(localStorage.getItem('fueni_shared_consults') || '[]').filter(x => x.patient !== name)));
+        localStorage.setItem('fueni_shared_docs', JSON.stringify(JSON.parse(localStorage.getItem('fueni_shared_docs') || '[]').filter(x => x.patient !== name)));
+        localStorage.setItem('fueni_undoc_visits', JSON.stringify(JSON.parse(localStorage.getItem('fueni_undoc_visits') || '[]').filter(x => x.patient !== name)));
+        // Réservations en ligne de DÉMO (Binta Sarr, Moussa Kane) → redeviennent « Nouveau » à chaque ouverture
+        // du planning (scénario rejouable). Les réservations réelles (parcours 27) gardent leur état « vu ».
+        const demoSeen = ['A-20260710-1430', 'A-20260709-1100'];
+        localStorage.setItem('fueni_rdv_seen', JSON.stringify(JSON.parse(localStorage.getItem('fueni_rdv_seen') || '[]').filter(x => demoSeen.indexOf(x) === -1)));
+        demoSeen.forEach(id => seenSet.delete(id)); // le jeu « vu » est déjà chargé en mémoire à ce stade
+      } catch (e) {}
+    }
+    document.addEventListener('DOMContentLoaded', function () { resetFirstVisitDemo(); syncCompleted(); render(); openFromParams(); });
   </script>
 <!-- Prototype version badge -->
 <script>(function(){if(window.__pv)return;window.__pv=1;var v=document.createElement('div');v.style.cssText='position:fixed;top:0;left:50%;transform:translateX(-50%);background:#155e75;color:#fff;padding:6px 20px;border-radius:0 0 16px 16px;font:600 12px/1 system-ui,-apple-system,sans-serif;letter-spacing:.6px;z-index:99999;box-shadow:0 3px 10px rgba(0,0,0,.2);text-transform:uppercase;display:flex;align-items:center;gap:8px';v.innerHTML='🧪 Prototype <span style="background:#f59e0b;color:#1a1a1a;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:4px">v1.4.0</span><span style="background:#facc15;color:#1a1a1a;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:4px;text-transform:none;letter-spacing:0">⏳ À valider</span>';document.body.appendChild(v);})();</script>

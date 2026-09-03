@@ -66,6 +66,7 @@
     .motif-card .m-name { font-weight:600; color:#1e293b; }
     .motif-card .m-meta { font-size:0.8rem; color:#94a3b8; }
     .motif-card .m-price { font-weight:800; color:#155e75; white-space:nowrap; }
+    .motif-card .m-price2 { color:#94a3b8; font-weight:600; }
     .tr-item { display:flex; gap:14px; padding:9px 0; border-bottom:1px solid #f4f7fa; }
     .tr-item:last-child { border-bottom:0; }
     .tr-year { flex:0 0 58px; font-weight:800; color:#155e75; font-variant-numeric:tabular-nums; }
@@ -368,7 +369,7 @@
       document.getElementById('fMotifs').innerHTML = motifs.length ? motifs.map(m =>
         '<div class="motif-card"><div><div class="m-name">' + (m.label || '') + '</div>' +
         '<div class="m-meta"><i class="fa fa-clock me-1"></i>' + m.dur + ' ' + T('docppv.min') + '</div></div>' +
-        '<div class="m-price">' + fmt(m.price) + ' ' + (P.currency || 'XOF') + '</div></div>'
+        '<div class="m-price">' + fmt(m.price) + ' ' + (P.currency || 'XOF') + ((P.currency2 && m.price2 != null && m.price2 !== '') ? ' <span class="m-price2">· ≈ ' + fmt(m.price2) + ' ' + P.currency2 + '</span>' : '') + '</div></div>'
       ).join('') : '<div class="text-muted small">—</div>';
 
       // ----- CTA de réservation : dépend de la réservabilité du lieu actif -----

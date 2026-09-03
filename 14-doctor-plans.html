@@ -26,6 +26,17 @@
     /* Sous-ligne (équivalent mensuel / « pour toujours ») — hauteur réservée pour aligner les deux cartes */
     .price-sub { font-size: 0.85rem; color: #7f8c8d; min-height: 1.2rem; margin-top: 4px; margin-bottom: 14px; }
     .price-sub.promo { font-size: 0.8rem; white-space: nowrap; }
+    /* Acceptation CGV (étape 4 de la procédure de souscription) */
+    .cgv-accept { display: flex; align-items: flex-start; gap: 10px; font-size: 0.88rem; color: #334155; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px 14px; cursor: pointer; }
+    .cgv-accept input { margin-top: 2px; flex-shrink: 0; width: 17px; height: 17px; cursor: pointer; }
+    /* Cartes de formule sélectionnables (radio) */
+    .plan-card { position: relative; cursor: pointer; transition: border-color .12s, box-shadow .12s; }
+    .plan-card:hover { border-color: #a8cfda; }
+    .plan-card.selected { border-color: #155e75; box-shadow: 0 0 0 3px rgba(21,94,117,0.16); }
+    .card-radio { position: absolute; top: 14px; right: 14px; width: 22px; height: 22px; border-radius: 50%; border: 2px solid #cbd5e1; background: #fff; display: flex; align-items: center; justify-content: center; }
+    .card-radio i { font-size: 11px; color: #fff; opacity: 0; }
+    .plan-card.selected .card-radio { border-color: #155e75; background: #155e75; }
+    .plan-card.selected .card-radio i { opacity: 1; }
     /* Ligne promo au-dessus du prix : ancien prix barré + remise (style « prix soldé ») */
     .promo-top { display: flex; align-items: center; gap: 10px; margin-bottom: 3px; }
     .promo-old { font-size: 1.05rem; font-weight: 700; color: #94a3b8; text-decoration: line-through; }
@@ -91,7 +102,8 @@
 
       <!-- Plan Free -->
       <div class="col-md-6">
-        <div class="plan-card">
+        <div class="plan-card" id="card-free" data-plan="gratuit" role="radio" aria-checked="false" tabindex="0" onclick="selectPlan('gratuit')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();selectPlan('gratuit');}">
+          <span class="card-radio" aria-hidden="true"><i class="fa fa-check"></i></span>
           <div class="text-muted small fw-semibold mb-2 text-uppercase" data-i18n="doc.plans.free_name">Free</div>
           <div class="price-row"><span class="price-main">0 €</span></div>
           <div class="price-sub" data-i18n="doc.plans.free_period">pour toujours</div>
@@ -105,14 +117,14 @@
           </ul>
           <div class="divider"></div>
           <div class="small text-muted"><i class="fa fa-user me-1"></i><span data-i18n="doc.plans.meta_one_doc">1 médecin</span></div>
-          <button class="btn btn-outline-doctor btn-select" onclick="choosePlan('gratuit')" data-i18n="doc.plans.free_cta">Commencer gratuitement</button>
         </div>
       </div>
 
       <!-- Plan Solo -->
       <div class="col-md-6">
-        <div class="plan-card popular">
+        <div class="plan-card popular" id="card-solo" data-plan="solo" role="radio" aria-checked="false" tabindex="0" onclick="selectPlan('solo')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();selectPlan('solo');}">
           <div class="badge-popular"><i class="fa fa-star me-1"></i><span data-i18n="doc.plans.recommended">Recommandé</span></div>
+          <span class="card-radio" aria-hidden="true"><i class="fa fa-check"></i></span>
           <div class="small fw-semibold mb-2 text-uppercase" style="color:#155e75;" data-i18n="doc.plans.solo_name">Solo</div>
           <div class="promo-top" id="solo-promo-top" style="display:none;"><span class="promo-old" id="solo-old"></span><span class="promo-off" id="solo-off" data-i18n="doc.plans.billing_monthly_badge">−50 %</span></div>
           <div class="price-row"><span class="price-main" id="solo-price">15 €</span><span class="price-period" id="solo-period" data-i18n="doc.plans.per_month">/mois</span></div>
@@ -127,13 +139,26 @@
           </ul>
           <div class="divider"></div>
           <div class="small text-muted"><i class="fa fa-user me-1"></i><span data-i18n="doc.plans.meta_one_doc">1 médecin</span></div>
-          <button class="btn btn-doctor btn-select" onclick="choosePlan('solo')" data-i18n="doc.plans.solo_cta">Choisir Solo</button>
         </div>
       </div>
 
     </div>
 
+    <!-- Acceptation des CGV (Abonnements) — requise pour choisir une formule (annexe CGV, étape 4) -->
     <div class="mt-4" style="max-width:620px; margin:0 auto;">
+      <label class="cgv-accept" for="acceptCgv">
+        <input type="checkbox" id="acceptCgv" onchange="document.getElementById('cgvErr').classList.add('d-none')">
+        <span data-i18n-html="doc.plans.cgv_accept">J'ai lu et j'accepte les <a href="#" onclick="event.preventDefault();" style="color:#155e75;font-weight:700;">Conditions Générales de Vente — Abonnements</a> (v2.3). *</span>
+      </label>
+      <div id="cgvErr" class="text-danger small mt-1 d-none"><i class="fa fa-circle-exclamation me-1"></i><span data-i18n="doc.plans.cgv_err">Vous devez accepter les Conditions Générales de Vente pour continuer.</span></div>
+    </div>
+
+    <div class="text-center mt-3">
+      <button id="continueBtn" class="btn btn-doctor btn-lg px-4" onclick="continuePlan()" disabled><span data-i18n="doc.plans.continue">Continuer</span> <i class="fa fa-arrow-right ms-1"></i></button>
+      <div class="small text-muted mt-2" id="selectHint" data-i18n="doc.plans.select_hint">Sélectionnez une formule pour continuer.</div>
+    </div>
+
+    <div class="mt-3" style="max-width:620px; margin:0 auto;">
       <div class="alert d-flex align-items-start gap-2 py-2 px-3" style="background:#e6f2f5; border:1px solid #bcdfe7; color:#0e4456; border-radius:10px; font-size:0.86rem;">
         <i class="fa fa-circle-info mt-1" style="color:#155e75;"></i>
         <span data-i18n-html="doc.plans.pay_notice">Aucun paiement à cette étape. Vous choisissez votre formule maintenant ; pour le plan <strong>Solo</strong>, le premier prélèvement n'intervient <strong>qu'après la validation de votre dossier</strong>. Le plan <strong>Free</strong> reste gratuit.</span>
@@ -206,14 +231,35 @@
       }
     }
 
-    function choosePlan(plan) {
-      localStorage.setItem('naz_plan', plan);
-      if (plan === 'solo') localStorage.setItem('naz_billing', billing);
-      // Aucun paiement à cette étape (validé client 2026-07-01). Dans les deux cas → tableau de bord verrouillé ; KYC depuis le dashboard ; le paiement Solo intervient après validation.
+    // Sélection de la formule (radio) — l'un OU l'autre ; « Continuer » valide le choix.
+    let selectedPlan = null;
+    function selectPlan(plan) {
+      selectedPlan = plan;
+      const f = document.getElementById('card-free'), s = document.getElementById('card-solo');
+      f.classList.toggle('selected', plan === 'gratuit'); f.setAttribute('aria-checked', plan === 'gratuit');
+      s.classList.toggle('selected', plan === 'solo'); s.setAttribute('aria-checked', plan === 'solo');
+      const btn = document.getElementById('continueBtn'); if (btn) btn.disabled = false;
+      const hint = document.getElementById('selectHint'); if (hint) hint.style.display = 'none';
+    }
+    function continuePlan() {
+      if (!selectedPlan) return;
+      // Acceptation CGV requise (annexe CGV, étape 4) avant de valider la formule.
+      const cgv = document.getElementById('acceptCgv');
+      if (cgv && !cgv.checked) {
+        const err = document.getElementById('cgvErr'); if (err) err.classList.remove('d-none');
+        const box = document.querySelector('.cgv-accept'); if (box) box.scrollIntoView({ block: 'center' });
+        return;
+      }
+      // Traçabilité de l'acceptation (version + horodatage) — alimente le Bon de commande (démo).
+      try { localStorage.setItem('fueni_cgv_accept', JSON.stringify({ cgv: '2.3', accepted: true, ts: new Date().toISOString() })); } catch (e) {}
+      localStorage.setItem('naz_plan', selectedPlan);
+      if (selectedPlan === 'solo') localStorage.setItem('naz_billing', billing);
+      // Aucun paiement à cette étape (validé client 2026-07-01) → tableau de bord verrouillé ; KYC depuis le dashboard ; paiement Solo après validation.
       window.location.href = '17-doctor-dashboard.html?kyc=todo';
     }
 
-    setBilling(billing); // synchronise l'UI du sélecteur + l'affichage des prix
+    setBilling(billing); // synchronise l'UI du sélecteur + l'affichage des prix (défaut = annuel)
+    selectPlan('solo');  // Solo pré-sélectionné par défaut (formule recommandée)
     document.addEventListener('fueni:langchange', refreshDisplay);
   </script>
 <script>/* Stepper cliquable : retour aux étapes déjà franchies */(function(){var u=['12b-doctor-eligibilite.html','13-doctor-inscription.html','14-doctor-plans.html','15-doctor-paiement.html','15b-doctor-kyc.html','16-doctor-confirmation.html'];document.querySelectorAll('.progress-steps .step').forEach(function(s,i){if(s.classList.contains('done')&&u[i]){s.style.cursor='pointer';s.title='Revenir à cette étape';s.addEventListener('click',function(){location.href=u[i];});}});})();</script>

@@ -93,6 +93,7 @@
     .cons-head { display:flex; align-items:center; gap:10px; margin-bottom:6px; }
     .cons-date { font-weight:700; color:#0f172a; }
     .cons-motif { color:#155e75; font-weight:600; font-size:0.88rem; }
+    .undoc-pill { display:inline-flex; align-items:center; background:#eef2f6; color:#64748b; border-radius:20px; padding:2px 10px; font-size:0.72rem; font-weight:700; }
     .cons-diag { font-size:0.85rem; color:#334155; }
     .cons-diag .lbl { color:#94a3b8; }
     .cons-note { font-size:0.85rem; color:#475569; margin-top:4px; white-space:pre-line; }
@@ -104,8 +105,8 @@
     .doc-chip .dl:hover { border-color:#155e75; background:#eef5f7; }
     .muted { color:#94a3b8; font-size:0.86rem; }
     /* Bandeau de sécurité épinglé + onglets de contenu */
-    .rec-tabs { display:inline-flex; background:#eef2f6; border-radius:10px; padding:4px; gap:2px; margin:2px 0 18px; flex-wrap:wrap; }
-    .rec-tabs button { background:none; border:0; padding:8px 16px; border-radius:8px; font-size:0.86rem; font-weight:600; color:#64748b; cursor:pointer; display:inline-flex; gap:8px; align-items:center; }
+    .rec-tabs { display:flex; background:#eef2f6; border-radius:10px; padding:4px; gap:2px; margin:2px 0 18px; flex-wrap:nowrap; overflow-x:auto; max-width:100%; scrollbar-width:thin; }
+    .rec-tabs button { background:none; border:0; padding:8px 14px; border-radius:8px; font-size:0.84rem; font-weight:600; color:#64748b; cursor:pointer; display:inline-flex; gap:8px; align-items:center; white-space:nowrap; flex-shrink:0; }
     .rec-tabs button.on { background:#fff; color:#155e75; box-shadow:0 1px 3px rgba(0,0,0,0.08); }
     .rec-tabs .cnt { background:#e2e8f0; color:#475569; border-radius:10px; padding:0 7px; font-size:0.72rem; font-weight:700; }
     .rec-tabs button.on .cnt { background:#d7ecf1; color:#155e75; }
@@ -292,7 +293,13 @@
     // N° dossier = référence patient unique et lisible (dérivée de l'id). Sert notamment à distinguer deux homonymes.
     const dossierNo = p => { const n = (p.id || '').replace(/[^0-9]/g, ''); return 'DOS-' + (n ? n.slice(-6).padStart(6, '0') : '000000'); };
 
-    const PATIENTS = window.NazPatients;
+    const PATIENTS = window.NazVisiblePatients ? window.NazVisiblePatients() : window.NazPatients;
+    // Informations médicales saisies en consultation (écran 25, interrogatoire) → reportées sur le dossier.
+    // En V2 : même objet servi par l'API ; ici, superposition localStorage sur le référentiel statique.
+    try {
+      const ms = JSON.parse(localStorage.getItem('fueni_med_info') || '{}');
+      PATIENTS.forEach(p => { const o = ms[p.name]; if (o) { p.blood = o.blood || ''; p.allergies = o.allergies || []; p.ant = o.ant || []; p.family = o.family || []; } });
+    } catch (e) {}
     const byId = Object.fromEntries(PATIENTS.map(p => [p.id, p]));
     let sel = PATIENTS[0].id;
     // Ouverture depuis « Mes patients » : ?patient={nom}
@@ -863,9 +870,14 @@
       }
 
       // Consultations : celles enregistrées à l'écran 25 (magasin partagé) + les démo, triées récentes d'abord.
-      const allConsults = sharedConsultsFor(p).concat(p.consults || []).sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+      // + visites attestées SANS compte-rendu (« Terminer sans documenter », écran 24) : la visite a eu lieu → elle
+      //   figure dans l'historique, marquée « sans compte-rendu » (un historique vide laisserait croire au patient jamais vu).
+      let undocVisits = [];
+      try { undocVisits = JSON.parse(localStorage.getItem('fueni_undoc_visits') || '[]').filter(v => v.patient === p.name).map(v => ({ date: v.date, motif: v.motif, undoc: true })); } catch (e) {}
+      const allConsults = sharedConsultsFor(p).concat(p.consults || []).concat(undocVisits).sort((a, b) => (b.date || '').localeCompare(a.date || ''));
       const consults = allConsults.length ? allConsults.map(c =>
-        '<div class="cons"><div class="cons-head"><span class="cons-date">' + fmtDate(c.date) + '</span><span class="cons-motif">' + esc(c.motif) + '</span></div>' +
+        '<div class="cons"><div class="cons-head"><span class="cons-date">' + fmtDate(c.date) + '</span><span class="cons-motif">' + esc(c.motif) + '</span>' +
+        (c.undoc ? '<span class="undoc-pill"><i class="fa fa-file-circle-xmark me-1"></i>' + T('docmr.undoc_visit') + '</span>' : '') + '</div>' +
         (c.diag ? '<div class="cons-diag"><span class="lbl">' + T('docmr.diag') + ' :</span> ' + esc(c.diag) + '</div>' : '') +
         (c.note ? '<div class="cons-note">' + esc(c.note) + '</div>' : '') +
         (c.rx && c.rx.length ? '<div class="cons-rx"><i class="fa fa-prescription me-1" style="color:#6d28d9;"></i>' + c.rx.map(r => '<span class="rx-pill">' + esc(r) + '</span>').join('') + '</div>' : '') +

@@ -45,6 +45,42 @@
     .safety-banner .alg-body { display:flex; flex-direction:column; gap:7px; min-width:0; }
     .safety-banner .alg-title { font-weight:700; }
     .safety-banner .alg-chips { display:flex; flex-wrap:wrap; }
+    /* Informations médicales (interrogatoire) — repliées en résumé, dépliées en formulaire.
+       Données du DOSSIER patient : saisies/vérifiées en consultation, jamais reprises sur les documents partagés.
+       Formulaire aligné sur l'onglet « Informations médicales » du dossier (26) : sections empilées, lignes larges. */
+    .safety-banner.alg.none { border:1px solid #e2e8f0; border-left:4px solid #94a3b8; color:#334155; }
+    .med-edit-btn { margin-left:auto; align-self:center; border:1.5px solid #e2e8f0; background:#fff; color:#155e75; border-radius:8px; font-size:0.78rem; font-weight:600; padding:5px 12px; white-space:nowrap; flex-shrink:0; cursor:pointer; }
+    .med-edit-btn:hover { border-color:#155e75; }
+    .med-card { background:#fff; border:1px solid #e2e8f0; border-left:4px solid #155e75; border-radius:12px; padding:16px 20px 18px; margin-bottom:16px; box-shadow:0 2px 8px rgba(0,0,0,0.04); }
+    .med-head { display:flex; align-items:center; gap:9px; flex-wrap:wrap; }
+    .med-head .t { font-weight:700; color:#0f172a; }
+    .med-head .note { color:#64748b; font-size:0.76rem; }
+    .med-hint { background:#eff6ff; border:1px solid #bfdbfe; color:#1d4ed8; border-radius:8px; padding:7px 11px; font-size:0.8rem; margin-top:9px; }
+    .med-body { max-width:620px; }
+    .me-lbl { font-size:0.76rem; font-weight:700; color:#155e75; text-transform:uppercase; letter-spacing:0.4px; margin:14px 0 6px; }
+    .me-row { display:flex; gap:8px; align-items:center; margin-bottom:7px; }
+    .me-row .form-control, .me-row .form-select { font-size:0.85rem; min-width:0; }
+    .btn-del { background:none; border:0; color:#cbd5e1; font-size:1rem; padding:6px 8px; cursor:pointer; flex-shrink:0; }
+    .btn-del:hover { color:#dc3545; }
+    .mr-add { background:none; border:0; color:#155e75; font-weight:600; font-size:0.82rem; cursor:pointer; padding:2px 0; }
+    .mr-add:hover { text-decoration:underline; }
+    .mr-limit { font-size:0.78rem; color:#9a3412; padding:3px 0; }
+    /* Combobox « créable » + validation inline — mêmes composants que l'onglet Informations médicales du dossier (26) */
+    .ac-box { position:relative; }
+    .ac-box .ac-input { width:100%; }
+    .ac-input.is-invalid, .year-inp.is-invalid { border-color:#dc3545 !important; background-image:none; padding-right:0.9rem; }
+    .me-sec-err { display:flex; align-items:center; gap:7px; background:#fef2f2; border:1px solid #fecaca; color:#b91c1c; border-radius:8px; padding:7px 11px; font-size:0.8rem; font-weight:600; margin:4px 0 2px; }
+    .me-sec-err .fa { flex-shrink:0; }
+    .cbx-panel { position:fixed; z-index:3500; background:#fff; border:1px solid #e2e8f0; border-radius:10px; box-shadow:0 8px 24px rgba(0,0,0,0.12); overflow:hidden; }
+    .cbx-list { max-height:240px; overflow:auto; }
+    .cbx-opt { padding:9px 12px; font-size:0.88rem; color:#334155; cursor:pointer; border-bottom:1px solid #f6f8fa; }
+    .cbx-opt:last-child { border-bottom:0; }
+    .cbx-opt:hover, .cbx-opt.active { background:#eef5f7; color:#155e75; }
+    .cbx-add { display:flex; align-items:center; gap:10px; padding:9px 12px; font-size:0.88rem; color:#155e75; font-weight:600; cursor:pointer; border-bottom:1px solid #f6f8fa; }
+    .cbx-add:last-child { border-bottom:0; }
+    .cbx-add:hover, .cbx-add.active { background:#eef5f7; }
+    .cbx-add .plus { width:20px; height:20px; border-radius:50%; background:#155e75; color:#fff; display:inline-flex; align-items:center; justify-content:center; font-size:0.68rem; flex-shrink:0; }
+    .cbx-empty { padding:9px 12px; color:#94a3b8; font-size:0.86rem; }
     .vitals-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(108px,1fr)); gap:10px; }
     .vitals-grid label { font-size:0.72rem; color:#64748b; font-weight:600; display:block; margin-bottom:3px; }
     .v-err { color:#b02a37; font-size:0.76rem; margin-top:7px; line-height:1.4; }
@@ -192,8 +228,10 @@
         </div>
       </div>
 
-      <!-- Allergy guard -->
+      <!-- Informations médicales (interrogatoire) : bandeau replié / formulaire déplié -->
       <div id="cAllergy"></div>
+      <!-- Menu déroulant partagé de l'autocomplete « saisie directe » (allergies / antécédents / famille) — positionné sous le champ actif (aligné sur le dossier, écran 26) -->
+      <div id="cbxPanel" class="cbx-panel d-none"><div class="cbx-list" id="cbxList"></div></div>
 
       <!-- Tabs -->
       <div class="seg">
@@ -297,6 +335,8 @@
           <p class="small text-muted mb-3" id="saveIntro" data-i18n="docc.save_intro">Cochez ceux à partager avec le patient.</p>
           <div id="saveManualBanner"></div>
           <div id="saveDocList"></div>
+          <!-- Première consultation d'un nouveau patient : l'effet (création du dossier + ajout à « Mes patients ») est annoncé au moment de l'engagement, pas sur le bouton d'action. -->
+          <div id="saveFirstNote" class="small mt-3" style="display:none;color:#1d4ed8;background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:8px 11px;"><i class="fa fa-user-plus me-1"></i><span></span></div>
           <div class="small mt-3" style="color:#9a3412;background:#fff8f1;border:1px solid #faddc0;border-radius:8px;padding:8px 11px;"><i class="fa fa-lock me-1"></i><span data-i18n="docc.save_final_note">Après enregistrement, la consultation est en lecture seule.</span></div>
         </div>
         <div class="modal-footer">
@@ -348,6 +388,23 @@
     const patManual = params.get('manual') === '1' || !!patRec.manual;
     function patAgeOf(p) { if (p.age != null && p.age !== '') return p.age; if (p.dob) { const b = new Date(p.dob + 'T00:00:00'); if (!isNaN(b.getTime())) { const t = new Date(); let a = t.getFullYear() - b.getFullYear(); if (t.getMonth() < b.getMonth() || (t.getMonth() === b.getMonth() && t.getDate() < b.getDate())) a--; return a >= 0 ? a : ''; } } return ''; }
     const patAge = patAgeOf(patRec);
+    /* Informations médicales du DOSSIER (allergies, groupe sanguin, antécédents) — objet distinct de la consultation :
+       persistant au niveau patient, saisi/vérifié par le praticien au début de la séance (anamnèse), jamais repris sur
+       les documents partagés. Source : référentiel statique + superposition localStorage (saisies de séances passées). */
+    const MED = (function () {
+      let o = null; try { o = (JSON.parse(localStorage.getItem('fueni_med_info') || '{}'))[patient] || null; } catch (e) {}
+      const src = o || patRec;
+      // Normalisation aux formes de l'éditeur du dossier (26) : allergies { name, sev, code }, antécédents { cond, year, code }.
+      return {
+        blood: src.blood || '',
+        allergies: (src.allergies || []).map(a => ({ name: a.name || '', sev: a.sev || 'medium', code: a.code || '' })),
+        ant: (src.ant || []).map(a => (typeof a === 'string') ? { cond: a, year: '', code: '' } : { cond: a.cond || '', year: a.year || '', code: a.code || '' }),
+        family: (src.family || []).map(f => ({ rel: f.rel || '', cond: f.cond || '' }))
+      };
+    })();
+    const medIsEmpty = () => !MED.blood && !MED.allergies.length && !MED.ant.length && !MED.family.length;
+    let medOpen = medIsEmpty(); // 1re consultation (aucune donnée) → interrogatoire ouvert d'emblée ; sinon résumé replié
+    let medBad = new Map(); // section d'infos médicales → clé du message à afficher (ligne incomplète / doublon / année invalide)
     let tab = 'note';
     const C = { rdvId: rdvId, date: CDATE, time: rdvTime, note: { motif: rdvMotif, exam: '', diags: [], cat: '' }, vitals: { temp: '', ta: '', pouls: '', spo2: '', poids: '' }, rx: [{ med: '', poso: '', duree: '' }], labo: [{ name: '' }], img: [{ name: '', region: '' }], ref: [{ spec: '', reason: '' }] };
     // Examens de biologie = LOINC (référentiel officiel, gratuit — Regenstrief). Structure { code = code LOINC, label = terme FR }.
@@ -472,12 +529,6 @@
       { code: '35489007', label: 'Épisode dépressif' },
       { code: '56717001', label: 'Tuberculose' }
     ];
-    // Allergies connues — lues depuis le dossier patient partagé (garde-fou à la prescription)
-    function patientAllergies(name) {
-      const rec = (window.NazPatients || []).find(p => p.name === name);
-      return rec ? rec.allergies : [];
-    }
-
     function fmtLong(s) { try { return new Date(s + 'T00:00:00').toLocaleDateString((window.NazI18n && NazI18n.getLang() === 'en') ? 'en-GB' : 'fr-FR', { day:'numeric', month:'long', year:'numeric' }); } catch (e) { return s; } }
     // Date affichée SUR le document = toujours en français (cohérent avec la langue du document, §langue).
     function fmtLongDoc(s) { try { return new Date(s + 'T00:00:00').toLocaleDateString('fr-FR', { day:'numeric', month:'long', year:'numeric' }); } catch (e) { return s; } }
@@ -585,7 +636,7 @@
       const meta = '<div class="doc-meta"><div><strong>' + TDoc('docc.patient') + '</strong> ' + idBits.join(' · ') +
         '<br><span style="font-size:0.8em;color:#94a3b8;">' + TDoc('docc.doc_ref') + ' ' + esc(CONS_REF) + '</span>' +
         '</div><div>' + fmtLongDoc(CDATE) + (linkedRdv && rdvTime ? ' · ' + rdvTime : '') + '</div></div>';
-      // Les allergies ne figurent PAS sur les documents générés : garde-fou réservé à l'écran de saisie (bandeau renderAllergy).
+      // Les allergies ne figurent PAS sur les documents générés : garde-fou réservé à l'écran de saisie (bandeau renderMed).
       // Confidentialité / minimisation — l'ordonnance circule (pharmacie, tiers) ; le rappel allergies reste côté praticien.
       const sign = '<div class="doc-sign"><div class="s-name">' + DR.title + ' ' + esc(DR.name) + '</div><div class="s-note">' + TDoc('docc.generated') + '</div></div>';
       const buildDoc = (title, content) => letterhead() + '<div class="doc-title">' + title + '</div>' + meta + content + sign;
@@ -712,6 +763,11 @@
           : '<label class="sd-share"><input type="checkbox" class="form-check-input" data-kind="' + e.kind + '" ' + (e.kind !== 'cr' ? 'checked' : '') + '> ' + esc(T('docc.share_check_short')) + '</label>';
         return '<div class="save-doc-row"><div class="sd-name"><i class="fa ' + (SAVE_IC[e.kind] || 'fa-file') + ' me-2" style="color:#155e75;"></i>' + esc(e.n) + '</div>' + share + '</div>';
       }).join('');
+      // Première consultation d'un nouveau patient (prospect non encore promu) → annoncer la création du dossier.
+      const fn = document.getElementById('saveFirstNote');
+      const isFirst = !!patRec.prospect && (window.NazCreatedIds ? NazCreatedIds().indexOf(patRec.id) === -1 : true);
+      fn.style.display = isFirst ? '' : 'none';
+      if (isFirst) fn.querySelector('span').textContent = T('docc.save_first_note');
       saveModal = saveModal || new bootstrap.Modal(document.getElementById('saveModal'));
       saveModal.show();
     }
@@ -728,6 +784,17 @@
         const ds = JSON.parse(localStorage.getItem('fueni_shared_docs') || '[]');
         allDocEntries().forEach(e => { e.shared = !!shareMap[e.kind]; const ix = ds.findIndex(x => x.ref === e.ref && x.kind === e.kind && x.patient === e.patient); if (ix >= 0) ds[ix] = e; else ds.push(e); });
         localStorage.setItem('fueni_shared_docs', JSON.stringify(ds));
+        // Finaliser une consultation liée à un RDV → marque ce RDV « terminé » (lu par le planning, écran 24).
+        if (rdvId) { const cr = JSON.parse(localStorage.getItem('fueni_completed_rdv') || '[]'); if (cr.indexOf(rdvId) < 0) { cr.push(rdvId); localStorage.setItem('fueni_completed_rdv', JSON.stringify(cr)); } }
+        // RDV clos « sans note » puis documenté après coup : la consultation finalisée remplace l'entrée « sans note » de l'historique.
+        if (rdvId) { const uv = JSON.parse(localStorage.getItem('fueni_undoc_visits') || '[]').filter(v => v.ref !== rdvId); localStorage.setItem('fueni_undoc_visits', JSON.stringify(uv)); }
+        // Première consultation d'un prospect → matérialise son dossier (il rejoint « Mes patients »).
+        const pr = (window.NazPatients || []).find(p => p.name === patient && p.prospect);
+        if (pr && window.NazMarkCreated) window.NazMarkCreated(pr.id);
+        // Interrogatoire (informations médicales) → reporté sur l'onglet « Informations médicales » du dossier (26).
+        medPrune();
+        const ms = JSON.parse(localStorage.getItem('fueni_med_info') || '{}');
+        ms[patient] = MED; localStorage.setItem('fueni_med_info', JSON.stringify(ms));
         localStorage.removeItem(draftKey); // consultation finalisée → brouillon effacé
       } catch (err) {}
       if (saveModal) saveModal.hide();
@@ -736,19 +803,242 @@
       location.href = '26-doctor-records.html?patient=' + encodeURIComponent(patient) + '&tab=docs&flash=' + (anyShared ? 'saved_shared' : 'saved');
     }
 
-    function renderAllergy() {
-      const al = patientAllergies(patient);
-      const box = document.getElementById('cAllergy');
-      if (!al.length) { box.innerHTML = ''; return; }
-      // Garde-fou prescription : TOUTES les allergies (pas seulement les sévères), triées par sévérité (élevée → moyenne → faible), en pastilles colorées. Cadre rouge si ≥ 1 sévère.
-      const sevRank = { high: 0, medium: 1, low: 2 };
-      const alSorted = al.slice().sort((a, b) => (sevRank[a.sev] != null ? sevRank[a.sev] : 3) - (sevRank[b.sev] != null ? sevRank[b.sev] : 3));
-      const crit = al.some(a => a.sev === 'high');
-      const chips = alSorted.map(a => '<span class="al-sev ' + a.sev + '">' + esc(a.name) + ' · ' + T('docmr.sev_' + a.sev) + '</span>').join('');
-      box.innerHTML = '<div class="safety-banner alg ' + (crit ? 'crit' : 'warn') + '"><i class="fa fa-triangle-exclamation"></i>' +
-        '<div class="alg-body"><span class="alg-title">' + T('docmr.allergy_warn') + '</span>' +
-        '<span class="alg-chips">' + chips + '</span></div></div>';
+    /* ---- Informations médicales (interrogatoire) ----
+       1re consultation → formulaire ouvert d'emblée (l'anamnèse précède la note et la prescription — le dossier naît de
+       cette saisie) ; patient connu → résumé replié (garde-fou allergies) + « Mettre à jour » (vérification à chaque visite).
+       Le garde-fou lit MED en direct : une allergie saisie ici arme l'alerte pour l'ordonnance de la même séance.
+       À la finalisation, MED est reporté sur l'onglet « Informations médicales » du dossier (26). */
+    const sevRank = { high: 0, medium: 1, low: 2 };
+    function algChips() {
+      return MED.allergies.slice().sort((a, b) => (sevRank[a.sev] != null ? sevRank[a.sev] : 3) - (sevRank[b.sev] != null ? sevRank[b.sev] : 3))
+        .map(a => '<span class="al-sev ' + a.sev + '">' + esc(a.name) + ' · ' + T('docmr.sev_' + a.sev) + '</span>').join('');
     }
+    function renderMed() {
+      const box = document.getElementById('cAllergy');
+      if (!medOpen) {
+        // Résumé replié : bandeau allergies (rouge si ≥ 1 sévère) + groupe/antécédents en rappel discret.
+        const has = MED.allergies.length, crit = MED.allergies.some(a => a.sev === 'high');
+        const sum = [];
+        if (MED.blood) sum.push(T('docmr.blood') + ' ' + MED.blood);
+        if (MED.ant.length) sum.push(T('docmr.ant_perso') + ' : ' + MED.ant.length);
+        if (MED.family.length) sum.push(T('docmr.ant_family') + ' : ' + MED.family.length);
+        box.innerHTML = '<div class="safety-banner alg ' + (has ? (crit ? 'crit' : 'warn') : 'none') + '">' +
+          '<i class="fa ' + (has ? 'fa-triangle-exclamation' : 'fa-notes-medical') + '"></i>' +
+          '<div class="alg-body"><span class="alg-title">' + (has ? T('docmr.allergy_warn') : T('docc.med_title')) + '</span>' +
+          '<span class="alg-chips">' + (has ? algChips() : '<span class="al-sev low">' + T('docc.med_none_alg') + '</span>') + '</span>' +
+          (sum.length ? '<span style="font-size:0.78rem;color:#64748b;">' + sum.join(' · ') + '</span>' : '') +
+          '</div><button type="button" class="med-edit-btn" onclick="medOpen=true;renderMed()"><i class="fa fa-pen me-1"></i>' + T('docc.med_update') + '</button></div>';
+        return;
+      }
+      // Formulaire aligné sur l'éditeur du dossier (26) : sections empilées, combobox « créable » (référentiel + saisie
+      // libre), année de diagnostic, validation inline identique (lignes incomplètes / doublons / année hors plage).
+      const bloods = ['O+', 'O-', 'A+', 'A-', 'B+', 'B-', 'AB+', 'AB-'];
+      const q = s => esc(s || '').replace(/"/g, '&quot;');
+      const sevOpts = s => ['high', 'medium', 'low'].map(x => '<option value="' + x + '"' + (s === x ? ' selected' : '') + '>' + T('docmr.sev_' + x) + '</option>').join('');
+      const secErr = c => medBad.has(c) ? '<div class="me-sec-err"><i class="fa fa-circle-exclamation"></i><span>' + T(medBad.get(c)) + '</span></div>' : '';
+      const alRows = MED.allergies.map((a, i) => '<div class="me-row">' +
+        cbxTriggerHtml('al', 'allergies', i, 'name', a.name, 'flex:1') +
+        '<select class="form-select form-select-sm" style="max-width:130px" onchange="MED.allergies[' + i + '].sev=this.value">' + sevOpts(a.sev) + '</select>' +
+        '<button type="button" class="btn-del" onclick="medDel(\'allergies\',' + i + ')"><i class="fa fa-trash-can"></i></button></div>').join('');
+      const antRows = MED.ant.map((a, i) => '<div class="me-row">' +
+        cbxTriggerHtml('cond', 'ant', i, 'cond', a.cond, 'flex:1') +
+        '<input type="text" class="form-control form-control-sm year-inp" data-yidx="' + i + '" style="max-width:90px" inputmode="numeric" maxlength="4" placeholder="' + T('docmr.year_ph') + '" value="' + q(a.year) + '" oninput="antYearInput(this,' + i + ')">' +
+        '<button type="button" class="btn-del" onclick="medDel(\'ant\',' + i + ')"><i class="fa fa-trash-can"></i></button></div>').join('');
+      const famRows = MED.family.map((f, i) => '<div class="me-row">' +
+        cbxTriggerHtml('rel', 'family', i, 'rel', f.rel, 'flex:0 0 160px') +
+        cbxTriggerHtml('cond', 'family', i, 'cond', f.cond, 'flex:1') +
+        '<button type="button" class="btn-del" onclick="medDel(\'family\',' + i + ')"><i class="fa fa-trash-can"></i></button></div>').join('');
+      box.innerHTML = '<div class="med-card">' +
+        '<div class="med-head"><i class="fa fa-notes-medical" style="color:#155e75;"></i><span class="t">' + T('docc.med_title') + '</span>' +
+          '<span class="note"><i class="fa fa-lock me-1"></i>' + T('docc.med_internal') + '</span>' +
+          '<button type="button" class="med-edit-btn" onclick="medClose()"><i class="fa fa-check me-1"></i>' + T('docc.med_done') + '</button></div>' +
+        (medIsEmpty() ? '<div class="med-hint"><i class="fa fa-circle-info me-1"></i>' + T('docc.med_first_hint') + '</div>' : '') +
+        '<div class="med-body">' +
+          '<div class="me-lbl">' + T('docmr.blood') + '</div>' +
+          '<div class="me-row"><select class="form-select form-select-sm" style="max-width:150px" onchange="MED.blood=this.value">' +
+            '<option value=""' + (MED.blood ? '' : ' selected') + '>' + T('docmr.blood_unknown') + '</option>' +
+            bloods.map(b => '<option' + (MED.blood === b ? ' selected' : '') + '>' + b + '</option>').join('') + '</select></div>' +
+          '<div class="me-lbl">' + T('docmr.allergies') + '</div>' + alRows + secErr('allergies') +
+          (MED.allergies.length >= AL_MAX ? '<div class="mr-limit"><i class="fa fa-circle-info me-1"></i>' + T('docmr.al_limit').replace('{n}', AL_MAX) + '</div>' : '<button type="button" class="mr-add" onclick="medAdd(\'allergies\')"><i class="fa fa-plus me-1"></i>' + T('docmr.add') + '</button>') +
+          '<div class="me-lbl">' + T('docmr.ant_perso') + '</div>' + antRows + secErr('ant') +
+          '<button type="button" class="mr-add" onclick="medAdd(\'ant\')"><i class="fa fa-plus me-1"></i>' + T('docmr.add') + '</button>' +
+          '<div class="me-lbl">' + T('docmr.ant_family') + '</div>' + famRows + secErr('family') +
+          '<button type="button" class="mr-add" onclick="medAdd(\'family\')"><i class="fa fa-plus me-1"></i>' + T('docmr.add') + '</button>' +
+        '</div></div>';
+    }
+    // Ajout d'une ligne vide, éditée en place (comme dans le dossier — 26).
+    const AL_MAX = 15; // plafond « souple » : évite les saisies aberrantes sans jamais empêcher une allergie réelle
+    function medAdd(sec) {
+      if (sec === 'allergies') { if (MED.allergies.length >= AL_MAX) return; MED.allergies.push({ name: '', sev: 'medium', code: '' }); }
+      else if (sec === 'ant') MED.ant.push({ cond: '', year: '', code: '' });
+      else MED.family.push({ rel: '', cond: '' });
+      renderMed();
+    }
+    function medDel(sec, i) { MED[sec].splice(i, 1); medBad = new Map(); renderMed(); }
+    // Année de diagnostic : chiffres uniquement à la saisie ; plage (1900–année en cours) validée au repli, signalée en ligne.
+    function antYearInput(el, i) {
+      el.value = el.value.replace(/[^0-9]/g, '');
+      if (MED.ant[i]) MED.ant[i].year = el.value;
+      el.classList.remove('is-invalid');
+      if (medBad.size) clearMedErrors();
+    }
+    function clearMedErrors() { medBad = new Map(); document.querySelectorAll('.ac-input.is-invalid, .year-inp.is-invalid').forEach(x => x.classList.remove('is-invalid')); document.querySelectorAll('.me-sec-err').forEach(x => x.remove()); }
+    // Nettoyage silencieux (finalisation avec formulaire resté ouvert) : seules les lignes complètes sont reportées au dossier.
+    function medPrune() {
+      MED.allergies = MED.allergies.filter(a => (a.name || '').trim());
+      MED.ant = MED.ant.filter(a => (a.cond || '').trim());
+      MED.family = MED.family.filter(f => (f.rel || '').trim() && (f.cond || '').trim());
+    }
+    // Repli « Valider » : même validation que l'enregistrement du dossier (26) — lignes incomplètes, doublon exact
+    // d'antécédent familial, année hors plage → signalées en ligne (message de section + champ en rouge) et bloquantes.
+    function medClose() {
+      const bad = [], secMsg = new Map();
+      MED.allergies.forEach((a, i) => { if (!(a.name || '').trim()) { bad.push({ coll: 'allergies', idx: i, field: 'name' }); secMsg.set('allergies', 'docmr.row_incomplete'); } });
+      MED.ant.forEach((a, i) => { if (!(a.cond || '').trim()) { bad.push({ coll: 'ant', idx: i, field: 'cond' }); secMsg.set('ant', 'docmr.row_incomplete'); } });
+      MED.family.forEach((f, i) => { let inc = false; if (!(f.rel || '').trim()) { bad.push({ coll: 'family', idx: i, field: 'rel' }); inc = true; } if (!(f.cond || '').trim()) { bad.push({ coll: 'family', idx: i, field: 'cond' }); inc = true; } if (inc) secMsg.set('family', 'docmr.row_incomplete'); });
+      // Doublon EXACT d'antécédent familial (même lien + même affection) : redondant → bloqué. (Même affection chez des proches différents = autorisé.)
+      const famSeen = new Set();
+      MED.family.forEach((f, i) => {
+        const rel = (f.rel || '').trim(), cond = (f.cond || '').trim(); if (!rel || !cond) return;
+        const key = alNorm(rel) + '|' + alNorm(cond);
+        if (famSeen.has(key)) { bad.push({ coll: 'family', idx: i, field: 'rel' }); bad.push({ coll: 'family', idx: i, field: 'cond' }); if (!secMsg.has('family')) secMsg.set('family', 'docmr.row_duplicate'); }
+        else famSeen.add(key);
+      });
+      const curYear = new Date().getFullYear();
+      MED.ant.forEach((a, i) => {
+        const y = (a.year || '').trim(); if (!y) return;
+        const n = parseInt(y, 10);
+        if (y.length !== 4 || isNaN(n) || n < 1900 || n > curYear) { bad.push({ coll: 'ant', idx: i, year: true }); if (!secMsg.has('ant')) secMsg.set('ant', 'docmr.year_invalid'); }
+      });
+      if (bad.length) {
+        medBad = secMsg; renderMed();
+        let first = null; // surbrillance des champs concernés + défilement vers le premier (pas de focus : onfocus ouvrirait le menu)
+        bad.forEach(b => { const el = b.year ? document.querySelector('.year-inp[data-yidx="' + b.idx + '"]') : document.querySelector('.ac-input[data-coll="' + b.coll + '"][data-idx="' + b.idx + '"][data-field="' + b.field + '"]'); if (el) { el.classList.add('is-invalid'); if (!first) first = el; } });
+        if (first) first.scrollIntoView({ block: 'center' });
+        return; // repli bloqué
+      }
+      medBad = new Map(); cbxClose(); medOpen = false; renderMed();
+    }
+
+    /* ---- Combobox « créable » (référentiel + saisie libre) — même composant que le dossier (26) ---- */
+    // Référentiels cliniques = SNOMED CT (system http://snomed.info/sct). Structure FHIR Coding : { code = SCTID, display = terme FR }.
+    // Sous-ensemble « plus utilisés » (démo). ⚠️ Codes SCTID INDICATIFS — à valider contre la release SNOMED CT licenciée (édition internationale + extension FR).
+    const ALLERGENS = [
+      { code: '764146007', display: 'Pénicilline' },
+      { code: '27658006', display: 'Amoxicilline' },
+      { code: '372665008', display: 'Anti-inflammatoire non stéroïdien (AINS)' },
+      { code: '387458008', display: 'Aspirine' },
+      { code: '387207008', display: 'Ibuprofène' },
+      { code: '387406002', display: 'Sulfamides' },
+      { code: '372796006', display: 'Anesthésique local' },
+      { code: '111088007', display: 'Latex' },
+      { code: '256349002', display: 'Arachide' },
+      { code: '227037002', display: 'Fruits de mer' },
+      { code: '102263004', display: 'Œuf' },
+      { code: '3718001', display: 'Lait de vache' },
+      { code: '227493005', display: 'Fruits à coque' },
+      { code: '256319008', display: 'Blé / gluten' },
+      { code: '256350002', display: 'Soja' },
+      { code: '256259004', display: 'Pollen' },
+      { code: '260147004', display: 'Acariens' },
+      { code: '13577000', display: 'Venin d\'hyménoptère (piqûre d\'abeille/guêpe)' },
+      { code: '418689008', display: 'Produit de contraste iodé' },
+      { code: '294949004', display: 'Poils d\'animaux' }
+    ];
+    const CONDITIONS = [
+      { code: '38341003', display: 'Hypertension artérielle (HTA)' },
+      { code: '44054006', display: 'Diabète type 2' },
+      { code: '46635009', display: 'Diabète type 1' },
+      { code: '195967001', display: 'Asthme' },
+      { code: '127040003', display: 'Drépanocytose' },
+      { code: '709044004', display: 'Insuffisance rénale chronique' },
+      { code: '56265001', display: 'Cardiopathie' },
+      { code: '230690007', display: 'Accident vasculaire cérébral (AVC)' },
+      { code: '84757009', display: 'Épilepsie' },
+      { code: '13200003', display: 'Ulcère gastroduodénal' },
+      { code: '235595009', display: 'Reflux gastro-œsophagien' },
+      { code: '56717001', display: 'Tuberculose' },
+      { code: '86406008', display: 'Infection à VIH' },
+      { code: '66071002', display: 'Hépatite B' },
+      { code: '363346000', display: 'Cancer' },
+      { code: '40930008', display: 'Hypothyroïdie' },
+      { code: '55822004', display: 'Hyperlipidémie' },
+      { code: '13645005', display: 'BPCO' },
+      { code: '396275006', display: 'Arthrose' },
+      { code: '90560007', display: 'Goutte' },
+      { code: '35489007', display: 'Dépression' },
+      { code: '197480006', display: 'Trouble anxieux' }
+    ];
+    const RELATIONS = ['Père', 'Mère', 'Frère', 'Sœur', 'Grand-père', 'Grand-mère', 'Oncle', 'Tante', 'Autre'];
+    const MED_LISTS = { al: ALLERGENS, cond: CONDITIONS, rel: RELATIONS };
+    const alNorm = s => (s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim(); // comparaison insensible casse/accents (anti-doublon)
+    const escA = s => (s == null ? '' : String(s)).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+    let cbxTrigger = null;
+    // Autocomplete « saisie directe » : le champ EST la recherche ; le menu (fixe) s'ouvre sous le champ actif.
+    function cbxTriggerHtml(listKey, coll, idx, field, value, style) {
+      return '<div class="ac-box"' + (style ? ' style="' + style + '"' : '') + '>' +
+        '<input type="text" class="form-control form-control-sm ac-input" autocomplete="off" maxlength="60"' +
+        ' data-list="' + listKey + '" data-coll="' + coll + '" data-idx="' + idx + '" data-field="' + field + '"' +
+        ' value="' + esc(value || '').replace(/"/g, '&quot;') + '" placeholder="' + esc(T('docmr.search_in_list')) + '"' +
+        ' oninput="acInput(this)" onfocus="acOpen(this)" onkeydown="cbxKey(event)"></div>';
+    }
+    function acOpen(el) { // positionne + affiche le menu sous le champ actif
+      cbxTrigger = el;
+      const panel = document.getElementById('cbxPanel'), r = el.getBoundingClientRect();
+      panel.style.left = r.left + 'px'; panel.style.top = (r.bottom + 4) + 'px'; panel.style.width = Math.max(r.width, 240) + 'px';
+      panel.classList.remove('d-none');
+      cbxFilter();
+    }
+    function acInput(el) { // saisie directe : met à jour MED (texte libre → non codé jusqu'à sélection) puis filtre
+      cbxTrigger = el;
+      if (medBad.size || el.classList.contains('is-invalid')) clearMedErrors();
+      const coll = el.dataset.coll, idx = +el.dataset.idx, field = el.dataset.field;
+      if (MED[coll] && MED[coll][idx]) { MED[coll][idx][field] = el.value; if (coll === 'allergies' || coll === 'ant') MED[coll][idx].code = ''; }
+      acOpen(el);
+    }
+    function cbxClose() { const p = document.getElementById('cbxPanel'); if (p) p.classList.add('d-none'); cbxTrigger = null; }
+    function cbxFilter() {
+      if (!cbxTrigger) return;
+      // Listes mixtes : chaînes simples (relation) ou objets SNOMED { code, display }. Normalisées en { label, code }.
+      const raw = MED_LISTS[cbxTrigger.dataset.list] || [];
+      const list = raw.map(x => (typeof x === 'string') ? { label: x, code: '' } : { label: x.display, code: x.code });
+      const coll = cbxTrigger.dataset.coll, idx = +cbxTrigger.dataset.idx;
+      // Anti-doublon : allergies (par nom) et antécédents perso (par affection). PAS la famille (une même affection peut concerner plusieurs proches).
+      const dedupKey = coll === 'allergies' ? 'name' : (coll === 'ant' ? 'cond' : null);
+      const taken = dedupKey ? new Set((MED[coll] || []).filter((_, j) => j !== idx).map(a => alNorm(a[dedupKey] || '')).filter(Boolean)) : null;
+      const q = (cbxTrigger.value || '').trim(), nq = q.toLowerCase();
+      let matches = list.filter(it => it.label.toLowerCase().includes(nq));
+      if (taken) matches = matches.filter(it => !taken.has(alNorm(it.label)));
+      const lk = cbxTrigger.dataset.list;
+      if (lk === 'al' || lk === 'cond') matches.sort((a, b) => a.label.localeCompare(b.label, 'fr'));
+      let html = matches.map(it => '<div class="cbx-opt" onmousedown="cbxPick(event,\'' + escA(it.label) + '\',\'' + escA(it.code) + '\')">' + esc(it.label) + '</div>').join('');
+      const dup = taken && q && taken.has(alNorm(q));
+      if (q && !list.some(it => it.label.toLowerCase() === nq) && !dup) html += '<div class="cbx-add" onmousedown="cbxPick(event,\'' + escA(q) + '\',\'\')"><span class="plus"><i class="fa fa-plus"></i></span>' + T('docmr.add_value').replace('{v}', esc(q)) + '</div>';
+      if (dup) html += '<div class="cbx-empty">' + T('docmr.al_dup_hint') + '</div>';
+      if (!html) html = '<div class="cbx-empty">' + T('docmr.no_result') + '</div>';
+      document.getElementById('cbxList').innerHTML = html;
+    }
+    function cbxPick(e, value, code) {
+      if (e) e.preventDefault();
+      if (!cbxTrigger) return;
+      const el = cbxTrigger, coll = el.dataset.coll, idx = +el.dataset.idx, field = el.dataset.field;
+      if (coll === 'allergies' && MED.allergies.some((a, j) => j !== idx && alNorm(a.name) === alNorm(value))) { cbxClose(); showCToast(T('docmr.al_dup').replace('{v}', value)); return; }
+      if (MED[coll] && MED[coll][idx]) { MED[coll][idx][field] = value; if (coll === 'allergies' || coll === 'ant') MED[coll][idx].code = code || ''; }
+      el.value = value; // refléter la sélection dans le champ
+      cbxClose();
+    }
+    function cbxKey(e) {
+      if (e.key === 'Escape') { cbxClose(); return; }
+      const opts = Array.prototype.slice.call(document.querySelectorAll('#cbxList .cbx-opt, #cbxList .cbx-add'));
+      if (!opts.length) return;
+      let idx = opts.findIndex(o => o.classList.contains('active'));
+      if (e.key === 'ArrowDown') { e.preventDefault(); idx = Math.min(opts.length - 1, idx + 1); }
+      else if (e.key === 'ArrowUp') { e.preventDefault(); idx = Math.max(0, idx - 1); }
+      else if (e.key === 'Enter') { e.preventDefault(); const pick = opts[idx < 0 ? 0 : idx]; if (pick) pick.dispatchEvent(new Event('mousedown')); return; }
+      else return;
+      opts.forEach(o => o.classList.remove('active')); opts[idx].classList.add('active'); opts[idx].scrollIntoView({ block: 'nearest' });
+    }
+    document.addEventListener('mousedown', function (e) { if (cbxTrigger && !e.target.closest('#cbxPanel') && !e.target.closest('.ac-box')) cbxClose(); });
     // Bouton retour contextuel : dossier médical si l'on vient de « Documenter une consultation », sinon planning
     const fromRecords = (params.get('from') === 'records');
     function setBack() {
@@ -958,10 +1248,10 @@
       noteCount(document.getElementById('nExam'), 'examCount');
       noteCount(document.getElementById('nCat'), 'catCount');
       ['Temp', 'Ta', 'Pouls', 'Spo2', 'Poids'].forEach(k => { const el = document.getElementById('v' + k); if (el) el.value = C.vitals[k.toLowerCase()] || ''; });
-      setBack(); renderDiagChips(); renderAllergy(); renderPresc(); renderPreview();
+      setBack(); renderDiagChips(); renderMed(); renderPresc(); renderPreview();
       if (restored) showCToast(T('docc.draft_restored')); // indicateur : la saisie précédente non finalisée a été reprise
     }
-    document.addEventListener('fueni:langchange', () => { document.getElementById('pbMeta').textContent = (rdvMotif || T('docc.new_consult')) + ' · ' + (linkedRdv ? T('docc.rdv_of') + ' ' : '') + fmtLong(CDATE) + (linkedRdv && rdvTime ? ' à ' + rdvTime : '') + (rdvId ? ' · ' + T('docc.rdv_ref') + ' ' + rdvId : ''); setBack(); renderAllergy(); renderPresc(); renderPreview(); });
+    document.addEventListener('fueni:langchange', () => { document.getElementById('pbMeta').textContent = (rdvMotif || T('docc.new_consult')) + ' · ' + (linkedRdv ? T('docc.rdv_of') + ' ' : '') + fmtLong(CDATE) + (linkedRdv && rdvTime ? ' à ' + rdvTime : '') + (rdvId ? ' · ' + T('docc.rdv_ref') + ' ' + rdvId : ''); setBack(); renderMed(); renderPresc(); renderPreview(); });
     document.addEventListener('DOMContentLoaded', hydrate);
   </script>
 <!-- Prototype version badge -->

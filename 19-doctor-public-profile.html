@@ -182,6 +182,8 @@
     .motif-row .m-dur .m-dur-custom { width:104px; }
     .motif-row .m-price { width:168px; flex:0 0 auto; }
     .motif-row .m-price input { min-width:0; }
+    .motif-row .m-price2 { width:150px; flex:0 0 auto; }
+    .mv-price2 { color:#94a3b8; font-weight:500; }
     .mv-row { display:flex; justify-content:space-between; align-items:center; padding:9px 0; border-bottom:1px solid #f4f7fa; }
     .mv-row:last-child { border-bottom:0; }
     .mv-name { font-weight:600; color:#1e293b; }
@@ -383,10 +385,12 @@
         </div>
         <div class="card-view" id="view-motifs"></div>
         <div class="card-edit">
-          <div class="form-hint mb-2" data-i18n="docpp.motifs_help">Les motifs proposés à la réservation, avec durée et tarif indicatif.</div>
-          <div class="d-flex align-items-center gap-2 mb-3">
+          <div class="form-hint mb-2" data-i18n="docpp.motifs_help">Les motifs proposés à la réservation, avec durée et tarif indicatif. Une devise secondaire (optionnelle) peut être ajoutée : vous en saisissez la conversion, à titre indicatif.</div>
+          <div class="d-flex align-items-center gap-2 mb-3 flex-wrap">
             <label class="form-label mb-0" data-i18n="docpp.currency_label">Devise</label>
-            <select class="form-select form-select-sm" id="ppCurrency" style="max-width:120px" onchange="setCurrency(this.value)"></select>
+            <select class="form-select form-select-sm" id="ppCurrency" style="max-width:104px" onchange="setCurrency(this.value)"></select>
+            <label class="form-label mb-0 ms-2" data-i18n="docpp.currency2_label">Devise secondaire</label>
+            <select class="form-select form-select-sm" id="ppCurrency2" style="max-width:130px" onchange="setCurrency2(this.value)"></select>
           </div>
           <div id="ppMotifs"></div>
           <div id="ppMotifsErr" class="text-danger small mt-2 d-none"></div>
@@ -498,6 +502,7 @@
         { id:'loc2', type:'hopital', label:'Hôpital Principal de Dakar', street:'Avenue Nelson Mandela', city:'Dakar', region:'Dakar', country:'Sénégal', primary:false, bookable:false, access:['wheelchair'], photos:[], hours:{}, motifs:[], service:'Cardiologie interventionnelle', position:'chef' }
       ],
       currency: 'XOF',
+      currency2: '',
       bookingWindow: 30 // fenêtre de réservation (jours à l'avance) — profondeur des créneaux proposés côté patient
     };
     const BOOK_WINDOWS = [7, 15, 30, 60, 90]; // options de fenêtre de réservation (jours)
@@ -554,7 +559,7 @@
       else if (key === 'location') {
         // Restaure la STRUCTURE des lieux (snapshot) + la devise, mais conserve les horaires/motifs actuels des lieux
         // survivants : ils ont pu être enregistrés entre-temps par les cartes Horaires/Motifs ouvertes en parallèle.
-        P.currency = s.currency;
+        P.currency = s.currency; P.currency2 = s.currency2 || '';
         const curById = {}; (P.locations || []).forEach(L => { curById[L.id] = L; });
         P.locations = (s.locations || []).map(sL => {
           const restored = clone(sL), cur = curById[sL.id];
@@ -563,7 +568,7 @@
         });
       }
       else if (key === 'hours') (s.locations || []).forEach(sL => { const L = (P.locations || []).find(x => x.id === sL.id); if (L) L.hours = clone(sL.hours); });
-      else if (key === 'motifs') (s.locations || []).forEach(sL => { const L = (P.locations || []).find(x => x.id === sL.id); if (L) L.motifs = clone(sL.motifs); });
+      else if (key === 'motifs') { P.currency = s.currency; P.currency2 = s.currency2 || ''; (s.locations || []).forEach(sL => { const L = (P.locations || []).find(x => x.id === sL.id); if (L) L.motifs = clone(sL.motifs); }); }
       else if (key === 'booking') P.bookingWindow = s.bookingWindow;
     }
     function cancelCard(key) {
@@ -655,7 +660,7 @@
         const head = bl.length > 1 ? '<div class="hv-loc">' + e(locName(L)) + '</div>' : '';
         const rows = (L.motifs || []).length ? L.motifs.map(m =>
           '<div class="mv-row"><div><div class="mv-name">' + e(m.label) + '</div><div class="mv-meta"><i class="fa fa-clock me-1"></i>' + m.dur + ' ' + T('docppv.min') + '</div></div>' +
-          '<div class="mv-price">' + fmt(m.price) + ' ' + (P.currency || 'XOF') + '</div></div>'
+          '<div class="mv-price">' + motifPrice(m) + '</div></div>'
         ).join('') : '<div class="view-muted mb-2">' + T('docpp.view_empty') + '</div>';
         return head + rows;
       }).join('') : NR;
@@ -1173,6 +1178,7 @@
           '<input type="text" class="form-control form-control-sm m-label" maxlength="100" value="' + e(m.label) + '" oninput="P.locations[' + motifsLoc + '].motifs[' + i + '].label=this.value;this.classList.remove(\'is-invalid\');hideMotifErr()" placeholder="Motif">' +
           durField(i, m) +
           '<div class="input-group input-group-sm m-price"><input type="number" class="form-control" value="' + m.price + '" min="0" step="500" oninput="P.locations[' + motifsLoc + '].motifs[' + i + '].price=+this.value;this.classList.remove(\'is-invalid\');hideMotifErr()"><span class="input-group-text">' + (P.currency || 'XOF') + '</span></div>' +
+          (P.currency2 ? '<div class="input-group input-group-sm m-price m-price2"><input type="number" class="form-control" value="' + (m.price2 != null ? m.price2 : '') + '" min="0" step="500" placeholder="—" oninput="P.locations[' + motifsLoc + '].motifs[' + i + '].price2=(this.value===\'\'?null:+this.value)"><span class="input-group-text">' + P.currency2 + '</span></div>' : '') +
           '<button class="btn-del" title="' + T('docrdv.act_cancel') + '" onclick="removeMotif(' + i + ')"><i class="fa fa-trash-can"></i></button>' +
         '</div>'
       ).join('');
@@ -1194,7 +1200,9 @@
       m.dur = (v === 'custom') ? (DUR_PRESETS.includes(m.dur) ? 25 : m.dur) : +v;
       renderMotifs();
     }
-    function addMotif() { P.locations[motifsLoc].motifs.push({ label:'', dur:30, price:0 }); renderMotifs(); }
+    function addMotif() { P.locations[motifsLoc].motifs.push({ label:'', dur:30, price:0, price2:null }); renderMotifs(); }
+    // Prix affiché : primaire + (optionnel) équivalent en devise secondaire, saisi par le praticien, indicatif.
+    function motifPrice(m) { return fmt(m.price) + ' ' + (P.currency || 'XOF') + ((P.currency2 && m.price2 != null && m.price2 !== '') ? ' <span class="mv-price2">· ≈ ' + fmt(m.price2) + ' ' + P.currency2 + '</span>' : ''); }
     function removeMotif(i) { P.locations[motifsLoc].motifs.splice(i, 1); renderMotifs(); hideMotifErr(); }
     function hideMotifErr() { const el = document.getElementById('ppMotifsErr'); if (el) el.classList.add('d-none'); }
     // Chaque acte doit avoir un intitulé ET un tarif > 0 (durée valide) — pas de ligne vide / à 0.
@@ -1224,8 +1232,15 @@
       const sel = document.getElementById('ppCurrency'); if (!sel) return;
       if (!P.currency) P.currency = 'XOF';
       sel.innerHTML = CURRENCIES.map(c => '<option' + (c === P.currency ? ' selected' : '') + '>' + c + '</option>').join('');
+      const sel2 = document.getElementById('ppCurrency2');
+      if (sel2) {
+        if (P.currency2 === P.currency) P.currency2 = ''; // la secondaire ne peut pas être la même que la principale
+        sel2.innerHTML = '<option value=""' + (!P.currency2 ? ' selected' : '') + '>' + T('docpp.currency2_none') + '</option>' +
+          CURRENCIES.filter(c => c !== P.currency).map(c => '<option' + (c === P.currency2 ? ' selected' : '') + '>' + c + '</option>').join('');
+      }
     }
-    function setCurrency(v) { P.currency = v; renderMotifs(); }
+    function setCurrency(v) { P.currency = v; if (P.currency2 === v) P.currency2 = ''; renderCurrency(); renderMotifs(); }
+    function setCurrency2(v) { P.currency2 = v || ''; renderMotifs(); }
     // Fenêtre de réservation (carte éditable : édition ciblée + Enregistrer/Annuler comme les autres cartes)
     function fillBookWin() {
       const sel = document.getElementById('ppBookWin'); if (!sel) return;

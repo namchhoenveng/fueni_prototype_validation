@@ -325,21 +325,40 @@
       document.getElementById('lockedOverlay').style.display = 'none';
       const bg = document.querySelector('.bg-content');
       bg.style.filter = 'none';
+      bg.style.pointerEvents = 'auto'; // .bg-content est inerte à l'état verrouillé → réactiver les clics (bandeau « Voir », liens)
+      bg.style.userSelect = 'auto';
       document.querySelectorAll('.nav-link-side.js-locked').forEach(l => { l.classList.add('unlocked'); l.classList.remove('js-locked'); });
       document.getElementById('sidebarStatus').innerHTML = '<i class="fa fa-circle-check me-1" style="color:#22d3ee;"></i><span style="color:rgba(255,255,255,0.72);">' + t('doc.dash.validated_status', 'Profil validé') + '</span>';
       renderNewBookings();
     }
 
-    // Compteur « nouveaux rendez-vous réservés en ligne » (non encore ouverts dans le planning).
+    // Bandeau planning UNIQUE (un seul niveau d'alerte, pas d'empilement) : nouvelles réservations en ligne
+    // + RDV passés « à clôturer » (le praticien atteste : terminé / absent) — les deux mènent au planning (24).
     function renderNewBookings() {
       const el = document.getElementById('newBookingsBanner'); if (!el) return;
       let arr = [], seen = new Set();
       try { arr = JSON.parse(localStorage.getItem('fueni_appointments') || '[]'); } catch (e) {}
       try { seen = new Set(JSON.parse(localStorage.getItem('fueni_rdv_seen') || '[]')); } catch (e) {}
       const docName = (function () { try { const p = JSON.parse(localStorage.getItem('fueni_pubprofile_v2') || '{}'); const n = ((p.title ? p.title + ' ' : '') + (p.name || '')).trim(); if (n) return n; } catch (e) {} return 'Dr Aboubacar Diallo'; })();
-      const n = arr.filter(a => a && a.status !== 'CANCELLED' && (!a.doctor || a.doctor === docName) && !seen.has(a.id)).length;
-      if (!n) { el.style.display = 'none'; return; }
-      document.getElementById('newBookingsText').textContent = t('doc.dash.new_bookings', '{n} nouveau(x) rendez-vous réservé(s) en ligne à vérifier').replace('{n}', n);
+      // Même calcul que le planning (24), gardes d'ingestion comprises (entrée valide, bon praticien,
+      // non annulée, id présent, sans doublon, non vue) + le RDV réservé de démo (Binta Sarr).
+      const counted = new Set(); let n = 0;
+      arr.forEach(a => {
+        if (!a || !a.dateISO || !a.time || !a.id) return;
+        if (a.doctor && docName && a.doctor !== docName) return;
+        if (a.status === 'CANCELLED') return;
+        if (counted.has(a.id) || seen.has(a.id)) return;
+        counted.add(a.id); n++;
+      });
+      ['A-20260710-1430', 'A-20260709-1100'].forEach(id => { if (!seen.has(id)) n++; });
+      // « À clôturer » : dernier compteur écrit par le planning (fueni_planning_counts) ; repli = 8 (état initial des données démo de 24).
+      let toClose = 8;
+      try { const c = JSON.parse(localStorage.getItem('fueni_planning_counts') || 'null'); if (c && typeof c.toClose === 'number') toClose = c.toClose; } catch (e) {}
+      const segs = [];
+      if (n) segs.push(t('doc.dash.new_bookings', '{n} nouveau(x) rendez-vous réservé(s) en ligne à vérifier').replace('{n}', n));
+      if (toClose) segs.push(t('docrdv.toclose_banner', '{n} rendez-vous à clôturer').replace('{n}', toClose));
+      if (!segs.length) { el.style.display = 'none'; return; }
+      document.getElementById('newBookingsText').textContent = segs.join(' · ');
       el.style.display = 'flex';
     }
 
@@ -355,6 +374,7 @@
     document.addEventListener('fueni:langchange', () => {
       const s = document.getElementById('sidebarStatus');
       if (s && s.querySelector('.fa-circle-check')) s.innerHTML = '<i class="fa fa-circle-check me-1" style="color:#22d3ee;"></i><span style="color:rgba(255,255,255,0.72);">' + t('doc.dash.validated_status', 'Profil validé') + '</span>';
+      renderNewBookings(); // bandeau planning (segments localisés)
     });
   </script>
 <!-- Prototype version badge -->

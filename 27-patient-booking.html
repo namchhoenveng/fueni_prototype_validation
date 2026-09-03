@@ -57,6 +57,8 @@
     .motif .m-name { font-weight:700; }
     .motif .m-meta { font-size:0.82rem; color:#64748b; margin-top:2px; }
     .motif .m-price { font-weight:700; color:var(--teal); white-space:nowrap; }
+    .motif .m-price2 { color:#94a3b8; font-weight:600; }
+    .price-line .pl-v2 { color:#64748b; font-weight:600; font-size:0.85rem; }
     .motif .m-radio { width:20px; height:20px; border-radius:50%; border:2px solid #cbd5e1; flex-shrink:0; display:flex; align-items:center; justify-content:center; }
     .motif.sel .m-radio { border-color:var(--teal); }
     .motif.sel .m-radio::after { content:''; width:10px; height:10px; border-radius:50%; background:var(--teal); }
@@ -334,7 +336,7 @@
             '<div><div class="m-name">' + esc(m.label) + '</div>' +
             '<div class="m-meta"><i class="fa fa-clock me-1"></i>' + m.dur + ' ' + T('book.min') + '</div></div>' +
             '<div class="d-flex align-items-center gap-3">' +
-              '<div class="m-price">' + fmt(m.price) + ' ' + esc(P.currency || 'XOF') + '</div>' +
+              '<div class="m-price">' + fmt(m.price) + ' ' + esc(P.currency || 'XOF') + ((P.currency2 && m.price2 != null && m.price2 !== '') ? ' <span class="m-price2">· ≈ ' + fmt(m.price2) + ' ' + esc(P.currency2) + '</span>' : '') + '</div>' +
               '<div class="m-radio"></div></div>' +
           '</div>'
         ).join('');
@@ -458,7 +460,7 @@
       document.getElementById('sumBox').innerHTML = rows.map(r =>
         '<div class="sum-row"><span class="k">' + r[0] + '</span><span class="v">' + (r[2] ? r[1] : esc(r[1])) + '</span></div>'
       ).join('');
-      document.getElementById('priceVal').textContent = fmt(m.price) + ' ' + (P.currency || 'XOF');
+      document.getElementById('priceVal').innerHTML = fmt(m.price) + ' ' + (P.currency || 'XOF') + ((P.currency2 && m.price2 != null && m.price2 !== '') ? ' <span class="pl-v2">· ≈ ' + fmt(m.price2) + ' ' + P.currency2 + '</span>' : '');
       updateReasonCount();
     }
     // Compteur de caractères du champ « Précisions » (limite = maxlength de #reason).

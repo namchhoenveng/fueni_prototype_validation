@@ -255,6 +255,7 @@
               <p class="fw-semibold mb-1" id="decisionMsg"></p>
               <p class="text-muted small mb-2">Le médecin a été notifié par e-mail.</p>
               <a id="seeDoctorLink" href="15b-doctor-kyc.html?revision=1" target="_blank" class="small fw-semibold d-none" style="color:var(--purple);">Voir le dossier côté médecin (démo) →</a>
+              <a id="bdcAdminLink" href="18c-doctor-bon-commande.html" target="_blank" class="small fw-semibold d-none d-block mt-1" style="color:var(--purple);"><i class="fa fa-file-signature me-1"></i>Bon de commande généré — voir →</a>
             </div>
       </div><!-- offcanvas-body -->
     </div><!-- offcanvas -->
@@ -453,6 +454,8 @@
       document.getElementById('decisionMsg').style.color = color;
       document.getElementById('decisionIcon').className = icon + ' fa-2x mb-2 d-block';
       document.getElementById('seeDoctorLink').classList.toggle('d-none', !showLink);
+      // Bon de commande généré à la validation (généré par Nazounki — « en cas de besoin »).
+      document.getElementById('bdcAdminLink').classList.toggle('d-none', status !== 'approved');
       if (byId[current].status === 'pending') pending = Math.max(0, pending - 1);
       byId[current].status = status;
       document.getElementById('navCount').textContent = pending;
