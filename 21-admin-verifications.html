@@ -126,12 +126,11 @@
 
     <div class="sidebar-label">Gestion</div>
     <a class="nav-link-side active"><i class="fa fa-user-check"></i> Vérification des dossiers <span class="badge-notif" id="navCount">4</span></a>
-    <a class="nav-link-side disabled"><i class="fa fa-users"></i> Abonnements <span class="soon-pill">Bientôt</span></a>
+    <a href="23b-admin-subscriptions.html" class="nav-link-side"><i class="fa fa-users"></i> Abonnements</a>
     <a href="22-admin-audit.html" class="nav-link-side"><i class="fa fa-clock-rotate-left"></i> Journal d'audit</a>
 
     <div class="sidebar-label">Configuration</div>
     <a href="23-admin-plans.html" class="nav-link-side"><i class="fa fa-th-large"></i> Plans</a>
-    <a class="nav-link-side disabled"><i class="fa fa-globe"></i> Tarification par pays <span class="soon-pill">Bientôt</span></a>
 
     <div class="sidebar-label">Compte</div>
     <a href="12-login-admin.html" class="nav-link-side"><i class="fa fa-sign-out-alt"></i> Déconnexion</a>
@@ -255,7 +254,8 @@
               <p class="fw-semibold mb-1" id="decisionMsg"></p>
               <p class="text-muted small mb-2">Le médecin a été notifié par e-mail.</p>
               <a id="seeDoctorLink" href="15b-doctor-kyc.html?revision=1" target="_blank" class="small fw-semibold d-none" style="color:var(--purple);">Voir le dossier côté médecin (démo) →</a>
-              <a id="bdcAdminLink" href="18c-doctor-bon-commande.html" target="_blank" class="small fw-semibold d-none d-block mt-1" style="color:var(--purple);"><i class="fa fa-file-signature me-1"></i>Bon de commande généré — voir →</a>
+              <!-- ✅ Décision client 2026-09-08 : AUCUN bon de commande à la validation KYC. Le BdC n'existe que pour la
+                   formule payante Essentiel et il est émis à l'activation (premier paiement) — jamais pour Free. -->
             </div>
       </div><!-- offcanvas-body -->
     </div><!-- offcanvas -->
@@ -454,8 +454,7 @@
       document.getElementById('decisionMsg').style.color = color;
       document.getElementById('decisionIcon').className = icon + ' fa-2x mb-2 d-block';
       document.getElementById('seeDoctorLink').classList.toggle('d-none', !showLink);
-      // Bon de commande généré à la validation (généré par Nazounki — « en cas de besoin »).
-      document.getElementById('bdcAdminLink').classList.toggle('d-none', status !== 'approved');
+      // ✅ 2026-09-08 : plus de bon de commande à la validation (BdC = formule Essentiel uniquement, émis à l'activation).
       if (byId[current].status === 'pending') pending = Math.max(0, pending - 1);
       byId[current].status = status;
       document.getElementById('navCount').textContent = pending;

@@ -101,7 +101,7 @@
       const isFree = (localStorage.getItem('naz_plan') || 'solo') === 'gratuit';
       document.getElementById('confWelcome').textContent = isFree
         ? t('doc.conf.welcome', 'Bienvenue sur FUENI.')
-        : t('doc.conf.welcome_solo', 'Bienvenue sur FUENI. Votre abonnement Solo est actif.');
+        : t('doc.conf.welcome_solo', 'Bienvenue sur FUENI. Votre abonnement Essentiel est actif.');
     }
 
     render();

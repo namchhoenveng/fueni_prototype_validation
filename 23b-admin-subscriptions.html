@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FUENI Admin — Abonnements</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root { --slate:#2c3e50; --slate-dark:#1f2d3d; --purple:#6c3483; --purple-light:#f5eef8; --accent:#f59e0b; }
+    * { box-sizing: border-box; }
+    body { background:#f0f4f8; font-family:'Inter','Segoe UI',sans-serif; color:#0f172a; margin:0; }
+    .sidebar { position:fixed; top:0; left:0; width:272px; height:100vh; background:linear-gradient(180deg,var(--slate-dark),var(--slate)); color:#fff; padding:0; overflow-y:auto; z-index:100; }
+    .sidebar-brand { padding:20px 22px 6px; }
+    .sidebar-brand small { font-weight:500; opacity:0.55; font-size:0.72rem; }
+    .sidebar-label { font-size:0.64rem; text-transform:uppercase; letter-spacing:1px; color:rgba(255,255,255,0.4); padding:16px 22px 6px; font-weight:700; }
+    .nav-link-side { color:rgba(255,255,255,0.82); padding:10px 18px; display:flex; align-items:center; gap:11px; font-size:0.88rem; text-decoration:none; transition:background .15s; cursor:pointer; white-space:nowrap; }
+    .nav-link-side i { width:18px; text-align:center; }
+    .nav-link-side:hover { background:rgba(255,255,255,0.08); color:#fff; }
+    .nav-link-side.active { background:rgba(108,52,131,0.55); border-left:3px solid var(--accent); color:#fff; font-weight:600; }
+    .nav-link-side.disabled { color:rgba(255,255,255,0.34); cursor:not-allowed; }
+    .nav-link-side.disabled:hover { background:none; }
+    .soon-pill { margin-left:auto; font-size:0.6rem; background:rgba(255,255,255,0.12); color:rgba(255,255,255,0.6); padding:1px 7px; border-radius:10px; font-weight:700; letter-spacing:0.3px; }
+    .main { margin-left:272px; padding:0 28px 40px; }
+    .admin-topbar { display:flex; align-items:center; gap:10px; padding:14px 0; margin-bottom:10px; border-bottom:1px solid #e6edf3; font-size:0.9rem; }
+    .sa-avatar { width:30px; height:30px; border-radius:50%; background:var(--purple); display:flex; align-items:center; justify-content:center; color:#fff; font-size:0.72rem; font-weight:700; }
+    .imm-note { background:#eef4fb; border:1px solid #bcdfe7; color:#0e4456; border-radius:10px; padding:9px 14px; font-size:0.82rem; margin-bottom:18px; display:flex; align-items:center; gap:9px; }
+
+    .stat-row { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:14px; margin-bottom:20px; }
+    .stat-tile { background:#fff; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.05); padding:14px 18px; }
+    .stat-tile .n { font-size:1.45rem; font-weight:800; color:var(--slate); }
+    .stat-tile .l { font-size:0.72rem; color:#94a3b8; text-transform:uppercase; letter-spacing:0.4px; font-weight:600; }
+    .stat-tile.grace .n { color:#c0392b; }
+
+    .toolbar { background:#fff; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.05); padding:12px 16px; display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom:16px; }
+    .toolbar .search { position:relative; flex:0 1 300px; min-width:200px; }
+    .toolbar .search input { width:100%; border:1.5px solid #e2e8f0; border-radius:9px; padding:7px 10px 7px 32px; font-size:0.85rem; }
+    .toolbar .search .fa { position:absolute; left:11px; top:50%; transform:translateY(-50%); color:#a0aec0; font-size:0.8rem; }
+    .toolbar select { border:1.5px solid #e2e8f0; border-radius:9px; padding:7px 10px; font-size:0.83rem; color:#334155; background:#fff; }
+
+    .list-wrap { background:#fff; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.05); overflow:hidden; }
+    .list-scroll { overflow-x:auto; }
+    table.subs { width:100%; border-collapse:collapse; font-size:0.85rem; min-width:860px; }
+    table.subs th { text-align:left; font-size:0.7rem; text-transform:uppercase; letter-spacing:0.5px; color:#94a3b8; font-weight:700; padding:12px 16px; border-bottom:2px solid #eef2f6; white-space:nowrap; }
+    table.subs td { padding:11px 16px; border-bottom:1px solid #f1f5f9; vertical-align:middle; white-space:nowrap; }
+    table.subs tbody tr { cursor:pointer; transition:background .12s; }
+    table.subs tbody tr:hover { background:#f8fafc; }
+    table.subs tr:last-child td { border-bottom:0; }
+    .doc-name { font-weight:600; color:#334155; }
+    .doc-mail { font-size:0.75rem; color:#94a3b8; }
+    .dr-avatar { width:32px; height:32px; border-radius:50%; background:var(--purple-light); color:var(--purple); display:inline-flex; align-items:center; justify-content:center; font-weight:700; font-size:0.72rem; flex-shrink:0; }
+    .pill { font-size:0.66rem; font-weight:700; padding:3px 10px; border-radius:20px; text-transform:uppercase; letter-spacing:0.4px; white-space:nowrap; }
+    .pl-solo { background:#fff3cd; color:#8a6100; }
+    .pl-free { background:#eef2f6; color:#5d6d7e; }
+    .st-ok { background:#d1e7dd; color:#0f5132; }
+    .st-due { background:#fff3cd; color:#8a6100; }
+    .st-grace { background:#f8d7da; color:#842029; }
+    .doc-link { color:var(--purple); text-decoration:none; font-size:0.82rem; margin-right:10px; white-space:nowrap; }
+    .doc-link:hover { text-decoration:underline; color:var(--purple); }
+    .muted { color:#94a3b8; }
+    .count-note { font-size:0.8rem; color:#94a3b8; padding:10px 16px; }
+
+    /* Tiroir de détail */
+    .offcanvas-end { width:460px; max-width:94vw; }
+    .kv { display:flex; justify-content:space-between; gap:14px; padding:8px 0; border-bottom:1px solid #f1f5f9; font-size:0.86rem; }
+    .kv .k { color:#94a3b8; flex-shrink:0; }
+    .kv .v { font-weight:600; color:#334155; text-align:right; }
+    .hist-title { font-size:0.72rem; text-transform:uppercase; letter-spacing:0.6px; color:#94a3b8; font-weight:700; margin:20px 0 10px; }
+    .tl-item { position:relative; padding:0 0 16px 22px; border-left:2px solid #eef2f6; margin-left:6px; }
+    .tl-item:last-child { padding-bottom:2px; }
+    .tl-item::before { content:""; position:absolute; left:-6px; top:3px; width:10px; height:10px; border-radius:50%; background:var(--purple); }
+    .tl-item.money::before { background:#198754; }
+    .tl-item .d { font-size:0.72rem; color:#94a3b8; }
+    .tl-item .t { font-size:0.85rem; font-weight:600; color:#334155; }
+    .tl-item .s { font-size:0.78rem; color:#64748b; }
+    .ro-note { background:#f8fafc; border:1px solid #eef2f6; color:#64748b; border-radius:10px; padding:9px 12px; font-size:0.78rem; margin-top:18px; }
+    @media (max-width:900px){ .sidebar{ display:none; } .main{ margin-left:0; padding:0 14px 30px; } }
+    .proto-bar { position: sticky; top: 0; z-index: 200; }
+  </style>
+</head>
+<body>
+
+  <div class="proto-bar d-flex align-items-center gap-3 flex-wrap" style="background:#fff8e1;border-bottom:1px dashed #f1c40f;padding:6px 16px;font-size:0.82rem;color:#7d5e00;">
+    <span><i class="fa fa-eye text-warning me-1"></i><strong>Écran 23b — Abonnements (Super Admin, lecture seule)</strong></span>
+    <a href="23-admin-plans.html" class="text-decoration-none text-muted ms-auto small">← Gestion des plans</a>
+  </div>
+
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="sidebar-brand"><img src="assets/fueni-lockup-white.svg" alt="FUENI" style="height:26px;width:auto;vertical-align:middle;"> <small>Admin</small></div>
+
+    <div class="sidebar-label">Tableau de bord</div>
+    <a class="nav-link-side disabled"><i class="fa fa-chart-bar"></i> Vue d'ensemble <span class="soon-pill">Bientôt</span></a>
+
+    <div class="sidebar-label">Gestion</div>
+    <a href="21-admin-verifications.html" class="nav-link-side"><i class="fa fa-user-check"></i> Vérification des dossiers</a>
+    <a class="nav-link-side active"><i class="fa fa-users"></i> Abonnements</a>
+    <a href="22-admin-audit.html" class="nav-link-side"><i class="fa fa-clock-rotate-left"></i> Journal d'audit</a>
+
+    <div class="sidebar-label">Configuration</div>
+    <a href="23-admin-plans.html" class="nav-link-side"><i class="fa fa-th-large"></i> Plans</a>
+
+    <div class="sidebar-label">Compte</div>
+    <a href="12-login-admin.html" class="nav-link-side"><i class="fa fa-sign-out-alt"></i> Déconnexion</a>
+  </div>
+
+  <div class="main">
+
+    <div class="admin-topbar">
+      <div class="sa-avatar">SA</div>
+      <span class="fw-semibold" style="color:var(--slate);">Super Admin</span>
+      <span class="text-muted">›</span>
+      <span class="text-muted small">Abonnements</span>
+      <div class="ms-auto d-flex align-items-center gap-3">
+        <span class="text-muted small"><i class="fa fa-calendar-alt me-1"></i>6 juillet 2026</span>
+        <span class="small text-muted fw-semibold">admin@fueni.com</span>
+      </div>
+    </div>
+
+    <div class="d-flex justify-content-between align-items-start mb-3 mt-1 flex-wrap gap-2">
+      <div>
+        <h3 class="fw-bold mb-0" style="color:var(--slate);">Abonnements</h3>
+        <p class="text-muted mb-0 small">Souscriptions des praticiens — plan, cycle, statut, prochain renouvellement et historique (factures, bons de commande).</p>
+      </div>
+    </div>
+
+    <!-- Lecture seule : la facturation est automatisée ; les interventions manuelles (prolonger une grâce, geler,
+         rembourser) ne font pas partie du MVP — elles passent par le support et seront outillées post-MVP. -->
+    <div class="imm-note">
+      <i class="fa fa-eye" style="color:#155e75;"></i>
+      <span><strong>Écran de consultation (lecture seule).</strong> La facturation et les relances sont automatisées. Les interventions manuelles (prolonger une grâce, geler un compte, rembourser) ne font pas partie du MVP — toute demande passe par le support.</span>
+    </div>
+
+    <!-- Stats — revenus ENCAISSÉS = somme des règlements CONFIRMÉS par le prestataire de paiement sur la période
+         (jamais dérivés du nombre d'abonnés). Démo, « aujourd'hui » = 6 juillet 2026 :
+         · juillet (au 6) : 6 renouvellements mensuels échus (anniversaires j1–j6, 30 mensuels répartis) × 30 € = 180 €
+           + 1 anniversaire annuel (12 annuels ≈ 1/mois) × 300 € + 1 activation Essentiel × 30 € = 510 €
+         · cumul 2026 : base stable ≈ 6 mois pleins × MRR 1 200 € (cf. écran 23) + 510 € de juillet = 7 710 € -->
+    <div class="stat-row">
+      <div class="stat-tile"><div class="n">126</div><div class="l">Praticiens actifs</div></div>
+      <!-- Répartition par cycle (même mix que l'écran 23 : 30 M / 12 A = 42) ; la grâce — signal de risque —
+           reste visible : intégrée à la tuile Mensuel (les impayés y vivent) + filtre Statut + pastilles rouges de la liste. -->
+      <div class="stat-tile"><div class="n">30</div><div class="l">Essentiel mensuel · <span style="color:#c0392b;">dont <span id="stGrace">—</span> en grâce</span></div></div>
+      <div class="stat-tile"><div class="n">12</div><div class="l">Essentiel annuel</div></div>
+      <div class="stat-tile"><div class="n">510 €</div><div class="l">Encaissé — juillet 2026</div></div>
+      <div class="stat-tile"><div class="n">7 710 €</div><div class="l">Encaissé — 2026 (cumul)</div></div>
+    </div>
+
+    <!-- Filtres -->
+    <div class="toolbar">
+      <div class="search"><i class="fa fa-search"></i><input type="text" id="q" placeholder="Rechercher un praticien (nom, e-mail)…" oninput="render()"></div>
+      <select id="fPlan" onchange="render()">
+        <option value="">Plan : tous</option>
+        <option value="solo">Essentiel</option>
+        <option value="free">Free</option>
+      </select>
+      <select id="fStatus" onchange="render()">
+        <option value="">Statut : tous</option>
+        <option value="ok">Actif</option>
+        <option value="due">Échéance proche</option>
+        <option value="grace">En grâce</option>
+      </select>
+      <select id="fCycle" onchange="render()">
+        <option value="">Cycle : tous</option>
+        <option value="m">Mensuel</option>
+        <option value="a">Annuel</option>
+      </select>
+    </div>
+
+    <!-- Liste -->
+    <div class="list-wrap">
+      <div class="list-scroll">
+        <table class="subs">
+          <thead>
+            <tr>
+              <th>Praticien</th>
+              <th>Plan</th>
+              <th>Cycle</th>
+              <th>Statut</th>
+              <th>Prochain renouvellement</th>
+              <th>Paiement</th>
+              <th>Documents</th>
+            </tr>
+          </thead>
+          <tbody id="subsBody"></tbody>
+        </table>
+      </div>
+      <div class="count-note" id="countNote"></div>
+    </div>
+
+  </div>
+
+  <!-- Tiroir de détail -->
+  <div class="offcanvas offcanvas-end" tabindex="-1" id="subDetail">
+    <div class="offcanvas-header border-bottom">
+      <div class="d-flex align-items-center gap-3">
+        <div class="dr-avatar" id="dAvatar" style="width:42px;height:42px;font-size:0.9rem;"></div>
+        <div>
+          <h6 class="mb-0 fw-bold" style="color:var(--slate);" id="dName"></h6>
+          <span class="small text-muted" id="dMail"></span>
+        </div>
+      </div>
+      <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body">
+      <div id="dBadges" class="d-flex gap-2 mb-3 flex-wrap"></div>
+      <div id="dInfo"></div>
+      <div class="hist-title">Historique de souscription</div>
+      <div id="dHist"></div>
+      <div class="ro-note"><i class="fa fa-circle-info me-1"></i>Lecture seule — les corrections (grâce, remboursement, changement forcé de plan) passent par le support. Interventions outillées et journalisées : post-MVP.</div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // Abonnements (démo, lecture seule) — mêmes états que l'écran praticien « Mon abonnement » (18) :
+    // ok = Actif · due = Échéance proche (≤ 7 j) · grace = Période de grâce (2 j mensuel / 7 j annuel).
+    // Tarif de RÉFÉRENCE en euros (30 €/mois · 300 €/an, conversion locale par le prestataire) + DÉROGATIONS
+    // par pays (✅ client 2026-09-10) : Burkina Faso 17 000 XOF/mois · RDC 30 USD/mois. Champ r.price = montant local.
+    // Les tuiles « Encaissé » sont consolidées en € (contre-valeur des règlements XOF/USD — démo).
+    // « Aujourd'hui » démo = 6 juillet 2026 (aligné sur la topbar).
+    const SUBS = [
+      { id:'d1', name:'Dr Aboubacar Diallo', mail:'a.diallo@exemple.sn',  plan:'solo', cycle:'m', status:'ok',    next:'2026-08-02', pay:'Mobile Money (Orange)', since:'2026-05-02',
+        hist:[
+          { d:'2026-07-02', t:'Facture réglée — 30,00 €', s:'Renouvellement mensuel (Mobile Money)', money:true, inv:true },
+          { d:'2026-06-02', t:'Facture réglée — 30,00 €', s:'Renouvellement mensuel (Mobile Money)', money:true, inv:true },
+          { d:'2026-05-02', t:'Activation Essentiel — 30,00 €', s:'Premier terme réglé · bon de commande + facture émis', money:true, inv:true, bdc:'solo' },
+          { d:'2026-04-30', t:'Dossier validé (KYC)', s:'Compte activé' },
+          { d:'2026-04-27', t:'Inscription — plan Essentiel choisi', s:'CGU · CGV 2.3 · Confidentialité acceptées (horodatées)' }
+        ] },
+      { id:'d2', name:'Dr Awa Sène', mail:'a.sene@exemple.cd', plan:'solo', cycle:'m', status:'due', next:'2026-07-09', pay:'Carte (auto)', since:'2026-03-09', price:'30 USD / mois', // RDC — dérogation USD
+        hist:[
+          { d:'2026-06-09', t:'Facture réglée — 30,00 USD', s:'Prélèvement carte automatique (RDC — tarif USD)', money:true, inv:true },
+          { d:'2026-03-09', t:'Activation Essentiel — 30,00 USD', s:'Bon de commande + facture émis', money:true, inv:true, bdc:'solo' },
+          { d:'2026-03-06', t:'Dossier validé (KYC)', s:'Compte activé' }
+        ] },
+      { id:'d3', name:'Dr Cheikh Diop', mail:'c.diop@exemple.sn', plan:'solo', cycle:'m', status:'grace', next:'2026-07-05', graceEnd:'2026-07-07', pay:'Mobile Money (Wave)', since:'2026-01-05',
+        hist:[
+          { d:'2026-07-05', t:'Échéance impayée — période de grâce', s:'Fin de grâce le 07/07 (2 j, mensuel) · rappels quotidiens' },
+          { d:'2026-06-05', t:'Facture réglée — 30,00 €', s:'Renouvellement mensuel (Mobile Money)', money:true, inv:true },
+          { d:'2026-01-05', t:'Activation Essentiel — 30,00 €', s:'Bon de commande + facture émis', money:true, inv:true, bdc:'solo' }
+        ] },
+      { id:'d4', name:'Dr Aminata Mbaye', mail:'a.mbaye@exemple.sn', plan:'solo', cycle:'a', status:'ok', next:'2027-03-15', pay:'Carte (auto)', since:'2025-11-15',
+        hist:[
+          { d:'2026-03-15', t:'Passage au plan annuel — 300,00 €', s:'Bon de commande modificatif + facture émis', money:true, inv:true, bdc:'modif' },
+          { d:'2026-02-15', t:'Facture réglée — 30,00 €', s:'Renouvellement mensuel (carte)', money:true, inv:true },
+          { d:'2025-11-15', t:'Activation Essentiel — 30,00 €', s:'Bon de commande + facture émis', money:true, inv:true, bdc:'solo' }
+        ] },
+      { id:'d5', name:'Dr Ousmane Ba', mail:'o.ba@exemple.sn', plan:'free', cycle:'', status:'ok', next:'', pay:'—', since:'2026-06-20',
+        hist:[
+          { d:'2026-06-20', t:'Dossier validé (KYC) — plan Free actif', s:'Compte activé — aucun bon de commande (plan gratuit)' },
+          { d:'2026-06-16', t:'Inscription — plan Free choisi', s:'CGU · CGV 2.3 · Confidentialité acceptées (horodatées)' }
+        ] },
+      { id:'d6', name:'Dr Fatou Ndiaye', mail:'f.ndiaye@exemple.bf', plan:'solo', cycle:'a', status:'ok', next:'2027-01-10', pay:'Mobile Money (Orange BF)', since:'2026-01-10', price:'170 000 XOF / an', // Burkina Faso — dérogation XOF
+        hist:[
+          { d:'2026-01-10', t:'Activation Essentiel (annuel) — 170 000 XOF', s:'Bon de commande + facture émis (Burkina Faso — tarif XOF)', money:true, inv:true, bdc:'solo' },
+          { d:'2026-01-08', t:'Dossier validé (KYC)', s:'Compte activé' }
+        ] },
+      { id:'d7', name:'Dr Moussa Koné', mail:'m.kone@exemple.ci', plan:'free', cycle:'', status:'ok', next:'', pay:'—', since:'2026-05-30',
+        hist:[
+          { d:'2026-05-30', t:'Dossier validé (KYC) — plan Free actif', s:'Compte activé — aucun bon de commande (plan gratuit)' }
+        ] },
+      { id:'d8', name:'Dr Mariam Touré', mail:'m.toure@exemple.ml', plan:'solo', cycle:'m', status:'ok', next:'2026-08-05', downgrade:true, pay:'Mobile Money (Orange)', since:'2026-02-05',
+        hist:[
+          { d:'2026-07-05', t:'Rétrogradation programmée vers Free', s:'Effective au prochain terme (05/08) · bon de commande modificatif émis', bdc:'modif-free' },
+          { d:'2026-07-05', t:'Facture réglée — 30,00 €', s:'Dernier terme Essentiel (Mobile Money)', money:true, inv:true },
+          { d:'2026-02-05', t:'Activation Essentiel — 30,00 €', s:'Bon de commande + facture émis', money:true, inv:true, bdc:'solo' }
+        ] }
+    ];
+
+    const STATUS = {
+      ok:    { label:'Actif',           cls:'st-ok' },
+      due:   { label:'Échéance proche', cls:'st-due' },
+      grace: { label:'En grâce',        cls:'st-grace' }
+    };
+    const CYCLE = { m:'Mensuel', a:'Annuel', '':'—' };
+    // ✅ 2026-09-08 : pas de BdC pour Free — seuls les BdC Essentiel (initial / modificatif) existent.
+    const BDC_HREF = { solo:'18c-doctor-bon-commande.html?plan=solo', modif:'18c-doctor-bon-commande.html?type=modif&change=monthly-annual' , 'modif-free':'18c-doctor-bon-commande.html?type=modif&change=solo-free' };
+    const esc = s => (s==null?'':String(s)).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+    const ini = n => n.replace(/^Dr\.?\s*/i,'').split(' ').filter(Boolean).map(w=>w[0]).slice(0,2).join('').toUpperCase();
+    const fmtD = s => { if(!s) return '—'; const d=new Date(s+'T00:00:00'); return d.toLocaleDateString('fr-FR',{day:'2-digit',month:'short',year:'numeric'}); };
+    // Écart en jours vs « aujourd'hui » démo (06/07/2026) — pour l'indice J-x sur l'échéance.
+    const TODAY = new Date('2026-07-06T00:00:00');
+    const dLeft = s => { if(!s) return null; return Math.round((new Date(s+'T00:00:00') - TODAY)/86400000); };
+
+    function statusPill(r) {
+      const st = STATUS[r.status];
+      return '<span class="pill ' + st.cls + '">' + st.label + '</span>';
+    }
+    function nextCell(r) {
+      if (!r.next) return '<span class="muted">—</span>';
+      const n = dLeft(r.next);
+      let extra = '';
+      if (r.status === 'grace') extra = ' <span class="muted">· fin de grâce le ' + fmtD(r.graceEnd).replace(/ \d{4}$/,'') + '</span>';
+      else if (n !== null && n >= 0 && n <= 7) extra = ' <span style="color:#8a6100;font-weight:600;">(J−' + n + ')</span>';
+      if (r.downgrade) extra += ' <span class="muted">· passe en Free</span>';
+      return fmtD(r.next) + extra;
+    }
+    function docLinks(r) {
+      // Colonne Documents = accès rapide au DERNIER document de chaque type : facture la plus récente,
+      // BdC en vigueur (le plus récent — modificatif s'il y a eu changement de formule, sinon initial).
+      // L'archive complète, facture par facture, vit dans l'HISTORIQUE du tiroir (un lien par événement).
+      const lastBdc = (r.hist.find(h => h.bdc) || {}).bdc; // hist trié décroissant → find = plus récent
+      let h = '';
+      if (r.hist.some(h2 => h2.inv)) h += '<a class="doc-link" href="18b-doctor-invoice.html" title="Dernière facture — toutes les factures dans l\'historique (détail)" onclick="event.stopPropagation()"><i class="fa fa-file-invoice me-1"></i>Facture</a>';
+      if (lastBdc) h += '<a class="doc-link" href="' + BDC_HREF[lastBdc] + '" title="Bon de commande en vigueur (le plus récent)" onclick="event.stopPropagation()"><i class="fa fa-file-signature me-1"></i>BdC</a>';
+      return h || '<span class="muted">—</span>';
+    }
+
+    function render() {
+      const q = document.getElementById('q').value.trim().toLowerCase();
+      const fp = document.getElementById('fPlan').value, fs = document.getElementById('fStatus').value, fc = document.getElementById('fCycle').value;
+      const list = SUBS.filter(r =>
+        (!q || (r.name + ' ' + r.mail).toLowerCase().includes(q)) &&
+        (!fp || r.plan === fp) && (!fs || r.status === fs) && (!fc || r.cycle === fc));
+      document.getElementById('subsBody').innerHTML = list.map(r =>
+        '<tr onclick="openDetail(\'' + r.id + '\')">' +
+          '<td><div class="d-flex align-items-center gap-2"><span class="dr-avatar">' + ini(r.name) + '</span><span><span class="doc-name d-block">' + esc(r.name) + '</span><span class="doc-mail">' + esc(r.mail) + '</span></span></div></td>' +
+          '<td><span class="pill ' + (r.plan === 'solo' ? 'pl-solo' : 'pl-free') + '">' + (r.plan === 'solo' ? 'Essentiel' : 'Free') + '</span></td>' +
+          '<td>' + CYCLE[r.cycle] + '</td>' +
+          '<td>' + statusPill(r) + '</td>' +
+          '<td>' + nextCell(r) + '</td>' +
+          '<td class="small">' + esc(r.pay) + '</td>' +
+          '<td>' + docLinks(r) + '</td>' +
+        '</tr>'
+      ).join('') || '<tr><td colspan="7" class="text-center text-muted py-4">Aucun abonnement pour cette recherche.</td></tr>';
+      document.getElementById('countNote').textContent = list.length + ' praticien(s) affiché(s) sur ' + SUBS.length + ' (jeu de démonstration).';
+      document.getElementById('stGrace').textContent = SUBS.filter(r => r.status === 'grace').length;
+    }
+
+    let drawer;
+    function openDetail(id) {
+      const r = SUBS.find(x => x.id === id); if (!r) return;
+      document.getElementById('dAvatar').textContent = ini(r.name);
+      document.getElementById('dName').textContent = r.name;
+      document.getElementById('dMail').textContent = r.mail;
+      document.getElementById('dBadges').innerHTML =
+        '<span class="pill ' + (r.plan === 'solo' ? 'pl-solo' : 'pl-free') + '">' + (r.plan === 'solo' ? 'Essentiel' : 'Free') + '</span>' + statusPill(r);
+      const kv = (k, v) => '<div class="kv"><span class="k">' + k + '</span><span class="v">' + v + '</span></div>';
+      document.getElementById('dInfo').innerHTML =
+        kv('Abonné depuis', fmtD(r.since)) +
+        (r.cycle ? kv('Cycle', CYCLE[r.cycle]) : '') +
+        (r.plan === 'solo' ? kv('Montant', r.price || (r.cycle === 'a' ? '300 € / an' : '30 € / mois')) : '') +
+        (r.next ? kv('Prochain renouvellement', nextCell(r)) : '') +
+        (r.status === 'grace' ? kv('Fin de grâce', fmtD(r.graceEnd)) : '') +
+        kv('Moyen de paiement', esc(r.pay));
+      document.getElementById('dHist').innerHTML = r.hist.map(h =>
+        '<div class="tl-item' + (h.money ? ' money' : '') + '">' +
+          '<div class="d">' + fmtD(h.d) + '</div>' +
+          '<div class="t">' + esc(h.t) + '</div>' +
+          '<div class="s">' + esc(h.s) +
+            (h.inv ? ' · <a class="doc-link" href="18b-doctor-invoice.html">Facture</a>' : '') +
+            (h.bdc ? ' · <a class="doc-link" href="' + BDC_HREF[h.bdc] + '">Bon de commande</a>' : '') +
+          '</div>' +
+        '</div>'
+      ).join('');
+      drawer = drawer || new bootstrap.Offcanvas(document.getElementById('subDetail'));
+      drawer.show();
+    }
+
+    render();
+  </script>
+<!-- Prototype version badge -->
+<script>(function(){if(window.__pv)return;window.__pv=1;var v=document.createElement('div');v.style.cssText='position:fixed;top:0;left:50%;transform:translateX(-50%);background:#155e75;color:#fff;padding:6px 20px;border-radius:0 0 16px 16px;font:600 12px/1 system-ui,-apple-system,sans-serif;letter-spacing:.6px;z-index:99999;box-shadow:0 3px 10px rgba(0,0,0,.2);text-transform:uppercase;display:flex;align-items:center;gap:8px';v.innerHTML='🧪 Prototype <span style="background:#f59e0b;color:#1a1a1a;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:4px">v1.4.0</span><span style="background:#facc15;color:#1a1a1a;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:4px;text-transform:none;letter-spacing:0">⏳ À valider</span>';document.body.appendChild(v);})();</script>
+</body>
+</html>

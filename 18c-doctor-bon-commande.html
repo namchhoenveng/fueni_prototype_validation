@@ -28,7 +28,9 @@
     .bc-title { font-size: 1.5rem; font-weight: 800; color: var(--teal); letter-spacing: 1.5px; margin: 0; line-height: 1.15; }
     .status-badge { display: inline-flex; align-items: center; gap: 6px; margin-top: 10px; background: #d1e7dd; color: #0f5132; font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.6px; padding: 5px 14px; border-radius: 30px; }
     .bc-modif { display: inline-flex; align-items: center; gap: 5px; margin-top: 8px; margin-left: 6px; background: #fff4d6; color: #9a5b00; border: 1px solid #fcd670; font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.6px; padding: 4px 12px; border-radius: 30px; }
-    .bc-modif-note { background: #fff8f1; border: 1px solid #faddc0; color: #9a3412; border-radius: 10px; padding: 11px 14px; font-size: 0.85rem; line-height: 1.45; margin-bottom: 26px; }
+    /* Pas de Bootstrap dans ce gabarit (impression autonome) → l'espacement icône/texte est porté par le flex gap, pas par « me-1 ». */
+    .bc-modif-note { display: flex; align-items: flex-start; gap: 9px; background: #fff8f1; border: 1px solid #faddc0; color: #9a3412; border-radius: 10px; padding: 11px 14px; font-size: 0.85rem; line-height: 1.45; margin-bottom: 26px; }
+    .bc-modif-note i { margin-top: 3px; flex-shrink: 0; }
 
     .meta-row { display: flex; flex-wrap: wrap; gap: 28px; margin: 22px 0 30px; }
     .meta-cell .k { font-size: 0.66rem; text-transform: uppercase; letter-spacing: 0.6px; color: #94a3b8; font-weight: 700; }
@@ -118,14 +120,14 @@
     </div>
 
     <!-- Note « modificatif » (changement de formule — annexe §7) -->
-    <div class="bc-modif-note" id="bcModifNote" style="display:none;"><i class="fa fa-circle-info me-1"></i><span id="bcModifNoteTxt"></span></div>
+    <div class="bc-modif-note" id="bcModifNote" style="display:none;"><i class="fa fa-circle-info"></i><span id="bcModifNoteTxt"></span></div>
 
     <!-- Formule souscrite -->
     <div class="bc-sec">
       <h3 data-i18n="bdc.sec_plan">Formule souscrite</h3>
       <div class="kv-row" id="bcPrevRow" style="display:none;"><span class="k" data-i18n="bdc.f_prev_plan">Formule précédente</span><span class="v" id="bcPrevPlan">Free</span></div>
-      <div class="kv-row"><span class="k" data-i18n="bdc.f_plan">Formule</span><span class="v" id="bcPlan">Solo</span></div>
-      <div class="kv-row"><span class="k" data-i18n="bdc.f_price">Prix</span><span class="v" id="bcPrice">15 €</span></div>
+      <div class="kv-row"><span class="k" data-i18n="bdc.f_plan">Formule</span><span class="v" id="bcPlan">Essentiel</span></div>
+      <div class="kv-row"><span class="k" data-i18n="bdc.f_price">Prix</span><span class="v" id="bcPrice">30 €</span></div>
       <div class="kv-row"><span class="k" data-i18n="bdc.f_period">Périodicité de facturation</span><span class="v" id="bcPeriod">Mensuelle</span></div>
       <div class="kv-row"><span class="k" data-i18n="bdc.f_currency">Devise</span><span class="v" id="bcCurrency">EUR (€)</span></div>
       <div class="kv-row"><span class="k" data-i18n="bdc.f_reversement">Module Reversement</span><span class="v" id="bcReversement" data-i18n="bdc.na">Sans objet</span></div>
@@ -156,26 +158,26 @@
   </div>
 
   <script>
-    // Démo : un bon de commande par formule. `plan` = 'solo' (défaut) | 'free'.
+    // ✅ Décision client 2026-09-08 : AUCUN bon de commande pour le plan Free (gratuit — pas de commande à formaliser).
+    // Le BdC n'existe que pour la formule PAYANTE « Essentiel » : émis à l'activation (premier paiement), avec la 1re facture.
+    // Une souscription Free → Essentiel génère donc un BdC INITIAL (pas de modificatif : aucun BdC Free d'origine).
     // tsReg = acceptation CGU + Confidentialité (à l'inscription, écran 13) ; tsCgv = acceptation CGV (au choix de la formule, écran 14).
     var BDC = {
       solo: { ref:'BC-2026-000142', valid:'15/03/2026', activ:'15/03/2026', tsReg:'15/03/2026 09:41:02', tsCgv:'15/03/2026 09:42:17', session:'sess_8f3a29c7d1b4e60',
-              plan:'Solo', priceKey:null, price:'15 €', periodKey:'bdc.period_month', currency:'EUR (€)' },
-      free: { ref:'BC-2026-000098', valid:'15/03/2026', activ:'15/03/2026', tsReg:'15/03/2026 09:40:50', tsCgv:'15/03/2026 09:41:02', session:'sess_5b1c74e0a9f23d8',
-              plan:'Free', priceKey:'bdc.free_price', price:'—', periodKey:'bdc.na', currency:'—' },
+              plan:'Essentiel', priceKey:null, price:'30 €', periodKey:'bdc.period_month', currency:'EUR (€)' }
     };
     // Bons de commande MODIFICATIFS (changement de formule — annexe §7). `?type=modif&change=…`.
+    // Essentiel → Free : le modificatif documente la FIN de la formule payante (référence le BdC Essentiel d'origine).
     var MODIF = {
-      'free-solo':      { ref:'BC-2026-000210', valid:'20/06/2026', activ:'20/06/2026', tsReg:'15/03/2026 09:41:02', tsCgv:'20/06/2026 14:12:05', session:'sess_c93f18a2e7b0d45', plan:'Solo', priceKey:null, price:'15 €',  periodKey:'bdc.period_month', currency:'EUR (€)', isModif:true, prevPlan:'Free',           origRef:'BC-2026-000098', origDate:'15/03/2026' },
-      'monthly-annual': { ref:'BC-2026-000231', valid:'20/06/2026', activ:'20/06/2026', tsReg:'15/03/2026 09:41:02', tsCgv:'20/06/2026 14:15:30', session:'sess_a17d5e29b8c04f6', plan:'Solo', priceKey:null, price:'150 €', periodKey:'bdc.period_year',  currency:'EUR (€)', isModif:true, prevPlan:'Solo · mensuel', origRef:'BC-2026-000142', origDate:'15/03/2026' },
-      'solo-free':      { ref:'BC-2026-000245', valid:'20/06/2026', activ:'15/07/2026', tsReg:'15/03/2026 09:41:02', tsCgv:'20/06/2026 16:03:11', session:'sess_f42b90c1d7e83a5', plan:'Free', priceKey:'bdc.free_price', price:'—', periodKey:'bdc.na',        currency:'—',       isModif:true, prevPlan:'Solo',           origRef:'BC-2026-000142', origDate:'15/03/2026' }
+      'monthly-annual': { ref:'BC-2026-000231', valid:'20/06/2026', activ:'20/06/2026', tsReg:'15/03/2026 09:41:02', tsCgv:'20/06/2026 14:15:30', session:'sess_a17d5e29b8c04f6', plan:'Essentiel', priceKey:null, price:'300 €', periodKey:'bdc.period_year',  currency:'EUR (€)', isModif:true, prevPlan:'Essentiel · mensuel', origRef:'BC-2026-000142', origDate:'15/03/2026' },
+      'solo-free':      { ref:'BC-2026-000245', valid:'20/06/2026', activ:'15/07/2026', tsReg:'15/03/2026 09:41:02', tsCgv:'20/06/2026 16:03:11', session:'sess_f42b90c1d7e83a5', plan:'Free', priceKey:'bdc.free_price', price:'—', periodKey:'bdc.na',        currency:'—',       isModif:true, prevPlan:'Essentiel',           origRef:'BC-2026-000142', origDate:'15/03/2026' }
     };
     function T(k){ return (window.NazI18n ? NazI18n.t(k) : k); }
     function qparam(n){ return new URLSearchParams(location.search).get(n); }
     function render(){
       var d;
-      if (qparam('type') === 'modif') { d = MODIF[qparam('change')] || MODIF['free-solo']; }
-      else { var p = qparam('plan'); d = (p && BDC[p]) ? BDC[p] : BDC.solo; }
+      if (qparam('type') === 'modif') { d = MODIF[qparam('change')] || MODIF['monthly-annual']; }
+      else { d = BDC.solo; } // une seule formule payante — pas de BdC Free (décision client 2026-09-08)
       document.getElementById('bcRef').textContent = d.ref;
       document.getElementById('bcValid').textContent = d.valid;
       document.getElementById('bcActiv').textContent = d.activ;
@@ -193,7 +195,7 @@
       // Variante « modificatif » (changement de formule — annexe §7) : badge, note renvoyant au BdC initial, formule précédente.
       var isModif = !!d.isModif;
       document.getElementById('bcModif').style.display = isModif ? 'inline-flex' : 'none';
-      document.getElementById('bcModifNote').style.display = isModif ? 'block' : 'none';
+      document.getElementById('bcModifNote').style.display = isModif ? 'flex' : 'none';
       document.getElementById('bcPrevRow').style.display = isModif ? 'flex' : 'none';
       if (isModif) {
         document.getElementById('bcModifNoteTxt').textContent = T('bdc.modif_note').replace('{ref}', d.origRef).replace('{date}', d.origDate);

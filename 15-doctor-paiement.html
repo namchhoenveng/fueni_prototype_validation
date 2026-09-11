@@ -50,8 +50,8 @@
 
   <div class="container py-4" style="max-width:900px;">
     <div class="mb-4 text-center">
-      <span class="badge" style="background:#d1e7dd; color:#0f5132; font-weight:600; padding:7px 16px; border-radius:20px; font-size:0.82rem;"><i class="fa fa-circle-check me-1"></i><span data-i18n="doc.pay.context_badge">Dossier validé — activation de l'abonnement Solo</span></span>
-      <div class="text-muted small mt-2" data-i18n="doc.pay.context_sub">Réglez votre premier terme pour activer Solo. Accessible depuis votre tableau de bord.</div>
+      <span class="badge" style="background:#d1e7dd; color:#0f5132; font-weight:600; padding:7px 16px; border-radius:20px; font-size:0.82rem;"><i class="fa fa-circle-check me-1"></i><span data-i18n="doc.pay.context_badge">Dossier validé — activation de l'abonnement Essentiel</span></span>
+      <div class="text-muted small mt-2" data-i18n="doc.pay.context_sub">Réglez votre premier terme pour activer Essentiel. Accessible depuis votre tableau de bord.</div>
     </div>
 
     <div class="row g-4">
@@ -175,7 +175,7 @@
     }
 
     const PAY_PLAN_META = {
-      solo:    { nameKey: 'doc.plans.solo_name', name: 'Solo',    descKey: 'doc.pay.desc_solo', featKeys: ['doc.plans.solo_f2','doc.plans.solo_f3','doc.plans.solo_f4','doc.plans.solo_f5','doc.plans.solo_f6'] },
+      solo:    { nameKey: 'doc.plans.solo_name', name: 'Essentiel',    descKey: 'doc.pay.desc_solo', featKeys: ['doc.plans.solo_f2','doc.plans.solo_f3','doc.plans.solo_f4','doc.plans.solo_f5','doc.plans.solo_f6'] },
       gratuit: { nameKey: 'doc.plans.free_name', name: 'Gratuit', descKey: 'doc.pay.desc_free', featKeys: ['doc.plans.free_f1','doc.plans.free_f2','doc.plans.free_f3'] }
     };
 
@@ -184,15 +184,20 @@
       const isAnnual = (localStorage.getItem('naz_billing') || 'monthly') === 'annual';
       const isFree = planKey === 'gratuit';
       const meta = PAY_PLAN_META[planKey] || PAY_PLAN_META.solo;
-      const zp = ZONE_PRICES.africa;
-      const monthlyEur = isFree ? 0 : zp.solo;
-      const priceEur = isAnnual ? monthlyEur * ANNUAL_MULT : monthlyEur;
+      // Tarification par pays d'exercice (✅ client 2026-09-10) : référence € + dérogations BF (XOF) / RDC (USD).
+      const P = pricingFor(localStorage.getItem('naz_doctor_country') || '');
+      const monthlyEur = isFree ? 0 : P.monthly;
+      const priceEur = isAnnual ? P.annual : monthlyEur;
       const period = isAnnual ? t('doc.plans.per_year', '/an') : t('doc.plans.per_month', '/mois');
-      const priceStr = priceEur === 0 ? '0,00 €' : priceEur.toLocaleString('fr-FR') + ' €';
+      const priceStr = priceEur === 0 ? '0,00 €' : fmtPrice(priceEur, P.cur);
+      // Offre d'ouverture : −50 % sur le PREMIER MOIS uniquement (mensuel — naz-common.js), dans la devise du pays.
+      const promo = !isFree && !isAnnual && typeof promoActive === 'function' && promoActive();
+      const firstEur = promo ? monthlyEur * (1 - LAUNCH_PROMO.rate) : priceEur;
+      const firstStr = fmtPrice(firstEur, P.cur);
 
       document.getElementById('payPlanName').textContent = t(meta.nameKey, meta.name) + (isAnnual ? ' · ' + t('doc.plans.billing_annual', 'Annuel') : '');
       document.getElementById('payPlanDesc').textContent = t(meta.descKey, '');
-      document.getElementById('payPrice').textContent = priceStr + period;
+      document.getElementById('payPrice').textContent = promo ? firstStr + ' ' + t('doc.pay.first_month', 'le 1er mois') : priceStr + period;
       document.getElementById('paySubLabel').textContent = isAnnual ? t('doc.pay.sub_annual', 'Abonnement annuel') : t('doc.pay.sub_monthly', 'Abonnement mensuel');
       document.getElementById('payment-block').style.display = isFree ? 'none' : 'block';
       if (isFree) {
@@ -200,7 +205,9 @@
         document.getElementById('payFuture').textContent = t('doc.pay.future_free', 'Gratuit — aucun prélèvement.');
       } else {
         document.getElementById('payBtnText').textContent = t('doc.pay.btn_pay', 'Payer et activer mon abonnement');
-        document.getElementById('payFuture').textContent = t('doc.pay.future_paid', 'Abonnement {price}{period} · annulable à tout moment').replace('{price}', priceStr).replace('{period}', period);
+        document.getElementById('payFuture').textContent = promo
+          ? t('doc.pay.future_promo', 'Offre d\'ouverture : 1er mois à {first}, puis {price}/mois · annulable à tout moment').replace('{first}', firstStr).replace('{price}', priceStr)
+          : t('doc.pay.future_paid', 'Abonnement {price}{period} · annulable à tout moment').replace('{price}', priceStr).replace('{period}', period);
       }
     }
 

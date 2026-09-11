@@ -5,7 +5,7 @@
 
 // ── Zone pricing (monthly) — annual = monthly × ANNUAL_MULT ──────────────────
 const ZONE_PRICES = {
-  africa: { solo: 15,  pro: 50,  institution: 500,  base: 500,  perMed: 10 },
+  africa: { solo: 30,  pro: 50,  institution: 500,  base: 500,  perMed: 10 },
   europe: { solo: 150, pro: 500, institution: 1500, base: 1500, perMed: 30 }
 };
 
@@ -23,6 +23,42 @@ const COUNTRY_ZONES = {
 
 // Annual multiplier: 12 months − 2 free = 10
 const ANNUAL_MULT = 10;
+
+// ── Tarification Essentiel : RÉFÉRENCE en euros + DÉROGATIONS PAR PAYS (✅ décision client 2026-09-10) ──
+//    Défaut (7 pays) : 30 €/mois · 300 €/an — conversion en devise locale par le prestataire de paiement.
+//    Dérogations : Burkina Faso = 17 000 XOF/mois · RDC = 30 USD/mois (annuel = ×10 dans la devise, soit 2 mois offerts).
+//    Consommé par 14 (cartes), 15 (paiement), 17 (hub) via le pays d'exercice choisi à l'éligibilité (12b).
+const PRICING_DEFAULT = { monthly: 30, annual: 300, cur: '€' };
+const PRICING_OVERRIDES = {
+  'Burkina Faso': { monthly: 17000, annual: 170000, cur: 'XOF' },
+  'RDC':          { monthly: 30,    annual: 300,    cur: 'USD' }
+};
+function doctorCountry() { try { return localStorage.getItem('naz_doctor_country') || ''; } catch (e) { return ''; } }
+function pricingFor(country) { return Object.assign({}, PRICING_DEFAULT, PRICING_OVERRIDES[country] || {}); }
+function fmtPrice(n, cur) {
+  const s = n.toLocaleString('fr-FR', { minimumFractionDigits: Number.isInteger(n) ? 0 : 2, maximumFractionDigits: 2 });
+  return s + ' ' + cur;
+}
+
+// ── Paramètres de plan ÉDITABLES au portail admin (écran 23) : quotas patients & délais de grâce ──
+//    « Paramètres dynamiques, structure par release » : les valeurs numériques se configurent sans déploiement ;
+//    la matrice de fonctionnalités, elle, reste figée (release). Démo : persistance localStorage ; V2 : API (source unique).
+const PLAN_DEFAULTS = { patientsFree: 50, patientsSolo: 250, graceMonthly: 2, graceAnnual: 7 };
+function planConfig() {
+  try { return Object.assign({}, PLAN_DEFAULTS, JSON.parse(localStorage.getItem('fueni_plan_config') || '{}')); }
+  catch (e) { return Object.assign({}, PLAN_DEFAULTS); }
+}
+function savePlanConfig(partial) {
+  const cfg = Object.assign(planConfig(), partial);
+  try { localStorage.setItem('fueni_plan_config', JSON.stringify(cfg)); } catch (e) {}
+  return cfg;
+}
+
+// ── Offre d'ouverture : −50 % sur le PREMIER MOIS uniquement (cycle mensuel), pour toute souscription
+//    jusqu'au 31/12/2026 inclus. Les mois suivants sont au plein tarif. Partagé par 14 (cartes) et 15 (paiement).
+const LAUNCH_PROMO = { rate: 0.5, until: '2026-12-31' };
+function promoActive() { const end = new Date(LAUNCH_PROMO.until + 'T00:00:00'); end.setDate(end.getDate() + 1); return new Date() < end; }
+function promoDateStr() { const p = LAUNCH_PROMO.until.split('-'); return p[2] + '/' + p[1] + '/' + p[0]; }
 
 // ── Exchange rates ────────────────────────────────────────────────────────────
 const FALLBACK = { XOF: 655.957, MAD: 10.8 };

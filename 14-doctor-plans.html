@@ -21,11 +21,13 @@
     .badge-popular { position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: #155e75; color: white; padding: 3px 16px; border-radius: 20px; font-size: 0.72rem; font-weight: 700; white-space: nowrap; }
     /* Montant + période sur UNE même ligne, à la même taille et graisse (lisibilité, transparence tarifaire) */
     .price-row { display: flex; align-items: baseline; gap: 2px; flex-wrap: wrap; }
-    .price-main { font-size: 2.4rem; font-weight: 800; color: #155e75; line-height: 1.05; }
+    .price-main { font-size: 2.4rem; font-weight: 800; color: #155e75; line-height: 1.05; white-space: nowrap; }
     .price-period { font-size: 2.4rem; font-weight: 800; color: #155e75; line-height: 1.05; }
+    /* Devises longues (XOF, USD) : montant + période réduits ENSEMBLE (règle « même taille » conservée) pour tenir sur une ligne */
+    .price-row.long .price-main, .price-row.long .price-period { font-size: 1.65rem; }
     /* Sous-ligne (équivalent mensuel / « pour toujours ») — hauteur réservée pour aligner les deux cartes */
     .price-sub { font-size: 0.85rem; color: #7f8c8d; min-height: 1.2rem; margin-top: 4px; margin-bottom: 14px; }
-    .price-sub.promo { font-size: 0.8rem; white-space: nowrap; }
+    .price-sub.promo { font-size: 0.8rem; } /* pas de nowrap : la ligne doit rester DANS la carte (repli sur 2 lignes si étroit) */
     /* Acceptation CGV (étape 4 de la procédure de souscription) */
     .cgv-accept { display: flex; align-items: flex-start; gap: 10px; font-size: 0.88rem; color: #334155; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px 14px; cursor: pointer; }
     .cgv-accept input { margin-top: 2px; flex-shrink: 0; width: 17px; height: 17px; cursor: pointer; }
@@ -39,8 +41,8 @@
     .plan-card.selected .card-radio i { opacity: 1; }
     /* Ligne promo au-dessus du prix : ancien prix barré + remise (style « prix soldé ») */
     .promo-top { display: flex; align-items: center; gap: 10px; margin-bottom: 3px; }
-    .promo-old { font-size: 1.05rem; font-weight: 700; color: #94a3b8; text-decoration: line-through; }
-    .promo-off { background: #fff4d6; color: #9a5b00; border: 1px solid #fcd670; border-radius: 20px; padding: 2px 12px; font-size: 0.82rem; font-weight: 800; }
+    .promo-old { font-size: 1.05rem; font-weight: 700; color: #94a3b8; text-decoration: line-through; white-space: nowrap; }
+    .promo-off { background: #fff4d6; color: #9a5b00; border: 1px solid #fcd670; border-radius: 20px; padding: 2px 12px; font-size: 0.82rem; font-weight: 800; white-space: nowrap; }
     .conversion-line { font-size: 0.78rem; color: #117a65; }
     .feature-list { list-style: none; padding: 0; margin: 0; flex-grow: 1; }
     .feature-list li { padding: 6px 0; font-size: 0.88rem; display: flex; align-items: flex-start; gap: 8px; }
@@ -108,34 +110,38 @@
           <div class="price-row"><span class="price-main">0 €</span></div>
           <div class="price-sub" data-i18n="doc.plans.free_period">pour toujours</div>
           <div class="divider"></div>
+          <!-- Bullets alignés sur la matrice Nazounki (08/09/2026) — coffre-fort volontairement omis (définition à clarifier). -->
           <ul class="feature-list">
-            <li><i class="fa fa-check icon-ok"></i><span data-i18n="doc.plans.free_f1">Profil médecin public</span></li>
-            <li><i class="fa fa-check icon-ok"></i><span data-i18n="doc.plans.free_f2">Connexion & authentification</span></li>
-            <li><i class="fa fa-times icon-no"></i><span class="text-muted" data-i18n="doc.plans.free_f4">Prise de rendez-vous</span></li>
-            <li><i class="fa fa-times icon-no"></i><span class="text-muted" data-i18n="doc.plans.free_f5">Dossier médical</span></li>
-            <li><i class="fa fa-times icon-no"></i><span class="text-muted" data-i18n="doc.plans.free_f6">Tableau de bord analytics</span></li>
+            <!-- « Profil public & annuaire » : absent de la matrice client mais prérequis implicite de sa ligne
+                 « Prise de RDV » (réservation patient = fiche publique dans l'annuaire) — cœur de l'offre Gratuit. -->
+            <li><i class="fa fa-check icon-ok"></i><span data-i18n="doc.plans.free_f6">Profil public & annuaire</span></li>
+            <li><i class="fa fa-check icon-ok"></i><span data-i18n="doc.plans.free_f1">Gestion de compte & authentification</span></li>
+            <li><i class="fa fa-check icon-ok"></i><span data-i18n="doc.plans.free_f2">Réservation en ligne par les patients</span></li>
+            <li><i class="fa fa-check icon-ok"></i><span data-i18n="doc.plans.free_f3" id="freeQuota">50 patients inclus</span></li>
+            <li><i class="fa fa-times icon-no"></i><span class="text-muted" data-i18n="doc.plans.free_f5">Agenda praticien & rapports de consultation</span></li>
           </ul>
           <div class="divider"></div>
           <div class="small text-muted"><i class="fa fa-user me-1"></i><span data-i18n="doc.plans.meta_one_doc">1 médecin</span></div>
         </div>
       </div>
 
-      <!-- Plan Solo -->
+      <!-- Plan Essentiel -->
       <div class="col-md-6">
         <div class="plan-card popular" id="card-solo" data-plan="solo" role="radio" aria-checked="false" tabindex="0" onclick="selectPlan('solo')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();selectPlan('solo');}">
           <div class="badge-popular"><i class="fa fa-star me-1"></i><span data-i18n="doc.plans.recommended">Recommandé</span></div>
           <span class="card-radio" aria-hidden="true"><i class="fa fa-check"></i></span>
-          <div class="small fw-semibold mb-2 text-uppercase" style="color:#155e75;" data-i18n="doc.plans.solo_name">Solo</div>
-          <div class="promo-top" id="solo-promo-top" style="display:none;"><span class="promo-old" id="solo-old"></span><span class="promo-off" id="solo-off" data-i18n="doc.plans.billing_monthly_badge">−50 %</span></div>
-          <div class="price-row"><span class="price-main" id="solo-price">15 €</span><span class="price-period" id="solo-period" data-i18n="doc.plans.per_month">/mois</span></div>
+          <div class="small fw-semibold mb-2 text-uppercase" style="color:#155e75;" data-i18n="doc.plans.solo_name">Essentiel</div>
+          <div class="promo-top" id="solo-promo-top" style="display:none;"><span class="promo-old" id="solo-old"></span><span class="promo-off" id="solo-off" data-i18n="doc.plans.promo_off_first">−50 % le 1er mois</span></div>
+          <div class="price-row"><span class="price-main" id="solo-price">30 €</span><span class="price-period" id="solo-period" data-i18n="doc.plans.per_month">/mois</span></div>
           <div class="price-sub text-success fw-semibold" id="solo-equiv"></div>
           <div class="divider"></div>
           <ul class="feature-list">
-            <li><i class="fa fa-check icon-ok"></i><span data-i18n="doc.plans.solo_f1">Tout le plan Free</span></li>
-            <li><i class="fa fa-check icon-ok"></i><span data-i18n="doc.plans.solo_f2">Prise de rendez-vous illimitée</span></li>
-            <li><i class="fa fa-check icon-ok"></i><span data-i18n="doc.plans.solo_f4">Tableau de bord analytics</span></li>
-            <li><i class="fa fa-clock icon-tbd"></i><span><span class="text-muted" data-i18n="doc.plans.solo_f3">Dossier médical complet (POMR / SOAP)</span> <span class="limit-badge" data-i18n="doc.elig.soon">Bientôt</span></span></li>
-            <li><i class="fa fa-clock icon-tbd"></i><span><span class="text-muted" data-i18n="doc.plans.solo_f5">Réseau partenaires</span> <span class="limit-badge" data-i18n="doc.elig.soon">Bientôt</span></span></li>
+            <li><i class="fa fa-check icon-ok"></i><span data-i18n="doc.plans.solo_f1">Tout le plan Gratuit</span></li>
+            <li><i class="fa fa-check icon-ok"></i><span data-i18n="doc.plans.solo_f2">Agenda praticien & prise de rendez-vous</span></li>
+            <li><i class="fa fa-check icon-ok"></i><span data-i18n="doc.plans.solo_f3">Rapports de consultation</span></li>
+            <li><i class="fa fa-check icon-ok"></i><span data-i18n="doc.plans.solo_f4" id="soloQuota">250 patients inclus</span></li>
+            <li><i class="fa fa-check icon-ok"></i><span data-i18n="doc.plans.solo_f5">Statistiques & tableaux de bord (basique)</span></li>
+            <li><i class="fa fa-clock icon-tbd"></i><span><span class="text-muted" data-i18n="doc.plans.solo_f6">Téléconsultation</span> <span class="limit-badge" data-i18n="doc.elig.soon">Bientôt</span></span></li>
           </ul>
           <div class="divider"></div>
           <div class="small text-muted"><i class="fa fa-user me-1"></i><span data-i18n="doc.plans.meta_one_doc">1 médecin</span></div>
@@ -161,7 +167,7 @@
     <div class="mt-3" style="max-width:620px; margin:0 auto;">
       <div class="alert d-flex align-items-start gap-2 py-2 px-3" style="background:#e6f2f5; border:1px solid #bcdfe7; color:#0e4456; border-radius:10px; font-size:0.86rem;">
         <i class="fa fa-circle-info mt-1" style="color:#155e75;"></i>
-        <span data-i18n-html="doc.plans.pay_notice">Aucun paiement à cette étape. Vous choisissez votre formule maintenant ; pour le plan <strong>Solo</strong>, le premier prélèvement n'intervient <strong>qu'après la validation de votre dossier</strong>. Le plan <strong>Free</strong> reste gratuit.</span>
+        <span data-i18n-html="doc.plans.pay_notice">Aucun paiement à cette étape. Vous choisissez votre formule maintenant ; pour le plan <strong>Essentiel</strong>, le premier prélèvement n'intervient <strong>qu'après la validation de votre dossier</strong>. Le plan <strong>Free</strong> reste gratuit.</span>
       </div>
     </div>
 
@@ -190,40 +196,50 @@
       refreshDisplay();
     }
 
-    // Offre d'ouverture : −50 % sur l'abonnement Solo MENSUEL. `until` = dernier jour inclus (affiché tel quel) ;
+    // Offre d'ouverture : −50 % sur l'abonnement Essentiel MENSUEL. `until` = dernier jour inclus (affiché tel quel) ;
     // l'offre reste active jusqu'à la fin de cette journée puis s'auto-désactive. L'annuel n'est pas concerné.
-    const LAUNCH_PROMO = { rate: 0.5, until: '2026-12-31' };
-    function promoActive() { const end = new Date(LAUNCH_PROMO.until + 'T00:00:00'); end.setDate(end.getDate() + 1); return new Date() < end; }
-    function promoDateStr() { const p = LAUNCH_PROMO.until.split('-'); return p[2] + '/' + p[1] + '/' + p[0]; }
+    // LAUNCH_PROMO / promoActive / promoDateStr : désormais dans naz-common.js (partagés avec l'écran de paiement 15).
+    // Rappel : la remise porte sur le PREMIER MOIS uniquement (mensuel).
     function fmtEur(n) { return n.toLocaleString('fr-FR', { minimumFractionDigits: Number.isInteger(n) ? 0 : 2, maximumFractionDigits: 2 }) + ' €'; }
 
     function refreshDisplay() {
       const isAnnual = billing === 'annual';
-      const zp = ZONE_PRICES.africa;
-      const fullMonthly = zp.solo;
-      const base = isAnnual ? zp.solo * ANNUAL_MULT : zp.solo;
+      // Tarification par pays d'exercice (✅ client 2026-09-10) : référence 30 € / 300 € ;
+      // dérogations Burkina Faso (17 000 XOF) et RDC (30 USD) — pricingFor(), naz-common.js.
+      const P = pricingFor(doctorCountry());
+      const fullMonthly = P.monthly;
+      const base = isAnnual ? P.annual : P.monthly;
+      const fmtP = n => fmtPrice(n, P.cur);
       const promo = !isAnnual && promoActive(); // offre d'ouverture : mensuel uniquement
       const shown = promo ? base * (1 - LAUNCH_PROMO.rate) : base;
 
-      document.getElementById('solo-price').textContent = fmtEur(shown);
+      document.getElementById('solo-price').textContent = fmtP(shown);
+      // Devise longue (ex. « 8 500 XOF ») → réduction uniforme montant + période pour rester sur une ligne dans la carte.
+      var priceRow = document.getElementById('solo-price').parentElement;
+      if (priceRow) priceRow.classList.toggle('long', fmtP(shown).length > 5); // « 300 € » reste grand ; « 30 USD » / « 8 500 XOF » réduits
       document.getElementById('solo-period').textContent = isAnnual ? t('doc.plans.per_year', '/an') : t('doc.plans.per_month', '/mois');
 
       // Ligne promo « prix soldé » (ancien prix barré + remise) au-dessus du prix — mensuel + promo active.
       const promoTop = document.getElementById('solo-promo-top');
       if (promoTop) promoTop.style.display = promo ? 'flex' : 'none';
-      if (promo) document.getElementById('solo-old').textContent = fmtEur(fullMonthly);
+      if (promo) document.getElementById('solo-old').textContent = fmtP(fullMonthly);
       // Badge « −50 % » sur l'onglet Mensuel (tant que la promo court, quel que soit l'onglet actif).
       const mBadge = document.getElementById('monthlyPromoBadge'); if (mBadge) mBadge.style.display = promoActive() ? 'inline-block' : 'none';
 
+      // Quotas patients : paramètre dynamique (portail admin, écran 23 — planConfig, naz-common.js).
+      const cfg = planConfig();
+      const fq = document.getElementById('freeQuota'); if (fq) fq.textContent = t('doc.plans.free_f3', '{n} patients inclus').replace('{n}', cfg.patientsFree);
+      const sq = document.getElementById('soloQuota'); if (sq) sq.textContent = t('doc.plans.solo_f4', '{n} patients inclus').replace('{n}', cfg.patientsSolo);
+
       const equiv = document.getElementById('solo-equiv');
       if (isAnnual) {
-        // équivalent mensuel de l'annuel (ex. 150 €/an ≈ 12,50 €/mois)
-        equiv.textContent = t('doc.plans.solo_equiv', 'soit ≈ {price}/mois').replace('{price}', fmtEur(base / 12));
+        // équivalent mensuel de l'annuel (ex. 300 €/an ≈ 25 €/mois ; 170 000 XOF/an ≈ 14 167 XOF/mois)
+        equiv.textContent = t('doc.plans.solo_equiv', 'soit ≈ {price}/mois').replace('{price}', fmtP(Math.round(base / 12)));
         equiv.className = 'price-sub text-success fw-semibold';
       } else if (promo) {
-        // libellé de l'offre + échéance (une seule ligne)
-        equiv.textContent = t('doc.plans.promo_badge', 'Offre d\'ouverture') + ' · ' +
-          t('doc.plans.promo_until', 'jusqu\'au {date}').replace('{date}', promoDateStr());
+        // Plein tarif après le 1er mois + échéance — court : la pastille porte déjà « −50 % le 1er mois ».
+        equiv.textContent = t('doc.plans.promo_first', 'puis {price}/mois').replace('{price}', fmtP(base)) + ' · ' +
+          t('doc.plans.promo_until', 'offre valable jusqu\'au {date}').replace('{date}', promoDateStr());
         equiv.className = 'price-sub promo';
       } else {
         equiv.textContent = ''; // vidé mais conservé dans le flux (hauteur réservée par .price-sub)
@@ -254,13 +270,16 @@
       try { localStorage.setItem('fueni_cgv_accept', JSON.stringify({ cgv: '2.3', accepted: true, ts: new Date().toISOString() })); } catch (e) {}
       localStorage.setItem('naz_plan', selectedPlan);
       if (selectedPlan === 'solo') localStorage.setItem('naz_billing', billing);
-      // Aucun paiement à cette étape (validé client 2026-07-01) → tableau de bord verrouillé ; KYC depuis le dashboard ; paiement Solo après validation.
+      // Aucun paiement à cette étape (validé client 2026-07-01) → tableau de bord verrouillé ; KYC depuis le dashboard ; paiement Essentiel après validation.
       window.location.href = '17-doctor-dashboard.html?kyc=todo';
     }
 
     setBilling(billing); // synchronise l'UI du sélecteur + l'affichage des prix (défaut = annuel)
-    selectPlan('solo');  // Solo pré-sélectionné par défaut (formule recommandée)
+    selectPlan('solo');  // Essentiel pré-sélectionné par défaut (formule recommandée)
     document.addEventListener('fueni:langchange', refreshDisplay);
+    // applyLang (naz-i18n, DOMContentLoaded) réécrit les gabarits {n} bruts APRÈS notre rendu initial →
+    // re-rendu différé d'un tick pour repasser derrière lui (l'ordre des listeners DOMContentLoaded ne suffit pas).
+    document.addEventListener('DOMContentLoaded', function(){ setTimeout(refreshDisplay, 0); });
   </script>
 <script>/* Stepper cliquable : retour aux étapes déjà franchies */(function(){var u=['12b-doctor-eligibilite.html','13-doctor-inscription.html','14-doctor-plans.html','15-doctor-paiement.html','15b-doctor-kyc.html','16-doctor-confirmation.html'];document.querySelectorAll('.progress-steps .step').forEach(function(s,i){if(s.classList.contains('done')&&u[i]){s.style.cursor='pointer';s.title='Revenir à cette étape';s.addEventListener('click',function(){location.href=u[i];});}});})();</script>
 <!-- Prototype version badge -->

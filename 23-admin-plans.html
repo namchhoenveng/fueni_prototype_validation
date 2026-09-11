@@ -7,6 +7,7 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="naz-common.js"></script>
   <style>
     :root { --slate:#2c3e50; --slate-dark:#1f2d3d; --purple:#6c3483; --purple-light:#f5eef8; --accent:#f59e0b; }
     * { box-sizing: border-box; }
@@ -22,54 +23,74 @@
     .nav-link-side.disabled { color:rgba(255,255,255,0.34); cursor:not-allowed; }
     .nav-link-side.disabled:hover { background:none; }
     .soon-pill { margin-left:auto; font-size:0.6rem; background:rgba(255,255,255,0.12); color:rgba(255,255,255,0.6); padding:1px 7px; border-radius:10px; font-weight:700; letter-spacing:0.3px; }
-    .main { margin-left:272px; padding:0 28px 40px; }
+    .main { margin-left:272px; padding:0 28px 48px; }
     .admin-topbar { display:flex; align-items:center; gap:10px; padding:14px 0; margin-bottom:10px; border-bottom:1px solid #e6edf3; font-size:0.9rem; }
     .sa-avatar { width:30px; height:30px; border-radius:50%; background:var(--purple); display:flex; align-items:center; justify-content:center; color:#fff; font-size:0.72rem; font-weight:700; }
-    .imm-note { background:#eef4fb; border:1px solid #bcdfe7; color:#0e4456; border-radius:10px; padding:9px 14px; font-size:0.82rem; margin-bottom:18px; display:flex; align-items:center; gap:9px; }
-    .todo-note { background:#fff8f1; border:1px solid #faddc0; color:#9c4221; border-radius:10px; padding:9px 14px; font-size:0.82rem; margin-bottom:18px; display:flex; align-items:center; gap:9px; }
 
-    .plan-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:18px; margin-bottom:26px; }
-    .plan-card { background:#fff; border-radius:14px; box-shadow:0 2px 10px rgba(0,0,0,0.06); padding:22px; border-top:4px solid #cbd5e1; position:relative; }
-    .plan-card.solo { border-top-color:var(--accent); }
-    .plan-head { display:flex; align-items:center; gap:10px; margin-bottom:4px; }
-    .plan-name { font-size:1.35rem; font-weight:800; color:var(--slate); }
-    .pill { font-size:0.64rem; font-weight:700; padding:3px 9px; border-radius:20px; text-transform:uppercase; letter-spacing:0.4px; }
+    .page-head { margin:14px 0 22px; }
+    .page-head h3 { font-weight:800; color:var(--slate); margin:0 0 4px; }
+    .page-head p { color:#64748b; font-size:0.88rem; margin:0; }
+
+    /* ── Cartes de plan (config SaaS) ─────────────────────────────── */
+    .plan-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(330px,1fr)); gap:20px; margin-bottom:34px; }
+    .plan-card { background:#fff; border:1px solid #e6edf2; border-radius:16px; padding:24px; display:flex; flex-direction:column; gap:0; transition:box-shadow .15s; }
+    .plan-card:hover { box-shadow:0 6px 24px rgba(15,23,42,0.08); }
+    .plan-card.essentiel { border-color:#f2dcae; background:linear-gradient(180deg,#fffdf7 0%,#fff 90px); }
+    .plan-top { display:flex; align-items:center; gap:10px; }
+    .plan-name { font-size:1.15rem; font-weight:800; color:var(--slate); }
+    .pill { font-size:0.62rem; font-weight:700; padding:3px 9px; border-radius:20px; text-transform:uppercase; letter-spacing:0.4px; }
     .pill-on { background:#d1e7dd; color:#0f5132; }
     .pill-off { background:#f8d7da; color:#842029; }
     .pill-pop { background:#fff3cd; color:#8a6100; }
-    .plan-price { font-size:1.5rem; font-weight:800; color:var(--slate); margin:8px 0 2px; }
-    .plan-price small { font-size:0.9rem; font-weight:600; color:#94a3b8; }
-    .plan-price .free { color:#0f5132; }
-    .plan-sub { font-size:0.82rem; color:#64748b; margin-bottom:14px; }
-    .plan-metrics { display:flex; gap:20px; padding:12px 0; border-top:1px solid #f1f5f9; border-bottom:1px solid #f1f5f9; margin-bottom:14px; }
-    .metric .n { font-size:1.25rem; font-weight:800; color:var(--purple); }
-    .metric .l { font-size:0.72rem; color:#94a3b8; text-transform:uppercase; letter-spacing:0.4px; font-weight:600; }
-    .grace-note { font-size:0.78rem; color:#64748b; margin-bottom:14px; }
+    .plan-toggle { margin-left:auto; display:flex; align-items:center; gap:8px; font-size:0.76rem; color:#94a3b8; font-weight:600; }
+    .plan-price { margin:16px 0 2px; }
+    .plan-price .amt { font-size:2rem; font-weight:800; color:var(--slate); line-height:1; }
+    .plan-price .per { font-size:0.9rem; font-weight:600; color:#94a3b8; }
+    .plan-price .amt.free { color:#0f5132; }
+    .plan-sub { font-size:0.8rem; color:#64748b; }
+    .plan-sub .fa-circle-info { color:#b9c4cf; cursor:help; }
+    .m-chips { display:flex; gap:10px; flex-wrap:wrap; margin:16px 0; }
+    .m-chip { background:#f6f8fb; border:1px solid #eef2f6; border-radius:10px; padding:8px 14px; flex:1 1 120px; }
+    .m-chip .n { font-size:1.05rem; font-weight:800; color:var(--purple); line-height:1.15; }
+    .m-chip .l { font-size:0.68rem; color:#94a3b8; text-transform:uppercase; letter-spacing:0.4px; font-weight:700; }
+    .grace-note { font-size:0.76rem; color:#94a3b8; margin:0 0 14px; }
     .grace-note i { color:var(--accent); }
-    .btn-slate { background:var(--slate); border:0; color:#fff; font-weight:600; border-radius:9px; font-size:0.85rem; padding:8px 14px; }
+    .plan-foot { display:flex; align-items:center; justify-content:flex-start; margin-top:auto; }
+    .btn-slate { background:var(--slate); border:0; color:#fff; font-weight:600; border-radius:9px; font-size:0.85rem; padding:8px 16px; }
     .btn-slate:hover { background:var(--slate-dark); color:#fff; }
-    .btn-ghost { background:#f1f5f9; border:0; color:#475569; font-weight:600; border-radius:9px; font-size:0.85rem; padding:8px 14px; }
+    .btn-ghost { background:#f1f5f9; border:0; color:#475569; font-weight:600; border-radius:9px; font-size:0.85rem; padding:8px 16px; }
     .btn-ghost:hover { background:#e2e8f0; color:#334155; }
     /* toggle */
-    .switch { position:relative; display:inline-block; width:42px; height:23px; flex-shrink:0; }
+    .switch { position:relative; display:inline-block; width:40px; height:22px; flex-shrink:0; }
     .switch input { opacity:0; width:0; height:0; }
-    .slider { position:absolute; cursor:pointer; inset:0; background:#cbd5e1; border-radius:23px; transition:.2s; }
-    .slider:before { content:""; position:absolute; height:17px; width:17px; left:3px; bottom:3px; background:#fff; border-radius:50%; transition:.2s; }
+    .slider { position:absolute; cursor:pointer; inset:0; background:#cbd5e1; border-radius:22px; transition:.2s; }
+    .slider:before { content:""; position:absolute; height:16px; width:16px; left:3px; bottom:3px; background:#fff; border-radius:50%; transition:.2s; }
     input:checked + .slider { background:#198754; }
-    input:checked + .slider:before { transform:translateX(19px); }
+    input:checked + .slider:before { transform:translateX(18px); }
 
-    .matrix-wrap { background:#fff; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.05); overflow:hidden; }
+    /* ── Comparatif ───────────────────────────────────────────────── */
+    .sec-head { display:flex; align-items:baseline; gap:12px; flex-wrap:wrap; margin-bottom:12px; }
+    .sec-head h5 { font-weight:800; color:var(--slate); margin:0; }
+    .sec-head .src { font-size:0.76rem; color:#94a3b8; }
+    .matrix-wrap { background:#fff; border:1px solid #e6edf2; border-radius:16px; overflow:hidden; }
     .matrix-scroll { overflow-x:auto; }
-    table.matrix { width:100%; border-collapse:collapse; font-size:0.85rem; min-width:560px; }
-    table.matrix th { text-align:left; font-size:0.7rem; text-transform:uppercase; letter-spacing:0.5px; color:#94a3b8; font-weight:700; padding:12px 16px; border-bottom:2px solid #eef2f6; }
-    table.matrix th.col-plan { text-align:center; width:150px; }
-    table.matrix td { padding:11px 16px; border-bottom:1px solid #f1f5f9; vertical-align:middle; }
-    table.matrix td.val { text-align:center; }
+    table.matrix { width:100%; border-collapse:collapse; font-size:0.86rem; min-width:600px; }
+    table.matrix th { text-align:left; padding:14px 20px; border-bottom:1px solid #eef2f6; background:#fbfcfe; }
+    table.matrix th .pn { font-size:0.78rem; font-weight:800; color:var(--slate); text-transform:uppercase; letter-spacing:0.5px; }
+    table.matrix th .pp { display:block; font-size:0.7rem; font-weight:600; color:#94a3b8; margin-top:2px; text-transform:none; letter-spacing:0; }
+    table.matrix th.col-plan { text-align:center; width:170px; }
+    table.matrix td { padding:12px 20px; border-bottom:1px solid #f4f7fa; vertical-align:middle; }
+    table.matrix tbody tr:hover { background:#fafcfe; }
     table.matrix tr:last-child td { border-bottom:0; }
-    .yes { color:#198754; } .no { color:#cbd5e1; }
-    .val-text { font-size:0.8rem; font-weight:600; color:#475569; }
+    table.matrix td.val { text-align:center; }
+    .ck { display:inline-flex; align-items:center; justify-content:center; width:22px; height:22px; border-radius:50%; background:#e6f6ee; color:#198754; font-size:0.7rem; }
+    .dash { color:#cbd5e1; font-weight:700; }
+    .vpill { display:inline-block; background:#f1f5f9; color:#334155; border-radius:8px; padding:3px 10px; font-size:0.78rem; font-weight:700; }
+    .soon-chip { display:inline-flex; align-items:center; gap:5px; background:#fff8e6; border:1px solid #fde9b8; color:#9a6b00; border-radius:20px; padding:2px 9px; font-size:0.66rem; font-weight:700; text-transform:uppercase; letter-spacing:0.4px; white-space:nowrap; }
     .feat-name { font-weight:600; color:#334155; }
     .feat-name small { display:block; font-weight:400; color:#94a3b8; font-size:0.74rem; }
+
+    .modal-note { font-size:0.76rem; color:#94a3b8; line-height:1.5; }
     .toast-ok { position:fixed; bottom:24px; left:50%; transform:translateX(-50%); background:#0f5132; color:#fff; padding:12px 22px; border-radius:10px; font-size:0.88rem; font-weight:600; box-shadow:0 6px 20px rgba(0,0,0,0.25); z-index:3000; display:flex; align-items:center; gap:9px; }
     @media (max-width:900px){ .sidebar{ display:none; } .main{ margin-left:0; padding:0 14px 30px; } }
     .proto-bar { position: sticky; top: 0; z-index: 200; }
@@ -91,12 +112,11 @@
 
     <div class="sidebar-label">Gestion</div>
     <a href="21-admin-verifications.html" class="nav-link-side"><i class="fa fa-user-check"></i> Vérification des dossiers</a>
-    <a class="nav-link-side disabled"><i class="fa fa-users"></i> Abonnements <span class="soon-pill">Bientôt</span></a>
+    <a href="23b-admin-subscriptions.html" class="nav-link-side"><i class="fa fa-users"></i> Abonnements</a>
     <a href="22-admin-audit.html" class="nav-link-side"><i class="fa fa-clock-rotate-left"></i> Journal d'audit</a>
 
     <div class="sidebar-label">Configuration</div>
     <a class="nav-link-side active"><i class="fa fa-th-large"></i> Plans</a>
-    <a class="nav-link-side disabled"><i class="fa fa-globe"></i> Tarification par pays <span class="soon-pill">Bientôt</span></a>
 
     <div class="sidebar-label">Compte</div>
     <a href="12-login-admin.html" class="nav-link-side"><i class="fa fa-sign-out-alt"></i> Déconnexion</a>
@@ -115,124 +135,140 @@
       </div>
     </div>
 
-    <div class="d-flex justify-content-between align-items-start mb-3 mt-1 flex-wrap gap-2">
-      <div>
-        <h3 class="fw-bold mb-0" style="color:var(--slate);">Gestion des plans</h3>
-        <p class="text-muted mb-0 small">Formules d'abonnement praticien — tarifs, disponibilité et fonctionnalités. Deux plans en Phase 1 : <strong>Free</strong> et <strong>Solo</strong>.</p>
-      </div>
+    <div class="page-head">
+      <h3>Gestion des plans</h3>
+      <p>Formules d'abonnement praticien — tarifs, disponibilité et fonctionnalités. Deux plans en Phase 1 : <strong>Free</strong> et <strong>Essentiel</strong>.</p>
     </div>
 
-    <div class="imm-note">
-      <i class="fa fa-circle-info" style="color:#155e75;"></i>
-      <span>Toute modification de tarif s'applique aux <strong>nouvelles souscriptions</strong> et aux <strong>renouvellements à venir</strong> — jamais rétroactivement à une période déjà payée. Chaque changement est tracé dans le <a href="22-admin-audit.html">journal d'audit</a>.</span>
-    </div>
-
-    <div class="todo-note">
-      <i class="fa fa-triangle-exclamation"></i>
-      <span>🟠 <strong>À valider Nazounki</strong> — la répartition des fonctionnalités Free / Solo ci-dessous est une proposition de travail (illustrative). Le modèle définitif (limites, téléconsultation, etc.) reste à arrêter.</span>
-    </div>
-
-    <!-- Plan cards -->
+    <!-- Cartes de plan — les règles (non-rétroactivité, traçabilité d'audit) sont rappelées DANS la modale d'édition,
+         au moment où elles s'appliquent — pas en bandeau permanent. -->
     <div class="plan-grid">
 
       <!-- Free -->
       <div class="plan-card">
-        <div class="plan-head">
+        <div class="plan-top">
           <span class="plan-name">Free</span>
           <span class="pill pill-on" id="freeStatus">Actif</span>
-        </div>
-        <div class="plan-price"><span class="free">Gratuit</span></div>
-        <div class="plan-sub">Socle d'accès offert à tout praticien validé (remplace l'essai).</div>
-        <div class="plan-metrics">
-          <div class="metric"><div class="n">84</div><div class="l">Abonnés actifs</div></div>
-          <div class="metric"><div class="n">—</div><div class="l">Revenu / mois</div></div>
-        </div>
-        <div class="d-flex align-items-center justify-content-between">
-          <button class="btn-ghost" onclick="openEdit('free')"><i class="fa fa-pen me-1"></i>Modifier</button>
-          <label class="d-flex align-items-center gap-2 mb-0" style="font-size:0.8rem;color:#64748b;">
-            Disponible
+          <label class="plan-toggle mb-0">Disponible
             <span class="switch"><input type="checkbox" id="freeToggle" checked onchange="toggleStatus('free')"><span class="slider"></span></span>
           </label>
         </div>
+        <div class="plan-price"><span class="amt free">Gratuit</span></div>
+        <div class="plan-sub">Socle d'accès offert à tout praticien validé (remplace l'essai).</div>
+        <div class="m-chips">
+          <div class="m-chip"><div class="n">84</div><div class="l">Abonnés actifs</div></div>
+          <div class="m-chip"><div class="n">—</div><div class="l">Revenu / mois</div></div>
+        </div>
+        <div class="plan-foot">
+          <button class="btn-ghost" onclick="openEdit('free')"><i class="fa fa-pen me-1"></i>Modifier</button>
+        </div>
       </div>
 
-      <!-- Solo -->
-      <div class="plan-card solo">
-        <div class="plan-head">
-          <span class="plan-name">Solo</span>
+      <!-- Essentiel -->
+      <div class="plan-card essentiel">
+        <div class="plan-top">
+          <span class="plan-name">Essentiel</span>
           <span class="pill pill-on" id="soloStatus">Actif</span>
           <span class="pill pill-pop">Populaire</span>
-        </div>
-        <div class="plan-price"><span id="soloMonthly">5 000</span> XOF <small>/ mois</small></div>
-        <div class="plan-sub"><span id="soloAnnual">50 000</span> XOF / an <span class="text-success fw-semibold">(−17 %)</span> · paiement Mobile Money ou carte</div>
-        <div class="plan-metrics">
-          <div class="metric"><div class="n">42</div><div class="l">Abonnés actifs</div></div>
-          <div class="metric"><div class="n">210 000</div><div class="l">XOF / mois (est.)</div></div>
-        </div>
-        <div class="grace-note"><i class="fa fa-clock me-1"></i>Délai de grâce renouvellement : <strong>2 j</strong> (mensuel) · <strong>7 j</strong> (annuel), rappels quotidiens.</div>
-        <div class="d-flex align-items-center justify-content-between">
-          <button class="btn-slate" onclick="openEdit('solo')"><i class="fa fa-pen me-1"></i>Modifier le tarif</button>
-          <label class="d-flex align-items-center gap-2 mb-0" style="font-size:0.8rem;color:#64748b;">
-            Disponible
+          <label class="plan-toggle mb-0">Disponible
             <span class="switch"><input type="checkbox" id="soloToggle" checked onchange="toggleStatus('solo')"><span class="slider"></span></span>
           </label>
+        </div>
+        <div class="plan-price"><span class="amt"><span id="soloMonthly">30</span> €</span> <span class="per">/ mois</span></div>
+        <div class="plan-sub"><span id="soloAnnual">300</span> € / an <span class="text-success fw-semibold">(−17 %)</span> · Mobile Money ou carte · <span title="Tarif de référence pour 7 pays (conversion locale par le prestataire de paiement) — dérogations fixées par le client le 10/09/2026.">tarif de référence <i class="fa fa-circle-info"></i></span></div>
+        <div class="plan-sub" style="margin-top:4px;"><i class="fa fa-earth-africa" style="color:#b9c4cf;"></i> Dérogations : <strong>Burkina Faso 17 000 XOF/mois</strong> (170 000 XOF/an) · <strong>RDC 30 USD/mois</strong> (300 USD/an)</div>
+        <div class="m-chips">
+          <div class="m-chip" title="30 abonnés mensuels · 12 abonnés annuels"><div class="n">42</div><div class="l">Abonnés actifs · 30 M / 12 A</div></div>
+          <div class="m-chip" id="mrrChip"><div class="n" id="soloMrr">—</div><div class="l">MRR estimé</div></div>
+        </div>
+        <div class="grace-note"><i class="fa fa-clock me-1"></i>Délai de grâce : <strong><span id="graceMDisp">2</span> j</strong> (mensuel) · <strong><span id="graceADisp">7</span> j</strong> (annuel), rappels quotidiens.</div>
+        <div class="plan-foot">
+          <button class="btn-slate" onclick="openEdit('solo')"><i class="fa fa-pen me-1"></i>Modifier le tarif</button>
         </div>
       </div>
 
     </div>
 
-    <!-- Feature matrix -->
-    <h5 class="fw-bold mb-2" style="color:var(--slate);">Comparatif des fonctionnalités</h5>
+    <!-- Comparatif — matrice transmise par Nazounki (08/09/2026), reprise fidèlement. « Bientôt » = hors MVP. -->
+    <div class="sec-head">
+      <h5>Comparatif des fonctionnalités</h5>
+      <span class="src">Matrice Nazounki · 08/09/2026 — <span class="soon-chip" style="vertical-align:1px;"><i class="fa fa-clock"></i>Bientôt</span> = prévu, hors MVP</span>
+    </div>
     <div class="matrix-wrap">
       <div class="matrix-scroll">
         <table class="matrix">
           <thead>
             <tr>
-              <th>Fonctionnalité</th>
-              <th class="col-plan">Free</th>
-              <th class="col-plan">Solo</th>
+              <th><span class="pn">Fonctionnalité</span></th>
+              <th class="col-plan"><span class="pn">Free</span><span class="pp">Gratuit</span></th>
+              <th class="col-plan"><span class="pn">Essentiel</span><span class="pp">30 € / mois · 300 € / an</span></th>
             </tr>
           </thead>
           <tbody>
             <tr>
-              <td class="feat-name">Profil vérifié &amp; référencement<small>Fiche publique dans l'annuaire</small></td>
-              <td class="val"><i class="fa fa-check yes"></i></td>
-              <td class="val"><i class="fa fa-check yes"></i></td>
+              <td class="feat-name">Gestion de compte et authentification</td>
+              <td class="val"><span class="ck"><i class="fa fa-check"></i></span></td>
+              <td class="val"><span class="ck"><i class="fa fa-check"></i></span></td>
             </tr>
             <tr>
-              <td class="feat-name">Agenda &amp; prise de rendez-vous</td>
-              <td class="val"><i class="fa fa-check yes"></i></td>
-              <td class="val"><i class="fa fa-check yes"></i></td>
+              <td class="feat-name">Prise de RDV<small>réservation en ligne par les patients</small></td>
+              <td class="val"><span class="ck"><i class="fa fa-check"></i></span></td>
+              <td class="val"><span class="ck"><i class="fa fa-check"></i></span></td>
             </tr>
             <tr>
-              <td class="feat-name">Dossiers patients</td>
-              <td class="val"><span class="val-text">Jusqu'à 50</span></td>
-              <td class="val"><span class="val-text">Illimités</span></td>
+              <td class="feat-name">Application mobile</td>
+              <td class="val"><span class="soon-chip"><i class="fa fa-clock"></i>Bientôt</span></td>
+              <td class="val"><span class="soon-chip"><i class="fa fa-clock"></i>Bientôt</span></td>
             </tr>
             <tr>
-              <td class="feat-name">Documents partagés avec les patients</td>
-              <td class="val"><i class="fa fa-xmark no"></i></td>
-              <td class="val"><i class="fa fa-check yes"></i></td>
+              <td class="feat-name">Coffre-fort de données<small>par utilisateur</small></td>
+              <td class="val"><span class="vpill">0,5 Go</span></td>
+              <td class="val"><span class="vpill">150 Go</span></td>
             </tr>
             <tr>
-              <td class="feat-name">Téléconsultation</td>
-              <td class="val"><i class="fa fa-xmark no"></i></td>
-              <td class="val"><i class="fa fa-check yes"></i></td>
+              <td class="feat-name">Nombre d'utilisateurs inclus</td>
+              <td class="val"><span class="vpill">1</span></td>
+              <td class="val"><span class="vpill">1</span></td>
             </tr>
             <tr>
-              <td class="feat-name">Rappels SMS aux patients</td>
-              <td class="val"><i class="fa fa-xmark no"></i></td>
-              <td class="val"><i class="fa fa-check yes"></i></td>
+              <td class="feat-name">Nombre de patients inclus</td>
+              <td class="val"><span class="vpill" id="qFree">50</span></td>
+              <td class="val"><span class="vpill" id="qSolo">250</span></td>
             </tr>
             <tr>
-              <td class="feat-name">Facturation &amp; reçus PDF</td>
-              <td class="val"><i class="fa fa-check yes"></i></td>
-              <td class="val"><i class="fa fa-check yes"></i></td>
+              <td class="feat-name">Accès DMP patient<small>dossier médical partagé</small></td>
+              <td class="val"><span class="dash">—</span></td>
+              <td class="val"><span class="vpill">Option payante</span> <span class="soon-chip"><i class="fa fa-clock"></i>Bientôt</span></td>
             </tr>
             <tr>
-              <td class="feat-name">Support</td>
-              <td class="val"><span class="val-text">Standard</span></td>
-              <td class="val"><span class="val-text">Prioritaire</span></td>
+              <td class="feat-name">Agenda et prise de rendez-vous<small>agenda praticien</small></td>
+              <td class="val"><span class="dash">—</span></td>
+              <td class="val"><span class="ck"><i class="fa fa-check"></i></span></td>
+            </tr>
+            <tr>
+              <td class="feat-name">Documentation rapport de consultation</td>
+              <td class="val"><span class="dash">—</span></td>
+              <td class="val"><span class="ck"><i class="fa fa-check"></i></span></td>
+            </tr>
+            <tr>
+              <td class="feat-name">Facturation et suivi des paiements<small>basique : consultations</small></td>
+              <td class="val"><span class="dash">—</span></td>
+              <td class="val"><span class="vpill">Inclus</span> <span class="soon-chip"><i class="fa fa-clock"></i>Bientôt</span></td>
+            </tr>
+            <tr>
+              <td class="feat-name">Statistiques et tableaux de bord</td>
+              <td class="val"><span class="dash">—</span></td>
+              <td class="val"><span class="vpill">Basique</span></td>
+            </tr>
+            <tr>
+              <td class="feat-name">Module Reversement<small>services médicaux patients</small></td>
+              <td class="val"><span class="dash">—</span></td>
+              <td class="val"><span class="soon-chip"><i class="fa fa-clock"></i>Bientôt</span></td>
+            </tr>
+            <tr>
+              <td class="feat-name">Accès API<small>bases diverses de tiers</small></td>
+              <td class="val"><span class="dash">—</span></td>
+              <td class="val"><span class="soon-chip"><i class="fa fa-clock"></i>Bientôt</span></td>
             </tr>
           </tbody>
         </table>
@@ -253,19 +289,39 @@
           <div id="priceFields">
             <div class="row g-3">
               <div class="col-6">
-                <label class="form-label small fw-semibold">Tarif mensuel (XOF)</label>
-                <input type="number" class="form-control form-control-sm" id="editMonthly" min="0" step="500">
+                <label class="form-label small fw-semibold">Tarif mensuel (€)</label>
+                <input type="number" class="form-control form-control-sm" id="editMonthly" min="0" step="1">
               </div>
               <div class="col-6">
-                <label class="form-label small fw-semibold">Tarif annuel (XOF)</label>
-                <input type="number" class="form-control form-control-sm" id="editAnnual" min="0" step="500">
+                <label class="form-label small fw-semibold">Tarif annuel (€)</label>
+                <input type="number" class="form-control form-control-sm" id="editAnnual" min="0" step="1">
               </div>
             </div>
             <p class="text-muted mt-2 mb-0" style="font-size:0.78rem;"><i class="fa fa-tag me-1"></i>Remise annuelle calculée : <strong id="editDiscount">—</strong></p>
           </div>
           <div id="freeFields" class="d-none">
-            <p class="text-muted small mb-0"><i class="fa fa-circle-info me-1"></i>Le plan <strong>Free</strong> est gratuit — aucun tarif à définir. Sa disponibilité et ses fonctionnalités restent configurables.</p>
+            <p class="text-muted small mb-0"><i class="fa fa-circle-info me-1"></i>Le plan <strong>Free</strong> est gratuit — aucun tarif à définir.</p>
           </div>
+          <!-- Paramètres dynamiques (« paramètres dynamiques, structure par release ») : quota patients (les 2 plans) + grâce (Essentiel) -->
+          <div class="row g-3 mt-0">
+            <div class="col-6">
+              <label class="form-label small fw-semibold">Patients inclus</label>
+              <input type="number" class="form-control form-control-sm" id="editPatients" min="1" step="1">
+            </div>
+          </div>
+          <div class="row g-3 mt-0" id="graceFields">
+            <div class="col-6">
+              <label class="form-label small fw-semibold">Grâce — mensuel (jours)</label>
+              <input type="number" class="form-control form-control-sm" id="editGraceM" min="0" step="1">
+            </div>
+            <div class="col-6">
+              <label class="form-label small fw-semibold">Grâce — annuel (jours)</label>
+              <input type="number" class="form-control form-control-sm" id="editGraceA" min="0" step="1">
+            </div>
+          </div>
+          <!-- Règles rappelées au moment où elles s'appliquent (remplace l'ancien bandeau permanent) -->
+          <hr class="my-3" style="border-color:#eef2f6;">
+          <p class="modal-note mb-0"><i class="fa fa-shield-halved me-1"></i>S'applique aux <strong>nouvelles souscriptions</strong> et aux <strong>renouvellements à venir</strong> — jamais rétroactivement à une période déjà payée. Chaque changement est tracé dans le <a href="22-admin-audit.html">journal d'audit</a>.</p>
         </div>
         <div class="modal-footer border-0 pt-0">
           <button type="button" class="btn btn-ghost btn-sm" data-bs-dismiss="modal">Annuler</button>
@@ -278,23 +334,49 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script>
     // Gestion des plans (démo) — modifications non persistées côté serveur dans le prototype.
+    // Tarif unique en euros pour les 9 pays (conversion locale par le prestataire de paiement) — décision 2026-08.
     const PLANS = {
-      free: { name:'Free',  monthly:0,    annual:0 },
-      solo: { name:'Solo',  monthly:5000, annual:50000 }
+      free: { name:'Free',      monthly:0,  annual:0 },
+      solo: { name:'Essentiel', monthly:30, annual:300 }
     };
     let editing = null, editModal;
     const fmt = n => n.toLocaleString('fr-FR');
 
+    // Répartition des 42 abonnés Essentiel par cycle (démo — servie par l'API en V2).
+    // MRR = mensuels × tarif mensuel + annuels × (tarif annuel ÷ 12) — jamais « tous × mensuel »,
+    // qui surestimerait (un abonné annuel à 300 €/an vaut 25 €/mois, pas 30 €).
+    const SOLO_MIX = { monthly: 30, annual: 12 };
+    function soloMrr() { return Math.round(SOLO_MIX.monthly * PLANS.solo.monthly + SOLO_MIX.annual * (PLANS.solo.annual / 12)); }
+
+    // Paramètres dynamiques (quotas patients, délais de grâce) : source = naz-common.js (planConfig / savePlanConfig,
+    // persistés en localStorage — démo). Les écrans praticiens (14, 17, 18) lisent la même source.
+    function hydratePlanConfig() {
+      const c = planConfig();
+      document.getElementById('qFree').textContent = c.patientsFree;
+      document.getElementById('qSolo').textContent = c.patientsSolo;
+      document.getElementById('graceMDisp').textContent = c.graceMonthly;
+      document.getElementById('graceADisp').textContent = c.graceAnnual;
+      document.getElementById('soloMrr').textContent = fmt(soloMrr()) + ' €';
+      document.getElementById('mrrChip').title = SOLO_MIX.monthly + ' mensuels × ' + fmt(PLANS.solo.monthly) + ' € + ' +
+        SOLO_MIX.annual + ' annuels × ' + fmt(Math.round(PLANS.solo.annual / 12 * 100) / 100) + ' € (' + fmt(PLANS.solo.annual) + ' € ÷ 12) — base tarif de référence €, dérogations BF/RDC non converties (démo)';
+    }
+    hydratePlanConfig();
+
     function openEdit(key) {
       editing = key;
       const p = PLANS[key];
+      const c = planConfig();
       document.getElementById('editPlanName').textContent = p.name;
       const isFree = key === 'free';
       document.getElementById('priceFields').classList.toggle('d-none', isFree);
       document.getElementById('freeFields').classList.toggle('d-none', !isFree);
+      document.getElementById('graceFields').classList.toggle('d-none', isFree); // la grâce ne concerne que la formule payante
+      document.getElementById('editPatients').value = isFree ? c.patientsFree : c.patientsSolo;
       if (!isFree) {
         document.getElementById('editMonthly').value = p.monthly;
         document.getElementById('editAnnual').value = p.annual;
+        document.getElementById('editGraceM').value = c.graceMonthly;
+        document.getElementById('editGraceA').value = c.graceAnnual;
         updateDiscount();
       }
       editModal = editModal || new bootstrap.Modal(document.getElementById('editModal'));
@@ -308,19 +390,28 @@
       const el = document.getElementById('editDiscount');
       if (full > 0 && a > 0 && a <= full) {
         const pct = Math.round((1 - a / full) * 100);
-        el.textContent = pct + ' % vs ' + fmt(full) + ' XOF (12 mois)';
+        el.textContent = pct + ' % vs ' + fmt(full) + ' € (12 mois)';
       } else { el.textContent = '—'; }
     }
     document.getElementById('editMonthly').addEventListener('input', updateDiscount);
     document.getElementById('editAnnual').addEventListener('input', updateDiscount);
 
     function saveEdit() {
+      const patients = Math.max(1, +document.getElementById('editPatients').value || 0);
       if (editing === 'solo') {
         PLANS.solo.monthly = +document.getElementById('editMonthly').value || 0;
         PLANS.solo.annual  = +document.getElementById('editAnnual').value || 0;
         document.getElementById('soloMonthly').textContent = fmt(PLANS.solo.monthly);
         document.getElementById('soloAnnual').textContent  = fmt(PLANS.solo.annual);
+        savePlanConfig({
+          patientsSolo: patients,
+          graceMonthly: Math.max(0, +document.getElementById('editGraceM').value || 0),
+          graceAnnual:  Math.max(0, +document.getElementById('editGraceA').value || 0)
+        });
+      } else {
+        savePlanConfig({ patientsFree: patients });
       }
+      hydratePlanConfig(); // répercute quotas (matrice) + grâce (carte) sans recharger
       if (editModal) editModal.hide();
       showToast('Plan ' + PLANS[editing].name + ' mis à jour.');
     }
