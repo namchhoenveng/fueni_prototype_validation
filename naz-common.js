@@ -43,7 +43,9 @@ function fmtPrice(n, cur) {
 // ── Paramètres de plan ÉDITABLES au portail admin (écran 23) : quotas patients & délais de grâce ──
 //    « Paramètres dynamiques, structure par release » : les valeurs numériques se configurent sans déploiement ;
 //    la matrice de fonctionnalités, elle, reste figée (release). Démo : persistance localStorage ; V2 : API (source unique).
-const PLAN_DEFAULTS = { patientsFree: 50, patientsSolo: 250, graceMonthly: 2, graceAnnual: 7 };
+// capFree = plafond Free de réservations auto-confirmées / mois (SF-PLAN-FREE-ESSENTIEL §4) —
+// au cap : retrait de la recherche annuaire jusqu'au mois suivant ; patients existants et RDV manuels jamais bloqués.
+const PLAN_DEFAULTS = { patientsFree: 50, patientsSolo: 250, graceMonthly: 2, graceAnnual: 7, capFree: 25 };
 function planConfig() {
   try { return Object.assign({}, PLAN_DEFAULTS, JSON.parse(localStorage.getItem('fueni_plan_config') || '{}')); }
   catch (e) { return Object.assign({}, PLAN_DEFAULTS); }

@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FUENI — Vos choix de cookies</title>
+  <script src="naz-i18n.js" defer></script>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="naz-common.css">
+  <style>
+    body { background: #f0f4f8; font-family: 'Segoe UI', sans-serif; min-height: 100vh; }
+    .proto-bar { position: sticky; top: 0; z-index: 100; }
+    .brand-area { background: #ffffff; border-bottom: 1px solid #e6edf3; padding: 0.7rem 0; }
+    .brand-bar { max-width: 980px; margin: 0 auto; padding: 0 1.25rem; display: flex; align-items: center; justify-content: space-between; }
+    .brand-logo img { height: 40px; width: auto; display: block; }
+    .cookie-card { background: white; border-radius: 16px; box-shadow: 0 4px 24px rgba(0,0,0,0.10); padding: 1.6rem; max-width: 560px; margin: 1.5rem auto 1rem; }
+    .reason-chip { display: inline-flex; align-items: center; gap: 7px; background: #fff4d6; color: #9a5b00; border: 1px solid #fcd670; border-radius: 20px; padding: 4px 14px; font-size: 0.8rem; font-weight: 700; }
+    .purpose { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 12px 0; border-bottom: 1px solid #f0f0f0; }
+    .purpose:last-child { border-bottom: 0; }
+    .purpose .p-title { font-weight: 600; font-size: 0.9rem; color: #0F2444; }
+    .purpose .p-desc { font-size: 0.8rem; color: #7f8c8d; }
+    .purpose .always { font-size: 0.75rem; color: #1e8449; font-weight: 700; white-space: nowrap; }
+    .form-switch .form-check-input { width: 2.4em; height: 1.3em; cursor: pointer; }
+    .form-switch .form-check-input:checked { background-color: #155e75; border-color: #155e75; }
+    /* CNIL : accepter et refuser doivent être d'égale facilité — 2 boutons de même poids visuel + lien personnalisation */
+    .btn-doctor { background: #155e75; border-color: #155e75; color: white; border-radius: 8px; font-weight: 600; padding: 11px; }
+    .btn-doctor:hover { background: #114c5f; border-color: #114c5f; color: white; }
+    .btn-outline-doctor { border: 1.5px solid #155e75; color: #155e75; background: white; border-radius: 8px; font-weight: 600; padding: 11px; }
+    .btn-outline-doctor:hover { background: #eaf3f6; color: #114c5f; }
+    .success-panel { background: #eafaf0; border: 1px solid #b8e6c8; border-radius: 12px; padding: 16px; }
+    .rec-line { font-size: 0.84rem; color: #334155; display: flex; gap: 8px; padding: 2px 0; }
+    .rec-line .k { color: #7f8c8d; min-width: 130px; }
+    .proto-note { background: #fff8e1; border: 1px dashed #f59e0b; color: #b45309; border-radius: 8px; padding: 10px 14px; font-size: 0.85rem; max-width: 560px; margin: 0 auto 2rem; }
+    /* Sélecteur de démo entre les 4 types de documents versionnés (30 / 30b / 30c / 30d) */
+    .consent-nav { display: flex; background: #e6edf3; border: 1px solid #cbd5e1; border-radius: 12px; padding: 4px; gap: 2px; }
+    .consent-nav a { text-decoration: none; color: #334155; font-weight: 700; font-size: 0.85rem; padding: 7px 16px; border-radius: 9px; }
+    .consent-nav a:hover { background: #dbe6ee; color: #0e4456; }
+    .consent-nav a.active { background: #155e75; color: #fff; }
+  </style>
+</head>
+<body data-i18n-pagetitle="consent.cook.page_title" data-i18n-toggle>
+
+  <div class="proto-bar d-flex align-items-center gap-3 flex-wrap">
+    <span><i class="fa fa-eye text-warning me-1"></i><strong data-i18n="consent.cook.proto_bar">Écran 30d — Re-consentement cookies (par finalité)</strong></span>
+    <a href="01-home.html" class="text-decoration-none text-muted ms-auto small" data-i18n="common.back_home">← Retour à l'accueil</a>
+  </div>
+
+  <div class="brand-area">
+    <div class="brand-bar">
+      <a href="01-home.html" class="brand-logo" aria-label="FUENI — Accueil"><img src="assets/fueni-lockup-horizontal.svg" alt="FUENI"></a>
+    </div>
+  </div>
+
+  <div class="d-flex justify-content-center mt-3">
+    <div class="consent-nav">
+      <a href="30-consent-cgu.html">CGU</a>
+      <a href="30b-consent-cgv.html">CGV</a>
+      <a href="30c-consent-privacy.html" data-i18n="consent.nav_priv">Confidentialité</a>
+      <a href="30d-consent-cookies.html" class="active">Cookies</a>
+    </div>
+  </div>
+
+  <!-- Cookies : cycle INDÉPENDANT des CGU/CGV — consentement PAR FINALITÉ, re-sollicité quand
+       (a) une nouvelle finalité/un nouveau tiers apparaît, ou (b) le choix a plus de 6 mois (doctrine CNIL).
+       Égale facilité accepter/refuser. SF-CONSENT-VERSIONING §8. -->
+  <div class="container py-2">
+
+    <div class="cookie-card" id="cookieCard">
+      <h5 class="fw-bold mb-2" style="color:#0F2444;"><i class="fa fa-cookie-bite me-2" style="color:#155e75;"></i><span data-i18n="consent.cook.title">Vos choix de cookies</span></h5>
+      <div class="mb-2"><span class="reason-chip"><i class="fa fa-rotate"></i><span data-i18n="consent.cook.reason">Nous vous re-sollicitons : une nouvelle finalité « mesure d'audience » a été ajoutée.</span></span></div>
+      <p class="small text-muted mb-2" data-i18n="consent.cook.intro">Vous pouvez accepter, refuser ou personnaliser chaque finalité. Votre choix est conservé 6 mois et modifiable à tout moment depuis le pied de page « Gérer mes cookies ».</p>
+
+      <div class="purpose">
+        <div>
+          <div class="p-title" data-i18n="consent.cook.p1_title">Essentiels (toujours actifs)</div>
+          <div class="p-desc" data-i18n="consent.cook.p1_desc">Session, sécurité (anti-robot Turnstile), équilibrage — nécessaires au fonctionnement, exemptés de consentement.</div>
+        </div>
+        <span class="always"><i class="fa fa-lock me-1"></i><span data-i18n="consent.cook.always">Toujours actifs</span></span>
+      </div>
+      <div class="purpose">
+        <div>
+          <div class="p-title" data-i18n="consent.cook.p2_title">Mesure d'audience</div>
+          <div class="p-desc" data-i18n="consent.cook.p2_desc">Statistiques de fréquentation anonymisées pour améliorer le service. Nouvelle finalité (v2 de la bannière).</div>
+        </div>
+        <div class="form-check form-switch m-0"><input class="form-check-input" type="checkbox" id="swAnalytics"></div>
+      </div>
+      <div class="purpose">
+        <div>
+          <div class="p-title" data-i18n="consent.cook.p3_title">Préférences</div>
+          <div class="p-desc" data-i18n="consent.cook.p3_desc">Mémorisation de vos réglages d'affichage entre les visites.</div>
+        </div>
+        <div class="form-check form-switch m-0"><input class="form-check-input" type="checkbox" id="swPrefs"></div>
+      </div>
+
+      <div class="d-flex gap-2 mt-3">
+        <button class="btn btn-outline-doctor flex-fill" onclick="saveChoice(false, false)" data-i18n="consent.cook.refuse_all">Tout refuser</button>
+        <button class="btn btn-doctor flex-fill" onclick="saveChoice(true, true)" data-i18n="consent.cook.accept_all">Tout accepter</button>
+      </div>
+      <button class="btn btn-link w-100 text-muted small mt-1" onclick="saveCustom()" data-i18n="consent.cook.save_custom">Enregistrer mes choix ci-dessus</button>
+    </div>
+
+    <div class="cookie-card" id="doneCard" style="display:none;">
+      <div class="success-panel">
+        <div class="fw-bold mb-2" style="color:#1e8449;"><i class="fa fa-circle-check me-1"></i><span data-i18n="consent.cook.done_title">Choix enregistrés</span></div>
+        <div class="rec-line"><span class="k" data-i18n="consent.cook.rec_analytics">Mesure d'audience</span><strong id="recAnalytics">—</strong></div>
+        <div class="rec-line"><span class="k" data-i18n="consent.cook.rec_prefs">Préférences</span><strong id="recPrefs">—</strong></div>
+        <div class="rec-line"><span class="k" data-i18n="consent.rec_ts">Horodatage</span><strong id="recTs">—</strong></div>
+        <div class="rec-line"><span class="k" data-i18n="consent.cook.rec_valid">Validité</span><strong data-i18n="consent.cook.rec_valid_v">6 mois (ou nouvelle finalité)</strong></div>
+      </div>
+      <button class="btn btn-link w-100 text-muted small mt-2" onclick="resetDemo()" data-i18n="consent.reset">Réinitialiser la démo</button>
+    </div>
+
+    <div class="proto-note">
+      <i class="fa fa-flask me-1"></i><span data-i18n-html="consent.cook.note_html"><strong>Règle produit :</strong> le consentement cookies vit sur son propre cycle — il n'est jamais mélangé aux CGU/CGV. Re-sollicitation uniquement si nouvelle finalité/nouveau tiers ou choix expiré (6 mois) ; « Tout refuser » est aussi simple que « Tout accepter ».</span>
+    </div>
+
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    const t = (k, fb) => (window.NazI18n ? NazI18n.t(k) : '') || fb;
+    function saveChoice(analytics, prefs) {
+      var ts = new Date().toISOString();
+      try { localStorage.setItem('fueni_cookie_choice', JSON.stringify({ v: 2, analytics: analytics, prefs: prefs, ts: ts })); } catch (e) {}
+      var yes = t('consent.cook.on', 'Activée'), no = t('consent.cook.off', 'Refusée');
+      document.getElementById('recAnalytics').textContent = analytics ? yes : no;
+      document.getElementById('recPrefs').textContent = prefs ? yes : no;
+      document.getElementById('recTs').textContent = ts.replace('T', ' ').slice(0, 19) + ' UTC';
+      document.getElementById('cookieCard').style.display = 'none';
+      document.getElementById('doneCard').style.display = '';
+    }
+    function saveCustom() {
+      saveChoice(document.getElementById('swAnalytics').checked, document.getElementById('swPrefs').checked);
+    }
+    function resetDemo() {
+      try { localStorage.removeItem('fueni_cookie_choice'); } catch (e) {}
+      document.getElementById('doneCard').style.display = 'none';
+      document.getElementById('cookieCard').style.display = '';
+      document.getElementById('swAnalytics').checked = false;
+      document.getElementById('swPrefs').checked = false;
+    }
+  </script>
+<!-- Prototype version badge -->
+<script>(function(){if(window.__pv)return;window.__pv=1;var v=document.createElement('div');v.style.cssText='position:fixed;top:0;left:50%;transform:translateX(-50%);background:#155e75;color:#fff;padding:6px 20px;border-radius:0 0 16px 16px;font:600 12px/1 system-ui,-apple-system,sans-serif;letter-spacing:.6px;z-index:99999;box-shadow:0 3px 10px rgba(0,0,0,.2);text-transform:uppercase;display:flex;align-items:center;gap:8px';v.innerHTML='🧪 Prototype <span style="background:#f59e0b;color:#1a1a1a;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:4px">v1.4.0</span><span style="background:#facc15;color:#1a1a1a;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:4px;text-transform:none;letter-spacing:0">⏳ À valider</span>';document.body.appendChild(v);})();</script>
+</body>
+</html>

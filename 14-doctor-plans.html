@@ -49,6 +49,9 @@
     .feature-list li .icon-ok { color: #27ae60; flex-shrink: 0; }
     .feature-list li .icon-no { color: #bdc3c7; flex-shrink: 0; }
     .feature-list li .icon-tbd { color: #f39c12; flex-shrink: 0; }
+    .feature-list li .icon-lock { color: #94a3b8; flex-shrink: 0; }
+    /* Ligne d'amorce du différentiel Essentiel (« Tout Free, plus : ») */
+    .plan-lead { font-size: 0.85rem; font-weight: 700; color: #155e75; margin-bottom: 2px; }
     .btn-select { width: 100%; padding: 12px; border-radius: 10px; font-weight: 600; margin-top: 20px; }
     .btn-doctor { background: #155e75; border-color: #155e75; color: white; }
     .btn-doctor:hover { background: #114c5f; border-color: #114c5f; color: white; }
@@ -107,18 +110,23 @@
         <div class="plan-card" id="card-free" data-plan="gratuit" role="radio" aria-checked="false" tabindex="0" onclick="selectPlan('gratuit')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();selectPlan('gratuit');}">
           <span class="card-radio" aria-hidden="true"><i class="fa fa-check"></i></span>
           <div class="text-muted small fw-semibold mb-2 text-uppercase" data-i18n="doc.plans.free_name">Free</div>
-          <div class="price-row"><span class="price-main">0 €</span></div>
+          <div class="price-row" id="free-price-row"><span class="price-main" id="free-price">0 €</span></div>
           <div class="price-sub" data-i18n="doc.plans.free_period">pour toujours</div>
           <div class="divider"></div>
-          <!-- Bullets alignés sur la matrice Nazounki (08/09/2026) — coffre-fort volontairement omis (définition à clarifier). -->
+          <!-- Bullets alignés sur SF-PLAN-FREE-ESSENTIEL §3 (matrice F1–F10), groupés par bénéfice — la carte vend,
+               la matrice complète (lien « Comparer ») porte le contrat exact.
+               Ligne d'amorce « Inclus : » = pendant du « Tout Free, plus : » d'Essentiel (aligne les 1ers ticks des 2 cartes). -->
+          <div class="plan-lead" data-i18n="doc.plans.free_lead">Inclus :</div>
           <ul class="feature-list">
-            <!-- « Profil public & annuaire » : absent de la matrice client mais prérequis implicite de sa ligne
-                 « Prise de RDV » (réservation patient = fiche publique dans l'annuaire) — cœur de l'offre Gratuit. -->
-            <li><i class="fa fa-check icon-ok"></i><span data-i18n="doc.plans.free_f6">Profil public & annuaire</span></li>
-            <li><i class="fa fa-check icon-ok"></i><span data-i18n="doc.plans.free_f1">Gestion de compte & authentification</span></li>
-            <li><i class="fa fa-check icon-ok"></i><span data-i18n="doc.plans.free_f2">Réservation en ligne par les patients</span></li>
-            <li><i class="fa fa-check icon-ok"></i><span data-i18n="doc.plans.free_f3" id="freeQuota">50 patients inclus</span></li>
-            <li><i class="fa fa-times icon-no"></i><span class="text-muted" data-i18n="doc.plans.free_f5">Agenda praticien & rapports de consultation</span></li>
+            <li><i class="fa fa-check icon-ok"></i><span data-i18n="doc.plans.free_f1">Profil public praticien</span></li>
+            <li><i class="fa fa-check icon-ok"></i><span data-i18n="doc.plans.free_f2">Visibilité dans l'annuaire patients</span></li>
+            <!-- Cap Free : formulation POSITIVE (« 25 réservations », jamais « limité à ») ; subtilités dans le tooltip ⓘ.
+                 Valeur dynamique (planConfig().capFree — portail admin, écran 23). -->
+            <li><i class="fa fa-check icon-ok"></i><span><strong><span id="freeCap" data-i18n="doc.plans.free_cap">25 réservations en ligne / mois</span></strong>&nbsp;<i class="fa fa-circle-info text-muted" id="freeCapInfo" style="cursor:help; font-size:0.8rem;"></i></span></li>
+            <li><i class="fa fa-check icon-ok"></i><span data-i18n="doc.plans.free_f4">Agenda & RDV manuels illimités</span></li>
+            <li><i class="fa fa-check icon-ok"></i><span data-i18n="doc.plans.free_f5">Patients illimités</span></li>
+            <!-- Suite clinique : verrouillée mais VISIBLE (doctrine §5 — une seule ligne 🔒 groupée, entrée vers l'aperçu). -->
+            <li><i class="fa fa-lock icon-lock"></i><span class="text-muted" data-i18n="doc.plans.free_locked">Dossier médical & consultations (aperçu)</span></li>
           </ul>
           <div class="divider"></div>
           <div class="small text-muted"><i class="fa fa-user me-1"></i><span data-i18n="doc.plans.meta_one_doc">1 médecin</span></div>
@@ -135,19 +143,53 @@
           <div class="price-row"><span class="price-main" id="solo-price">30 €</span><span class="price-period" id="solo-period" data-i18n="doc.plans.per_month">/mois</span></div>
           <div class="price-sub text-success fw-semibold" id="solo-equiv"></div>
           <div class="divider"></div>
+          <!-- « Tout Free, plus : » — le 1er bullet répond exactement à la limite du Free (cap → illimité) ;
+               la suite clinique (F7–F9) en tête du différentiel : c'est ce qu'on vend. -->
+          <div class="plan-lead" data-i18n="doc.plans.solo_lead">Tout Free, plus :</div>
           <ul class="feature-list">
-            <li><i class="fa fa-check icon-ok"></i><span data-i18n="doc.plans.solo_f1">Tout le plan Gratuit</span></li>
-            <li><i class="fa fa-check icon-ok"></i><span data-i18n="doc.plans.solo_f2">Agenda praticien & prise de rendez-vous</span></li>
-            <li><i class="fa fa-check icon-ok"></i><span data-i18n="doc.plans.solo_f3">Rapports de consultation</span></li>
-            <li><i class="fa fa-check icon-ok"></i><span data-i18n="doc.plans.solo_f4" id="soloQuota">250 patients inclus</span></li>
-            <li><i class="fa fa-check icon-ok"></i><span data-i18n="doc.plans.solo_f5">Statistiques & tableaux de bord (basique)</span></li>
-            <li><i class="fa fa-clock icon-tbd"></i><span><span class="text-muted" data-i18n="doc.plans.solo_f6">Téléconsultation</span> <span class="limit-badge" data-i18n="doc.elig.soon">Bientôt</span></span></li>
+            <li><i class="fa fa-check icon-ok"></i><span data-i18n="doc.plans.solo_f1">Réservations en ligne illimitées</span></li>
+            <li><i class="fa fa-check icon-ok"></i><span data-i18n="doc.plans.solo_f2">Visibilité annuaire permanente</span></li>
+            <li><i class="fa fa-check icon-ok"></i><span data-i18n="doc.plans.solo_f3">Dossier médical complet</span></li>
+            <li><i class="fa fa-check icon-ok"></i><span data-i18n="doc.plans.solo_f4">Documentation des consultations</span></li>
+            <li><i class="fa fa-check icon-ok"></i><span data-i18n="doc.plans.solo_f5">Ordonnances & documents PDF</span></li>
+            <li><i class="fa fa-check icon-ok"></i><span data-i18n="doc.plans.solo_f6">Stockage et partage de documents</span></li>
           </ul>
           <div class="divider"></div>
           <div class="small text-muted"><i class="fa fa-user me-1"></i><span data-i18n="doc.plans.meta_one_doc">1 médecin</span></div>
         </div>
       </div>
 
+    </div>
+
+    <!-- Comparateur complet — la « matrice publique » (SF-PLAN-FREE-ESSENTIEL §3, F1–F10) : les cartes vendent,
+         ce tableau porte le contrat exact pour qui veut le détail. Replié par défaut. -->
+    <div class="text-center mt-3">
+      <a class="small text-decoration-none" data-bs-toggle="collapse" href="#compareAll" role="button" aria-expanded="false" aria-controls="compareAll" style="color:#155e75; font-weight:700;"><i class="fa fa-table-list me-1"></i><span data-i18n="doc.plans.compare">Comparer toutes les fonctionnalités</span> <i class="fa fa-chevron-down" style="font-size:0.7rem;"></i></a>
+    </div>
+    <div class="collapse mt-2" id="compareAll" style="max-width:620px; margin:0 auto;">
+      <div class="table-responsive" style="background:#fff; border:1px solid #e6edf3; border-radius:12px;">
+        <table class="table table-sm align-middle mb-0" style="font-size:0.83rem;">
+          <thead>
+            <tr style="border-bottom:2px solid #e6edf3;">
+              <th class="ps-3 py-2 text-muted fw-semibold" data-i18n="doc.plans.cmp_head_feat">Fonctionnalité</th>
+              <th class="py-2 text-muted fw-semibold" data-i18n="doc.plans.free_name">Free</th>
+              <th class="py-2 fw-semibold" style="color:#155e75;" data-i18n="doc.plans.solo_name">Essentiel</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td class="ps-3" data-i18n="doc.plans.cmp_f1">Profil public praticien (motifs, tarifs, devise secondaire)</td><td><i class="fa fa-check icon-ok"></i></td><td><i class="fa fa-check icon-ok"></i></td></tr>
+            <tr><td class="ps-3" data-i18n="doc.plans.cmp_f2">Visibilité annuaire (recherche patients)</td><td><i class="fa fa-check icon-ok"></i> <span class="text-muted" style="font-size:0.76rem;" data-i18n="doc.plans.cmp_cap_note">retirée de la recherche au-delà du plafond mensuel</span></td><td><span data-i18n="doc.plans.cmp_unlim">Illimité</span></td></tr>
+            <tr><td class="ps-3" data-i18n="doc.plans.cmp_f3">Réservations en ligne (auto-confirmées)</td><td><strong id="cmpCap">25 / mois</strong></td><td><span data-i18n="doc.plans.cmp_unlim">Illimité</span></td></tr>
+            <tr><td class="ps-3" data-i18n="doc.plans.cmp_f4">Agenda & rendez-vous manuels</td><td><span data-i18n="doc.plans.cmp_unlim">Illimité</span></td><td><span data-i18n="doc.plans.cmp_unlim">Illimité</span></td></tr>
+            <tr><td class="ps-3" data-i18n="doc.plans.cmp_f5">Clôture des rendez-vous</td><td class="text-muted" data-i18n="doc.plans.cmp_close_free">Terminé / Absent uniquement</td><td data-i18n="doc.plans.cmp_close_solo">Complet (+ Documenter)</td></tr>
+            <tr><td class="ps-3" data-i18n="doc.plans.cmp_f6">Liste patients (fiches d'identité)</td><td><span data-i18n="doc.plans.cmp_unlim">Illimité</span></td><td><span data-i18n="doc.plans.cmp_unlim">Illimité</span></td></tr>
+            <tr><td class="ps-3" data-i18n="doc.plans.cmp_f7">Dossier médical (infos médicales, antécédents, allergies, historique des consultations)</td><td class="text-muted"><i class="fa fa-lock icon-lock me-1"></i><span data-i18n="doc.plans.cmp_preview">Aperçu</span></td><td><i class="fa fa-check icon-ok"></i></td></tr>
+            <tr><td class="ps-3" data-i18n="doc.plans.cmp_f8">Documentation de consultation</td><td class="text-muted"><i class="fa fa-lock icon-lock me-1"></i><span data-i18n="doc.plans.cmp_preview">Aperçu</span></td><td><i class="fa fa-check icon-ok"></i></td></tr>
+            <tr><td class="ps-3" data-i18n="doc.plans.cmp_f9">Ordonnances & documents PDF</td><td class="text-muted"><i class="fa fa-lock icon-lock me-1"></i><span data-i18n="doc.plans.cmp_preview">Aperçu</span></td><td><i class="fa fa-check icon-ok"></i></td></tr>
+            <tr><td class="ps-3" data-i18n="doc.plans.cmp_f10">Stockage / partage de documents</td><td><i class="fa fa-minus icon-no"></i></td><td data-i18n="doc.plans.cmp_quota">Inclus (quota)</td></tr>
+          </tbody>
+        </table>
+      </div>
     </div>
 
     <!-- Acceptation des CGV (Abonnements) — requise pour choisir une formule (annexe CGV, étape 4) -->
@@ -167,14 +209,11 @@
     <div class="mt-3" style="max-width:620px; margin:0 auto;">
       <div class="alert d-flex align-items-start gap-2 py-2 px-3" style="background:#e6f2f5; border:1px solid #bcdfe7; color:#0e4456; border-radius:10px; font-size:0.86rem;">
         <i class="fa fa-circle-info mt-1" style="color:#155e75;"></i>
-        <span data-i18n-html="doc.plans.pay_notice">Aucun paiement à cette étape. Vous choisissez votre formule maintenant ; pour le plan <strong>Essentiel</strong>, le premier prélèvement n'intervient <strong>qu'après la validation de votre dossier</strong>. Le plan <strong>Free</strong> reste gratuit.</span>
+        <span data-i18n-html="doc.plans.pay_notice">Aucun paiement à cette étape — le premier prélèvement <strong>Essentiel</strong> intervient <strong>après la validation de votre dossier</strong>. Sans engagement, annulable à tout moment.</span>
       </div>
     </div>
 
-    <div class="text-center mt-4 mb-2">
-      <span style="display:inline-block; background:#eafaf0; color:#1e8449; border:1px solid #b8e6c8; border-radius:12px; padding:8px 18px; font-size:0.88rem; font-weight:600;"><i class="fa fa-circle-check me-2"></i><span data-i18n="doc.plans.trial_note">Sans engagement · Annulable à tout moment</span></span>
-    </div>
-    <div class="text-center"><a href="13-doctor-inscription.html" class="btn btn-link text-muted small" data-i18n="common.prev_step">← Étape précédente</a></div>
+    <div class="text-center mt-3"><a href="13-doctor-inscription.html" class="btn btn-link text-muted small" data-i18n="common.prev_step">← Étape précédente</a></div>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
@@ -215,8 +254,13 @@
 
       document.getElementById('solo-price').textContent = fmtP(shown);
       // Devise longue (ex. « 8 500 XOF ») → réduction uniforme montant + période pour rester sur une ligne dans la carte.
+      var isLong = fmtP(shown).length > 5; // « 300 € » reste grand ; « 30 USD » / « 8 500 XOF » réduits
       var priceRow = document.getElementById('solo-price').parentElement;
-      if (priceRow) priceRow.classList.toggle('long', fmtP(shown).length > 5); // « 300 € » reste grand ; « 30 USD » / « 8 500 XOF » réduits
+      if (priceRow) priceRow.classList.toggle('long', isLong);
+      // Carte Free : « 0 » dans la même devise de facturation, à la MÊME taille que le prix Essentiel
+      // (classe .long synchronisée) → lignes de prix et séparateurs alignés entre les deux cartes.
+      var freePrice = document.getElementById('free-price'); if (freePrice) freePrice.textContent = fmtP(0);
+      var freeRow = document.getElementById('free-price-row'); if (freeRow) freeRow.classList.toggle('long', isLong);
       document.getElementById('solo-period').textContent = isAnnual ? t('doc.plans.per_year', '/an') : t('doc.plans.per_month', '/mois');
 
       // Ligne promo « prix soldé » (ancien prix barré + remise) au-dessus du prix — mensuel + promo active.
@@ -226,10 +270,12 @@
       // Badge « −50 % » sur l'onglet Mensuel (tant que la promo court, quel que soit l'onglet actif).
       const mBadge = document.getElementById('monthlyPromoBadge'); if (mBadge) mBadge.style.display = promoActive() ? 'inline-block' : 'none';
 
-      // Quotas patients : paramètre dynamique (portail admin, écran 23 — planConfig, naz-common.js).
+      // Cap Free (réservations auto-confirmées / mois) : paramètre dynamique (portail admin — planConfig().capFree).
+      // Carte + ligne du comparateur alimentées par la même valeur ; tooltip ⓘ = subtilités du cap (SF §4.3).
       const cfg = planConfig();
-      const fq = document.getElementById('freeQuota'); if (fq) fq.textContent = t('doc.plans.free_f3', '{n} patients inclus').replace('{n}', cfg.patientsFree);
-      const sq = document.getElementById('soloQuota'); if (sq) sq.textContent = t('doc.plans.solo_f4', '{n} patients inclus').replace('{n}', cfg.patientsSolo);
+      const fc = document.getElementById('freeCap'); if (fc) fc.textContent = t('doc.plans.free_cap', '{n} réservations en ligne / mois').replace('{n}', cfg.capFree);
+      const ci = document.getElementById('freeCapInfo'); if (ci) ci.title = t('doc.plans.cap_tip', 'Compteur remis à zéro chaque mois · vos patients existants ne sont jamais bloqués · les rendez-vous saisis manuellement ne sont pas comptés.');
+      const cc = document.getElementById('cmpCap'); if (cc) cc.textContent = t('doc.plans.cmp_month_n', '{n} / mois').replace('{n}', cfg.capFree);
 
       const equiv = document.getElementById('solo-equiv');
       if (isAnnual) {

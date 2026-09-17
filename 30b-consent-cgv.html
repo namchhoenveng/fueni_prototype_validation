@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FUENI — CGV mises à jour</title>
+  <script src="naz-i18n.js" defer></script>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="naz-common.css">
+  <style>
+    body { background: #f0f4f8; font-family: 'Segoe UI', sans-serif; min-height: 100vh; }
+    .proto-bar { position: sticky; top: 0; z-index: 100; }
+    .brand-area { background: #ffffff; border-bottom: 1px solid #e6edf3; padding: 0.7rem 0; }
+    .brand-bar { max-width: 980px; margin: 0 auto; padding: 0 1.25rem; display: flex; align-items: center; justify-content: space-between; }
+    .brand-logo img { height: 40px; width: auto; display: block; }
+    .step-card { background: white; border-radius: 16px; box-shadow: 0 4px 24px rgba(0,0,0,0.08); padding: 2rem; max-width: 560px; margin: 1.5rem auto 2rem; }
+    .doc-icon { font-size: 3.2rem; color: #155e75; opacity: 0.45; }
+    .ver-chip { display: inline-flex; align-items: center; gap: 7px; background: #eaf3f6; color: #155e75; border: 1px solid #bcdfe7; border-radius: 20px; padding: 4px 14px; font-size: 0.82rem; font-weight: 700; }
+    .changes-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px 16px; }
+    .changes-box ul { margin: 0; padding-left: 1.1rem; }
+    .changes-box li { font-size: 0.88rem; padding: 3px 0; }
+    .cgv-accept { display: flex; align-items: flex-start; gap: 10px; font-size: 0.88rem; color: #334155; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px 14px; cursor: pointer; }
+    .cgv-accept input { margin-top: 2px; flex-shrink: 0; width: 17px; height: 17px; cursor: pointer; }
+    .btn-doctor { background: #155e75; border-color: #155e75; color: white; padding: 12px; border-radius: 8px; font-weight: 600; }
+    .btn-doctor:hover:not(:disabled) { background: #114c5f; border-color: #114c5f; color: white; }
+    .btn-doctor:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-outline-doctor { border: 1px solid #155e75; color: #155e75; background: white; border-radius: 8px; font-weight: 600; padding: 10px; }
+    .btn-outline-doctor:hover { background: #eaf3f6; color: #114c5f; }
+    .success-panel { background: #eafaf0; border: 1px solid #b8e6c8; border-radius: 12px; padding: 16px; }
+    .rec-line { font-size: 0.84rem; color: #334155; display: flex; gap: 8px; padding: 2px 0; }
+    .rec-line .k { color: #7f8c8d; min-width: 110px; }
+    .tacit-note { background: #fff8e1; border: 1px solid #fcd670; border-radius: 10px; padding: 10px 14px; font-size: 0.82rem; color: #7a5200; }
+    /* Sélecteur de démo entre les 4 types de documents versionnés (30 / 30b / 30c / 30d) */
+    .consent-nav { display: flex; background: #e6edf3; border: 1px solid #cbd5e1; border-radius: 12px; padding: 4px; gap: 2px; }
+    .consent-nav a { text-decoration: none; color: #334155; font-weight: 700; font-size: 0.85rem; padding: 7px 16px; border-radius: 9px; }
+    .consent-nav a:hover { background: #dbe6ee; color: #0e4456; }
+    .consent-nav a.active { background: #155e75; color: #fff; }
+  </style>
+</head>
+<body data-i18n-pagetitle="consent.cgv.page_title" data-i18n-toggle>
+
+  <div class="proto-bar d-flex align-items-center gap-3 flex-wrap">
+    <span><i class="fa fa-eye text-warning me-1"></i><strong data-i18n="consent.cgv.proto_bar">Écran 30b — Nouvelle version CGV (praticien Essentiel)</strong></span>
+    <a href="01-home.html" class="text-decoration-none text-muted ms-auto small" data-i18n="common.back_home">← Retour à l'accueil</a>
+  </div>
+
+  <div class="brand-area">
+    <div class="brand-bar">
+      <a href="01-home.html" class="brand-logo" aria-label="FUENI — Accueil"><img src="assets/fueni-lockup-horizontal.svg" alt="FUENI"></a>
+    </div>
+  </div>
+
+  <div class="d-flex justify-content-center mt-3">
+    <div class="consent-nav">
+      <a href="30-consent-cgu.html">CGU</a>
+      <a href="30b-consent-cgv.html" class="active">CGV</a>
+      <a href="30c-consent-privacy.html" data-i18n="consent.nav_priv">Confidentialité</a>
+      <a href="30d-consent-cookies.html">Cookies</a>
+    </div>
+  </div>
+
+  <!-- Nouvelle version CGV : JAMAIS rétroactive au terme en cours — elle s'applique AU PROCHAIN RENOUVELLEMENT
+       (préavis e-mail J−30, cet écran à la connexion suivante). Non bloquant : le praticien peut différer ;
+       le renouvellement après préavis vaut acceptation (clause CGV) — SF-CONSENT-VERSIONING §6. -->
+  <div class="container py-3" style="max-width:620px;">
+    <div class="step-card" id="gateCard">
+      <div class="text-center mb-2"><i class="fa fa-file-contract doc-icon"></i></div>
+      <h5 class="fw-bold text-center mb-2" data-i18n="consent.cgv.title">Les Conditions Générales de Vente — Abonnements évoluent</h5>
+      <div class="text-center mb-1"><span class="ver-chip"><i class="fa fa-file-lines"></i><span data-i18n="consent.cgv.chip">CGV v2.4 · applicable à votre renouvellement du 15/10/2026</span></span></div>
+      <p class="text-muted small text-center mb-3" data-i18n="consent.cgv.prev">Version actuelle : v2.3, acceptée le 12/05/2026 (réf. bon de commande BC-2026-00218).</p>
+
+      <div class="alert d-flex align-items-start gap-2 py-2 px-3 mb-3" style="background:#e6f2f5; border:1px solid #bcdfe7; color:#0e4456; border-radius:10px; font-size:0.84rem;">
+        <i class="fa fa-circle-info mt-1" style="color:#155e75;"></i>
+        <span data-i18n="consent.cgv.notice">Votre abonnement en cours reste régi par la v2.3 jusqu'à son échéance. La v2.4 s'appliquera à compter de votre prochain renouvellement.</span>
+      </div>
+
+      <div class="changes-box mb-3">
+        <div class="fw-semibold small mb-1" style="color:#155e75;"><i class="fa fa-list-check me-1"></i><span data-i18n="consent.whats_new">Ce qui change</span></div>
+        <ul>
+          <li data-i18n="consent.cgv.ch1">Délais de grâce en cas d'échec de paiement précisés : 2 jours (mensuel), 7 jours (annuel)</li>
+          <li data-i18n="consent.cgv.ch2">Procédure de rétractation pour les praticiens exerçant en RDC</li>
+          <li data-i18n="consent.cgv.ch3">Modalités de rétrogradation vers le plan Free clarifiées (bon de commande modificatif)</li>
+        </ul>
+        <a href="#" onclick="event.preventDefault();" class="small fw-semibold d-inline-block mt-2" style="color:#155e75;"><i class="fa fa-arrow-up-right-from-square me-1"></i><span data-i18n="consent.read_full">Lire le document complet</span></a>
+      </div>
+
+      <!-- Cette version ne touche pas au tarif ; le cas tarifaire suit la même mécanique + liberté de rétrograder. -->
+      <div class="small text-muted mb-3"><i class="fa fa-tag me-1"></i><span data-i18n="consent.cgv.price_note">Aucun changement de tarif dans cette version. En cas d'évolution tarifaire, vous seriez prévenu avant tout prélèvement et libre de rétrograder en Free.</span></div>
+
+      <label class="cgv-accept mb-3" for="acceptChk">
+        <input type="checkbox" id="acceptChk" onchange="document.getElementById('acceptBtn').disabled = !this.checked;">
+        <span data-i18n="consent.cgv.accept_label">J'ai lu et j'accepte les Conditions Générales de Vente — Abonnements (v2.4). *</span>
+      </label>
+
+      <button id="acceptBtn" class="btn btn-doctor w-100 mb-2" disabled onclick="acceptDoc()"><span data-i18n="consent.cgv.accept_btn">Accepter dès maintenant</span> <i class="fa fa-check ms-1"></i></button>
+      <a href="18-doctor-abonnement.html" class="btn btn-outline-doctor w-100 mb-2"><i class="fa fa-gear me-1"></i><span data-i18n="consent.cgv.manage_btn">Gérer mon abonnement / rétrograder</span></a>
+      <button class="btn btn-link w-100 text-muted small" onclick="later()" data-i18n="consent.cgv.later">Me le rappeler plus tard</button>
+
+      <div class="tacit-note mt-2">
+        <i class="fa fa-circle-info me-1"></i><span data-i18n="consent.cgv.tacit">Sans action de votre part, le renouvellement du 15/10/2026 — précédé de ce préavis — vaudra acceptation de la v2.4 (article 12 des CGV).</span>
+      </div>
+    </div>
+
+    <div class="step-card" id="doneCard" style="display:none;">
+      <div class="success-panel">
+        <div class="fw-bold mb-2" style="color:#1e8449;"><i class="fa fa-circle-check me-1"></i><span data-i18n="consent.done_title">Acceptation enregistrée</span></div>
+        <div class="rec-line"><span class="k" data-i18n="consent.rec_doc">Document</span><strong>CGV</strong></div>
+        <div class="rec-line"><span class="k" data-i18n="consent.rec_ver">Version</span><strong>2.4</strong></div>
+        <div class="rec-line"><span class="k" data-i18n="consent.rec_ts">Horodatage</span><strong id="recTs">—</strong></div>
+        <div class="rec-line"><span class="k" data-i18n="consent.rec_ctx">Contexte</span><strong data-i18n="consent.rec_ctx_early">Acceptation anticipée (avant renouvellement)</strong></div>
+      </div>
+      <a href="17-doctor-dashboard.html" class="btn btn-doctor w-100 mt-3"><span data-i18n="consent.continue_app">Continuer vers mon espace</span> <i class="fa fa-arrow-right ms-1"></i></a>
+      <button class="btn btn-link w-100 text-muted small mt-1" onclick="resetDemo()" data-i18n="consent.reset">Réinitialiser la démo</button>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    function acceptDoc() {
+      var ts = new Date().toISOString();
+      try {
+        var log = JSON.parse(localStorage.getItem('fueni_consents') || '[]');
+        log.push({ doc: 'CGV', version: '2.4', ts: ts, context: 'acceptation-anticipee' });
+        localStorage.setItem('fueni_consents', JSON.stringify(log));
+      } catch (e) {}
+      document.getElementById('recTs').textContent = ts.replace('T', ' ').slice(0, 19) + ' UTC';
+      document.getElementById('gateCard').style.display = 'none';
+      document.getElementById('doneCard').style.display = '';
+    }
+    // Non bloquant (contrairement aux CGU substantielles) : « plus tard » ferme l'écran, il reviendra
+    // à la prochaine connexion tant que le renouvellement n'a pas eu lieu.
+    function later() { window.location.href = '17-doctor-dashboard.html'; }
+    function resetDemo() {
+      document.getElementById('doneCard').style.display = 'none';
+      document.getElementById('gateCard').style.display = '';
+      var c = document.getElementById('acceptChk'); c.checked = false;
+      document.getElementById('acceptBtn').disabled = true;
+    }
+  </script>
+<!-- Prototype version badge -->
+<script>(function(){if(window.__pv)return;window.__pv=1;var v=document.createElement('div');v.style.cssText='position:fixed;top:0;left:50%;transform:translateX(-50%);background:#155e75;color:#fff;padding:6px 20px;border-radius:0 0 16px 16px;font:600 12px/1 system-ui,-apple-system,sans-serif;letter-spacing:.6px;z-index:99999;box-shadow:0 3px 10px rgba(0,0,0,.2);text-transform:uppercase;display:flex;align-items:center;gap:8px';v.innerHTML='🧪 Prototype <span style="background:#f59e0b;color:#1a1a1a;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:4px">v1.4.0</span><span style="background:#facc15;color:#1a1a1a;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:4px;text-transform:none;letter-spacing:0">⏳ À valider</span>';document.body.appendChild(v);})();</script>
+</body>
+</html>

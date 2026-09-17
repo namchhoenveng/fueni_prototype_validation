@@ -175,8 +175,10 @@
     }
 
     const PAY_PLAN_META = {
-      solo:    { nameKey: 'doc.plans.solo_name', name: 'Essentiel',    descKey: 'doc.pay.desc_solo', featKeys: ['doc.plans.solo_f2','doc.plans.solo_f3','doc.plans.solo_f4','doc.plans.solo_f5','doc.plans.solo_f6'] },
-      gratuit: { nameKey: 'doc.plans.free_name', name: 'Gratuit', descKey: 'doc.pay.desc_free', featKeys: ['doc.plans.free_f1','doc.plans.free_f2','doc.plans.free_f3'] }
+      // featKeys alignés sur les nouvelles cartes de l'écran 14 (SF-PLAN-FREE-ESSENTIEL §3) —
+      // free_cap exclu du récap Free (gabarit {n}, rendu dynamique sur 14 uniquement).
+      solo:    { nameKey: 'doc.plans.solo_name', name: 'Essentiel',    descKey: 'doc.pay.desc_solo', featKeys: ['doc.plans.solo_f1','doc.plans.solo_f2','doc.plans.solo_f3','doc.plans.solo_f4','doc.plans.solo_f5','doc.plans.solo_f6'] },
+      gratuit: { nameKey: 'doc.plans.free_name', name: 'Gratuit', descKey: 'doc.pay.desc_free', featKeys: ['doc.plans.free_f1','doc.plans.free_f2','doc.plans.free_f4'] }
     };
 
     function render() {

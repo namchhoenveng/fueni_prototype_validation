@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FUENI — CGU mises à jour</title>
+  <script src="naz-i18n.js" defer></script>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="naz-common.css">
+  <style>
+    body { background: #f0f4f8; font-family: 'Segoe UI', sans-serif; min-height: 100vh; }
+    .proto-bar { position: sticky; top: 0; z-index: 100; }
+    .brand-area { background: #ffffff; border-bottom: 1px solid #e6edf3; padding: 0.7rem 0; }
+    .brand-bar { max-width: 980px; margin: 0 auto; padding: 0 1.25rem; display: flex; align-items: center; justify-content: space-between; }
+    .brand-logo img { height: 40px; width: auto; display: block; }
+    .step-card { background: white; border-radius: 16px; box-shadow: 0 4px 24px rgba(0,0,0,0.08); padding: 2rem; max-width: 560px; margin: 1.5rem auto 2rem; }
+    .doc-icon { font-size: 3.2rem; color: #155e75; opacity: 0.45; }
+    .ver-chip { display: inline-flex; align-items: center; gap: 7px; background: #eaf3f6; color: #155e75; border: 1px solid #bcdfe7; border-radius: 20px; padding: 4px 14px; font-size: 0.82rem; font-weight: 700; }
+    .changes-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px 16px; }
+    .changes-box ul { margin: 0; padding-left: 1.1rem; }
+    .changes-box li { font-size: 0.88rem; padding: 3px 0; }
+    .cgv-accept { display: flex; align-items: flex-start; gap: 10px; font-size: 0.88rem; color: #334155; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px 14px; cursor: pointer; }
+    .cgv-accept input { margin-top: 2px; flex-shrink: 0; width: 17px; height: 17px; cursor: pointer; }
+    .btn-doctor { background: #155e75; border-color: #155e75; color: white; padding: 12px; border-radius: 8px; font-weight: 600; }
+    .btn-doctor:hover:not(:disabled) { background: #114c5f; border-color: #114c5f; color: white; }
+    .btn-doctor:disabled { opacity: 0.5; cursor: not-allowed; }
+    .refuse-panel { background: #fff8e1; border: 1px solid #fcd670; border-radius: 12px; padding: 14px 16px; font-size: 0.86rem; color: #7a5200; }
+    .success-panel { background: #eafaf0; border: 1px solid #b8e6c8; border-radius: 12px; padding: 16px; }
+    .rec-line { font-size: 0.84rem; color: #334155; display: flex; gap: 8px; padding: 2px 0; }
+    .rec-line .k { color: #7f8c8d; min-width: 110px; }
+    /* Sélecteur de démo entre les 4 types de documents versionnés (30 / 30b / 30c / 30d) */
+    .consent-nav { display: flex; background: #e6edf3; border: 1px solid #cbd5e1; border-radius: 12px; padding: 4px; gap: 2px; }
+    .consent-nav a { text-decoration: none; color: #334155; font-weight: 700; font-size: 0.85rem; padding: 7px 16px; border-radius: 9px; }
+    .consent-nav a:hover { background: #dbe6ee; color: #0e4456; }
+    .consent-nav a.active { background: #155e75; color: #fff; }
+  </style>
+</head>
+<body data-i18n-pagetitle="consent.cgu.page_title" data-i18n-toggle>
+
+  <div class="proto-bar d-flex align-items-center gap-3 flex-wrap">
+    <span><i class="fa fa-eye text-warning me-1"></i><strong data-i18n="consent.cgu.proto_bar">Écran 30 — Re-acceptation CGU (nouvelle version substantielle)</strong></span>
+    <a href="01-home.html" class="text-decoration-none text-muted ms-auto small" data-i18n="common.back_home">← Retour à l'accueil</a>
+  </div>
+
+  <div class="brand-area">
+    <div class="brand-bar">
+      <a href="01-home.html" class="brand-logo" aria-label="FUENI — Accueil"><img src="assets/fueni-lockup-horizontal.svg" alt="FUENI"></a>
+    </div>
+  </div>
+
+  <div class="d-flex justify-content-center mt-3">
+    <div class="consent-nav">
+      <a href="30-consent-cgu.html" class="active">CGU</a>
+      <a href="30b-consent-cgv.html">CGV</a>
+      <a href="30c-consent-privacy.html" data-i18n="consent.nav_priv">Confidentialité</a>
+      <a href="30d-consent-cookies.html">Cookies</a>
+    </div>
+  </div>
+
+  <!-- Interstitiel BLOQUANT affiché à la première connexion suivant la date d'effet d'une version
+       SUBSTANTIELLE des CGU (gate au login : version requise > version acceptée — SF-CONSENT-VERSIONING §5).
+       Un changement MINEUR ne passe jamais par cet écran (bannière dismissible, cf. écran 30c). -->
+  <div class="container py-3" style="max-width:620px;">
+    <div class="step-card" id="gateCard">
+      <div class="text-center mb-2"><i class="fa fa-file-signature doc-icon"></i></div>
+      <h5 class="fw-bold text-center mb-2" data-i18n="consent.cgu.title">Nos Conditions Générales d'Utilisation ont évolué</h5>
+      <div class="text-center mb-1"><span class="ver-chip"><i class="fa fa-file-lines"></i><span data-i18n="consent.cgu.chip">CGU v2.4 · applicable au 01/10/2026</span></span></div>
+      <p class="text-muted small text-center mb-3" data-i18n="consent.cgu.prev">Vous aviez accepté la version 2.3 le 12/05/2026.</p>
+
+      <div class="changes-box mb-3">
+        <div class="fw-semibold small mb-1" style="color:#155e75;"><i class="fa fa-list-check me-1"></i><span data-i18n="consent.whats_new">Ce qui change</span></div>
+        <ul>
+          <li data-i18n="consent.cgu.ch1">Partage de documents : envoi possible à plusieurs praticiens à la fois</li>
+          <li data-i18n="consent.cgu.ch2">Suppression de compte : précision du délai de rétractation de 30 jours</li>
+          <li data-i18n="consent.cgu.ch3">Médiation : mise à jour des coordonnées du médiateur de la consommation</li>
+        </ul>
+        <a href="#" onclick="event.preventDefault();" class="small fw-semibold d-inline-block mt-2" style="color:#155e75;"><i class="fa fa-arrow-up-right-from-square me-1"></i><span data-i18n="consent.read_full">Lire le document complet</span></a>
+      </div>
+
+      <!-- P1 santé : le refus ne prend jamais en otage les données — accès lecture + export garantis. -->
+      <div class="alert d-flex align-items-start gap-2 py-2 px-3 mb-3" style="background:#e6f2f5; border:1px solid #bcdfe7; color:#0e4456; border-radius:10px; font-size:0.84rem;">
+        <i class="fa fa-circle-info mt-1" style="color:#155e75;"></i>
+        <span data-i18n="consent.cgu.notice">L'acceptation est requise pour continuer à utiliser FUENI. Quel que soit votre choix, vous conservez l'accès en lecture et l'export de vos données de santé.</span>
+      </div>
+
+      <label class="cgv-accept mb-3" for="acceptChk">
+        <input type="checkbox" id="acceptChk" onchange="document.getElementById('acceptBtn').disabled = !this.checked;">
+        <span data-i18n="consent.cgu.accept_label">J'ai lu et j'accepte les Conditions Générales d'Utilisation (v2.4). *</span>
+      </label>
+
+      <button id="acceptBtn" class="btn btn-doctor w-100 mb-2" disabled onclick="acceptDoc()"><span data-i18n="consent.accept_btn">Accepter et continuer</span> <i class="fa fa-arrow-right ms-1"></i></button>
+      <button class="btn btn-link w-100 text-muted small" onclick="toggleRefuse()" data-i18n="consent.cgu.refuse_link">Je n'accepte pas</button>
+
+      <div id="refusePanel" class="refuse-panel mt-2" style="display:none;">
+        <div class="fw-semibold mb-1"><i class="fa fa-triangle-exclamation me-1"></i><span data-i18n="consent.cgu.refuse_title">Sans acceptation, votre compte passe en accès restreint</span></div>
+        <div data-i18n="consent.cgu.refuse_body">Vous pouvez consulter et exporter vos données de santé (Mes documents), mais les autres fonctionnalités sont suspendues. Cet écran vous sera proposé à nouveau à votre prochaine connexion. Pour toute question : support@fueni.com.</div>
+        <a href="09-patient-documents.html" class="small fw-semibold d-inline-block mt-2" style="color:#7a5200;"><i class="fa fa-download me-1"></i><span data-i18n="consent.cgu.refuse_export">Accéder à mes documents (lecture / export)</span></a>
+      </div>
+    </div>
+
+    <!-- Confirmation : trace d'acceptation (user + document + version + horodatage + contexte) -->
+    <div class="step-card" id="doneCard" style="display:none;">
+      <div class="success-panel">
+        <div class="fw-bold mb-2" style="color:#1e8449;"><i class="fa fa-circle-check me-1"></i><span data-i18n="consent.done_title">Acceptation enregistrée</span></div>
+        <div class="rec-line"><span class="k" data-i18n="consent.rec_doc">Document</span><strong>CGU</strong></div>
+        <div class="rec-line"><span class="k" data-i18n="consent.rec_ver">Version</span><strong>2.4</strong></div>
+        <div class="rec-line"><span class="k" data-i18n="consent.rec_ts">Horodatage</span><strong id="recTs">—</strong></div>
+        <div class="rec-line"><span class="k" data-i18n="consent.rec_ctx">Contexte</span><strong data-i18n="consent.rec_ctx_reaccept">Re-acceptation à la connexion</strong></div>
+      </div>
+      <a href="05-patient-dashboard.html" class="btn btn-doctor w-100 mt-3"><span data-i18n="consent.continue_app">Continuer vers mon espace</span> <i class="fa fa-arrow-right ms-1"></i></a>
+      <button class="btn btn-link w-100 text-muted small mt-1" onclick="resetDemo()" data-i18n="consent.reset">Réinitialiser la démo</button>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // Trace d'acceptation (démo) : mêmes champs que l'inscription (fueni_cgv_accept, écran 14) —
+    // en V2, une seule table `acceptances` (user, doc, version, ts, contexte) alimentée par tous les écrans.
+    function acceptDoc() {
+      var ts = new Date().toISOString();
+      try {
+        var log = JSON.parse(localStorage.getItem('fueni_consents') || '[]');
+        log.push({ doc: 'CGU', version: '2.4', ts: ts, context: 're-acceptation' });
+        localStorage.setItem('fueni_consents', JSON.stringify(log));
+      } catch (e) {}
+      document.getElementById('recTs').textContent = ts.replace('T', ' ').slice(0, 19) + ' UTC';
+      document.getElementById('gateCard').style.display = 'none';
+      document.getElementById('doneCard').style.display = '';
+    }
+    function toggleRefuse() {
+      var p = document.getElementById('refusePanel');
+      p.style.display = (p.style.display === 'none') ? '' : 'none';
+    }
+    function resetDemo() {
+      document.getElementById('doneCard').style.display = 'none';
+      document.getElementById('gateCard').style.display = '';
+      var c = document.getElementById('acceptChk'); c.checked = false;
+      document.getElementById('acceptBtn').disabled = true;
+    }
+  </script>
+<!-- Prototype version badge -->
+<script>(function(){if(window.__pv)return;window.__pv=1;var v=document.createElement('div');v.style.cssText='position:fixed;top:0;left:50%;transform:translateX(-50%);background:#155e75;color:#fff;padding:6px 20px;border-radius:0 0 16px 16px;font:600 12px/1 system-ui,-apple-system,sans-serif;letter-spacing:.6px;z-index:99999;box-shadow:0 3px 10px rgba(0,0,0,.2);text-transform:uppercase;display:flex;align-items:center;gap:8px';v.innerHTML='🧪 Prototype <span style="background:#f59e0b;color:#1a1a1a;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:4px">v1.4.0</span><span style="background:#facc15;color:#1a1a1a;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:4px;text-transform:none;letter-spacing:0">⏳ À valider</span>';document.body.appendChild(v);})();</script>
+</body>
+</html>
