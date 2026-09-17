@@ -17,7 +17,8 @@
     .brand-panel::after { content: ''; position: absolute; right: -120px; top: -80px; width: 320px; height: 320px; border-radius: 50%; background: rgba(255,255,255,0.05); }
     .brand-logo { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 1.25rem; }
     .brand-logo .mark { width: 34px; height: 34px; border-radius: 9px; background: rgba(255,255,255,0.15); display: flex; align-items: center; justify-content: center; font-weight: 800; }
-    .brand-kicker { margin-top: 3.5rem; font-size: 0.72rem; letter-spacing: 1.5px; text-transform: uppercase; color: rgba(255,255,255,0.6); font-weight: 600; }
+    /* Pastille d'orientation (pendant patient de la .pro-tag ambre du login praticien — blanc doux, l'ambre reste réservé au pro) */
+    .patient-tag { display: inline-flex; align-items: center; gap: 8px; margin-top: 3.2rem; background: rgba(255,255,255,0.13); border: 1px solid rgba(255,255,255,0.35); color: #eaf3f6; padding: 5px 13px; border-radius: 20px; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.4px; width: fit-content; }
     .brand-title { font-size: 2rem; font-weight: 800; line-height: 1.15; margin-top: 0.5rem; }
     .brand-desc { color: rgba(255,255,255,0.8); margin-top: 1rem; max-width: 360px; line-height: 1.5; }
     .trust-list { margin-top: auto; display: flex; flex-direction: column; gap: 1.1rem; }
@@ -81,7 +82,7 @@
     <!-- Brand panel -->
     <div class="brand-panel">
       <div class="brand-logo"><a href="01-home.html" aria-label="FUENI — Accueil"><img src="assets/fueni-lockup-white.svg" alt="FUENI" style="height:34px;width:auto"></a></div>
-      <div class="brand-kicker" data-i18n="login.brand.kicker">Plateforme santé digitale</div>
+      <div class="patient-tag"><i class="fa fa-user"></i><span data-i18n="login.brand.kicker">Espace patient</span></div>
       <div class="brand-title" data-i18n="login.brand.title">Une plateforme. Tous vos soins.</div>
       <div class="brand-desc" data-i18n="login.brand.desc">Prenez rendez-vous, gérez vos documents médicaux et restez en lien avec votre équipe de soins.</div>
 
@@ -92,14 +93,14 @@
         </div>
         <div class="trust-item">
           <div class="ic"><i class="fa fa-lock"></i></div>
-          <div><div class="t" data-i18n="login.trust.gdpr_t">Conforme RGPD & HDS</div><div class="d" data-i18n="login.trust.gdpr_d">Aux plus hauts standards du secteur de la santé.</div></div>
+          <div><div class="t" data-i18n="login.trust.gdpr_t">Conçu pour la conformité</div><div class="d" data-i18n="login.trust.gdpr_d">Cadres locaux de protection des données intégrés.</div></div>
         </div>
         <div class="trust-item">
           <div class="ic"><i class="fa fa-earth-africa"></i></div>
-          <div><div class="t" data-i18n="login.trust.countries_t">9 pays couverts (MVP)</div><div class="d" data-i18n="login.trust.countries_d">Disponible en Afrique francophone.</div></div>
+          <div><div class="t" data-i18n="login.trust.countries_t">9 pays couverts au lancement</div><div class="d" data-i18n="login.trust.countries_d">Disponible en Afrique francophone.</div></div>
         </div>
       </div>
-      <div class="brand-foot">RGPD · HDS · ISO 27001</div>
+      <div class="brand-foot">Chiffrement AES-256 · Accès journalisés</div>
     </div>
 
     <!-- Form panel -->
