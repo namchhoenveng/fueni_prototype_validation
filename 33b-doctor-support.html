@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FUENI — Support praticien</title>
+  <script src="naz-i18n.js" defer></script>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="naz-common.css">
+  <style>
+    body { background: #f0f4f8; font-family: 'Segoe UI', sans-serif; }
+    /* Sidebar praticien (identique aux écrans 18/20/24…) */
+    .sidebar { background: #155e75; min-height: 100vh; width: 240px; position: fixed; top: 0; left: 0; z-index: 100; }
+    .sidebar-brand { padding: 20px 20px 12px; display: flex; align-items: center; gap: 10px; color: white; }
+    .sidebar-user { padding: 12px 20px 18px; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; gap: 10px; }
+    .sidebar-user .avatar { width: 40px; height: 40px; border-radius: 50%; background: #0e7490; display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; flex-shrink: 0; }
+    .nav-section { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: rgba(255,255,255,0.3); padding: 16px 20px 6px; }
+    .nav-link-side { color: rgba(255,255,255,0.72); padding: 10px 20px; display: flex; align-items: center; gap: 10px; font-size: 0.9rem; cursor: pointer; text-decoration: none; }
+    .nav-link-side i:first-child { width: 16px; text-align: center; flex-shrink: 0; }
+    .nav-link-side:hover { color: white; background: rgba(255,255,255,0.1); }
+    .nav-link-side.active { color: white; background: rgba(255,255,255,0.15); border-left: 3px solid #22d3ee; cursor: default; }
+    .main { margin-left: 240px; }
+
+    .proto-bar { background: #fff3cd; border: 1px solid #ffc107; border-top: none; padding: 6px 14px; font-size: 0.82rem; position: fixed; top: 0; right: 200px; z-index: 300; border-radius: 0 0 8px 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+    #fueni-lang-toggle { top: 8px !important; right: 20px !important; }
+
+    .content-area { padding: 48px 28px 28px; max-width: 900px; }
+    .page-header { background: white; border-radius: 12px; padding: 22px; margin-bottom: 18px; }
+    .page-header .sub { color: #7f8c8d; font-size: 0.9rem; margin: 4px 0 0; }
+
+    .emg-banner { background: #fdf2f2; border: 1px solid #f5c6cb; border-radius: 12px; padding: 14px 18px; display: flex; gap: 12px; align-items: flex-start; margin-bottom: 18px; }
+    .emg-banner i { color: #c0392b; margin-top: 3px; }
+    .emg-banner .t { font-weight: 700; color: #922b21; font-size: 0.9rem; }
+    .emg-banner .d { font-size: 0.85rem; color: #7b241c; line-height: 1.5; }
+
+    .sup-grid { display: grid; grid-template-columns: 1.1fr 1fr; gap: 16px; margin-bottom: 22px; }
+    @media (max-width: 860px) { .sup-grid { grid-template-columns: 1fr; } }
+    .sup-card { background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); padding: 20px; }
+    .sup-card .head { display: flex; align-items: center; gap: 10px; font-weight: 700; color: #0F2444; margin-bottom: 8px; }
+    .sup-card .head .ic { width: 36px; height: 36px; border-radius: 9px; background: #eef5f7; color: #155e75; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .sup-card .desc { font-size: 0.86rem; color: #5d6d7e; line-height: 1.55; }
+    .sup-email { display: block; font-size: 1.05rem; font-weight: 800; color: #155e75; margin: 10px 0 4px; text-decoration: none; }
+    .sup-sla { font-size: 0.8rem; color: #7f8c8d; margin-bottom: 12px; }
+    .btn-doctor { background: #155e75; border-color: #155e75; color: white; }
+    .btn-doctor:hover { background: #114c5f; border-color: #114c5f; color: white; }
+    .safe-list { margin: 8px 0 0; padding-left: 1.1rem; font-size: 0.85rem; color: #5d6d7e; }
+    .safe-list li { padding: 2px 0; }
+    .phish-note { background: #fff8e1; border: 1px solid #fcd670; border-radius: 10px; padding: 9px 12px; font-size: 0.8rem; color: #7a5200; margin-top: 12px; }
+
+    .self-title { font-weight: 700; color: #0F2444; margin-bottom: 2px; }
+    .self-sub { font-size: 0.85rem; color: #7f8c8d; margin-bottom: 12px; }
+    .self-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 22px; }
+    @media (max-width: 860px) { .self-grid { grid-template-columns: 1fr; } }
+    .self-tile { background: white; border: 1px solid #e6edf3; border-radius: 12px; padding: 14px 16px; display: flex; gap: 12px; align-items: flex-start; text-decoration: none; transition: all 0.15s; }
+    .self-tile:hover { border-color: #155e75; box-shadow: 0 4px 14px rgba(21,94,117,0.12); }
+    .self-tile .ic { width: 36px; height: 36px; border-radius: 9px; background: #eef5f7; color: #155e75; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .self-tile .t { font-weight: 700; color: #0F2444; font-size: 0.9rem; }
+    .self-tile .d { font-size: 0.8rem; color: #7f8c8d; }
+
+    .faq-banner { background: #eef5f7; border: 1px solid #b8dde6; border-radius: 12px; padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; gap: 14px; flex-wrap: wrap; }
+    .faq-banner .t { font-weight: 700; color: #0e5a6e; }
+    .faq-banner .d { font-size: 0.85rem; color: #117a8b; }
+  </style>
+</head>
+<body data-i18n-pagetitle="dsup.page_title" data-i18n-toggle>
+
+  <div class="proto-bar d-flex align-items-center gap-3" data-i18n-html="dsup.proto_bar_html">
+    <span><i class="fa fa-eye me-1"></i> Espace Praticien · Support · <a href="01-home.html" class="text-decoration-none">← Retour à l'accueil</a></span>
+  </div>
+
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="sidebar-brand">
+      <a href="01-home.html" class="brand-logo" aria-label="FUENI"><img src="assets/fueni-lockup-horizontal.svg" alt="FUENI" style="height:34px;"></a>
+    </div>
+    <div class="sidebar-user">
+      <div class="avatar">AD</div>
+      <div>
+        <div class="text-white fw-semibold small" data-i18n="doc.dash.greeting">Dr Aboubacar Diallo</div>
+        <div style="color:rgba(255,255,255,0.72); font-size:0.72rem;"><i class="fa fa-circle-check me-1" style="color:#22d3ee;"></i><span data-i18n="doc.dash.validated_status">Profil validé</span></div>
+      </div>
+    </div>
+    <div class="nav-section" data-i18n="doc.dash.sec_main">Principal</div>
+    <a href="17-doctor-dashboard.html?state=active" class="nav-link-side"><i class="fa fa-home"></i><span data-i18n="doc.dash.nav_dashboard">Tableau de bord</span></a>
+    <a href="19-doctor-public-profile.html" class="nav-link-side"><i class="fa fa-id-badge"></i><span data-i18n="doc.dash.nav_public_profile">Mon profil public</span></a>
+    <a href="26-doctor-records.html" class="nav-link-side"><i class="fa fa-user-injured"></i><span data-i18n="doc.dash.tile_patients">Patients</span></a>
+    <a href="24-doctor-rendezvous.html" class="nav-link-side"><i class="fa fa-calendar-check"></i><span data-i18n="doc.dash.tile_rdv">Rendez-vous</span></a>
+    <div class="nav-section" data-i18n="doc.dash.sec_account">Compte</div>
+    <a href="18-doctor-abonnement.html" class="nav-link-side"><i class="fa fa-star"></i><span data-i18n="doc.dash.nav_subscription">Mon abonnement</span></a>
+    <a href="29-doctor-settings.html" class="nav-link-side"><i class="fa fa-cog"></i><span data-i18n="doc.dash.nav_settings">Paramètres</span></a>
+    <div class="nav-section" data-i18n="doc.dash.sec_help">Aide</div>
+    <a href="32-doctor-faq.html" class="nav-link-side"><i class="fa fa-circle-question"></i><span data-i18n="doc.dash.faq">FAQ</span></a>
+    <a class="nav-link-side active"><i class="fa fa-headset"></i><span data-i18n="doc.dash.support">Contacter le support</span></a>
+    <a href="10b-login-doctor.html" class="nav-link-side"><i class="fa fa-arrow-right-from-bracket"></i><span data-i18n="doc.dash.logout">Déconnexion</span></a>
+  </div>
+
+  <!-- Main -->
+  <div class="main">
+    <div class="content-area">
+
+      <div class="page-header">
+        <h4 class="fw-bold mb-0"><i class="fa fa-headset me-2" style="color:#155e75;"></i><span data-i18n="dsup.title">Support professionnel FUENI</span></h4>
+        <p class="sub" data-i18n="dsup.subtitle">Commencez par les options en libre-service, ou contactez notre équipe dédiée aux professionnels de santé.</p>
+      </div>
+
+      <!-- Précaution santé : le support n'est pas un service de soins -->
+      <div class="emg-banner">
+        <i class="fa fa-triangle-exclamation"></i>
+        <div>
+          <div class="t" data-i18n="sup.emg_t">En cas d'urgence médicale</div>
+          <div class="d" data-i18n="sup.emg_d">Le support FUENI ne peut pas fournir de soins d'urgence. Si vous ou un proche êtes en danger immédiat, contactez les services d'urgence locaux ou rendez-vous à la structure de santé la plus proche.</div>
+        </div>
+      </div>
+
+      <div class="sup-grid">
+        <div class="sup-card">
+          <div class="head"><span class="ic"><i class="fa fa-envelope"></i></span><span data-i18n="dsup.email_t">Écrire au support professionnel</span></div>
+          <div class="desc" data-i18n="sup.email_d">Votre application e-mail s'ouvrira pour envoyer votre demande directement à notre équipe.</div>
+          <a class="sup-email" href="mailto:pro@fueni.com?subject=%5BSupport%20Pro%5D%20">pro@fueni.com</a>
+          <div class="sup-sla" data-i18n="sup.email_sla">Réponse sous 24 h ouvrées, en français et en anglais.</div>
+          <!-- Objet pré-rempli « [Support Pro] » pour le tri des tickets — jamais de données personnelles pré-remplies. -->
+          <a href="mailto:pro@fueni.com?subject=%5BSupport%20Pro%5D%20" class="btn btn-doctor"><i class="fa fa-envelope me-2"></i><span data-i18n="sup.email_btn">Ouvrir l'e-mail</span></a>
+        </div>
+        <div class="sup-card">
+          <div class="head"><span class="ic"><i class="fa fa-shield-halved"></i></span><span data-i18n="sup.safe_t">Envoyer un message sûr</span></div>
+          <div class="desc" data-i18n="sup.safe_d">Un message court et précis aide le support à traiter votre demande tout en protégeant vos informations.</div>
+          <ul class="safe-list">
+            <li data-i18n="sup.safe_b1">Décrivez ce que vous attendiez et ce qui s'est passé.</li>
+            <li data-i18n="sup.safe_b2">Précisez l'écran concerné et votre appareil ou navigateur.</li>
+            <li data-i18n="dsup.safe_b3">N'envoyez jamais votre mot de passe, un code de vérification, ni de données de vos patients.</li>
+          </ul>
+          <div class="phish-note"><i class="fa fa-user-shield me-1"></i><span data-i18n="sup.phish">Le support FUENI ne vous demandera jamais votre mot de passe ni un code de vérification.</span></div>
+        </div>
+      </div>
+
+      <div class="self-title" data-i18n="sup.self_t">Gérez-le vous-même</div>
+      <div class="self-sub" data-i18n="sup.self_d">Ces espaces sont souvent le moyen le plus rapide d'accomplir les démarches courantes.</div>
+      <div class="self-grid">
+        <a href="19-doctor-public-profile.html" class="self-tile">
+          <span class="ic"><i class="fa fa-id-badge"></i></span>
+          <span><span class="t d-block" data-i18n="doc.dash.nav_public_profile">Mon profil public</span><span class="d" data-i18n="dsup.tile1_d">Motifs, tarifs, disponibilités et visibilité annuaire</span></span>
+        </a>
+        <a href="18-doctor-abonnement.html" class="self-tile">
+          <span class="ic"><i class="fa fa-star"></i></span>
+          <span><span class="t d-block" data-i18n="doc.dash.nav_subscription">Mon abonnement</span><span class="d" data-i18n="dsup.tile2_d">Formule, moyen de paiement, factures et bons de commande</span></span>
+        </a>
+        <a href="24-doctor-rendezvous.html" class="self-tile">
+          <span class="ic"><i class="fa fa-calendar-check"></i></span>
+          <span><span class="t d-block" data-i18n="doc.dash.tile_rdv">Rendez-vous</span><span class="d" data-i18n="dsup.tile3_d">Agenda, clôture des visites et réservations en ligne</span></span>
+        </a>
+        <a href="26-doctor-records.html" class="self-tile">
+          <span class="ic"><i class="fa fa-user-injured"></i></span>
+          <span><span class="t d-block" data-i18n="doc.dash.tile_patients">Patients</span><span class="d" data-i18n="dsup.tile4_d">Liste de patients et dossiers médicaux</span></span>
+        </a>
+      </div>
+
+      <div class="faq-banner">
+        <div>
+          <div class="t" data-i18n="sup.faq_t">Une question simple ?</div>
+          <div class="d" data-i18n="dsup.faq_d">Inscription, formules, rendez-vous, visibilité : les questions courantes ont sans doute déjà leur réponse.</div>
+        </div>
+        <a href="32-doctor-faq.html" class="btn btn-outline-secondary"><span data-i18n="sup.faq_btn">Voir la FAQ</span></a>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Prototype version badge -->
+<script>(function(){if(window.__pv)return;window.__pv=1;var v=document.createElement('div');v.style.cssText='position:fixed;top:0;left:50%;transform:translateX(-50%);background:#155e75;color:#fff;padding:6px 20px;border-radius:0 0 16px 16px;font:600 12px/1 system-ui,-apple-system,sans-serif;letter-spacing:.6px;z-index:99999;box-shadow:0 3px 10px rgba(0,0,0,.2);text-transform:uppercase;display:flex;align-items:center;gap:8px';v.innerHTML='🧪 Prototype <span style="background:#f59e0b;color:#1a1a1a;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:4px">v1.4.0</span><span style="background:#facc15;color:#1a1a1a;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:4px;text-transform:none;letter-spacing:0">⏳ À valider</span>';document.body.appendChild(v);})();</script>
+</body>
+</html>

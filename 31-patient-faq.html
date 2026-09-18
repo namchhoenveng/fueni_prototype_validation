@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FUENI — FAQ</title>
+  <script src="naz-i18n.js" defer></script>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="naz-common.css">
+  <style>
+    body { background: #f0f4f8; }
+
+    /* Sidebar (identique au tableau de bord) */
+    .sidebar { background: #16a085; min-height: 100vh; padding: 0; width: 240px; position: fixed; top: 0; left: 0; z-index: 100; }
+    .sidebar-brand { padding: 20px 20px 10px; font-size: 1.3rem; font-weight: 700; color: white; }
+    .sidebar-brand small { display: block; font-size: 0.65rem; font-weight: 500; opacity: 0.75; letter-spacing: 0.5px; text-transform: uppercase; margin-top: 2px; }
+    .sidebar-user { padding: 14px 20px 20px; border-bottom: 1px solid rgba(255,255,255,0.15); }
+    .sidebar-user .avatar { width: 40px; height: 40px; border-radius: 50%; background: #fff; color: #16a085; display: flex; align-items: center; justify-content: center; font-weight: 700; }
+    .nav-link-side { color: rgba(255,255,255,0.85) !important; padding: 10px 20px; display: flex; align-items: center; gap: 10px; font-size: 0.9rem; cursor: pointer; text-decoration: none; transition: background 0.15s; }
+    .nav-link-side:hover { background: rgba(255,255,255,0.1); color: white !important; }
+    .nav-link-side.active { background: rgba(255,255,255,0.2); border-left: 3px solid white; color: white !important; }
+    .nav-section { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: rgba(255,255,255,0.45); padding: 16px 20px 6px; }
+    .nav-link-side i { width: 18px; text-align: center; }
+    .main { margin-left: 240px; }
+
+    .proto-bar { background: #fff3cd; border: 1px solid #ffc107; border-top: none; padding: 6px 14px; font-size: 0.82rem; position: fixed; top: 0; right: 200px; z-index: 300; border-radius: 0 0 8px 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+    #fueni-lang-toggle { top: 8px !important; right: 20px !important; }
+
+    .content-area { padding: 48px 28px 28px; max-width: 900px; }
+    .page-header { background: white; border-radius: 12px; padding: 22px; margin-bottom: 18px; }
+    .page-header .sub { color: #7f8c8d; font-size: 0.9rem; margin: 4px 0 0; }
+
+    /* Recherche */
+    .faq-search { position: relative; margin-bottom: 18px; }
+    .faq-search i { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: #95a5a6; }
+    .faq-search input { width: 100%; border: 1px solid #dfe6e9; border-radius: 12px; padding: 0.75rem 1rem 0.75rem 2.5rem; font-size: 0.95rem; background: white; }
+    .faq-search input:focus { outline: none; border-color: #16a085; box-shadow: 0 0 0 0.2rem rgba(22,160,133,0.15); }
+
+    /* Catégories + accordéons */
+    .faq-cat { background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); margin-bottom: 16px; overflow: hidden; }
+    .faq-cat-head { padding: 14px 20px; font-weight: 700; color: #0F2444; border-bottom: 1px solid #f0f4f8; display: flex; align-items: center; gap: 10px; }
+    .faq-cat-head i { color: #16a085; }
+    .faq-item { border-bottom: 1px solid #f0f4f8; }
+    .faq-item:last-child { border-bottom: 0; }
+    .faq-q { width: 100%; background: none; border: 0; text-align: left; padding: 14px 20px; font-size: 0.92rem; font-weight: 600; color: #1f2d3d; display: flex; justify-content: space-between; align-items: center; gap: 12px; cursor: pointer; }
+    .faq-q:hover { color: #117a65; }
+    .faq-q .chev { color: #95a5a6; transition: transform 0.15s; flex-shrink: 0; }
+    .faq-item.open .faq-q .chev { transform: rotate(180deg); }
+    .faq-a { display: none; padding: 0 20px 16px; font-size: 0.88rem; color: #4a5b6b; line-height: 1.6; }
+    .faq-item.open .faq-a { display: block; }
+    .faq-a a { color: #117a65; font-weight: 600; }
+    .faq-item.hit-hidden { display: none; }
+    .faq-cat.cat-hidden { display: none; }
+
+    .no-results { background: white; border-radius: 12px; padding: 40px 24px; text-align: center; color: #95a5a6; display: none; }
+    .no-results i { font-size: 2rem; color: #cdd6e0; margin-bottom: 10px; display: block; }
+
+    /* Escalade support */
+    .need-help { background: #e8f8f5; border: 1px solid #b8e6da; border-radius: 12px; padding: 18px 20px; display: flex; justify-content: space-between; align-items: center; gap: 14px; flex-wrap: wrap; }
+    .need-help .t { font-weight: 700; color: #0e6f5c; }
+    .need-help .d { font-size: 0.85rem; color: #117a65; }
+    .btn-patient { background: #16a085; border-color: #16a085; color: white; }
+    .btn-patient:hover { background: #138d75; border-color: #138d75; color: white; }
+  </style>
+</head>
+<body data-i18n-pagetitle="faq.page_title" data-i18n-toggle>
+
+  <div class="proto-bar d-flex align-items-center gap-3" data-i18n-html="faq.proto_bar_html">
+    <span><i class="fa fa-eye me-1"></i> Espace Patient · FAQ · <a href="01-home.html" class="text-decoration-none">← Retour à l'accueil</a></span>
+  </div>
+
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="sidebar-brand">
+      <img src="assets/fueni-lockup-white.svg" alt="FUENI" style="height:30px;width:auto;display:block;margin-bottom:6px">
+      <small data-i18n="dash.sidebar.area">Espace Patient</small>
+    </div>
+    <div class="sidebar-user d-flex align-items-center gap-2">
+      <div class="avatar" id="userAvatar">AD</div>
+      <div>
+        <div class="text-white fw-semibold small" id="userFullName">Aïssatou Diop</div>
+        <div style="color:rgba(255,255,255,0.65); font-size:0.72rem;">
+          <i class="fa fa-circle-check me-1"></i><span data-i18n="dash.sidebar.verified">Compte vérifié</span>
+        </div>
+      </div>
+    </div>
+    <div class="nav-section" data-i18n="dash.sidebar.section_my_space">Mon espace</div>
+    <a href="05-patient-dashboard.html" class="nav-link-side"><i class="fa fa-home"></i><span data-i18n="dash.sidebar.dashboard">Tableau de bord</span></a>
+    <a href="08-patient-mes-rdv.html" class="nav-link-side"><i class="fa fa-calendar-check"></i><span data-i18n="dash.sidebar.my_appts">Mes RDV</span></a>
+    <a href="28-patient-search.html" class="nav-link-side"><i class="fa fa-plus-circle"></i><span data-i18n="dash.sidebar.book">Prendre RDV</span></a>
+    <a href="09-patient-documents.html" class="nav-link-side"><i class="fa fa-folder"></i><span data-i18n="dash.sidebar.my_docs">Mes documents</span></a>
+    <div class="nav-section" data-i18n="dash.sidebar.section_account">Mon compte</div>
+    <a href="06-patient-profile.html" class="nav-link-side"><i class="fa fa-user"></i><span data-i18n="dash.sidebar.my_profile">Mon profil</span></a>
+    <a href="07-account-security.html" class="nav-link-side"><i class="fa fa-shield-halved"></i><span data-i18n="dash.sidebar.security">Connexion & sécurité</span></a>
+    <div class="nav-section" data-i18n="dash.sidebar.section_help">Aide</div>
+    <a class="nav-link-side active"><i class="fa fa-circle-question"></i><span data-i18n="dash.sidebar.faq">FAQ</span></a>
+    <a href="33-patient-support.html" class="nav-link-side"><i class="fa fa-headset"></i><span data-i18n="dash.sidebar.support">Contacter le support</span></a>
+    <a href="10-login.html" class="nav-link-side" onclick="try{sessionStorage.setItem('fueni_logout','1')}catch(e){}"><i class="fa fa-right-from-bracket"></i><span data-i18n="dash.sidebar.logout">Se déconnecter</span></a>
+  </div>
+
+  <!-- Main -->
+  <div class="main">
+    <div class="content-area">
+
+      <div class="page-header">
+        <h4 class="fw-bold mb-0"><i class="fa fa-circle-question me-2" style="color:#16a085;"></i><span data-i18n="faq.title">Questions fréquentes</span></h4>
+        <p class="sub" data-i18n="faq.subtitle">Des réponses rapides sur votre compte FUENI, vos rendez-vous, vos documents et vos données.</p>
+      </div>
+
+      <div class="faq-search">
+        <i class="fa fa-search"></i>
+        <input id="faqSearch" type="text" data-i18n-placeholder="faq.search_ph" placeholder="Rechercher dans les questions et réponses…">
+      </div>
+
+      <!-- Contenu FR/EN rendu depuis FAQ_DATA (script) — réponses alignées sur les SF :
+           délai d'annulation = « précisé à l'écran » (valeur 🟠 non actée), partage documentaire = politique
+           DD-DOC (copie transmise non révocable in-app), suppression de compte = via support + 30 j. -->
+      <div id="faqRoot"></div>
+
+      <div class="no-results" id="noResults">
+        <i class="fa fa-magnifying-glass"></i>
+        <span data-i18n="faq.no_results">Aucune question ne correspond à votre recherche. Reformulez, ou contactez le support.</span>
+      </div>
+
+      <div class="need-help mt-3">
+        <div>
+          <div class="t" data-i18n="faq.need_title">Encore besoin d'aide ?</div>
+          <div class="d" data-i18n="faq.need_desc">Notre équipe vous répond par e-mail sous 24 h ouvrées, en français et en anglais.</div>
+        </div>
+        <a href="mailto:support@fueni.com" class="btn btn-patient"><i class="fa fa-headset me-2"></i><span data-i18n="faq.need_btn">Contacter le support</span></a>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // ── Contenu FAQ bilingue — SOURCE CANONIQUE pour l'équipe dev (à transposer en clés i18n / contenu statique par release).
+    //    Chaque question a un id stable → ancre profonde (31-patient-faq.html#annulation) utilisable dans les réponses support.
+    const FAQ_DATA = [
+      {
+        id: 'general', icon: 'fa-circle-info',
+        cat: { fr: 'Général', en: 'General' },
+        items: [
+          {
+            id: 'cout',
+            fr: { q: 'Combien coûte FUENI pour les patients ?', a: 'FUENI est <strong>gratuit pour les patients</strong> : création de compte, prise de rendez-vous et conservation de vos documents sont sans frais. La consultation elle-même se règle directement auprès de votre praticien, selon ses tarifs affichés sur son profil.' },
+            en: { q: 'How much does FUENI cost for patients?', a: 'FUENI is <strong>free for patients</strong>: creating an account, booking appointments and keeping your documents cost nothing. The consultation itself is paid directly to your practitioner, at the fees shown on their profile.' }
+          },
+          {
+            id: 'sms',
+            fr: { q: 'Je ne reçois pas le code SMS', a: 'Vérifiez que votre <strong>numéro et son indicatif pays</strong> sont corrects, puis patientez : selon les réseaux, le SMS peut prendre une à deux minutes. Le code reste valide <strong>5 minutes</strong> et vous pouvez demander un renvoi après 60 secondes. Si le problème persiste, écrivez à <a href="mailto:support@fueni.com">support@fueni.com</a> en précisant votre numéro.' },
+            en: { q: 'I am not receiving the SMS code', a: 'Check that your <strong>phone number and country code</strong> are correct, then allow a minute or two depending on the network. The code stays valid for <strong>5 minutes</strong> and you can request a resend after 60 seconds. If the problem persists, write to <a href="mailto:support@fueni.com">support@fueni.com</a> with your number.' }
+          }
+        ]
+      },
+      {
+        id: 'compte', icon: 'fa-shield-halved',
+        cat: { fr: 'Compte et sécurité', en: 'Account and security' },
+        items: [
+          {
+            id: 'profil',
+            fr: { q: 'Comment modifier mon profil ?', a: 'Rendez-vous dans <a href="06-patient-profile.html">Mon profil</a>. La plupart des informations se modifient directement. Les <strong>coordonnées de connexion</strong> (e-mail, téléphone) sont confirmées par un code envoyé sur le nouveau canal ; les <strong>informations d\'identité</strong> (nom, date de naissance) passent par le support.' },
+            en: { q: 'How do I update my profile?', a: 'Go to <a href="06-patient-profile.html">My profile</a>. Most information can be edited directly. <strong>Sign-in details</strong> (email, phone) are confirmed with a code sent to the new channel; <strong>identity information</strong> (name, date of birth) goes through support.' }
+          },
+          {
+            id: 'mdp',
+            fr: { q: 'Comment changer mon mot de passe ?', a: 'Dans <a href="07-account-security.html">Connexion & sécurité</a>, carte « Mot de passe » : saisissez votre mot de passe actuel puis le nouveau. Mot de passe oublié ? Utilisez « Mot de passe oublié ? » sur l\'écran de connexion — un code de réinitialisation vous sera envoyé.' },
+            en: { q: 'How do I change my password?', a: 'In <a href="07-account-security.html">Sign-in & security</a>, “Password” card: enter your current password, then the new one. Forgot it? Use “Forgot password?” on the sign-in screen — a reset code will be sent to you.' }
+          },
+          {
+            id: 'langue',
+            fr: { q: 'Comment changer la langue ?', a: 'Utilisez le sélecteur <strong>FR / EN</strong> en haut à droite. C\'est la « langue du compte » : elle s\'applique à l\'interface <strong>et</strong> aux notifications (e-mails, SMS), et reste mémorisée sur tous vos appareils.' },
+            en: { q: 'How do I change the language?', a: 'Use the <strong>FR / EN</strong> selector at the top right. This is your “account language”: it applies to the interface <strong>and</strong> to notifications (emails, SMS), and is remembered across your devices.' }
+          }
+        ]
+      },
+      {
+        id: 'rdv', icon: 'fa-calendar-check',
+        cat: { fr: 'Rendez-vous', en: 'Appointments' },
+        items: [
+          {
+            id: 'reserver',
+            fr: { q: 'Comment prendre rendez-vous ?', a: 'Depuis <a href="28-patient-search.html">Prendre RDV</a>, cherchez par <strong>spécialité, nom ou ville</strong>, choisissez un créneau et un motif : la réservation est <strong>confirmée immédiatement</strong> et récapitulée par e-mail. Aucun paiement en ligne n\'est demandé à la réservation.' },
+            en: { q: 'How do I book an appointment?', a: 'From <a href="28-patient-search.html">Book appointment</a>, search by <strong>specialty, name or city</strong>, pick a slot and a visit reason: the booking is <strong>confirmed immediately</strong> and recapped by email. No online payment is required at booking.' }
+          },
+          {
+            id: 'annulation',
+            fr: { q: 'Comment reporter ou annuler un rendez-vous ?', a: 'Depuis <a href="08-patient-mes-rdv.html">Mes RDV</a>, ouvrez le rendez-vous concerné : les actions <strong>Reporter</strong> et <strong>Annuler</strong> sont disponibles tant que le rendez-vous n\'est pas trop proche — le délai exact est indiqué à l\'écran au moment de l\'action. Passé ce délai, contactez directement le cabinet. Les rendez-vous annulés restent visibles dans votre historique.' },
+            en: { q: 'How do I reschedule or cancel an appointment?', a: 'From <a href="08-patient-mes-rdv.html">My appointments</a>, open the appointment: <strong>Reschedule</strong> and <strong>Cancel</strong> are available as long as the appointment is not too close — the exact deadline is shown on screen when you act. Past that point, contact the practice directly. Cancelled appointments remain visible in your history.' }
+          }
+        ]
+      },
+      {
+        id: 'docs', icon: 'fa-folder-open',
+        cat: { fr: 'Documents médicaux', en: 'Medical documents' },
+        items: [
+          {
+            id: 'upload',
+            fr: { q: 'Comment ajouter un document médical ?', a: 'Dans <a href="09-patient-documents.html">Mes documents</a>, « Téléverser un document » : PDF ou images, <strong>10 Mo maximum par fichier</strong>, avec un espace de <strong>500 Mo</strong> pour vos propres ajouts. Les documents que vos praticiens vous transmettent via FUENI ne comptent pas dans ce quota.' },
+            en: { q: 'How do I upload a medical document?', a: 'In <a href="09-patient-documents.html">My documents</a>, “Upload a document”: PDF or images, <strong>10 MB max per file</strong>, with <strong>500 MB</strong> of space for your own uploads. Documents your practitioners send you through FUENI do not count against this quota.' }
+          },
+          {
+            id: 'partage',
+            fr: { q: 'Qui peut voir un document que je partage ?', a: 'Personne, tant que vous ne le partagez pas : un document téléversé est <strong>privé par défaut</strong>. Vous choisissez le ou les praticiens destinataires. Attention : <strong>une copie transmise ne peut pas être retirée depuis l\'application</strong> — le praticien la conserve dans son dossier, même si vous supprimez le document de votre espace. Pour un retrait exceptionnel, contactez le support.' },
+            en: { q: 'Who can see a document I share?', a: 'No one, until you share it: an uploaded document is <strong>private by default</strong>. You choose which practitioner(s) receive it. Note: <strong>a transmitted copy cannot be withdrawn from the app</strong> — the practitioner keeps it in their records even if you delete the document from your space. For an exceptional withdrawal, contact support.' }
+          }
+        ]
+      },
+      {
+        id: 'privacy', icon: 'fa-user-shield',
+        cat: { fr: 'Confidentialité et données', en: 'Privacy and data' },
+        items: [
+          {
+            id: 'donnees',
+            fr: { q: 'Où consulter et exporter mes données ?', a: 'La <strong>Politique de confidentialité</strong> (lien en pied de page) décrit les données traitées et vos droits. Vous pouvez <strong>exporter vos données</strong> à tout moment depuis <a href="07-account-security.html">Connexion & sécurité</a>, section « Mes données ».' },
+            en: { q: 'Where can I review and export my data?', a: 'The <strong>Privacy Policy</strong> (footer link) describes the data we process and your rights. You can <strong>export your data</strong> anytime from <a href="07-account-security.html">Sign-in & security</a>, “My data” section.' }
+          },
+          {
+            id: 'suppression',
+            fr: { q: 'Comment supprimer mon compte ?', a: 'Faites la demande depuis <a href="07-account-security.html">Connexion & sécurité</a> (section « Mes données ») ou auprès du support : elle est traitée par notre équipe, avec un <strong>délai de rétractation de 30 jours</strong> pendant lequel vous pouvez changer d\'avis. Les documents déjà transmis à vos praticiens restent dans leurs dossiers, conformément à leurs obligations légales de conservation.' },
+            en: { q: 'How do I delete my account?', a: 'Request it from <a href="07-account-security.html">Sign-in & security</a> (“My data” section) or via support: our team processes it, with a <strong>30-day withdrawal period</strong> during which you can change your mind. Documents already transmitted to your practitioners remain in their records, in line with their legal retention obligations.' }
+          }
+        ]
+      }
+    ];
+
+    // ── Rendu (langue courante) + re-rendu à la bascule FR/EN ──
+    function lang() { return (window.NazI18n && NazI18n.getLang && NazI18n.getLang()) === 'en' ? 'en' : 'fr'; }
+    function render() {
+      const L = lang();
+      const root = document.getElementById('faqRoot');
+      root.innerHTML = FAQ_DATA.map(cat => (
+        '<div class="faq-cat" data-cat="' + cat.id + '">' +
+          '<div class="faq-cat-head"><i class="fa ' + cat.icon + '"></i>' + cat.cat[L] + '</div>' +
+          cat.items.map(it => (
+            '<div class="faq-item" id="' + it.id + '" data-text="' + (it[L].q + ' ' + it[L].a).replace(/<[^>]+>/g, ' ').toLowerCase().replace(/"/g, '') + '">' +
+              '<button class="faq-q" onclick="toggleItem(\'' + it.id + '\')">' + it[L].q + '<i class="fa fa-chevron-down chev"></i></button>' +
+              '<div class="faq-a">' + it[L].a + '</div>' +
+            '</div>'
+          )).join('') +
+        '</div>'
+      )).join('');
+      applySearch(); // ré-applique le filtre courant après re-rendu
+      openFromHash(); // ancre profonde (#annulation) → question dépliée
+    }
+    function toggleItem(id) {
+      const el = document.getElementById(id); if (el) el.classList.toggle('open');
+    }
+    function openFromHash() {
+      const id = (location.hash || '').slice(1); if (!id) return;
+      const el = document.getElementById(id);
+      if (el && el.classList.contains('faq-item')) { el.classList.add('open'); el.scrollIntoView({ block: 'center' }); }
+    }
+    // ── Recherche : filtre client simple sur question + réponse (langue courante) ──
+    function applySearch() {
+      const q = (document.getElementById('faqSearch').value || '').trim().toLowerCase();
+      let anyVisible = false;
+      document.querySelectorAll('.faq-cat').forEach(cat => {
+        let catVisible = false;
+        cat.querySelectorAll('.faq-item').forEach(it => {
+          const hit = !q || (it.getAttribute('data-text') || '').indexOf(q) !== -1;
+          it.classList.toggle('hit-hidden', !hit);
+          if (hit) { catVisible = true; anyVisible = true; if (q) it.classList.add('open'); }
+          if (!q) it.classList.remove('open');
+        });
+        cat.classList.toggle('cat-hidden', !catVisible);
+      });
+      document.getElementById('noResults').style.display = anyVisible ? 'none' : 'block';
+    }
+    document.getElementById('faqSearch').addEventListener('input', applySearch);
+    document.addEventListener('fueni:langchange', render);
+    window.addEventListener('hashchange', openFromHash);
+    // naz-i18n s'initialise sur DOMContentLoaded → rendu différé d'un tick pour lire la bonne langue.
+    document.addEventListener('DOMContentLoaded', function () { setTimeout(render, 0); });
+  </script>
+<!-- Prototype version badge -->
+<script>(function(){if(window.__pv)return;window.__pv=1;var v=document.createElement('div');v.style.cssText='position:fixed;top:0;left:50%;transform:translateX(-50%);background:#155e75;color:#fff;padding:6px 20px;border-radius:0 0 16px 16px;font:600 12px/1 system-ui,-apple-system,sans-serif;letter-spacing:.6px;z-index:99999;box-shadow:0 3px 10px rgba(0,0,0,.2);text-transform:uppercase;display:flex;align-items:center;gap:8px';v.innerHTML='🧪 Prototype <span style="background:#f59e0b;color:#1a1a1a;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:4px">v1.4.0</span><span style="background:#facc15;color:#1a1a1a;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:4px;text-transform:none;letter-spacing:0">⏳ À valider</span>';document.body.appendChild(v);})();</script>
+</body>
+</html>

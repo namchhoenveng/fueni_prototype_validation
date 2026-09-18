@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FUENI — FAQ praticien</title>
+  <script src="naz-i18n.js" defer></script>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="naz-common.css">
+  <style>
+    body { background: #f0f4f8; font-family: 'Segoe UI', sans-serif; }
+    /* Sidebar praticien (identique aux écrans 18/20/24…) */
+    .sidebar { background: #155e75; min-height: 100vh; width: 240px; position: fixed; top: 0; left: 0; z-index: 100; }
+    .sidebar-brand { padding: 20px 20px 12px; display: flex; align-items: center; gap: 10px; color: white; }
+    .sidebar-user { padding: 12px 20px 18px; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; gap: 10px; }
+    .sidebar-user .avatar { width: 40px; height: 40px; border-radius: 50%; background: #0e7490; display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; flex-shrink: 0; }
+    .nav-section { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: rgba(255,255,255,0.3); padding: 16px 20px 6px; }
+    .nav-link-side { color: rgba(255,255,255,0.72); padding: 10px 20px; display: flex; align-items: center; gap: 10px; font-size: 0.9rem; cursor: pointer; text-decoration: none; }
+    .nav-link-side i:first-child { width: 16px; text-align: center; flex-shrink: 0; }
+    .nav-link-side:hover { color: white; background: rgba(255,255,255,0.1); }
+    .nav-link-side.active { color: white; background: rgba(255,255,255,0.15); border-left: 3px solid #22d3ee; cursor: default; }
+    .main { margin-left: 240px; }
+
+    .proto-bar { background: #fff3cd; border: 1px solid #ffc107; border-top: none; padding: 6px 14px; font-size: 0.82rem; position: fixed; top: 0; right: 200px; z-index: 300; border-radius: 0 0 8px 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+    #fueni-lang-toggle { top: 8px !important; right: 20px !important; }
+
+    .content-area { padding: 48px 28px 28px; max-width: 900px; }
+    .page-header { background: white; border-radius: 12px; padding: 22px; margin-bottom: 18px; }
+    .page-header .sub { color: #7f8c8d; font-size: 0.9rem; margin: 4px 0 0; }
+
+    .faq-search { position: relative; margin-bottom: 18px; }
+    .faq-search i { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: #95a5a6; }
+    .faq-search input { width: 100%; border: 1px solid #dfe6e9; border-radius: 12px; padding: 0.75rem 1rem 0.75rem 2.5rem; font-size: 0.95rem; background: white; }
+    .faq-search input:focus { outline: none; border-color: #155e75; box-shadow: 0 0 0 0.2rem rgba(21,94,117,0.15); }
+
+    .faq-cat { background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); margin-bottom: 16px; overflow: hidden; }
+    .faq-cat-head { padding: 14px 20px; font-weight: 700; color: #0F2444; border-bottom: 1px solid #f0f4f8; display: flex; align-items: center; gap: 10px; }
+    .faq-cat-head i { color: #155e75; }
+    .faq-item { border-bottom: 1px solid #f0f4f8; }
+    .faq-item:last-child { border-bottom: 0; }
+    .faq-q { width: 100%; background: none; border: 0; text-align: left; padding: 14px 20px; font-size: 0.92rem; font-weight: 600; color: #1f2d3d; display: flex; justify-content: space-between; align-items: center; gap: 12px; cursor: pointer; }
+    .faq-q:hover { color: #155e75; }
+    .faq-q .chev { color: #95a5a6; transition: transform 0.15s; flex-shrink: 0; }
+    .faq-item.open .faq-q .chev { transform: rotate(180deg); }
+    .faq-a { display: none; padding: 0 20px 16px; font-size: 0.88rem; color: #4a5b6b; line-height: 1.6; }
+    .faq-item.open .faq-a { display: block; }
+    .faq-a a { color: #155e75; font-weight: 600; }
+    .faq-item.hit-hidden { display: none; }
+    .faq-cat.cat-hidden { display: none; }
+
+    .no-results { background: white; border-radius: 12px; padding: 40px 24px; text-align: center; color: #95a5a6; display: none; }
+    .no-results i { font-size: 2rem; color: #cdd6e0; margin-bottom: 10px; display: block; }
+
+    .need-help { background: #eef5f7; border: 1px solid #b8dde6; border-radius: 12px; padding: 18px 20px; display: flex; justify-content: space-between; align-items: center; gap: 14px; flex-wrap: wrap; }
+    .need-help .t { font-weight: 700; color: #0e5a6e; }
+    .need-help .d { font-size: 0.85rem; color: #117a8b; }
+    .btn-doctor { background: #155e75; border-color: #155e75; color: white; }
+    .btn-doctor:hover { background: #114c5f; border-color: #114c5f; color: white; }
+  </style>
+</head>
+<body data-i18n-pagetitle="docfaq.page_title" data-i18n-toggle>
+
+  <div class="proto-bar d-flex align-items-center gap-3" data-i18n-html="docfaq.proto_bar_html">
+    <span><i class="fa fa-eye me-1"></i> Espace Praticien · FAQ · <a href="01-home.html" class="text-decoration-none">← Retour à l'accueil</a></span>
+  </div>
+
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="sidebar-brand">
+      <a href="01-home.html" class="brand-logo" aria-label="FUENI"><img src="assets/fueni-lockup-horizontal.svg" alt="FUENI" style="height:34px;"></a>
+    </div>
+    <div class="sidebar-user">
+      <div class="avatar">AD</div>
+      <div>
+        <div class="text-white fw-semibold small" data-i18n="doc.dash.greeting">Dr Aboubacar Diallo</div>
+        <div style="color:rgba(255,255,255,0.72); font-size:0.72rem;"><i class="fa fa-circle-check me-1" style="color:#22d3ee;"></i><span data-i18n="doc.dash.validated_status">Profil validé</span></div>
+      </div>
+    </div>
+    <div class="nav-section" data-i18n="doc.dash.sec_main">Principal</div>
+    <a href="17-doctor-dashboard.html?state=active" class="nav-link-side"><i class="fa fa-home"></i><span data-i18n="doc.dash.nav_dashboard">Tableau de bord</span></a>
+    <a href="19-doctor-public-profile.html" class="nav-link-side"><i class="fa fa-id-badge"></i><span data-i18n="doc.dash.nav_public_profile">Mon profil public</span></a>
+    <a href="26-doctor-records.html" class="nav-link-side"><i class="fa fa-user-injured"></i><span data-i18n="doc.dash.tile_patients">Patients</span></a>
+    <a href="24-doctor-rendezvous.html" class="nav-link-side"><i class="fa fa-calendar-check"></i><span data-i18n="doc.dash.tile_rdv">Rendez-vous</span></a>
+    <div class="nav-section" data-i18n="doc.dash.sec_account">Compte</div>
+    <a href="18-doctor-abonnement.html" class="nav-link-side"><i class="fa fa-star"></i><span data-i18n="doc.dash.nav_subscription">Mon abonnement</span></a>
+    <a href="29-doctor-settings.html" class="nav-link-side"><i class="fa fa-cog"></i><span data-i18n="doc.dash.nav_settings">Paramètres</span></a>
+    <div class="nav-section" data-i18n="doc.dash.sec_help">Aide</div>
+    <a class="nav-link-side active"><i class="fa fa-circle-question"></i><span data-i18n="doc.dash.faq">FAQ</span></a>
+    <a href="33b-doctor-support.html" class="nav-link-side"><i class="fa fa-headset"></i><span data-i18n="doc.dash.support">Contacter le support</span></a>
+    <a href="10b-login-doctor.html" class="nav-link-side"><i class="fa fa-arrow-right-from-bracket"></i><span data-i18n="doc.dash.logout">Déconnexion</span></a>
+  </div>
+
+  <!-- Main -->
+  <div class="main">
+    <div class="content-area">
+
+      <div class="page-header">
+        <h4 class="fw-bold mb-0"><i class="fa fa-circle-question me-2" style="color:#155e75;"></i><span data-i18n="docfaq.title">Questions fréquentes</span></h4>
+        <p class="sub" data-i18n="docfaq.subtitle">Des réponses rapides sur votre inscription, votre formule, vos rendez-vous et votre visibilité.</p>
+      </div>
+
+      <div class="faq-search">
+        <i class="fa fa-search"></i>
+        <input id="faqSearch" type="text" data-i18n-placeholder="docfaq.search_ph" placeholder="Rechercher dans les questions et réponses…">
+      </div>
+
+      <!-- Contenu FR/EN rendu depuis FAQ_DATA (script) — réponses alignées sur les SF :
+           plafond Free = « indiqué sur la carte de la formule » (valeur 🟠 D1 non actée, jamais de chiffre en dur),
+           cycle de vie RDV = SF-APPOINTMENT-LIFECYCLE, grâce/BdC = SF-DOCTOR-SUBSCRIPTION / règles BdC consolidées. -->
+      <div id="faqRoot"></div>
+
+      <div class="no-results" id="noResults">
+        <i class="fa fa-magnifying-glass"></i>
+        <span data-i18n="docfaq.no_results">Aucune question ne correspond à votre recherche. Reformulez, ou contactez le support.</span>
+      </div>
+
+      <div class="need-help mt-3">
+        <div>
+          <div class="t" data-i18n="docfaq.need_title">Encore besoin d'aide ?</div>
+          <div class="d" data-i18n="docfaq.need_desc">Notre équipe dédiée aux professionnels vous répond sous 24 h ouvrées, en français et en anglais.</div>
+        </div>
+        <a href="mailto:pro@fueni.com" class="btn btn-doctor"><i class="fa fa-headset me-2"></i><span data-i18n="docfaq.need_btn">Contacter le support</span></a>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // ── Contenu FAQ praticien bilingue — SOURCE CANONIQUE pour l'équipe dev (contenu statique par release).
+    //    Ids stables → ancres profondes (32-doctor-faq.html#echec-paiement) pour les réponses support.
+    const FAQ_DATA = [
+      {
+        id: 'kyc', icon: 'fa-user-check',
+        cat: { fr: 'Inscription et vérification', en: 'Registration and verification' },
+        items: [
+          {
+            id: 'kyc-delai',
+            fr: { q: 'Combien de temps prend la vérification de mon dossier ?', a: 'Votre dossier est <strong>vérifié manuellement par notre équipe sous 24 à 48 h ouvrées</strong>. Vous êtes prévenu par e-mail dès la décision. Si une pièce est à corriger, seule celle-ci est à renvoyer — les pièces validées le restent.' },
+            en: { q: 'How long does my file verification take?', a: 'Your file is <strong>manually verified by our team within 24 to 48 business hours</strong>. You are notified by email as soon as a decision is made. If a document needs correcting, only that one needs re-uploading — validated documents stay validated.' }
+          },
+          {
+            id: 'kyc-docs',
+            fr: { q: 'Quels justificatifs dois-je fournir ?', a: 'La liste dépend de votre <strong>pays d\'exercice</strong> : elle vous est présentée dès l\'étape d\'éligibilité (numéro d\'inscription à l\'Ordre et pièces justificatives locales). L\'assurance RC professionnelle est facultative.' },
+            en: { q: 'Which supporting documents do I need?', a: 'The list depends on your <strong>country of practice</strong>: it is shown from the eligibility step (medical board registration number and local supporting documents). Professional liability insurance is optional.' }
+          }
+        ]
+      },
+      {
+        id: 'plans', icon: 'fa-star',
+        cat: { fr: 'Formules et facturation', en: 'Plans and billing' },
+        items: [
+          {
+            id: 'free-essentiel',
+            fr: { q: 'Quelle différence entre Free et Essentiel ?', a: '<strong>Free</strong> vous rend visible : profil public, annuaire, agenda complet, réservations en ligne (dans la limite du plafond mensuel indiqué sur la carte de la formule) et liste de patients illimitée. <strong>Essentiel</strong> débloque l\'exercice complet : réservations illimitées, dossier médical, documentation des consultations, ordonnances et stockage de documents. Le comparateur détaillé est disponible sur l\'écran de choix de formule.' },
+            en: { q: 'What is the difference between Free and Essentiel?', a: '<strong>Free</strong> makes you visible: public profile, directory, full calendar, online bookings (within the monthly cap shown on the plan card) and an unlimited patient list. <strong>Essentiel</strong> unlocks full practice: unlimited bookings, medical records, consultation documentation, prescriptions and document storage. The detailed comparator is available on the plan selection screen.' }
+          },
+          {
+            id: 'paiement',
+            fr: { q: 'Comment payer mon abonnement ?', a: 'Par <strong>Mobile Money</strong> (opérateurs proposés selon votre pays) ou par <strong>carte bancaire</strong>, dans la devise de facturation de votre pays d\'exercice. Le premier prélèvement n\'intervient qu\'<strong>après la validation de votre dossier</strong> — jamais à l\'inscription.' },
+            en: { q: 'How do I pay for my subscription?', a: 'By <strong>Mobile Money</strong> (operators offered per your country) or <strong>bank card</strong>, in the billing currency of your country of practice. The first charge only happens <strong>after your file is approved</strong> — never at sign-up.' }
+          },
+          {
+            id: 'echec-paiement',
+            fr: { q: 'Que se passe-t-il si mon paiement échoue ?', a: 'Vous disposez d\'un <strong>délai de grâce</strong> pour régulariser (2 jours en mensuel, 7 jours en annuel), pendant lequel votre accès est maintenu. Sans règlement à l\'issue, votre compte bascule en Free — <strong>aucune donnée n\'est supprimée</strong>.' },
+            en: { q: 'What happens if my payment fails?', a: 'You have a <strong>grace period</strong> to settle (2 days on monthly, 7 days on annual), during which your access is maintained. Without settlement, your account switches to Free — <strong>no data is deleted</strong>.' }
+          },
+          {
+            id: 'factures',
+            fr: { q: 'Où trouver mes factures et bons de commande ?', a: 'Dans <a href="18-doctor-abonnement.html">Mon abonnement</a>, section « Historique de facturation » : chaque échéance a sa <strong>facture PDF</strong>, et votre <strong>bon de commande</strong> (formule Essentiel) y est accessible à tout moment.' },
+            en: { q: 'Where do I find my invoices and purchase orders?', a: 'In <a href="18-doctor-abonnement.html">My subscription</a>, “Billing history” section: each due date has its <strong>PDF invoice</strong>, and your <strong>purchase order</strong> (Essentiel plan) is accessible there at any time.' }
+          },
+          {
+            id: 'resiliation',
+            fr: { q: 'Comment changer de formule ou résilier ?', a: 'À tout moment depuis <a href="18-doctor-abonnement.html">Mon abonnement</a> — sans engagement. Une rétrogradation vers Free prend effet <strong>à la fin de la période déjà payée</strong>. Vos données restent conservées en toute sécurité.' },
+            en: { q: 'How do I change plan or cancel?', a: 'Anytime from <a href="18-doctor-abonnement.html">My subscription</a> — no commitment. A downgrade to Free takes effect <strong>at the end of the period already paid</strong>. Your data remains safely stored.' }
+          }
+        ]
+      },
+      {
+        id: 'rdv', icon: 'fa-calendar-check',
+        cat: { fr: 'Rendez-vous et patients', en: 'Appointments and patients' },
+        items: [
+          {
+            id: 'cloture',
+            fr: { q: 'Comment clôturer un rendez-vous passé ?', a: 'Après l\'heure du rendez-vous, c\'est <strong>vous qui attestez</strong> de ce qui s\'est passé : <strong>Documenter la consultation</strong> (la finalisation clôt le rendez-vous), <strong>Marquer terminé</strong> (visite eue lieu, sans note) ou <strong>Patient absent</strong>. Ces états sont définitifs — une confirmation vous est demandée avant chacun.' },
+            en: { q: 'How do I close a past appointment?', a: 'After the appointment time, <strong>you attest</strong> to what happened: <strong>Document the consultation</strong> (finalising closes the appointment), <strong>Mark as completed</strong> (visit took place, no note) or <strong>Patient no-show</strong>. These states are final — you are asked to confirm each one.' }
+          },
+          {
+            id: 'premiere-visite',
+            fr: { q: 'Quand la fiche d\'un nouveau patient est-elle créée ?', a: 'À sa <strong>première visite réalisée</strong> : si vous documentez la consultation, le dossier complet est créé ; si vous marquez simplement le rendez-vous terminé, une fiche d\'identité est créée et vous pourrez documenter plus tard. Une absence ou une annulation ne crée rien.' },
+            en: { q: 'When is a new patient\'s record created?', a: 'At their <strong>first completed visit</strong>: if you document the consultation, the full record is created; if you simply mark the appointment as completed, an identity record is created and you can document later. A no-show or cancellation creates nothing.' }
+          }
+        ]
+      },
+      {
+        id: 'annuaire', icon: 'fa-id-badge',
+        cat: { fr: 'Profil public et annuaire', en: 'Public profile and directory' },
+        items: [
+          {
+            id: 'visibilite',
+            fr: { q: 'Comment apparaître dans l\'annuaire patients ?', a: 'Dès que votre dossier est validé et votre <a href="19-doctor-public-profile.html">profil public</a> complété (motifs de consultation, tarifs, disponibilités), vous apparaissez dans la recherche. Les patients réservent uniquement sur les <strong>créneaux que vous ouvrez</strong> dans votre agenda.' },
+            en: { q: 'How do I appear in the patient directory?', a: 'As soon as your file is validated and your <a href="19-doctor-public-profile.html">public profile</a> is completed (visit reasons, fees, availability), you appear in search. Patients only book on the <strong>slots you open</strong> in your calendar.' }
+          },
+          {
+            id: 'devise',
+            fr: { q: 'Puis-je afficher mes tarifs dans une seconde devise ?', a: 'Oui : sur votre profil public, chaque motif de consultation peut afficher une <strong>devise secondaire indicative</strong> (ex. USD à côté du CDF). Le montant converti est saisi par vous — FUENI n\'applique aucun taux de change.' },
+            en: { q: 'Can I show my fees in a second currency?', a: 'Yes: on your public profile, each visit reason can display an <strong>indicative secondary currency</strong> (e.g. USD next to CDF). The converted amount is entered by you — FUENI applies no exchange rate.' }
+          }
+        ]
+      }
+    ];
+
+    // ── Rendu (langue courante) + re-rendu à la bascule FR/EN — même mécanique que la FAQ patient (31) ──
+    function lang() { return (window.NazI18n && NazI18n.getLang && NazI18n.getLang()) === 'en' ? 'en' : 'fr'; }
+    function render() {
+      const L = lang();
+      const root = document.getElementById('faqRoot');
+      root.innerHTML = FAQ_DATA.map(cat => (
+        '<div class="faq-cat" data-cat="' + cat.id + '">' +
+          '<div class="faq-cat-head"><i class="fa ' + cat.icon + '"></i>' + cat.cat[L] + '</div>' +
+          cat.items.map(it => (
+            '<div class="faq-item" id="' + it.id + '" data-text="' + (it[L].q + ' ' + it[L].a).replace(/<[^>]+>/g, ' ').toLowerCase().replace(/"/g, '') + '">' +
+              '<button class="faq-q" onclick="toggleItem(\'' + it.id + '\')">' + it[L].q + '<i class="fa fa-chevron-down chev"></i></button>' +
+              '<div class="faq-a">' + it[L].a + '</div>' +
+            '</div>'
+          )).join('') +
+        '</div>'
+      )).join('');
+      applySearch();
+      openFromHash();
+    }
+    function toggleItem(id) { const el = document.getElementById(id); if (el) el.classList.toggle('open'); }
+    function openFromHash() {
+      const id = (location.hash || '').slice(1); if (!id) return;
+      const el = document.getElementById(id);
+      if (el && el.classList.contains('faq-item')) { el.classList.add('open'); el.scrollIntoView({ block: 'center' }); }
+    }
+    function applySearch() {
+      const q = (document.getElementById('faqSearch').value || '').trim().toLowerCase();
+      let anyVisible = false;
+      document.querySelectorAll('.faq-cat').forEach(cat => {
+        let catVisible = false;
+        cat.querySelectorAll('.faq-item').forEach(it => {
+          const hit = !q || (it.getAttribute('data-text') || '').indexOf(q) !== -1;
+          it.classList.toggle('hit-hidden', !hit);
+          if (hit) { catVisible = true; anyVisible = true; if (q) it.classList.add('open'); }
+          if (!q) it.classList.remove('open');
+        });
+        cat.classList.toggle('cat-hidden', !catVisible);
+      });
+      document.getElementById('noResults').style.display = anyVisible ? 'none' : 'block';
+    }
+    document.getElementById('faqSearch').addEventListener('input', applySearch);
+    document.addEventListener('fueni:langchange', render);
+    window.addEventListener('hashchange', openFromHash);
+    document.addEventListener('DOMContentLoaded', function () { setTimeout(render, 0); });
+  </script>
+<!-- Prototype version badge -->
+<script>(function(){if(window.__pv)return;window.__pv=1;var v=document.createElement('div');v.style.cssText='position:fixed;top:0;left:50%;transform:translateX(-50%);background:#155e75;color:#fff;padding:6px 20px;border-radius:0 0 16px 16px;font:600 12px/1 system-ui,-apple-system,sans-serif;letter-spacing:.6px;z-index:99999;box-shadow:0 3px 10px rgba(0,0,0,.2);text-transform:uppercase;display:flex;align-items:center;gap:8px';v.innerHTML='🧪 Prototype <span style="background:#f59e0b;color:#1a1a1a;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:4px">v1.4.0</span><span style="background:#facc15;color:#1a1a1a;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:4px;text-transform:none;letter-spacing:0">⏳ À valider</span>';document.body.appendChild(v);})();</script>
+</body>
+</html>
