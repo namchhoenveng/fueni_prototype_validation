@@ -201,8 +201,8 @@
     // Réserver à nouveau : accès direct à la réservation du même médecin si connu (?doc=), sinon recherche par nom.
     const rebookHref = a => a.doc ? ('27-patient-booking.html?doc=' + encodeURIComponent(a.doc)) : ('28-patient-search.html?q=' + encodeURIComponent(a.doctor));
     // Fuseau du lieu (heure locale du lieu, comme la fiche/réservation)
-    const tzLabelOf = a => (window.NazGeo && a.country) ? NazGeo.tzLabel(a.country, a.region) : '';
-    const tzOffOf = a => (window.NazGeo && a.country) ? NazGeo.tzOf(a.country, a.region).off : null;
+    const tzLabelOf = a => (window.NazGeo && a.country) ? NazGeo.tzLabel(a.country, a.region, a.tz) : '';
+    const tzOffOf = a => (window.NazGeo && a.country) ? NazGeo.tzOf(a.country, a.region, a.tz).off : null;
 
     // Rendez-vous de démonstration (fusionnés avec les réservations réelles du parcours 27).
     // Dates RELATIVES à aujourd'hui (la démo ne vieillit pas) : Passés = hier « Passé » (non clos), puis « Terminé », puis « Non honoré ».

@@ -102,6 +102,10 @@
     .loc-phone.is-invalid .loc-phone-input, .loc-phone.is-invalid .cc { border-color:#dc2626; }
     .loc-phone-fb { display:none; }
     .loc-phone.is-invalid ~ .loc-phone-fb { display:block; }
+    /* Indicatif étranger saisi dans le champ national (ex. « +229 … » sur un lieu RDC) */
+    .loc-phone.is-plusbad .loc-phone-input, .loc-phone.is-plusbad .cc { border-color:#dc2626; }
+    .loc-phone-fb2 { display:none; font-size:0.82rem; color:#dc2626; margin-top:4px; }
+    .loc-phone.is-plusbad ~ .loc-phone-fb2 { display:block; }
     .geo-control.placeholder { color:#94a3b8; }
     .geo-control.disabled { background:#f1f5f9; color:#cbd5e1; cursor:not-allowed; }
     .geo-control.is-invalid { border-color:#dc2626; }
@@ -644,7 +648,7 @@
       const bl = bookableLocs();
       const travelNote = travelNoteHtml(bl);
       document.getElementById('view-hours').innerHTML = bl.length ? travelNote + bl.map(({ L }) => {
-        const tz = (window.NazGeo && NazGeo.tzLabel) ? NazGeo.tzLabel(L.country, L.region) : '';
+        const tz = (window.NazGeo && NazGeo.tzLabel) ? NazGeo.tzLabel(L.country, L.region, L.tz) : '';
         const tzLine = tz ? '<div class="hv-tzline"><i class="fa fa-clock me-1"></i>' + T('geo.tz_local') + ' · <span class="hv-tz">' + e(tz) + '</span></div>' : '';
         const head = (bl.length > 1 ? '<div class="hv-loc">' + e(locName(L)) + '</div>' : '') + tzLine;
         const rows = DAYS.map(([k]) => {
@@ -799,6 +803,10 @@
           if (wrap) wrap.classList.toggle('is-invalid', bad);
           if (bad) { ok = false; if (!first) first = inp; }
         }
+        // Indicatif étranger dans le champ national → bloquant, requis ou non
+        const inpP = document.getElementById('locphone-' + i);
+        const wrapP = inpP ? inpP.closest('.loc-phone') : null;
+        if (wrapP && wrapP.classList.contains('is-plusbad')) { ok = false; if (!first) first = inpP; }
       });
       if (first && first.focus) first.focus();
       if (first && first.scrollIntoView) first.scrollIntoView({ block: 'center', behavior: 'smooth' });
@@ -863,7 +871,13 @@
     }
     function geoPick(i, field, value) {
       const L = P.locations[i];
-      if (field === 'region') { L.region = value; L.city = ''; } else { L.city = value; }
+      if (field === 'region') {
+        L.region = value; L.city = '';
+        // Fuseau horaire : déduit quand la province vient du référentiel ; demandé explicitement sinon (RDC
+        // chevauche UTC+1 / UTC+2 — on ne devine jamais depuis du texte libre). Défaut = heure de la capitale.
+        if (window.NazGeo && NazGeo.tzNeedsChoice && NazGeo.tzNeedsChoice(L.country, value)) { if (!L.tz) L.tz = 'west'; }
+        else { delete L.tz; }
+      } else { L.city = value; }
       closeGeoMenus(); renderLocations();
     }
     document.addEventListener('click', function (e) { if (!e.target.closest('.geo-combo')) closeGeoMenus(); });
@@ -881,6 +895,22 @@
       'Niger': { dial: '+227', flag: '🇳🇪' }, 'Cameroun': { dial: '+237', flag: '🇨🇲' }, 'RDC': { dial: '+243', flag: '🇨🇩' }
     };
     function phoneCC(country) { return PHONE_CC[country] || null; }
+    // Fuseau horaire du lieu (RDC = seul pays MVP multi-fuseaux) :
+    //  - province du référentiel → déduit (NazGeo), affiché en simple indication ;
+    //  - région saisie librement → sélecteur explicite Kinshasa (UTC+1) / Lubumbashi (UTC+2), stocké dans L.tz.
+    function tzBlockHtml(i, L) {
+      if (L.type === 'teleconsult' || L.country !== 'RDC' || !String(L.region || '').trim() || !window.NazGeo) return '';
+      if (NazGeo.tzNeedsChoice(L.country, L.region)) {
+        const sel = v => ((L.tz || 'west') === v ? ' selected' : '');
+        return '<div class="col-sm-6"><label class="form-label"><span data-i18n="docpp.f_tz">Fuseau horaire du lieu</span><span class="req">*</span></label>' +
+          '<select class="form-select form-select-sm" onchange="setLocField(' + i + ',\'tz\',this.value)">' +
+            '<option value="west"' + sel('west') + '>' + T('docpp.tz_west') + '</option>' +
+            '<option value="east"' + sel('east') + '>' + T('docpp.tz_east') + '</option>' +
+          '</select>' +
+          '<div class="form-hint" style="margin-top:4px"><i class="fa fa-clock me-1"></i><span data-i18n="docpp.tz_hint_manual">Région hors référentiel : la RDC s\'étend sur deux fuseaux, indiquez celui du lieu.</span></div></div>';
+      }
+      return '<div class="col-12"><div class="form-hint"><i class="fa fa-clock me-1"></i>' + T('docpp.tz_hint_derived').replace('{tz}', NazGeo.tzLabel(L.country, L.region)) + '</div></div>';
+    }
     // Téléphone obligatoire pour un lieu physique réservable en ligne (seul canal patient→médecin hors délai en MVP).
     function phoneRequired(L) { return !!L.bookable && L.type !== 'teleconsult'; }
     // Partie locale = numéro stocké moins l'indicatif du pays (le préfixe est affiché séparément).
@@ -890,9 +920,20 @@
       return ph;
     }
     // Recompose le numéro complet (indicatif + local) à la saisie ; vide si aucun local.
+    // L'indicatif est porté par le sélecteur : un « + » dans le champ national est soit le propre indicatif
+    // du pays (collé → retiré silencieusement), soit un indicatif ÉTRANGER (ex. +229 dans un lieu RDC) → refusé.
     function setLocPhone(i, val) {
-      const L = P.locations[i], cc = phoneCC(L.country), local = (val || '').trim();
-      L.phone = local ? ((cc ? cc.dial + ' ' : '') + local) : '';
+      const L = P.locations[i], cc = phoneCC(L.country);
+      let local = (val || '').trim();
+      if (cc && local.indexOf(cc.dial) === 0) {
+        local = local.slice(cc.dial.length).trim();
+        const inp = document.getElementById('locphone-' + i); if (inp) inp.value = local;
+      }
+      const badPlus = /^\+/.test(local);
+      const inp2 = document.getElementById('locphone-' + i);
+      const wrap = inp2 ? inp2.closest('.loc-phone') : null;
+      if (wrap) wrap.classList.toggle('is-plusbad', badPlus);
+      L.phone = (local && !badPlus) ? ((cc ? cc.dial + ' ' : '') + local) : '';
     }
     function locEditor(L, i) {
       const isTele = L.type === 'teleconsult';
@@ -915,6 +956,7 @@
             '<div class="col-sm-4"><label class="form-label"><span data-i18n="docpp.f_country">Pays</span></label>' + geoPaysSel(i, L) + '</div>' +
             '<div class="col-sm-4"><label class="form-label"><span data-i18n="docpp.f_region">Région</span><span class="req">*</span></label>' + geoRegionSel(i, L) + '</div>' +
             '<div class="col-sm-4"><label class="form-label"><span data-i18n="docpp.f_city">Ville</span><span class="req">*</span></label>' + geoVilleSel(i, L) + '</div>' +
+            tzBlockHtml(i, L) +
             '<div class="col-12"><label class="form-label"><span data-i18n="docpp.f_phone">Téléphone du lieu</span>' +
                 (phoneRequired(L)
                   ? '<span class="req">*</span> <span class="text-muted" style="font-weight:400" data-i18n="docpp.f_phone_note_req">(visible par les patients)</span>'
@@ -925,6 +967,7 @@
                 '<input type="tel" inputmode="tel" id="locphone-' + i + '" class="loc-phone-input" value="' + e(phoneLocalPart(L)) + '" oninput="setLocPhone(' + i + ',this.value);this.closest(\'.loc-phone\').classList.remove(\'is-invalid\')" placeholder="' + T('docpp.f_phone_ph') + '">' +
               '</div>' +
               '<div class="invalid-feedback loc-phone-fb" data-i18n="docpp.field_required">Ce champ est obligatoire.</div>' +
+              '<div class="loc-phone-fb2" data-i18n="docpp.f_phone_noprefix"><i class="fa fa-circle-exclamation me-1"></i>Saisissez le numéro sans indicatif international — il est déjà indiqué à gauche du champ.</div>' +
               '<div class="form-hint" style="margin-top:4px"><i class="fa fa-circle-info me-1"></i><span data-i18n="' + (phoneRequired(L) ? 'docpp.f_phone_hint_req' : 'docpp.f_phone_hint') + '">' + (phoneRequired(L) ? 'Numéro d\'accueil du lieu affiché sur votre fiche pour joindre le secrétariat (report/annulation hors délai). Obligatoire pour un lieu réservable en ligne.' : 'Numéro d\'accueil du lieu affiché sur votre fiche pour joindre le secrétariat (report/annulation hors délai). Laissez vide pour ne pas l\'afficher.') + '</span></div></div>') +
           (isInstit ?
             '<div class="col-sm-6"><label class="form-label">' + T('docpp.loc_service') + '</label><input class="form-control form-control-sm" value="' + e(L.service || '') + '" oninput="setLocField(' + i + ',\'service\',this.value)" placeholder="' + T('docpp.loc_service_ph') + '"></div>' +

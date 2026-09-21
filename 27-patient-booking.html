@@ -454,7 +454,7 @@
       }
       rows.push(
         [T('book.sum_motif'), esc(m.label) + ' (' + m.dur + ' ' + T('book.min') + ')'],
-        [T('book.sum_when'), fmtDate(selDate) + ' · ' + selTime + (window.NazGeo && NazGeo.tzLabel ? ' · ' + NazGeo.tzLabel(L.country, L.region) : '')],
+        [T('book.sum_when'), fmtDate(selDate) + ' · ' + selTime + (window.NazGeo && NazGeo.tzLabel ? ' · ' + NazGeo.tzLabel(L.country, L.region, L.tz) : '')],
         [T('book.sum_patient'), patientName()]
       );
       document.getElementById('sumBox').innerHTML = rows.map(r =>
@@ -532,7 +532,7 @@
         [T('book.sum_doctor'), a.doctor + ' — ' + a.spec],
         [T('book.sum_loc'), a.locationName + (a.locationAddr ? ' · ' + a.locationAddr : '')],
         [T('book.sum_motif'), a.motif],
-        [T('book.sum_when'), fmtDate(selDate) + ' · ' + a.time + (window.NazGeo && NazGeo.tzLabel && P.locations[locIdx] ? ' · ' + NazGeo.tzLabel(P.locations[locIdx].country, P.locations[locIdx].region) : '')],
+        [T('book.sum_when'), fmtDate(selDate) + ' · ' + a.time + (window.NazGeo && NazGeo.tzLabel && P.locations[locIdx] ? ' · ' + NazGeo.tzLabel(P.locations[locIdx].country, P.locations[locIdx].region, P.locations[locIdx].tz) : '')],
         [T('book.prepay'), fmt(a.price) + ' ' + a.currency]
       ];
       document.getElementById('recap').innerHTML = rows.map(r =>

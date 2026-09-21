@@ -159,14 +159,31 @@ window.NazGeo = (function () {
     'Sénégal': TZ0, "Côte d'Ivoire": TZ0, 'Mali': TZ0, 'Burkina Faso': TZ0, 'Togo': TZ0,
     'Bénin': TZ1, 'Niger': TZ1, 'Cameroun': TZ1, 'RDC': TZ1
   };
-  // Provinces RDC en CAT (UTC+2) — l'est du pays.
-  const RDC_EAST = ['Nord-Kivu', 'Sud-Kivu', 'Ituri', 'Maniema', 'Tanganyika', 'Haut-Katanga', 'Lualaba', 'Haut-Lomami'];
-  function tzOf(country, region) {
-    if (country === 'RDC' && region && RDC_EAST.indexOf(region) !== -1) return TZ2;
+  // Répartition officielle RDC — heure de Kinshasa (UTC+1) à l'OUEST : les 10 provinces listées ;
+  // heure de Lubumbashi (UTC+2) PARTOUT AILLEURS (Katanga, Kasaï, Kivu, Maniema, ex-Orientale).
+  // (Corrige l'ancienne liste RDC_EAST qui omettait Tshopo, les Uele, les Kasaï, Lomami et Sankuru.)
+  const RDC_WEST = ['Kinshasa', 'Kongo-Central', 'Kwango', 'Kwilu', 'Mai-Ndombe', 'Équateur', 'Mongala', 'Nord-Ubangi', 'Sud-Ubangi', 'Tshuapa'];
+  // Région saisie librement (hors référentiel) en RDC → le fuseau ne peut PAS être déduit :
+  // l'UI doit le demander explicitement (choice = 'west' | 'east'). Cf. écran 19.
+  function tzNeedsChoice(country, region) {
+    return country === 'RDC' && !!region && regions['RDC'].indexOf(region) === -1;
+  }
+  function tzOf(country, region, choice) {
+    if (country === 'RDC') {
+      if (region && regions['RDC'].indexOf(region) !== -1) return RDC_WEST.indexOf(region) !== -1 ? TZ1 : TZ2;
+      if (choice === 'east') return TZ2;
+      if (choice === 'west') return TZ1;
+      return TZ1; // défaut prudent (heure de la capitale) — jamais AFFICHÉ sans choix explicite : cf. tzLabel
+    }
     return TZ_BY_COUNTRY[country] || TZ0;
   }
   // Libellé court : « GMT (UTC+0) », « WAT (UTC+1) », « CAT (UTC+2) ».
-  function tzLabel(country, region) { const t = tzOf(country, region); return t.abbr + ' (UTC+' + t.off + ')'; }
+  // Vide quand le fuseau ne peut pas être affirmé (RDC + région hors référentiel sans choix) — on n'affiche jamais une supposition.
+  function tzLabel(country, region, choice) {
+    if (tzNeedsChoice(country, region) && choice !== 'west' && choice !== 'east') return '';
+    const t = tzOf(country, region, choice);
+    return t.abbr + ' (UTC+' + t.off + ')';
+  }
 
-  return { countries: countries, regions: regions, cities: cities, tzOf: tzOf, tzLabel: tzLabel };
+  return { countries: countries, regions: regions, cities: cities, tzOf: tzOf, tzLabel: tzLabel, tzNeedsChoice: tzNeedsChoice };
 })();

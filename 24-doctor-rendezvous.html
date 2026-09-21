@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>FUENI — Rendez-vous</title>
   <script src="naz-i18n.js" defer></script>
+  <script src="naz-geo.js"></script>
   <script src="naz-patients.js"></script>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
@@ -142,6 +143,12 @@
     .list-t { font-weight:600; color:#0f172a; }
     .list-m { color:#64748b; font-size:0.85rem; }
     .nat-tag { display:inline-block; padding:3px 10px; border-radius:14px; font-size:0.72rem; font-weight:700; white-space:nowrap; }
+    /* Note de fuseau de référence (vue « Tous les lieux », lieux multi-fuseaux) + équivalence dans la modale */
+    .tz-ref-note { display:flex; align-items:flex-start; gap:8px; background:#eef5f7; border:1px solid #b8dde6; color:#0e5a6e; border-radius:10px; padding:9px 14px; font-size:0.84rem; margin-bottom:14px; }
+    .tz-ref-note i { color:#0e7490; margin-top:2px; }
+    .tz-equiv { display:flex; align-items:flex-start; gap:8px; background:#eef5f7; border:1px solid #b8dde6; color:#0e5a6e; border-radius:10px; padding:8px 12px; font-size:0.84rem; }
+    .tz-equiv i { color:#0e7490; margin-top:2px; }
+    .tz-mark { font-size:0.68em; opacity:0.6; }
     /* Onglets du modal de création : Rendez-vous patient / Événement */
     .create-tabs { display:flex; flex-wrap:wrap; gap:4px; border-bottom:2px solid #e5e7eb; }
     .create-tab { background:transparent; border:0; border-bottom:3px solid transparent; margin-bottom:-2px; padding:9px 16px; font-weight:600; font-size:0.92rem; color:#64748b; cursor:pointer; white-space:nowrap; }
@@ -264,6 +271,10 @@
         </div>
       </div>
 
+      <!-- Vue « Tous les lieux » + lieux sur plusieurs fuseaux (RDC) : la grille a UN axe de temps,
+           celui du lieu principal — annoncé ici. Masqué dans tous les autres cas. -->
+      <div id="tzRefNote" class="tz-ref-note" style="display:none;"></div>
+
       <div class="planning-grid">
         <div class="cal-card" id="calCard"></div>
         <div class="side-card">
@@ -367,7 +378,7 @@
               <!-- Champs communs -->
               <div class="col-12" id="cLocWrap">
                 <label class="form-label fw-semibold small" data-i18n="docrdv.m_loc">Lieu</label>
-                <select class="form-control" id="cLoc"></select>
+                <select class="form-control" id="cLoc" onchange="cCheck()"></select>
               </div>
               <div class="col-md-4">
                 <label class="form-label fw-semibold small" data-i18n="docrdv.m_date">Date</label>
@@ -380,6 +391,11 @@
               <div class="col-md-4">
                 <label class="form-label fw-semibold small" data-i18n="docrdv.m_end">Fin</label>
                 <select class="form-control" id="cEnd" onchange="cCheck()"></select>
+              </div>
+              <!-- Équivalence de fuseau : visible seulement quand le lieu choisi n'est pas dans le fuseau
+                   de référence (RDC bi-fuseaux). L'heure saisie = heure LOCALE du lieu (arrivée du patient). -->
+              <div class="col-12 d-none" id="cTzRow">
+                <div class="tz-equiv"><i class="fa fa-clock"></i><span id="cTzMsg"></span></div>
               </div>
               <div class="col-12 d-none" id="cBlockOpts">
                 <div class="d-flex flex-wrap gap-3">
@@ -503,7 +519,7 @@
       try {
         const raw = localStorage.getItem('fueni_pubprofile_v2');
         if (raw) { const p = JSON.parse(raw); if (p && Array.isArray(p.locations)) {
-          const b = p.locations.filter(l => l.bookable).map(l => ({ id: l.id, type: l.type, label: l.label, hours: l.hours || {} }));
+          const b = p.locations.filter(l => l.bookable).map(l => ({ id: l.id, type: l.type, label: l.label, hours: l.hours || {}, country: l.country, region: l.region, tz: l.tz, primary: !!l.primary }));
           if (b.length) return b;
         } }
       } catch (e) {}
@@ -514,6 +530,46 @@
     const curLoc = () => LOCS.find(l => l.id === fLoc) || LOCS[0];
     const locLabel = l => l.label || T('docpp.loctype_' + l.type);
     const locNameById = id => { const l = LOCS.find(x => x.id === id); return l ? locLabel(l) : ''; };
+    // ── Fuseaux horaires (RDC = seul pays MVP multi-fuseaux) ─────────────────────────────────────────
+    //    Règles SF : une grille = UN axe de temps. Axe de référence = fuseau du lieu PRINCIPAL ; en vue
+    //    « Tous les lieux », les heures des lieux dans un autre fuseau sont converties/signalées — les
+    //    afficher en heure murale mélangée masquerait des chevauchements réels (15 h UTC+2 = 14 h UTC+1).
+    //    À la SAISIE, l'heure est toujours celle du LIEU choisi (heure d'arrivée du patient) + équivalence.
+    const tzOffOf = l => (window.NazGeo && l && l.country) ? NazGeo.tzOf(l.country, l.region, l.tz).off : null;
+    // Libellé humain : en RDC on nomme par ville-repère (heure de Kinshasa / de Lubumbashi), sinon libellé court.
+    const tzHuman = l => {
+      if (!window.NazGeo || !l || !l.country) return '';
+      if (l.country === 'RDC') return tzOffOf(l) === 2 ? T('docpp.tz_east') : T('docpp.tz_west');
+      return NazGeo.tzLabel(l.country, l.region, l.tz);
+    };
+    const REF_LOC = LOCS.find(l => l.primary) || LOCS[0];
+    const MULTI_TZ = new Set(LOCS.map(tzOffOf).filter(o => o !== null)).size > 1;
+    // Projection sur l'axe de référence : décalage (min) des heures d'un LIEU vers le fuseau du lieu principal.
+    // Les CONFLITS l'utilisent toujours (le praticien ne peut être qu'à un endroit à un même instant) ;
+    // l'AFFICHAGE ne l'utilise qu'en vue « Tous les lieux » (une vue filtrée est dans le fuseau de SON lieu).
+    function refShiftOfLoc(locId) {
+      if (!MULTI_TZ || !locId) return 0;
+      const l = LOCS.find(x => x.id === locId); if (!l) return 0;
+      const lo = tzOffOf(l), ro = tzOffOf(REF_LOC);
+      return (lo === null || ro === null) ? 0 : (ro - lo) * 60;
+    }
+    const gridShift = r => (fLoc === 'all' ? refShiftOfLoc(r && r.loc) : 0);
+    const dMin = (t, r) => toMin(t) + gridShift(r);
+    const clampDay = m => Math.max(0, Math.min(24 * 60, m)); // borné [00h,24h] (décalage max ±1 h en RDC)
+    const dispT = (t, r) => hhmm(clampDay(dMin(t, r)));
+    const cLocVal = () => { const cl = document.getElementById('cLoc'); return (LOCS.length > 1 && cl && cl.value) ? cl.value : (LOCS[0] && LOCS[0].id); };
+    // Marqueur « heure convertie » : l'heure locale réelle du lieu reste lisible au survol.
+    function shiftMark(r) {
+      if (!gridShift(r)) return '';
+      const l = LOCS.find(x => x.id === r.loc);
+      return ' <i class="fa fa-clock tz-mark" title="' + escL(r.start + '\u2013' + r.end + ' \u00b7 ' + tzHuman(l)) + '"></i>';
+    }
+    // Détail d'un RDV : nomme le fuseau LOCAL du lieu quand il diffère de la référence (heures = heure du lieu).
+    function locTzNote(r) {
+      if (!MULTI_TZ || !r || !r.loc || !refShiftOfLoc(r.loc)) return '';
+      const l = LOCS.find(x => x.id === r.loc);
+      return ' <span class="text-muted" style="font-weight:400">(' + tzHuman(l) + ')</span>';
+    }
     const curLocType = id => { const l = LOCS.find(x => x.id === id); return l ? l.type : ''; };
     // Options d'heures en 24 h (les <input type="time"> natifs suivent la locale du navigateur → AM/PM
     // incontrôlable ; un <select> garantit le 24 h partout, conforme RG9). Pas de 15 min, 06:00 → 21:00.
@@ -543,7 +599,11 @@
     function availFor(dk) {
       // Vue globale : union des horaires de tous les lieux réservables ce jour-là
       if (fLoc === 'all') {
-        const all = LOCS.flatMap(l => normRanges((l.hours || {})[dk]));
+        // Chaque plage est projetée dans le fuseau de référence (les horaires du profil sont en heure LOCALE du lieu).
+        const all = LOCS.flatMap(l => {
+          const sh = refShiftOfLoc(l.id);
+          return normRanges((l.hours || {})[dk]).map(rg => [hhmm(clampDay(toMin(rg[0]) + sh)), hhmm(clampDay(toMin(rg[1]) + sh))]);
+        });
         return all.sort((a, b) => toMin(a[0]) - toMin(b[0]));
       }
       return normRanges((curLoc().hours || {})[dk]);
@@ -634,20 +694,24 @@
     const isBlock = r => r && r.nature === 'bloque';
     // Validation d'un créneau (ligne de temps unique — le docteur ne peut être qu'à un endroit à la fois).
     // excludeIdx = index du RDV en cours de report (ignoré dans le test de chevauchement).
-    function slotConflict(date, start, end, excludeIdx) {
-      const s = toMin(start), e = toMin(end);
+    // locId = lieu du créneau candidat : toutes les heures sont projetées sur l'axe de référence avant
+    // comparaison — sinon deux RDV simultanés dans deux fuseaux (15 h UTC+2 / 14 h UTC+1) sembleraient disjoints.
+    function slotConflict(date, start, end, excludeIdx, locId) {
+      const sh = refShiftOfLoc(locId);
+      const s = toMin(start) + sh, e = toMin(end) + sh;
       for (let k = 0; k < RDV.length; k++) {
         if (k === excludeIdx) continue;
         const r = RDV[k];
         if (r.date !== date || r.status === 'cancelled') continue;
-        if (s < toMin(r.end) && e > toMin(r.start)) return true; // chevauchement RDV ou indisponibilité (les blocs sont dans RDV)
+        const rs = refShiftOfLoc(r.loc);
+        if (s < toMin(r.end) + rs && e > toMin(r.start) + rs) return true; // chevauchement RDV ou indisponibilité (les blocs sont dans RDV)
       }
       return false;
     }
     // Premier créneau libre d'une durée donnée sur une date (à partir de `base`) : évite d'ouvrir « Ajouter au planning » déjà en erreur de chevauchement.
-    function nextFreeSlot(date, dur, base) {
+    function nextFreeSlot(date, dur, base, locId) {
       dur = dur || 30; const b = toMin(base || '09:00'), limit = 21 * 60;
-      for (let t = b; t + dur <= limit; t += 15) { const st = hhmm(t), en = hhmm(t + dur); if (!slotConflict(date, st, en, -1)) return [st, en]; }
+      for (let t = b; t + dur <= limit; t += 15) { const st = hhmm(t), en = hhmm(t + dur); if (!slotConflict(date, st, en, -1, locId)) return [st, en]; }
       return [hhmm(b), hhmm(b + dur)]; // repli : journée pleine → défaut habituel (l'erreur inline guidera l'utilisateur)
     }
     // Nombre de RDV patients (non annulés) chevauchant un créneau — pour l'avertissement au blocage.
@@ -742,7 +806,7 @@
       const wb = workBounds();
       let minM = Math.min(START * 60, wb[0]), maxM = Math.max(END * 60, wb[1]);
       const weekSet = new Set(days.map(d => iso(d)));
-      RDV.forEach(r => { if (r.status !== 'cancelled' && weekSet.has(r.date)) { minM = Math.min(minM, toMin(r.start)); maxM = Math.max(maxM, toMin(r.end)); } });
+      RDV.forEach(r => { if (r.status !== 'cancelled' && weekSet.has(r.date)) { minM = Math.min(minM, dMin(r.start, r)); maxM = Math.max(maxM, dMin(r.end, r)); } });
       gStartH = Math.max(0, Math.floor(minM / 60));
       gEndH = Math.min(24, Math.ceil(maxM / 60));
       const H = (gEndH - gStartH) * HH;
@@ -760,7 +824,7 @@
         const rdvHtml = RDV.map((r, idx) => ({ r, idx })).filter(o => o.r.date === ds && pass(o.r))
           .sort((a, b) => (isBlock(a.r) ? 0 : 1) - (isBlock(b.r) ? 0 : 1)) // blocs « Indisponible » peints en premier (derrière les cartes)
           .map(o => {
-          const r = o.r; const top = Math.max(0, (toMin(r.start) - gStartH * 60) / 60 * HH);
+          const r = o.r; const top = Math.max(0, (dMin(r.start, r) - gStartH * 60) / 60 * HH);
           if (isBlock(r)) {
             const h = Math.min(gridH - top, Math.max(20, (toMin(r.end) - toMin(r.start)) / 60 * HH - 2));
             return '<div class="wk-block" style="top:' + top + 'px;height:' + h + 'px" onclick="openDetail(' + o.idx + ')"><i class="fa fa-ban"></i>' + T('docrdv.unavailable') + (r.name ? ' · ' + escL(r.name) : '') + '</div>';
@@ -772,7 +836,7 @@
           const stMark = r.status === 'completed' ? '<i class="fa fa-circle-check st-mark"></i>' : r.status === 'noshow' ? '<i class="fa fa-user-xmark st-mark"></i>' : '';
           return '<div class="rdv-card' + stCls + (isNew ? ' is-new' : '') + '" style="top:' + top + 'px;height:' + hgt + 'px;border-left:3px solid ' + c + ';background:' + c + '1a" onclick="openDetail(' + o.idx + ')">' +
             (isNew ? '<span class="new-dot"></span>' : '') +
-            '<div class="rt">' + r.start + stMark + '</div><div class="rs">' + escL(rdvName(r)) + '</div></div>';
+            '<div class="rt">' + dispT(r.start, r) + shiftMark(r) + stMark + '</div><div class="rs">' + escL(rdvName(r)) + '</div></div>';
         }).join('');
         return '<div class="wk-col' + (ds === TODAY ? ' today' : '') + (wknd ? ' weekend' : '') + '" style="height:' + H + 'px" onclick="colClick(event,\'' + ds + '\')" title="' + T('docrdv.slot_new') + '">' + availHtml + rdvHtml + '</div>';
       }).join('');
@@ -809,7 +873,7 @@
       // la grille semaine/mois les masque, elle, car le créneau est redevenu réservable.
       const passList = r => matchLoc(r) && !hiddenLabels.has(r.nature);
       const items = [];
-      RDV.forEach((r, idx) => { if (passList(r) && r.date >= cur) items.push({ t:'rdv', date:r.date, start:r.start, r, idx }); });
+      RDV.forEach((r, idx) => { if (passList(r) && r.date >= cur) items.push({ t:'rdv', date:r.date, start:dispT(r.start, r), r, idx }); });
       items.sort((a, b) => (a.date + a.start).localeCompare(b.date + b.start));
       const box = document.getElementById('calCard');
       if (!items.length) { box.innerHTML = '<div class="list-pad text-center text-muted py-5"><i class="fa fa-calendar-xmark fa-2x mb-2 d-block"></i>' + T('docrdv.empty_list') + '</div>'; return; }
@@ -820,14 +884,14 @@
         const r = o.r;
         if (isBlock(r)) {
           html += '<div class="list-row" onclick="openDetail(' + o.idx + ')">' +
-            '<div class="list-time">' + r.start + ' <span class="e">→ ' + r.end + '</span></div>' +
+            '<div class="list-time">' + dispT(r.start, r) + ' <span class="e">→ ' + dispT(r.end, r) + '</span>' + shiftMark(r) + '</div>' +
             '<div class="list-body"><div class="list-t text-muted"><i class="fa fa-ban me-1"></i>' + T('docrdv.unavailable') + '</div><div class="list-m">' + escL(r.name || '') + '</div></div>' +
             '<span class="nat-tag" style="background:#eef2f6;color:#64748b;">' + T('docrdv.unavailable') + '</span></div>';
         } else {
           const isNew = r.booked && r.status !== 'cancelled' && !seenSet.has(r.apptId);
           const sb = statusBadge(r);
           html += '<div class="list-row' + (r.status === 'cancelled' ? ' cancelled' : r.status === 'completed' ? ' rdv-done' : r.status === 'noshow' ? ' rdv-noshow' : '') + '" onclick="openDetail(' + o.idx + ')">' +
-            '<div class="list-time">' + r.start + ' <span class="e">→ ' + r.end + '</span></div>' +
+            '<div class="list-time">' + dispT(r.start, r) + ' <span class="e">→ ' + dispT(r.end, r) + '</span>' + shiftMark(r) + '</div>' +
             '<div class="list-body"><div class="list-t">' + escL(rdvName(r)) + (isNew ? '<span class="new-badge">' + T('docrdv.new_badge') + '</span>' : '') + '</div><div class="list-m">' + escL(r.motif) + '</div></div>' +
             (sb || labelTag(r.nature)) + '</div>';
         }
@@ -838,12 +902,12 @@
 
     function renderSide() {
       document.getElementById('sideToday').innerHTML = '<i class="fa fa-bolt me-1"></i>' + T('docrdv.today_btn') + ' — ' + dObj(TODAY).toLocaleDateString(lang(), { day:'numeric', month:'long' });
-      const today = RDV.filter(r => r.date === TODAY && r.status !== 'cancelled').sort((a, b) => a.start.localeCompare(b.start));
+      const today = RDV.filter(r => r.date === TODAY && r.status !== 'cancelled').sort((a, b) => dMin(a.start, a) - dMin(b.start, b));
       // Panneau résumé : on n'affiche que les 3 premiers du jour + un lien vers le listing complet.
       let todayHtml = today.slice(0, 3).map(r => {
         const nm = isBlock(r) ? escL(r.name || T('docrdv.unavailable')) : escL(rdvName(r));
         const lbl = isBlock(r) ? T('docrdv.unavailable') : escL(labelOf(r.nature).name);
-        return '<div class="today-rdv" style="border-left-color:' + labelOf(r.nature).color + '"><div class="tt">' + r.start + ' — ' + r.end + '</div><div class="tn">' + nm + '</div><div class="tm">' + lbl + (r.motif ? ' · ' + escL(r.motif) : '') + '</div></div>';
+        return '<div class="today-rdv" style="border-left-color:' + labelOf(r.nature).color + '"><div class="tt">' + dispT(r.start, r) + ' — ' + dispT(r.end, r) + shiftMark(r) + '</div><div class="tn">' + nm + '</div><div class="tm">' + lbl + (r.motif ? ' · ' + escL(r.motif) : '') + '</div></div>';
       }).join('');
       if (today.length > 3) todayHtml += '<div class="today-more" onclick="viewFullDay()">' + T('docrdv.see_full_day').replace('{n}', today.length) + '</div>';
       document.getElementById('todayList').innerHTML = today.length ? todayHtml : '<div class="text-muted small">' + T('docrdv.empty_day') + '</div>';
@@ -879,6 +943,13 @@
         fl.innerHTML = '<option value="all"' + (fLoc === 'all' ? ' selected' : '') + '>' + T('docrdv.block_loc_all') + '</option>' +
           LOCS.map(l => '<option value="' + l.id + '"' + (fLoc === l.id ? ' selected' : '') + '>' + locLabel(l) + '</option>').join('');
       } else { fl.style.display = 'none'; }
+      // Note d'axe de temps : uniquement en vue globale quand les lieux couvrent plusieurs fuseaux.
+      const note = document.getElementById('tzRefNote');
+      if (note) {
+        const show = MULTI_TZ && fLoc === 'all';
+        note.style.display = show ? 'flex' : 'none';
+        if (show) note.innerHTML = '<i class="fa fa-clock"></i><span>' + T('docrdv.tz_ref_note').replace('{tz}', tzHuman(REF_LOC)) + '</span>';
+      }
     }
 
     function stats() {
@@ -908,7 +979,7 @@
         (wasNew ? '<span class="new-badge">' + T('docrdv.new_badge') + '</span>' : '') + '</div>' +
         '<div class="d-patient-name">' + escL(rdvName(r)) + '</div>' +
         (r.motif ? '<div class="dkv"><span class="k">' + T('docrdv.d_motif') + '</span><span class="v">' + escL(r.motif) + '</span></div>' : '') +
-        '<div class="dkv"><span class="k">' + T('docrdv.d_when') + '</span><span class="v">' + dObj(r.date).toLocaleDateString(lang(), { weekday:'long', day:'numeric', month:'long', year:'numeric' }) + ' · ' + r.start + ' → ' + r.end + ' <span class="text-muted" style="font-weight:400">(' + (toMin(r.end) - toMin(r.start)) + ' ' + T('docrdv.min') + ')</span></span></div>' +
+        '<div class="dkv"><span class="k">' + T('docrdv.d_when') + '</span><span class="v">' + dObj(r.date).toLocaleDateString(lang(), { weekday:'long', day:'numeric', month:'long', year:'numeric' }) + ' · ' + r.start + ' → ' + r.end + locTzNote(r) + ' <span class="text-muted" style="font-weight:400">(' + (toMin(r.end) - toMin(r.start)) + ' ' + T('docrdv.min') + ')</span></span></div>' +
         (r.loc && LOC_IDS.has(r.loc) ? '<div class="dkv"><span class="k">' + T('docrdv.d_loc') + '</span><span class="v">' + locNameById(r.loc) + '</span></div>' : '') +
         (r.phone ? '<div class="dkv"><span class="k">' + T('docrdv.d_phone') + '</span><span class="v"><a href="tel:' + escL(r.phone).replace(/[^\d+]/g, '') + '" style="color:#155e75;text-decoration:none;">' + escL(r.phone) + '</a></span></div>' : '') +
         (r.emerg && (r.emerg.name || r.emerg.phone) ? '<div class="dkv"><span class="k">' + T('prof.emerg.title') + '</span><span class="v">' + (r.emerg.name ? escL(r.emerg.name) : '') + (r.emerg.rel ? ' <span class="text-muted" style="font-weight:400">· ' + escL(r.emerg.rel) + '</span>' : '') + (r.emerg.phone ? '<br><a href="tel:' + escL(r.emerg.phone).replace(/[^\d+]/g, '') + '" style="color:#155e75;text-decoration:none;">' + escL(r.emerg.phone) + '</a>' : '') + '</span></div>' : '') +
@@ -1057,7 +1128,7 @@
       let err = '';
       if (!date || date < TODAY) err = T('docrdv.err_past');
       else if (toMin(end) <= toMin(start)) err = T('docrdv.err_endbefore');
-      else if (slotConflict(date, start, end, +p.dataset.idx)) err = T('docrdv.err_overlap');
+      else if (slotConflict(date, start, end, +p.dataset.idx, (RDV[+p.dataset.idx] || {}).loc)) err = T('docrdv.err_overlap');
       const el = document.getElementById('rsError'); if (el) { el.textContent = err; el.style.display = err ? '' : 'none'; }
       const btn = document.getElementById('rsConfirm'); if (btn) btn.disabled = !changed || !!err;
     }
@@ -1066,7 +1137,7 @@
       if (!date || !start || !end) return;
       const p = document.getElementById('reschedPanel');
       if (p && date === p.dataset.od && start === p.dataset.os && end === p.dataset.oe) return; // aucun changement
-      if (date < TODAY || toMin(end) <= toMin(start) || slotConflict(date, start, end, i)) return; // garde silencieuse (bouton déjà désactivé)
+      if (date < TODAY || toMin(end) <= toMin(start) || slotConflict(date, start, end, i, (RDV[i] || {}).loc)) return; // garde silencieuse (bouton déjà désactivé)
       RDV[i].date = date; RDV[i].start = start; RDV[i].end = end;
       if (detailModal) detailModal.hide();
       cur = date; render();
@@ -1092,7 +1163,7 @@
       // Créneau pré-rempli : celui cliqué dans la grille (déjà libre), sinon le 1er créneau libre du jour (jamais un chevauchement à l'ouverture).
       let st, en;
       if (start) { st = start; en = end || hhmm(toMin(start) + 30); }
-      else { const fs = nextFreeSlot(cd.value, 30, '09:00'); st = fs[0]; en = fs[1]; }
+      else { const fs = nextFreeSlot(cd.value, 30, '09:00', defLoc); st = fs[0]; en = fs[1]; }
       document.getElementById('cStart').innerHTML = timeOptions(st);
       document.getElementById('cEnd').innerHTML = endOptions(st, en);
       document.getElementById('ptMenu').classList.add('d-none');
@@ -1146,7 +1217,7 @@
       else if (toMin(end) <= toMin(start)) err = T('docrdv.err_endbefore');
       else if (block && de < date) err = T('docrdv.err_daterange');
       else if (block && blockDayCount(date, de) > BLOCK_RANGE_MAX) err = T('docrdv.err_rangecap').replace('{max}', BLOCK_RANGE_MAX);
-      else if (!block && slotConflict(date, start, end, editIdx)) err = T('docrdv.err_overlap'); // un bloc PEUT chevaucher un RDV (c'est son objet) → pas d'erreur ; editIdx exclut le RDV édité
+      else if (!block && slotConflict(date, start, end, editIdx, cLocVal())) err = T('docrdv.err_overlap'); // un bloc PEUT chevaucher un RDV (c'est son objet) → pas d'erreur ; editIdx exclut le RDV édité
       const el = document.getElementById('cError'); if (el) { el.textContent = err; el.style.display = err ? '' : 'none'; }
       const btn = document.getElementById('createBtn'); if (btn) btn.disabled = !!err;
       // Avertissement non bloquant : un bloc qui chevauche des RDV patients ne les annule pas → à gérer un par un (cumulé sur toute la plage).
@@ -1157,6 +1228,22 @@
         warn.innerHTML = msg ? '<i class="fa fa-triangle-exclamation me-1"></i>' + msg : '';
         warn.style.cssText = 'display:' + (msg ? 'block' : 'none') + ';background:#fff7ed;color:#7c5410;border:1px solid #fde8cf;border-radius:10px;padding:8px 10px;';
       }
+      updateTzHint();
+    }
+    // Équivalence de fuseau à la saisie : l'heure entrée est celle du LIEU choisi ; quand ce fuseau
+    // diffère de l'axe de référence (lieu principal), on affiche la conversion — jamais de saisie ambiguë.
+    function updateTzHint() {
+      const row = document.getElementById('cTzRow'); if (!row) return;
+      const sel = document.getElementById('cLoc');
+      const L = (LOCS.length > 1 && sel && sel.value) ? (LOCS.find(x => x.id === sel.value) || LOCS[0]) : LOCS[0];
+      const lo = tzOffOf(L), ro = tzOffOf(REF_LOC);
+      if (!MULTI_TZ || lo === null || ro === null || lo === ro) { row.classList.add('d-none'); return; }
+      const s = document.getElementById('cStart').value, en = document.getElementById('cEnd').value;
+      const conv = t => hhmm((((toMin(t) + (ro - lo) * 60) % 1440) + 1440) % 1440);
+      document.getElementById('cTzMsg').innerHTML = T('docrdv.tz_equiv')
+        .replace('{start}', s).replace('{end}', en).replace('{loctz}', tzHuman(L))
+        .replace('{rstart}', conv(s)).replace('{rend}', conv(en)).replace('{reftz}', tzHuman(REF_LOC));
+      row.classList.remove('d-none');
     }
     function setCreateTab(t) {
       createTab = t;
@@ -1274,7 +1361,7 @@
       const wasEdit = editIdx >= 0;
       const beEl = document.getElementById('cBlockDateEnd');
       const de = (block && beEl && beEl.value) ? beEl.value : date; // date de fin d'un blocage multi-jours
-      if (date < TODAY || toMin(end) <= toMin(start) || (block && (de < date || blockDayCount(date, de) > BLOCK_RANGE_MAX)) || (!block && slotConflict(date, start, end, editIdx))) { cCheck(); return; } // garde silencieuse (bouton déjà désactivé)
+      if (date < TODAY || toMin(end) <= toMin(start) || (block && (de < date || blockDayCount(date, de) > BLOCK_RANGE_MAX)) || (!block && slotConflict(date, start, end, editIdx, cLocVal()))) { cCheck(); return; } // garde silencieuse (bouton déjà désactivé)
       const loc = (document.getElementById('cLoc') && document.getElementById('cLoc').value) || (fLoc === 'all' ? LOCS[0].id : fLoc);
       const ini = (name || '').split(' ').filter(Boolean).map(w => w[0]).slice(0, 2).join('').toUpperCase();
       if (block) {

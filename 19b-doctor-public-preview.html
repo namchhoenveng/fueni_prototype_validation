@@ -345,7 +345,7 @@
       } else {
         hoursTable.classList.remove('d-none'); hoursNote.classList.add('d-none');
         motifsNote.classList.add('d-none'); motifsBox.classList.remove('d-none');
-        const tz = (window.NazGeo && NazGeo.tzLabel) ? NazGeo.tzLabel(L.country, L.region) : '';
+        const tz = (window.NazGeo && NazGeo.tzLabel) ? NazGeo.tzLabel(L.country, L.region, L.tz) : '';
         if (tz) { hoursTz.innerHTML = '<i class="fa fa-clock me-1"></i>' + T('geo.tz_local') + ' · <span class="tz">' + tz + '</span>'; hoursTz.classList.remove('d-none'); }
         else hoursTz.classList.add('d-none');
         document.getElementById('fHours').innerHTML = DAYS.map(([k]) => {
