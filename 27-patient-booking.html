@@ -377,7 +377,7 @@
     function renderStep2() {
       const L = P.locations[locIdx];
       const m = L.motifs[motifIdx];
-      const tz = (window.NazGeo && NazGeo.tzLabel) ? NazGeo.tzLabel(L.country, L.region) : '';
+      const tz = (window.NazGeo && NazGeo.tzLabel) ? NazGeo.tzLabel(L.country, L.region, L.tz) : '';
       document.getElementById('s2Sub').textContent =
         esc(m.label) + ' · ' + m.dur + ' ' + T('book.min') + ' · ' + esc(locName(L)) +
         (tz ? ' · ' + T('geo.tz_local') + ' ' + tz : '');
