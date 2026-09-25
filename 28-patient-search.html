@@ -71,6 +71,9 @@
       .doc-result { flex-wrap: wrap; } .doc-result .side { align-items: flex-start; text-align: left; min-width: 0; width: 100%; }
     }
     .empty { background: #fff; border-radius: 14px; padding: 40px; text-align: center; color: #94a3b8; }
+    /* Sections géographiques : « À {ville} » / « Ailleurs · {pays} » + note « aucune ville » (état vide honnête) */
+    .sec-head { font-weight: 700; color: #0F2444; font-size: 0.95rem; margin: 18px 2px 10px; }
+    .sec-note { background: #fff8e1; border: 1px solid #fcd670; color: #7a5200; border-radius: 10px; padding: 9px 12px; font-size: 0.85rem; margin: 14px 0 10px; }
     /* En-tête public (visiteur non connecté — parcours Doctolib) */
     .pub-header { display: none; align-items: center; justify-content: space-between; background: #fff; border-bottom: 1px solid #e5e7eb; padding: 12px 130px 12px 28px; position: sticky; top: 0; z-index: 90; }
     .pub-header .ph-actions { display: flex; align-items: center; gap: 12px; }
@@ -251,17 +254,51 @@
       if (norm(d.name).includes(qn) || norm(d.spec).includes(qn)) return true;
       return specSynonyms(d.spec).some(s => norm(s).includes(qn));
     }
+    // Tri : prochaine disponibilité (au plus tôt), puis nom — jamais par prix, jamais de rang payant.
+    function byAvail(a, b) {
+      const ao = (a.nextTime && a.nextOffset != null) ? a.nextOffset : 99;
+      const bo = (b.nextTime && b.nextOffset != null) ? b.nextOffset : 99;
+      if (ao !== bo) return ao - bo;
+      const at = a.nextTime || '99:99', bt = b.nextTime || '99:99';
+      if (at !== bt) return at.localeCompare(bt);
+      return (a.name || '').localeCompare(b.name || '');
+    }
+    function secHead(t) { return '<div class="sec-head">' + esc(t) + '</div>'; }
     function renderResults() {
       const qn = norm(document.getElementById('qName').value);
       const qc = norm(document.getElementById('qCity').value);
-      const list = DOCTORS.filter(d =>
-        (!qn || nameSpecMatch(d, qn)) &&
-        (!qc || norm(d.city).includes(qc) || norm(d.country).includes(qc))
-      );
-      document.getElementById('count').textContent = T('psearch.results_count').replace('{n}', list.length);
       const box = document.getElementById('results');
-      if (!list.length) { box.innerHTML = '<div class="empty"><i class="fa fa-user-slash mb-2" style="font-size:1.6rem;"></i><div>' + T('psearch.none') + '</div></div>'; return; }
-      box.innerHTML = list.map(d => {
+      const base = DOCTORS.filter(d => !qn || nameSpecMatch(d, qn));
+      // Contexte de localisation (règles SF « recherche & tri ») :
+      //  - VILLE connue → sections « À {ville} » puis « Ailleurs · {pays} » (jamais de mélange silencieux ;
+      //    ville vide pour cette recherche → on le DIT, puis on montre le reste du pays) ;
+      //  - PAYS connu → praticiens de ce pays uniquement (soins présentiels — les autres pays ne sortent
+      //    qu'en changeant explicitement la localisation) ;
+      //  - texte libre / vide → filtre simple (comportement historique).
+      let html = '', count = 0;
+      const cityHit = qc ? DOCTORS.find(d => norm(d.city) === qc) : null;
+      const countryHit = qc ? DOCTORS.find(d => norm(d.country) === qc) : null;
+      if (cityHit) {
+        const inCity = base.filter(d => norm(d.city) === qc).sort(byAvail);
+        const elsewhere = base.filter(d => norm(d.city) !== qc && d.country === cityHit.country).sort(byAvail);
+        count = inCity.length + elsewhere.length;
+        if (inCity.length) html += secHead(T('psearch.sec_city').replace('{x}', cityHit.city)) + inCity.map(docCard).join('');
+        else if (elsewhere.length) html += '<div class="sec-note"><i class="fa fa-circle-info me-1"></i>' + esc(T('psearch.none_city').replace('{x}', cityHit.city)) + '</div>';
+        if (elsewhere.length) html += secHead(T('psearch.sec_country').replace('{x}', cityHit.country)) + elsewhere.map(docCard).join('');
+      } else if (countryHit) {
+        const list = base.filter(d => norm(d.country) === qc).sort(byAvail);
+        count = list.length;
+        html = list.map(docCard).join('');
+      } else {
+        const list = base.filter(d => !qc || norm(d.city).includes(qc) || norm(d.country).includes(qc)).sort(byAvail);
+        count = list.length;
+        html = list.map(docCard).join('');
+      }
+      document.getElementById('count').textContent = T('psearch.results_count').replace('{n}', count);
+      if (!count) { box.innerHTML = '<div class="empty"><i class="fa fa-user-slash mb-2" style="font-size:1.6rem;"></i><div>' + T('psearch.none') + '</div></div>'; return; }
+      box.innerHTML = html;
+    }
+    function docCard(d) {
         const av = d.photo ? '<img src="' + d.photo + '" alt="">' : initials(d.name);
         const langs = (d.langs && d.langs.length)
           ? '<div class="langs">' + d.langs.map(l => '<span class="lang">' + esc(l) + '</span>').join('') + '</div>' : '';
@@ -282,7 +319,6 @@
             '<span class="see-profile">' + T('psearch.see_profile') + '</span>' +
           '</div>' +
         '</div>';
-      }).join('');
     }
     // Ouvre la fiche publique du praticien choisi (le profil est chargé via ?doc=<id>).
     function openDoctor(id) { window.location.href = '19b-doctor-public-preview.html?doc=' + encodeURIComponent(id); }
@@ -308,11 +344,21 @@
       if (q) document.getElementById('qName').value = q;
       if (c) document.getElementById('qCity').value = c;
     }
+    // Pré-remplissage de la localisation quand rien n'est fourni (ni URL, ni saisie) :
+    // patient connecté → ville de son PROFIL (démo : Dakar ; prod : profil de base) ;
+    // visiteur public → PAYS détecté par IP (démo : RDC ; prod : header Cloudflare CF-IPCountry —
+    // toujours le pays, jamais la ville ; rien si pays hors couverture). Suggestion modifiable, jamais un filtre dur.
+    function applyDefaultLocation() {
+      const el = document.getElementById('qCity');
+      if (!el || el.value) return;
+      el.value = isAuthed() ? 'Dakar' : 'RDC';
+    }
     function init() {
       applyPublicChrome();
       buildDoctors();
       applyUserDisplay();
       applyQueryParams();
+      applyDefaultLocation();
       renderResults();
     }
     document.addEventListener('fueni:langchange', () => { buildDoctors(); renderResults(); });

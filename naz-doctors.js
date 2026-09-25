@@ -110,6 +110,56 @@
           { label: 'Suivi / renouvellement', dur: 20, price: 20 }
         ]
       }]
+    },
+
+    /* m6/m7 — ajoutés pour la démo « recherche localisée » (tri par sections, pays IP RDC) :
+     * une cardiologue RDC hors Kinshasa (Lubumbashi, fuseau UTC+2) + un cardiologue Sénégal hors Dakar (Thiès). */
+    m6: {
+      visible: true, title: 'Dr', name: 'Chantal Mwamba', spec: 'Cardiologie', photo: null, currency: 'USD',
+      bookingWindow: 30,
+      ordre: 'CNOM-RDC-2018-01204', ordreBody: 'Conseil National de l\'Ordre des Médecins (RDC)',
+      langs: ['Français', 'Swahili'],
+      expertise: ['Hypertension artérielle', 'Cardiologie préventive'],
+      bio: "Cardiologue à Lubumbashi, je prends en charge le dépistage et le suivi des maladies cardiovasculaires de l'adulte.",
+      training: [
+        { year: '2011', label: 'Doctorat en médecine — Université de Lubumbashi' },
+        { year: '2016', label: 'Spécialisation en cardiologie — Université de Kinshasa' }
+      ],
+      next: { offset: 1, time: '11:00' },
+      locations: [{
+        id: 'loc1', type: 'cabinet', label: '', street: 'Avenue Kasavubu, centre-ville',
+        city: 'Lubumbashi', region: 'Haut-Katanga', country: 'RDC', phone: '+243 99 123 45 67', primary: true, bookable: true,
+        access: ['parking'], photos: [],
+        hours: hrs({ mon: [['08:00', '12:30'], ['14:00', '17:00']], tue: [['08:00', '12:30']], wed: [['08:00', '12:30'], ['14:00', '17:00']], thu: [['08:00', '12:30']], fri: [['08:00', '12:00']] }),
+        motifs: [
+          { label: 'Consultation de cardiologie', dur: 30, price: 35 },
+          { label: 'Échographie cardiaque', dur: 40, price: 50 }
+        ]
+      }]
+    },
+
+    m7: {
+      visible: true, title: 'Dr', name: 'Ousmane Fall', spec: 'Cardiologie', photo: null, currency: 'XOF',
+      bookingWindow: 30,
+      ordre: 'ONMS-2015-00190', ordreBody: 'Ordre des Médecins du Sénégal',
+      langs: ['Français', 'Wolof'],
+      expertise: ['Troubles du rythme', 'Réadaptation cardiaque'],
+      bio: "Cardiologue installé à Thiès, j'assure le bilan cardiovasculaire et le suivi au long cours, en lien avec les confrères généralistes de la région.",
+      training: [
+        { year: '2009', label: 'Doctorat en médecine — UCAD, Dakar' },
+        { year: '2014', label: 'DES de cardiologie — CHU Aristide Le Dantec' }
+      ],
+      next: { offset: 4, time: '09:00' },
+      locations: [{
+        id: 'loc1', type: 'cabinet', label: '', street: '12, avenue Léopold Sédar Senghor',
+        city: 'Thiès', region: 'Thiès', country: 'Sénégal', phone: '+221 33 951 22 33', primary: true, bookable: true,
+        access: ['parking', 'stepfree'], photos: [],
+        hours: hrs({ mon: [['09:00', '13:00'], ['15:00', '18:00']], tue: [['09:00', '13:00']], wed: [['09:00', '13:00'], ['15:00', '18:00']], thu: [['09:00', '13:00']], fri: [['09:00', '13:00']] }),
+        motifs: [
+          { label: 'Consultation de cardiologie', dur: 30, price: 9000 },
+          { label: 'Suivi / renouvellement', dur: 20, price: 7000 }
+        ]
+      }]
     }
   };
 })();
