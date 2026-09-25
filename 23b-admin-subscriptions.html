@@ -28,10 +28,18 @@
     .imm-note { background:#eef4fb; border:1px solid #bcdfe7; color:#0e4456; border-radius:10px; padding:9px 14px; font-size:0.82rem; margin-bottom:18px; display:flex; align-items:center; gap:9px; }
 
     .stat-row { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:14px; margin-bottom:20px; }
-    .stat-tile { background:#fff; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.05); padding:14px 18px; }
-    .stat-tile .n { font-size:1.45rem; font-weight:800; color:var(--slate); }
-    .stat-tile .l { font-size:0.72rem; color:#94a3b8; text-transform:uppercase; letter-spacing:0.4px; font-weight:600; }
-    .stat-tile.grace .n { color:#c0392b; }
+    .stat-tile { background:#fff; border-radius:14px; box-shadow:0 2px 8px rgba(0,0,0,0.05); padding:14px 16px; display:flex; flex-direction:column; }
+    .stat-tile .head { display:flex; align-items:flex-start; justify-content:space-between; gap:8px; }
+    .stat-tile .l { font-size:0.68rem; color:#94a3b8; text-transform:uppercase; letter-spacing:0.4px; font-weight:700; }
+    .stat-tile .n { font-size:1.45rem; font-weight:800; color:var(--slate); margin-top:6px; letter-spacing:-0.4px; }
+    .stat-tile .n.n-cur { font-size:1.05rem; line-height:1.35; white-space:nowrap; margin-top:2px; } /* devises : même rang, même taille */
+    .stat-tile .n.n-cur:first-of-type { margin-top:6px; }
+    .stat-tile .sub { font-size:0.75rem; font-weight:700; color:#475569; margin-top:1px; }
+    .kpi-ic { width:30px; height:30px; border-radius:9px; display:flex; align-items:center; justify-content:center; font-size:0.76rem; flex-shrink:0; }
+    .ic-purple { background:#f3e9f8; color:var(--purple); }
+    .ic-amber  { background:#fff3cd; color:#b9770e; }
+    .ic-blue   { background:#e8f1fb; color:#2563eb; }
+    .ic-green  { background:#e6f6ee; color:#198754; }
 
     .toolbar { background:#fff; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.05); padding:12px 16px; display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom:16px; }
     .toolbar .search { position:relative; flex:0 1 300px; min-width:200px; }
@@ -60,6 +68,17 @@
     .doc-link:hover { text-decoration:underline; color:var(--purple); }
     .muted { color:#94a3b8; }
     .count-note { font-size:0.8rem; color:#94a3b8; padding:10px 16px; }
+    /* Pied de liste : compte + pagination */
+    .list-foot { display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; padding:8px 16px 10px; border-top:1px solid #f1f5f9; }
+    .list-foot .count-note { padding:0; }
+    .foot-right { display:flex; align-items:center; gap:14px; }
+    .pg-size { font-size:0.8rem; color:#64748b; display:flex; align-items:center; gap:6px; margin:0; }
+    .pg-size select { border:1px solid #e2e8f0; border-radius:8px; padding:3px 6px; font-size:0.8rem; color:#334155; background:#fff; }
+    .pager { display:flex; gap:4px; }
+    .pg-btn { border:1px solid #e2e8f0; background:#fff; border-radius:8px; min-width:30px; height:30px; font-size:0.82rem; font-weight:600; color:#475569; cursor:pointer; }
+    .pg-btn:hover:not(:disabled):not(.active) { border-color:var(--purple); color:var(--purple); }
+    .pg-btn.active { background:var(--purple); border-color:var(--purple); color:#fff; cursor:default; }
+    .pg-btn:disabled { opacity:0.4; cursor:not-allowed; }
 
     /* Tiroir de détail */
     .offcanvas-end { width:460px; max-width:94vw; }
@@ -91,7 +110,7 @@
     <div class="sidebar-brand"><img src="assets/fueni-lockup-white.svg" alt="FUENI" style="height:26px;width:auto;vertical-align:middle;"> <small>Admin</small></div>
 
     <div class="sidebar-label">Tableau de bord</div>
-    <a class="nav-link-side disabled"><i class="fa fa-chart-bar"></i> Vue d'ensemble <span class="soon-pill">Bientôt</span></a>
+    <a href="23c-admin-overview.html" class="nav-link-side"><i class="fa fa-chart-bar"></i> Vue d'ensemble</a>
 
     <div class="sidebar-label">Gestion</div>
     <a href="21-admin-verifications.html" class="nav-link-side"><i class="fa fa-user-check"></i> Vérification des dossiers</a>
@@ -129,43 +148,53 @@
          rembourser) ne font pas partie du MVP — elles passent par le support et seront outillées post-MVP. -->
     <div class="imm-note">
       <i class="fa fa-eye" style="color:#155e75;"></i>
-      <span><strong>Écran de consultation (lecture seule).</strong> La facturation et les relances sont automatisées. Les interventions manuelles (prolonger une grâce, geler un compte, rembourser) ne font pas partie du MVP — toute demande passe par le support.</span>
+      <span><strong>Écran de consultation (lecture seule)</strong> — facturation et relances automatisées ; les interventions manuelles passent par le support technique.</span>
     </div>
 
     <!-- Stats — revenus ENCAISSÉS = somme des règlements CONFIRMÉS par le prestataire de paiement sur la période
-         (jamais dérivés du nombre d'abonnés). Démo, « aujourd'hui » = 6 juillet 2026 :
-         · juillet (au 6) : 6 renouvellements mensuels échus (anniversaires j1–j6, 30 mensuels répartis) × 30 € = 180 €
-           + 1 anniversaire annuel (12 annuels ≈ 1/mois) × 300 € + 1 activation Essentiel × 30 € = 510 €
-         · cumul 2026 : base stable ≈ 6 mois pleins × MRR 1 200 € (cf. écran 23) + 510 € de juillet = 7 710 € -->
+         (jamais dérivés du nombre d'abonnés), affichés PAR DEVISE D'ENCAISSEMENT — décision PO 22/09 :
+         l'encaissement est TOUJOURS en devise locale (Mobile Money), l'euro n'est qu'un tarif de RÉFÉRENCE et
+         n'apparaît jamais dans l'encaissé. Aucune conversion, aucun taux à définir ; le rapprochement Flutterwave
+         se fait par devise. Contre-valeur consolidée = reporting post-MVP (AS-D3/D4).
+         Démo, « aujourd'hui » = 6 juillet 2026 — encaissements : zone XOF hors dérogation = référence 30 €/300 €
+         convertie à la parité fixe (655,957) ≈ 19 680 / 196 800 XOF (arrondi démo) ; BF (dérogation) = 17 000 /
+         170 000 XOF ; RDC = 30 / 300 USD. Mix : 30 mensuels = 28 zone XOF + 1 BF + 1 RDC ; 12 annuels = 11 zone
+         XOF + 1 BF (anniversaire janvier) :
+         · juillet (au 6) : 4 renouvellements mensuels zone XOF (78 720) + 1 BF (17 000) + 1 anniversaire annuel
+           zone XOF (196 800) + 1 activation (19 680) = 312 200 XOF · 1 renouvellement RDC = 30 USD
+         · cumul 2026 : XOF = 6 mois × 28 × 19 680 (3 306 240) + 6 × 17 000 BF (102 000) + 5 anniversaires annuels
+           × 196 800 (984 000) + 170 000 (annuel BF, janv.) + 312 200 (juil.) = 4 874 440 XOF ; USD = 7 × 30 = 210 -->
     <div class="stat-row">
-      <div class="stat-tile"><div class="n">126</div><div class="l">Praticiens actifs</div></div>
+      <div class="stat-tile"><div class="head"><span class="l">Praticiens actifs</span><span class="kpi-ic ic-purple"><i class="fa fa-user-md"></i></span></div><div class="n">126</div><div class="sub">&nbsp;</div></div>
       <!-- Répartition par cycle (même mix que l'écran 23 : 30 M / 12 A = 42) ; la grâce — signal de risque —
            reste visible : intégrée à la tuile Mensuel (les impayés y vivent) + filtre Statut + pastilles rouges de la liste. -->
-      <div class="stat-tile"><div class="n">30</div><div class="l">Essentiel mensuel · <span style="color:#c0392b;">dont <span id="stGrace">—</span> en grâce</span></div></div>
-      <div class="stat-tile"><div class="n">12</div><div class="l">Essentiel annuel</div></div>
-      <div class="stat-tile"><div class="n">510 €</div><div class="l">Encaissé — juillet 2026</div></div>
-      <div class="stat-tile"><div class="n">7 710 €</div><div class="l">Encaissé — 2026 (cumul)</div></div>
+      <div class="stat-tile"><div class="head"><span class="l">Essentiel mensuel</span><span class="kpi-ic ic-amber"><i class="fa fa-rotate"></i></span></div><div class="n">30</div><div class="sub"><span id="stGraceWrap" style="color:#c0392b;">dont <span id="stGrace">—</span> en grâce</span>&nbsp;</div></div>
+      <div class="stat-tile"><div class="head"><span class="l">Essentiel annuel</span><span class="kpi-ic ic-blue"><i class="fa fa-calendar"></i></span></div><div class="n">12</div><div class="sub">&nbsp;</div></div>
+      <div class="stat-tile"><div class="head"><span class="l">Encaissé — juil. 2026 · par devise</span><span class="kpi-ic ic-green"><i class="fa fa-wallet"></i></span></div><div class="n n-cur">312 200 XOF</div><div class="n n-cur">30 USD</div></div>
+      <div class="stat-tile"><div class="head"><span class="l">Encaissé — 2026 (cumul) · par devise</span><span class="kpi-ic ic-green"><i class="fa fa-coins"></i></span></div><div class="n n-cur">4 874 440 XOF</div><div class="n n-cur">210 USD</div></div>
     </div>
 
     <!-- Filtres -->
     <div class="toolbar">
-      <div class="search"><i class="fa fa-search"></i><input type="text" id="q" placeholder="Rechercher un praticien (nom, e-mail)…" oninput="render()"></div>
-      <select id="fPlan" onchange="render()">
+      <div class="search"><i class="fa fa-search"></i><input type="text" id="q" placeholder="Rechercher un praticien (nom, e-mail)…" oninput="onFilter()"></div>
+      <select id="fPlan" onchange="onFilter()">
         <option value="">Plan : tous</option>
         <option value="solo">Essentiel</option>
         <option value="free">Free</option>
       </select>
-      <select id="fStatus" onchange="render()">
+      <select id="fStatus" onchange="onFilter()">
         <option value="">Statut : tous</option>
         <option value="ok">Actif</option>
         <option value="due">Échéance proche</option>
         <option value="grace">En grâce</option>
       </select>
-      <select id="fCycle" onchange="render()">
+      <select id="fCycle" onchange="onFilter()">
         <option value="">Cycle : tous</option>
         <option value="m">Mensuel</option>
         <option value="a">Annuel</option>
       </select>
+      <!-- Pays / devise d'encaissement — les options Pays sont construites depuis les données (source unique). -->
+      <select id="fGeo" onchange="onFilter()"></select>
     </div>
 
     <!-- Liste -->
@@ -177,6 +206,7 @@
               <th>Praticien</th>
               <th>Plan</th>
               <th>Cycle</th>
+              <th>Pays · Devise</th>
               <th>Statut</th>
               <th>Prochain renouvellement</th>
               <th>Paiement</th>
@@ -186,7 +216,17 @@
           <tbody id="subsBody"></tbody>
         </table>
       </div>
-      <div class="count-note" id="countNote"></div>
+      <!-- Pied de liste : compte « x–y sur n » + pagination (25/50/100 par page, retour p.1 à chaque filtre).
+           En V2 : pagination CÔTÉ SERVEUR (limit/offset + total) — le contrat d'API doit naître paginé. -->
+      <div class="list-foot">
+        <div class="count-note" id="countNote"></div>
+        <div class="foot-right">
+          <label class="pg-size">Par page
+            <select onchange="setPageSize(this.value)"><option>25</option><option>50</option><option>100</option></select>
+          </label>
+          <div class="pager" id="pager"></div>
+        </div>
+      </div>
     </div>
 
   </div>
@@ -208,7 +248,6 @@
       <div id="dInfo"></div>
       <div class="hist-title">Historique de souscription</div>
       <div id="dHist"></div>
-      <div class="ro-note"><i class="fa fa-circle-info me-1"></i>Lecture seule — les corrections (grâce, remboursement, changement forcé de plan) passent par le support. Interventions outillées et journalisées : post-MVP.</div>
     </div>
   </div>
 
@@ -218,10 +257,11 @@
     // ok = Actif · due = Échéance proche (≤ 7 j) · grace = Période de grâce (2 j mensuel / 7 j annuel).
     // Tarif de RÉFÉRENCE en euros (30 €/mois · 300 €/an, conversion locale par le prestataire) + DÉROGATIONS
     // par pays (✅ client 2026-09-10) : Burkina Faso 17 000 XOF/mois · RDC 30 USD/mois. Champ r.price = montant local.
-    // Les tuiles « Encaissé » sont consolidées en € (contre-valeur des règlements XOF/USD — démo).
+    // Les tuiles « Encaissé » sont PAR DEVISE d'encaissement (XOF · USD — l'encaissement est toujours en devise
+    // locale, l'euro n'est qu'un tarif de référence et n'apparaît jamais dans l'encaissé) — aucune conversion en MVP.
     // « Aujourd'hui » démo = 6 juillet 2026 (aligné sur la topbar).
     const SUBS = [
-      { id:'d1', name:'Dr Aboubacar Diallo', mail:'a.diallo@exemple.sn',  plan:'solo', cycle:'m', status:'ok',    next:'2026-08-02', pay:'Mobile Money (Orange)', since:'2026-05-02',
+      { id:'d1', name:'Dr Aboubacar Diallo', mail:'a.diallo@exemple.sn', country:'Sénégal', cur:'XOF',  plan:'solo', cycle:'m', status:'ok',    next:'2026-08-02', pay:'Mobile Money (Orange)', since:'2026-05-02',
         hist:[
           { d:'2026-07-02', t:'Facture réglée — 30,00 €', s:'Renouvellement mensuel (Mobile Money)', money:true, inv:true },
           { d:'2026-06-02', t:'Facture réglée — 30,00 €', s:'Renouvellement mensuel (Mobile Money)', money:true, inv:true },
@@ -229,45 +269,72 @@
           { d:'2026-04-30', t:'Dossier validé (KYC)', s:'Compte activé' },
           { d:'2026-04-27', t:'Inscription — plan Essentiel choisi', s:'CGU · CGV 2.3 · Confidentialité acceptées (horodatées)' }
         ] },
-      { id:'d2', name:'Dr Awa Sène', mail:'a.sene@exemple.cd', plan:'solo', cycle:'m', status:'due', next:'2026-07-09', pay:'Carte (auto)', since:'2026-03-09', price:'30 USD / mois', // RDC — dérogation USD
+      { id:'d2', name:'Dr Awa Sène', mail:'a.sene@exemple.cd', country:'RDC', cur:'USD', plan:'solo', cycle:'m', status:'due', next:'2026-07-09', pay:'Carte (auto)', since:'2026-03-09', price:'30 USD / mois', // RDC — dérogation USD
         hist:[
           { d:'2026-06-09', t:'Facture réglée — 30,00 USD', s:'Prélèvement carte automatique (RDC — tarif USD)', money:true, inv:true },
           { d:'2026-03-09', t:'Activation Essentiel — 30,00 USD', s:'Bon de commande + facture émis', money:true, inv:true, bdc:'solo' },
           { d:'2026-03-06', t:'Dossier validé (KYC)', s:'Compte activé' }
         ] },
-      { id:'d3', name:'Dr Cheikh Diop', mail:'c.diop@exemple.sn', plan:'solo', cycle:'m', status:'grace', next:'2026-07-05', graceEnd:'2026-07-07', pay:'Mobile Money (Wave)', since:'2026-01-05',
+      { id:'d3', name:'Dr Cheikh Diop', mail:'c.diop@exemple.sn', country:'Sénégal', cur:'XOF', plan:'solo', cycle:'m', status:'grace', next:'2026-07-05', graceEnd:'2026-07-07', pay:'Mobile Money (Wave)', since:'2026-01-05',
         hist:[
           { d:'2026-07-05', t:'Échéance impayée — période de grâce', s:'Fin de grâce le 07/07 (2 j, mensuel) · rappels quotidiens' },
           { d:'2026-06-05', t:'Facture réglée — 30,00 €', s:'Renouvellement mensuel (Mobile Money)', money:true, inv:true },
           { d:'2026-01-05', t:'Activation Essentiel — 30,00 €', s:'Bon de commande + facture émis', money:true, inv:true, bdc:'solo' }
         ] },
-      { id:'d4', name:'Dr Aminata Mbaye', mail:'a.mbaye@exemple.sn', plan:'solo', cycle:'a', status:'ok', next:'2027-03-15', pay:'Carte (auto)', since:'2025-11-15',
+      { id:'d4', name:'Dr Aminata Mbaye', mail:'a.mbaye@exemple.sn', country:'Sénégal', cur:'XOF', plan:'solo', cycle:'a', status:'ok', next:'2027-03-15', pay:'Carte (auto)', since:'2025-11-15',
         hist:[
           { d:'2026-03-15', t:'Passage au plan annuel — 300,00 €', s:'Bon de commande modificatif + facture émis', money:true, inv:true, bdc:'modif' },
           { d:'2026-02-15', t:'Facture réglée — 30,00 €', s:'Renouvellement mensuel (carte)', money:true, inv:true },
           { d:'2025-11-15', t:'Activation Essentiel — 30,00 €', s:'Bon de commande + facture émis', money:true, inv:true, bdc:'solo' }
         ] },
-      { id:'d5', name:'Dr Ousmane Ba', mail:'o.ba@exemple.sn', plan:'free', cycle:'', status:'ok', next:'', pay:'—', since:'2026-06-20',
+      { id:'d5', name:'Dr Ousmane Ba', mail:'o.ba@exemple.sn', country:'Sénégal', cur:'XOF', plan:'free', cycle:'', status:'ok', next:'', pay:'—', since:'2026-06-20',
         hist:[
           { d:'2026-06-20', t:'Dossier validé (KYC) — plan Free actif', s:'Compte activé — aucun bon de commande (plan gratuit)' },
           { d:'2026-06-16', t:'Inscription — plan Free choisi', s:'CGU · CGV 2.3 · Confidentialité acceptées (horodatées)' }
         ] },
-      { id:'d6', name:'Dr Fatou Ndiaye', mail:'f.ndiaye@exemple.bf', plan:'solo', cycle:'a', status:'ok', next:'2027-01-10', pay:'Mobile Money (Orange BF)', since:'2026-01-10', price:'170 000 XOF / an', // Burkina Faso — dérogation XOF
+      { id:'d6', name:'Dr Fatou Ndiaye', mail:'f.ndiaye@exemple.bf', country:'Burkina Faso', cur:'XOF', plan:'solo', cycle:'a', status:'ok', next:'2027-01-10', pay:'Mobile Money (Orange BF)', since:'2026-01-10', price:'170 000 XOF / an', // Burkina Faso — dérogation XOF
         hist:[
           { d:'2026-01-10', t:'Activation Essentiel (annuel) — 170 000 XOF', s:'Bon de commande + facture émis (Burkina Faso — tarif XOF)', money:true, inv:true, bdc:'solo' },
           { d:'2026-01-08', t:'Dossier validé (KYC)', s:'Compte activé' }
         ] },
-      { id:'d7', name:'Dr Moussa Koné', mail:'m.kone@exemple.ci', plan:'free', cycle:'', status:'ok', next:'', pay:'—', since:'2026-05-30',
+      { id:'d7', name:'Dr Moussa Koné', mail:'m.kone@exemple.ci', country:"Côte d'Ivoire", cur:'XOF', plan:'free', cycle:'', status:'ok', next:'', pay:'—', since:'2026-05-30',
         hist:[
           { d:'2026-05-30', t:'Dossier validé (KYC) — plan Free actif', s:'Compte activé — aucun bon de commande (plan gratuit)' }
         ] },
-      { id:'d8', name:'Dr Mariam Touré', mail:'m.toure@exemple.ml', plan:'solo', cycle:'m', status:'ok', next:'2026-08-05', downgrade:true, pay:'Mobile Money (Orange)', since:'2026-02-05',
+      { id:'d8', name:'Dr Mariam Touré', mail:'m.toure@exemple.ml', country:'Mali', cur:'XOF', plan:'solo', cycle:'m', status:'ok', next:'2026-08-05', downgrade:true, pay:'Mobile Money (Orange)', since:'2026-02-05',
         hist:[
           { d:'2026-07-05', t:'Rétrogradation programmée vers Free', s:'Effective au prochain terme (05/08) · bon de commande modificatif émis', bdc:'modif-free' },
           { d:'2026-07-05', t:'Facture réglée — 30,00 €', s:'Dernier terme Essentiel (Mobile Money)', money:true, inv:true },
           { d:'2026-02-05', t:'Activation Essentiel — 30,00 €', s:'Bon de commande + facture émis', money:true, inv:true, bdc:'solo' }
         ] }
     ];
+
+    // ── Volume de démonstration pour la PAGINATION : 30 abonnés générés (statut Actif, historique minimal).
+    //    Les 8 profils détaillés ci-dessus restent les cas métier (grâce, échéance, dérogations, rétrogradation).
+    (function () {
+      const FIRST = ['Abdoulaye','Mariama','Ibrahima','Kadiatou','Seydou','Aïcha','Boubacar','Nafissatou','Souleymane','Adama','Ramata','Cheikh','Oumou','Mamadou','Bineta'];
+      const LAST  = ['Sarr','Cissé','Camara','Diallo','Kouassi','Traoré','Mbengue','Okemba','Ilunga','Zongo'];
+      const GEO   = [['sn','Mobile Money (Orange)','Sénégal'],['ci','Mobile Money (MTN)',"Côte d'Ivoire"],['bf','Mobile Money (Orange BF)','Burkina Faso'],['cd','Carte (auto)','RDC'],['ml','Mobile Money (Orange)','Mali'],['tg','Mobile Money (Moov)','Togo']];
+      for (let i = 0; i < 30; i++) {
+        const fn = FIRST[i % FIRST.length], ln = LAST[(i * 7 + 3) % LAST.length];
+        const geo = GEO[i % GEO.length];
+        const free = (i % 4 === 3);                 // ~1 abonné sur 4 en Free
+        const annual = !free && (i % 3 === 2);      // ~1 payant sur 3 en annuel
+        const day = String(1 + (i * 3) % 27).padStart(2, '0');
+        const next = annual ? ('2027-0' + (1 + i % 6) + '-' + day) : ('2026-08-' + day);
+        const since = '2026-0' + (1 + i % 6) + '-' + day;
+        const mail = (fn[0] + '.' + ln + i).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '') + '@exemple.' + geo[0];
+        SUBS.push({
+          id: 'g' + i, name: 'Dr ' + fn + ' ' + ln, mail: mail,
+          plan: free ? 'free' : 'solo', cycle: free ? '' : (annual ? 'a' : 'm'),
+          status: 'ok', next: free ? '' : next, pay: free ? '—' : geo[1], since: since,
+          country: geo[2], cur: (geo[0] === 'cd' ? 'USD' : 'XOF'),
+          hist: free
+            ? [{ d: since, t: 'Dossier validé (KYC) — plan Free actif', s: 'Compte activé — aucun bon de commande (plan gratuit)' }]
+            : [{ d: since, t: 'Activation Essentiel — ' + (annual ? '300,00 €' : '30,00 €'), s: 'Bon de commande + facture émis', money: true, inv: true, bdc: 'solo' }]
+        });
+      }
+    })();
 
     const STATUS = {
       ok:    { label:'Actif',           cls:'st-ok' },
@@ -308,25 +375,74 @@
       return h || '<span class="muted">—</span>';
     }
 
+    // ── Tri par URGENCE (défaut back-office) : en grâce → échéance proche (J−x croissant) → actifs payants
+    //    par prochain renouvellement → Free (rien d'exigible). L'admin voit en haut ce qui demande attention.
+    //    Tris par colonne (nom, renouvellement…) : post-MVP.
+    function urgency(r) { return r.status === 'grace' ? 0 : r.status === 'due' ? 1 : (r.plan === 'solo' ? 2 : 3); }
+    function bySort(a, b) {
+      const u = urgency(a) - urgency(b); if (u) return u;
+      const ka = a.next || a.graceEnd || '9999', kb = b.next || b.graceEnd || '9999';
+      if (ka !== kb) return ka < kb ? -1 : 1;
+      return a.name.localeCompare(b.name);
+    }
+    // ── Pagination (démo côté client ; V2 = côté serveur, limit/offset + total) ──
+    let page = 1, pageSize = 25;
+    function onFilter() { page = 1; render(); }        // tout changement de filtre/recherche → retour page 1
+    function setPage(p) { page = p; render(); }
+    function setPageSize(v) { pageSize = +v; page = 1; render(); }
+    function pagerHtml(pages) {
+      if (pages <= 1) return '';
+      let h = '<button class="pg-btn" ' + (page === 1 ? 'disabled' : 'onclick="setPage(' + (page - 1) + ')"') + '><i class="fa fa-chevron-left"></i></button>';
+      for (let p = 1; p <= pages; p++) h += '<button class="pg-btn' + (p === page ? ' active' : '') + '" onclick="setPage(' + p + ')">' + p + '</button>';
+      h += '<button class="pg-btn" ' + (page === pages ? 'disabled' : 'onclick="setPage(' + (page + 1) + ')"') + '><i class="fa fa-chevron-right"></i></button>';
+      return h;
+    }
+
+    // Options du filtre Pays/Devise, construites depuis les données (pays présents + devises d'encaissement).
+    function buildGeoFilter() {
+      const el = document.getElementById('fGeo'); if (!el) return;
+      const countries = [...new Set(SUBS.map(r => r.country).filter(Boolean))].sort((a, b) => a.localeCompare(b));
+      const curs = [...new Set(SUBS.map(r => r.cur).filter(Boolean))].sort();
+      el.innerHTML = '<option value="">Pays / devise : tous</option>' +
+        '<optgroup label="Pays">' + countries.map(c => '<option value="c:' + esc(c) + '">' + esc(c) + '</option>').join('') + '</optgroup>' +
+        '<optgroup label="Devise d\'encaissement">' + curs.map(c => '<option value="cur:' + c + '">' + c + '</option>').join('') + '</optgroup>';
+    }
+    function matchGeo(r, v) {
+      if (!v) return true;
+      if (v.indexOf('c:') === 0) return r.country === v.slice(2);
+      if (v.indexOf('cur:') === 0) return r.cur === v.slice(4) && r.plan === 'solo'; // devise = encaissement → payants seulement
+      return true;
+    }
     function render() {
       const q = document.getElementById('q').value.trim().toLowerCase();
       const fp = document.getElementById('fPlan').value, fs = document.getElementById('fStatus').value, fc = document.getElementById('fCycle').value;
+      const fg = document.getElementById('fGeo') ? document.getElementById('fGeo').value : '';
       const list = SUBS.filter(r =>
         (!q || (r.name + ' ' + r.mail).toLowerCase().includes(q)) &&
-        (!fp || r.plan === fp) && (!fs || r.status === fs) && (!fc || r.cycle === fc));
-      document.getElementById('subsBody').innerHTML = list.map(r =>
+        (!fp || r.plan === fp) && (!fs || r.status === fs) && (!fc || r.cycle === fc) && matchGeo(r, fg)).sort(bySort);
+      const total = list.length, pages = Math.max(1, Math.ceil(total / pageSize));
+      if (page > pages) page = pages;
+      const start = (page - 1) * pageSize, shown = list.slice(start, start + pageSize);
+      document.getElementById('subsBody').innerHTML = shown.map(r =>
         '<tr onclick="openDetail(\'' + r.id + '\')">' +
           '<td><div class="d-flex align-items-center gap-2"><span class="dr-avatar">' + ini(r.name) + '</span><span><span class="doc-name d-block">' + esc(r.name) + '</span><span class="doc-mail">' + esc(r.mail) + '</span></span></div></td>' +
           '<td><span class="pill ' + (r.plan === 'solo' ? 'pl-solo' : 'pl-free') + '">' + (r.plan === 'solo' ? 'Essentiel' : 'Free') + '</span></td>' +
           '<td>' + CYCLE[r.cycle] + '</td>' +
+          '<td class="small">' + esc(r.country || '—') + (r.plan === 'solo' && r.cur ? ' · ' + r.cur : '') + '</td>' +
           '<td>' + statusPill(r) + '</td>' +
           '<td>' + nextCell(r) + '</td>' +
           '<td class="small">' + esc(r.pay) + '</td>' +
           '<td>' + docLinks(r) + '</td>' +
         '</tr>'
-      ).join('') || '<tr><td colspan="7" class="text-center text-muted py-4">Aucun abonnement pour cette recherche.</td></tr>';
-      document.getElementById('countNote').textContent = list.length + ' praticien(s) affiché(s) sur ' + SUBS.length + ' (jeu de démonstration).';
-      document.getElementById('stGrace').textContent = SUBS.filter(r => r.status === 'grace').length;
+      ).join('') || '<tr><td colspan="8" class="text-center text-muted py-4">Aucun abonnement pour cette recherche.</td></tr>';
+      document.getElementById('countNote').textContent = total
+        ? 'Affichage ' + (start + 1) + '–' + (start + shown.length) + ' sur ' + total + ' praticien(s)'
+        : 'Aucun résultat';
+      document.getElementById('pager').innerHTML = pagerHtml(pages);
+      // Tuile grâce : rouge = signal — la mention disparaît quand aucun abonné n'est en grâce.
+      const nGrace = SUBS.filter(r => r.status === 'grace').length;
+      document.getElementById('stGrace').textContent = nGrace;
+      document.getElementById('stGraceWrap').style.display = nGrace ? '' : 'none';
     }
 
     let drawer;
@@ -344,6 +460,7 @@
         (r.plan === 'solo' ? kv('Montant', r.price || (r.cycle === 'a' ? '300 € / an' : '30 € / mois')) : '') +
         (r.next ? kv('Prochain renouvellement', nextCell(r)) : '') +
         (r.status === 'grace' ? kv('Fin de grâce', fmtD(r.graceEnd)) : '') +
+        kv('Pays', esc(r.country || '—') + (r.plan === 'solo' && r.cur ? ' · ' + r.cur : '')) +
         kv('Moyen de paiement', esc(r.pay));
       document.getElementById('dHist').innerHTML = r.hist.map(h =>
         '<div class="tl-item' + (h.money ? ' money' : '') + '">' +
@@ -359,6 +476,7 @@
       drawer.show();
     }
 
+    buildGeoFilter();
     render();
   </script>
 <!-- Prototype version badge -->
