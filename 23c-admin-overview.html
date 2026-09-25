@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FUENI Admin — Vue d'ensemble</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root { --slate:#2c3e50; --slate-dark:#1f2d3d; --purple:#6c3483; --purple-light:#f5eef8; --accent:#f59e0b; }
+    * { box-sizing: border-box; }
+    body { background:linear-gradient(160deg,#f7f5fc 0%,#f3edf8 45%,#eef4f8 100%); background-attachment:fixed; font-family:'Inter','Segoe UI',sans-serif; color:#0f172a; margin:0; }
+    .sidebar { position:fixed; top:0; left:0; width:272px; height:100vh; background:linear-gradient(180deg,var(--slate-dark),var(--slate)); color:#fff; padding:0; overflow-y:auto; z-index:100; }
+    .sidebar-brand { padding:20px 22px 6px; }
+    .sidebar-brand small { font-weight:500; opacity:0.55; font-size:0.72rem; }
+    .sidebar-label { font-size:0.64rem; text-transform:uppercase; letter-spacing:1px; color:rgba(255,255,255,0.4); padding:16px 22px 6px; font-weight:700; }
+    .nav-link-side { color:rgba(255,255,255,0.82); padding:10px 18px; display:flex; align-items:center; gap:11px; font-size:0.88rem; text-decoration:none; transition:background .15s; cursor:pointer; white-space:nowrap; }
+    .nav-link-side i { width:18px; text-align:center; }
+    .nav-link-side:hover { background:rgba(255,255,255,0.08); color:#fff; }
+    .nav-link-side.active { background:rgba(108,52,131,0.55); border-left:3px solid var(--accent); color:#fff; font-weight:600; }
+    .main { margin-left:272px; padding:0 28px 40px; }
+    .admin-topbar { display:flex; align-items:center; gap:10px; padding:14px 0; margin-bottom:10px; border-bottom:1px solid #e6edf3; font-size:0.9rem; }
+    .sa-avatar { width:30px; height:30px; border-radius:50%; background:var(--purple); display:flex; align-items:center; justify-content:center; color:#fff; font-size:0.72rem; font-weight:700; }
+
+    .sec-title { font-size:0.72rem; text-transform:uppercase; letter-spacing:0.6px; color:#94a3b8; font-weight:700; margin:22px 2px 10px; }
+    /* ── Mosaïque de panneaux (multi-colonnes) : chaque section = une carte autonome avec son en-tête,
+       colonnes de hauteurs libres (référence : dashboards type « project overview ») ── */
+    /* Structure : 3 panneaux horizontaux empilés (gauche) · 1 panneau rail (droite) — réf. « soft dashboard » */
+    .mosaic { display:grid; grid-template-columns:minmax(0,2.5fr) minmax(300px,1fr); gap:18px; align-items:start; margin-top:18px; }
+    .mos-col { display:flex; flex-direction:column; gap:18px; min-width:0; }
+    @media (max-width:1050px) { .mosaic { grid-template-columns:1fr; } }
+    /* Grilles internes des panneaux horizontaux */
+    .queue-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; }
+    @media (max-width:1240px) { .queue-grid { grid-template-columns:1fr; } }
+    .money-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+    @media (max-width:700px) { .money-grid { grid-template-columns:1fr; } }
+    .panel { background:#fff; border:1px solid rgba(108,52,131,0.07); border-radius:20px; padding:20px; box-shadow:0 4px 16px rgba(83,52,109,0.06); }
+    .panel-head { display:flex; align-items:center; gap:11px; margin-bottom:14px; }
+    .panel-title { font-weight:800; font-size:0.95rem; color:var(--slate); line-height:1.2; }
+    .panel-sub { font-size:0.72rem; color:#94a3b8; font-weight:600; }
+    .panel-link { margin-left:auto; font-size:0.76rem; font-weight:700; color:var(--purple); text-decoration:none; white-space:nowrap; }
+    .panel-link:hover { text-decoration:underline; color:var(--purple); }
+    .kpi-ic { width:36px; height:36px; border-radius:11px; display:flex; align-items:center; justify-content:center; font-size:0.9rem; flex-shrink:0; }
+    .ic-purple { background:#f3e9f8; color:var(--purple); }
+    .ic-amber  { background:#fff3cd; color:#b9770e; }
+    .ic-red    { background:#fdecea; color:#c0392b; }
+    .ic-orange { background:#fdebd0; color:#ca6f1e; }
+    .ic-green  { background:#e6f6ee; color:#198754; }
+    .ic-blue   { background:#e8f1fb; color:#2563eb; }
+
+    /* File « À traiter » : rangées teintées DANS le panneau — la couleur signifie l'urgence, jamais décorative */
+    /* Carte-LIEN compacte : toute la carte ouvre l'écran cible (le chevron le signale) — pas de rangée de bouton */
+    .queue-item { display:flex; align-items:center; gap:10px; border:1px solid transparent; border-radius:13px; padding:10px 12px; text-decoration:none; transition:border-color .15s, box-shadow .15s; min-width:0; }
+    .queue-item:hover { box-shadow:0 4px 14px rgba(83,52,109,0.10); }
+    .queue-item .kpi-ic { width:30px; height:30px; border-radius:9px; font-size:0.74rem; }
+    .queue-item .n { font-size:1.25rem; font-weight:800; line-height:1; letter-spacing:-0.4px; flex-shrink:0; }
+    .queue-item .txt { min-width:0; }
+    .queue-item .t { font-size:0.79rem; font-weight:600; color:#334155; line-height:1.25; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .queue-item .s { font-size:0.7rem; color:#94a3b8; margin-top:1px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .queue-item .q-chev { margin-left:auto; color:#b9a6c9; font-size:0.72rem; flex-shrink:0; }
+    .queue-item:hover .q-chev { color:var(--purple); }
+    .queue-item.tint-amber  { background:#fffaf0; border-color:#f5e4bb; } .queue-item.tint-amber .n { color:#b9770e; }
+    .queue-item.tint-red    { background:#fdf3f2; border-color:#f0cbc7; } .queue-item.tint-red .n { color:#c0392b; }
+    .queue-item.tint-orange { background:#fef7ef; border-color:#f3dcc0; } .queue-item.tint-orange .n { color:#ca6f1e; }
+
+    /* Mini-stats Plateforme : 2 × 2 dans le panneau */
+    .mini-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px; }
+    @media (max-width:1240px) { .mini-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+    @media (max-width:600px) { .mini-grid { grid-template-columns:1fr; } }
+    .mini { background:#f8fafc; border:1px solid #eef2f6; border-radius:14px; padding:12px 14px; }
+    .mini .head { display:flex; align-items:flex-start; justify-content:space-between; gap:8px; }
+    .mini .l { font-size:0.66rem; color:#94a3b8; text-transform:uppercase; letter-spacing:0.4px; font-weight:700; }
+    .mini .n { font-size:1.45rem; font-weight:800; color:var(--slate); letter-spacing:-0.5px; line-height:1.15; margin-top:6px; }
+    .mini .sub { font-size:0.74rem; font-weight:700; color:#475569; margin-top:1px; min-height:1em; }
+    .mini .kpi-ic { width:30px; height:30px; border-radius:9px; font-size:0.78rem; }
+
+    /* Encaissé : blocs empilés dans le panneau — héros violet clair (ancre de marque, sous le volume des urgences) */
+    .money-block { border:1px solid #eef2f6; background:#f8fafc; border-radius:14px; padding:13px 16px; }
+
+    .money-block .l { font-size:0.68rem; color:#94a3b8; text-transform:uppercase; letter-spacing:0.5px; font-weight:700; }
+    .money-block .n-cur { font-size:1.12rem; font-weight:800; color:var(--slate); white-space:nowrap; line-height:1.4; }
+    .money-block .n-cur:first-of-type { margin-top:4px; }
+    .money-block.hero { background:linear-gradient(135deg,#f7f0fb 0%,#ede3f5 100%); border-color:#e2d3ee; }
+    .money-block.hero .l { color:#7d5a94; }
+    .money-block.hero .n-cur { color:var(--purple); }
+
+    /* Activité récente (rangées de timeline dans le panneau) */
+    .act-item { display:flex; align-items:flex-start; gap:11px; padding:10px 0; border-bottom:1px solid #f1f5f9; font-size:0.83rem; }
+    .act-item:last-of-type { border-bottom:0; }
+    /* Badge d'icône teinté par TYPE d'événement (même vocabulaire que les pastilles des panneaux) */
+    .act-ic { width:26px; height:26px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:0.66rem; flex-shrink:0; margin-top:1px; }
+    .act-item .w { color:#334155; }
+    .act-item .d { margin-left:auto; color:#94a3b8; font-size:0.72rem; white-space:nowrap; }
+
+    .soon-chip { display:inline-flex; align-items:center; gap:6px; background:#eef2f6; color:#64748b; border-radius:16px; padding:4px 12px; font-size:0.75rem; font-weight:700; }
+  </style>
+</head>
+<body>
+
+  <div class="proto-bar d-flex align-items-center gap-3 flex-wrap" style="background:#fff8e1;border-bottom:1px dashed #f1c40f;padding:6px 16px;font-size:0.82rem;color:#7d5e00;">
+    <span><i class="fa fa-eye text-warning me-1"></i><strong>Écran 23c — Vue d'ensemble (Super Admin, lecture seule)</strong></span>
+    <a href="23b-admin-subscriptions.html" class="text-decoration-none text-muted ms-auto small">← Abonnements</a>
+  </div>
+
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="sidebar-brand"><img src="assets/fueni-lockup-white.svg" alt="FUENI" style="height:26px;width:auto;vertical-align:middle;"> <small>Admin</small></div>
+
+    <div class="sidebar-label">Tableau de bord</div>
+    <a class="nav-link-side active"><i class="fa fa-chart-bar"></i> Vue d'ensemble</a>
+
+    <div class="sidebar-label">Gestion</div>
+    <a href="21-admin-verifications.html" class="nav-link-side"><i class="fa fa-user-check"></i> Vérification des dossiers</a>
+    <a href="23b-admin-subscriptions.html" class="nav-link-side"><i class="fa fa-users"></i> Abonnements</a>
+    <a href="22-admin-audit.html" class="nav-link-side"><i class="fa fa-clock-rotate-left"></i> Journal d'audit</a>
+
+    <div class="sidebar-label">Configuration</div>
+    <a href="23-admin-plans.html" class="nav-link-side"><i class="fa fa-th-large"></i> Plans</a>
+
+    <div class="sidebar-label">Compte</div>
+    <a href="12-login-admin.html" class="nav-link-side"><i class="fa fa-sign-out-alt"></i> Déconnexion</a>
+  </div>
+
+  <div class="main">
+
+    <div class="admin-topbar">
+      <div class="sa-avatar">SA</div>
+      <span class="fw-semibold" style="color:var(--slate);">Super Admin</span>
+      <span class="text-muted">›</span>
+      <span class="text-muted small">Vue d'ensemble</span>
+      <div class="ms-auto d-flex align-items-center gap-3">
+        <span class="text-muted small"><i class="fa fa-calendar-alt me-1"></i>6 juillet 2026</span>
+        <span class="small text-muted fw-semibold">admin@fueni.com</span>
+      </div>
+    </div>
+
+    <div style="margin-top:6px;">
+      <h3 class="fw-bold mb-0" style="color:var(--slate);letter-spacing:-0.4px;">Bonjour, Super Admin 👋</h3>
+      <div class="text-muted small">Consultation seule : les actions se font dans les écrans dédiés.</div>
+    </div>
+
+    <!-- Mosaïque : À traiter (col. 1) · Plateforme + Encaissé (col. 2) · Activité récente (col. 3) -->
+    <div class="mosaic">
+
+      <div class="mos-col">
+        <div class="panel">
+          <div class="panel-head">
+            <span class="kpi-ic ic-red"><i class="fa fa-bolt"></i></span>
+            <div><div class="panel-title">Points d'attention</div><div class="panel-sub">KYC à traiter · grâce et relances automatisées</div></div>
+          </div>
+          <!-- Compteurs alignés sur les écrans sources (21 : 4 en attente ; 23b : 1 en grâce, 1 échéance J−3) — une seule vérité.
+               Seul le KYC est actionnable ; grâce et échéance sont automatiques (relances, rétrogradation) → simple surveillance, dit dans le titre. -->
+          <div class="queue-grid">
+          <a class="queue-item tint-amber" href="21-admin-verifications.html" title="Ouvrir la vérification des dossiers">
+            <span class="kpi-ic ic-amber"><i class="fa fa-hourglass-half"></i></span><span class="n">4</span>
+            <span class="txt"><span class="t d-block">Dossiers KYC en attente</span><span class="s d-block">le plus ancien : 3 jours</span></span>
+            <i class="fa fa-chevron-right q-chev"></i>
+          </a>
+          <a class="queue-item tint-red" href="23b-admin-subscriptions.html" title="Consulter les abonnements">
+            <span class="kpi-ic ic-red"><i class="fa fa-triangle-exclamation"></i></span><span class="n">1</span>
+            <span class="txt"><span class="t d-block">Abonné en grâce</span><span class="s d-block">fin de grâce : 07 juil. · auto</span></span>
+            <i class="fa fa-chevron-right q-chev"></i>
+          </a>
+          <a class="queue-item tint-orange" href="23b-admin-subscriptions.html" title="Consulter les abonnements">
+            <span class="kpi-ic ic-orange"><i class="fa fa-clock"></i></span><span class="n">1</span>
+            <span class="txt"><span class="t d-block">Renouvellement ≤ 7 j</span><span class="s d-block">le plus proche : J−3 · auto</span></span>
+            <i class="fa fa-chevron-right q-chev"></i>
+          </a>
+          </div><!-- /queue-grid -->
+        </div>
+
+        <div class="panel">
+          <div class="panel-head">
+            <span class="kpi-ic ic-purple"><i class="fa fa-chart-simple"></i></span>
+            <div><div class="panel-title">Plateforme</div><div class="panel-sub">compteurs d'état — tendances à venir</div></div>
+          </div>
+          <div class="mini-grid">
+            <div class="mini"><div class="head"><span class="l">Praticiens actifs</span><span class="kpi-ic ic-purple"><i class="fa fa-user-md"></i></span></div><div class="n">126</div><div class="sub">84 Free · 42 Essentiel</div></div>
+            <div class="mini"><div class="head"><span class="l">Patients inscrits</span><span class="kpi-ic ic-blue"><i class="fa fa-users"></i></span></div><div class="n">1 254</div><div class="sub">&nbsp;</div></div>
+            <div class="mini"><div class="head"><span class="l">RDV en ligne — juil.</span><span class="kpi-ic ic-green"><i class="fa fa-calendar-check"></i></span></div><div class="n">412</div><div class="sub">&nbsp;</div></div>
+            <div class="mini"><div class="head"><span class="l">KYC validés — juil.</span><span class="kpi-ic ic-amber"><i class="fa fa-clipboard-check"></i></span></div><div class="n">37</div><div class="sub">&nbsp;</div></div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head">
+            <span class="kpi-ic ic-green"><i class="fa fa-wallet"></i></span>
+            <div><div class="panel-title">Encaissé</div><div class="panel-sub">par devise d'encaissement — sans conversion</div></div>
+            <a class="panel-link" href="23b-admin-subscriptions.html">Détail des abonnements →</a>
+          </div>
+          <!-- Mêmes chiffres et même règle que l'écran Abonnements (23b, AS6) : source unique. -->
+          <div class="money-grid">
+          <div class="money-block hero">
+            <span class="l">Juillet 2026</span>
+            <div class="n-cur">312 200 XOF</div><div class="n-cur">30 USD</div>
+          </div>
+          <div class="money-block">
+            <span class="l">2026 (cumul)</span>
+            <div class="n-cur">4 874 440 XOF</div><div class="n-cur">210 USD</div>
+          </div>
+          </div><!-- /money-grid -->
+        </div>
+      </div>
+
+      <div class="mos-col">
+        <div class="panel">
+          <div class="panel-head">
+            <span class="kpi-ic ic-blue"><i class="fa fa-clock-rotate-left"></i></span>
+            <div><div class="panel-title">Activité récente</div><div class="panel-sub">extrait — archive dans le journal d'audit</div></div>
+            <a class="panel-link" href="22-admin-audit.html">Journal complet →</a>
+          </div>
+          <div class="act-item"><span class="act-ic ic-red"><i class="fa fa-triangle-exclamation"></i></span><span class="w"><strong>Échéance impayée</strong> — Dr Cheikh Diop entre en période de grâce (fin le 07/07)</span><span class="d">06 juil.</span></div>
+          <div class="act-item"><span class="act-ic ic-green"><i class="fa fa-coins"></i></span><span class="w"><strong>Renouvellement réglé</strong> — Dr Aminata Sarr, Essentiel mensuel (Mobile Money)</span><span class="d">05 juil.</span></div>
+          <div class="act-item"><span class="act-ic ic-orange"><i class="fa fa-arrow-turn-down"></i></span><span class="w"><strong>Rétrogradation programmée</strong> — Dr Mariam Touré, Essentiel → Free au 05/08 (BdC modificatif émis)</span><span class="d">05 juil.</span></div>
+          <div class="act-item"><span class="act-ic ic-green"><i class="fa fa-star"></i></span><span class="w"><strong>Activation Essentiel</strong> — Dr Ibrahima Camara (Sénégal · XOF), bon de commande + facture émis</span><span class="d">05 juil.</span></div>
+          <div class="act-item"><span class="act-ic ic-purple"><i class="fa fa-user-check"></i></span><span class="w"><strong>Dossier validé (KYC)</strong> — Dr Salimata Ouédraogo (Burkina Faso), compte activé</span><span class="d">04 juil.</span></div>
+          <div class="act-item"><span class="act-ic ic-blue"><i class="fa fa-user-plus"></i></span><span class="w"><strong>Nouvelle inscription praticien</strong> — Dr Patrick Ilunga (RDC), en attente de vérification</span><span class="d">04 juil.</span></div>
+          <!-- Tendances/analytics volontairement absents : à venir avec le reporting. -->
+          <div class="mt-3"><span class="soon-chip"><i class="fa fa-chart-line"></i>Tendances & analytics — Bientôt</span></div>
+        </div>
+      </div>
+
+    </div><!-- /mosaic -->
+
+
+  </div>
+
+<!-- Prototype version badge -->
+<script>(function(){if(window.__pv)return;window.__pv=1;var v=document.createElement('div');v.style.cssText='position:fixed;top:0;left:50%;transform:translateX(-50%);background:#155e75;color:#fff;padding:6px 20px;border-radius:0 0 16px 16px;font:600 12px/1 system-ui,-apple-system,sans-serif;letter-spacing:.6px;z-index:99999;box-shadow:0 3px 10px rgba(0,0,0,.2);text-transform:uppercase;display:flex;align-items:center;gap:8px';v.innerHTML='🧪 Prototype <span style="background:#f59e0b;color:#1a1a1a;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:4px">v1.4.0</span><span style="background:#facc15;color:#1a1a1a;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:4px;text-transform:none;letter-spacing:0">⏳ À valider</span>';document.body.appendChild(v);})();</script>
+</body>
+</html>
