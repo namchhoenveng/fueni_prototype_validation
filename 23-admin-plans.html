@@ -87,6 +87,11 @@
     .dash { color:#cbd5e1; font-weight:700; }
     .vpill { display:inline-block; background:#f1f5f9; color:#334155; border-radius:8px; padding:3px 10px; font-size:0.78rem; font-weight:700; }
     .soon-chip { display:inline-flex; align-items:center; gap:5px; background:#fff8e6; border:1px solid #fde9b8; color:#9a6b00; border-radius:20px; padding:2px 9px; font-size:0.66rem; font-weight:700; text-transform:uppercase; letter-spacing:0.4px; white-space:nowrap; }
+    .lk { display:inline-flex; align-items:center; gap:6px; background:#fff8e6; border:1px solid #fde9b8; color:#9a6b00; border-radius:8px; padding:3px 10px; font-size:0.76rem; font-weight:700; }
+    .xmark { color:#c0392b; font-weight:700; }
+    td.fid { color:#94a3b8; font-weight:700; font-size:0.76rem; width:34px; }
+    td.val-l { font-size:0.82rem; color:#334155; }
+    td.val-l .ck { vertical-align:-4px; margin-right:6px; }
     .feat-name { font-weight:600; color:#334155; }
     .feat-name small { display:block; font-weight:400; color:#94a3b8; font-size:0.74rem; }
 
@@ -108,7 +113,7 @@
     <div class="sidebar-brand"><img src="assets/fueni-lockup-white.svg" alt="FUENI" style="height:26px;width:auto;vertical-align:middle;"> <small>Admin</small></div>
 
     <div class="sidebar-label">Tableau de bord</div>
-    <a class="nav-link-side disabled"><i class="fa fa-chart-bar"></i> Vue d'ensemble <span class="soon-pill">Bientôt</span></a>
+    <a href="23c-admin-overview.html" class="nav-link-side"><i class="fa fa-chart-bar"></i> Vue d'ensemble</a>
 
     <div class="sidebar-label">Gestion</div>
     <a href="21-admin-verifications.html" class="nav-link-side"><i class="fa fa-user-check"></i> Vérification des dossiers</a>
@@ -189,86 +194,83 @@
 
     </div>
 
-    <!-- Comparatif — matrice transmise par Nazounki (08/09/2026), reprise fidèlement. « Bientôt » = hors MVP. -->
+    <!-- Comparatif — matrice Free/Essentiel de SF-PLAN-FREE-ESSENTIEL §3 (remplace la matrice client du 08/09,
+         instruction PO 22/09). Valeurs numériques (cap RDV, stockage) = paramètres dynamiques (planConfig). -->
     <div class="sec-head">
       <h5>Comparatif des fonctionnalités</h5>
-      <span class="src">Matrice Nazounki · 08/09/2026 — <span class="soon-chip" style="vertical-align:1px;"><i class="fa fa-clock"></i>Bientôt</span> = prévu, hors MVP</span>
+      <span class="src">Matrice Free / Essentiel — <span class="lk" style="vertical-align:1px;"><i class="fa fa-lock"></i>aperçu</span> = visible en lecture seule (données de démonstration) dans le plan Free</span>
     </div>
     <div class="matrix-wrap">
       <div class="matrix-scroll">
         <table class="matrix">
           <thead>
             <tr>
+              <th style="width:34px;"><span class="pn">#</span></th>
               <th><span class="pn">Fonctionnalité</span></th>
-              <th class="col-plan"><span class="pn">Free</span><span class="pp">Gratuit</span></th>
-              <th class="col-plan"><span class="pn">Essentiel</span><span class="pp">30 € / mois · 300 € / an</span></th>
+              <th style="min-width:280px;"><span class="pn">Free</span><span class="pp">Gratuit</span></th>
+              <th class="col-plan"><span class="pn">Essentiel</span><span class="pp"><span id="mxMonthly">30</span> € / mois · <span id="mxAnnual">300</span> € / an — tarif de référence</span></th>
             </tr>
           </thead>
           <tbody>
             <tr>
-              <td class="feat-name">Gestion de compte et authentification</td>
-              <td class="val"><span class="ck"><i class="fa fa-check"></i></span></td>
-              <td class="val"><span class="ck"><i class="fa fa-check"></i></span></td>
-            </tr>
-            <tr>
-              <td class="feat-name">Prise de RDV<small>réservation en ligne par les patients</small></td>
-              <td class="val"><span class="ck"><i class="fa fa-check"></i></span></td>
+              <td class="fid">F1</td>
+              <td class="feat-name">Profil public praticien<small>page, motifs, tarifs, devise secondaire indicative</small></td>
+              <td class="val-l"><span class="ck"><i class="fa fa-check"></i></span></td>
               <td class="val"><span class="ck"><i class="fa fa-check"></i></span></td>
             </tr>
             <tr>
-              <td class="feat-name">Application mobile</td>
-              <td class="val"><span class="soon-chip"><i class="fa fa-clock"></i>Bientôt</span></td>
-              <td class="val"><span class="soon-chip"><i class="fa fa-clock"></i>Bientôt</span></td>
+              <td class="fid">F2</td>
+              <td class="feat-name">Visibilité annuaire<small>résultats de recherche patients</small></td>
+              <td class="val-l"><span class="ck"><i class="fa fa-check"></i></span><strong>conditionnée au cap</strong> : retrait de la recherche dès <strong><span class="qCap">10</span> RDV</strong> auto-confirmés dans le mois, jusqu'au 1er du mois suivant</td>
+              <td class="val"><span class="ck"><i class="fa fa-check"></i></span> <span class="vpill">illimitée</span></td>
             </tr>
             <tr>
-              <td class="feat-name">Coffre-fort de données<small>par utilisateur</small></td>
-              <td class="val"><span class="vpill">0,5 Go</span></td>
-              <td class="val"><span class="vpill">150 Go</span></td>
+              <td class="fid">F3</td>
+              <td class="feat-name">Prise de RDV en ligne par les patients<small>auto-confirmés</small></td>
+              <td class="val-l"><span class="ck"><i class="fa fa-check"></i></span><strong><span class="qCap">10</span> / mois</strong> — patients existants jamais bloqués</td>
+              <td class="val"><span class="ck"><i class="fa fa-check"></i></span> <span class="vpill">illimitée</span></td>
             </tr>
             <tr>
-              <td class="feat-name">Nombre d'utilisateurs inclus</td>
-              <td class="val"><span class="vpill">1</span></td>
-              <td class="val"><span class="vpill">1</span></td>
+              <td class="fid">F4</td>
+              <td class="feat-name">Agenda praticien<small>créneaux, disponibilités, RDV manuels</small></td>
+              <td class="val-l"><span class="ck"><i class="fa fa-check"></i></span>illimité — RDV manuels hors cap</td>
+              <td class="val"><span class="ck"><i class="fa fa-check"></i></span> <span class="vpill">illimité</span></td>
             </tr>
             <tr>
-              <td class="feat-name">Nombre de patients inclus</td>
-              <td class="val"><span class="vpill" id="qFree">50</span></td>
-              <td class="val"><span class="vpill" id="qSolo">250</span></td>
+              <td class="fid">F5</td>
+              <td class="feat-name">Cycle de vie des RDV<small>terminer / absent / annuler</small></td>
+              <td class="val-l"><span class="ck"><i class="fa fa-check"></i></span>clôture limitée à « Marquer terminé » / « Patient absent » (pas de « Documenter »)</td>
+              <td class="val"><span class="ck"><i class="fa fa-check"></i></span> <span class="vpill">complet</span></td>
             </tr>
             <tr>
-              <td class="feat-name">Accès DMP patient<small>dossier médical partagé</small></td>
-              <td class="val"><span class="dash">—</span></td>
-              <td class="val"><span class="vpill">Option payante</span> <span class="soon-chip"><i class="fa fa-clock"></i>Bientôt</span></td>
+              <td class="fid">F6</td>
+              <td class="feat-name">Liste patients<small>fiches d'identité, création auto à la 1re visite</small></td>
+              <td class="val-l"><span class="ck"><i class="fa fa-check"></i></span>illimitée</td>
+              <td class="val"><span class="ck"><i class="fa fa-check"></i></span> <span class="vpill">illimitée</span></td>
             </tr>
             <tr>
-              <td class="feat-name">Agenda et prise de rendez-vous<small>agenda praticien</small></td>
-              <td class="val"><span class="dash">—</span></td>
+              <td class="fid">F7</td>
+              <td class="feat-name"><strong>Dossier médical</strong><small>infos médicales, antécédents, allergies, historique</small></td>
+              <td class="val-l"><span class="lk"><i class="fa fa-lock"></i>aperçu</span></td>
               <td class="val"><span class="ck"><i class="fa fa-check"></i></span></td>
             </tr>
             <tr>
-              <td class="feat-name">Documentation rapport de consultation</td>
-              <td class="val"><span class="dash">—</span></td>
+              <td class="fid">F8</td>
+              <td class="feat-name"><strong>Documentation de consultation</strong><small>anamnèse, notes, compte rendu</small></td>
+              <td class="val-l"><span class="lk"><i class="fa fa-lock"></i>aperçu</span></td>
               <td class="val"><span class="ck"><i class="fa fa-check"></i></span></td>
             </tr>
             <tr>
-              <td class="feat-name">Facturation et suivi des paiements<small>basique : consultations</small></td>
-              <td class="val"><span class="dash">—</span></td>
-              <td class="val"><span class="vpill">Inclus</span> <span class="soon-chip"><i class="fa fa-clock"></i>Bientôt</span></td>
+              <td class="fid">F9</td>
+              <td class="feat-name"><strong>Ordonnances et documents générés</strong><small>PDF</small></td>
+              <td class="val-l"><span class="lk"><i class="fa fa-lock"></i>aperçu</span></td>
+              <td class="val"><span class="ck"><i class="fa fa-check"></i></span></td>
             </tr>
             <tr>
-              <td class="feat-name">Statistiques et tableaux de bord</td>
-              <td class="val"><span class="dash">—</span></td>
-              <td class="val"><span class="vpill">Basique</span></td>
-            </tr>
-            <tr>
-              <td class="feat-name">Module Reversement<small>services médicaux patients</small></td>
-              <td class="val"><span class="dash">—</span></td>
-              <td class="val"><span class="soon-chip"><i class="fa fa-clock"></i>Bientôt</span></td>
-            </tr>
-            <tr>
-              <td class="feat-name">Accès API<small>bases diverses de tiers</small></td>
-              <td class="val"><span class="dash">—</span></td>
-              <td class="val"><span class="soon-chip"><i class="fa fa-clock"></i>Bientôt</span></td>
+              <td class="fid">F10</td>
+              <td class="feat-name">Stockage / partage de documents</td>
+              <td class="val-l"><span class="xmark"><i class="fa fa-xmark me-1"></i></span><span class="text-muted">(sans objet sans suite clinique)</span></td>
+              <td class="val"><span class="ck"><i class="fa fa-check"></i></span> <span class="vpill">quota <span id="qStorage">5</span> Go</span></td>
             </tr>
           </tbody>
         </table>
@@ -302,11 +304,20 @@
           <div id="freeFields" class="d-none">
             <p class="text-muted small mb-0"><i class="fa fa-circle-info me-1"></i>Le plan <strong>Free</strong> est gratuit — aucun tarif à définir.</p>
           </div>
-          <!-- Paramètres dynamiques (« paramètres dynamiques, structure par release ») : quota patients (les 2 plans) + grâce (Essentiel) -->
+          <!-- Paramètres dynamiques (« paramètres dynamiques, structure par release ») :
+               Free = cap de réservations en ligne / mois · Essentiel = seuil patients (indicatif, jamais bloquant) + stockage + grâce -->
           <div class="row g-3 mt-0">
-            <div class="col-6">
-              <label class="form-label small fw-semibold">Patients inclus</label>
+            <div class="col-6" id="capField">
+              <label class="form-label small fw-semibold">Réservations en ligne / mois</label>
+              <input type="number" class="form-control form-control-sm" id="editCap" min="1" step="1">
+            </div>
+            <div class="col-6 d-none" id="thresholdField">
+              <label class="form-label small fw-semibold">Seuil patients (indicatif)</label>
               <input type="number" class="form-control form-control-sm" id="editPatients" min="1" step="1">
+            </div>
+            <div class="col-6 d-none" id="storageField">
+              <label class="form-label small fw-semibold">Stockage inclus (Go)</label>
+              <input type="number" class="form-control form-control-sm" id="editStorage" min="1" step="1">
             </div>
           </div>
           <div class="row g-3 mt-0" id="graceFields">
@@ -352,8 +363,10 @@
     // persistés en localStorage — démo). Les écrans praticiens (14, 17, 18) lisent la même source.
     function hydratePlanConfig() {
       const c = planConfig();
-      document.getElementById('qFree').textContent = c.patientsFree;
-      document.getElementById('qSolo').textContent = c.patientsSolo;
+      document.querySelectorAll('.qCap').forEach(el => el.textContent = c.capFree);
+      document.getElementById('qStorage').textContent = c.storageGb;
+      document.getElementById('mxMonthly').textContent = fmt(PLANS.solo.monthly);
+      document.getElementById('mxAnnual').textContent = fmt(PLANS.solo.annual);
       document.getElementById('graceMDisp').textContent = c.graceMonthly;
       document.getElementById('graceADisp').textContent = c.graceAnnual;
       document.getElementById('soloMrr').textContent = fmt(soloMrr()) + ' €';
@@ -371,7 +384,11 @@
       document.getElementById('priceFields').classList.toggle('d-none', isFree);
       document.getElementById('freeFields').classList.toggle('d-none', !isFree);
       document.getElementById('graceFields').classList.toggle('d-none', isFree); // la grâce ne concerne que la formule payante
-      document.getElementById('editPatients').value = isFree ? c.patientsFree : c.patientsSolo;
+      document.getElementById('capField').classList.toggle('d-none', !isFree);       // cap RDV = Free uniquement
+      document.getElementById('thresholdField').classList.toggle('d-none', isFree);  // seuil patients (indicatif) = Essentiel
+      document.getElementById('storageField').classList.toggle('d-none', isFree);    // stockage = Essentiel
+      if (isFree) document.getElementById('editCap').value = c.capFree;
+      else { document.getElementById('editPatients').value = c.patientsSolo; document.getElementById('editStorage').value = c.storageGb; }
       if (!isFree) {
         document.getElementById('editMonthly').value = p.monthly;
         document.getElementById('editAnnual').value = p.annual;
@@ -397,19 +414,19 @@
     document.getElementById('editAnnual').addEventListener('input', updateDiscount);
 
     function saveEdit() {
-      const patients = Math.max(1, +document.getElementById('editPatients').value || 0);
       if (editing === 'solo') {
         PLANS.solo.monthly = +document.getElementById('editMonthly').value || 0;
         PLANS.solo.annual  = +document.getElementById('editAnnual').value || 0;
         document.getElementById('soloMonthly').textContent = fmt(PLANS.solo.monthly);
         document.getElementById('soloAnnual').textContent  = fmt(PLANS.solo.annual);
         savePlanConfig({
-          patientsSolo: patients,
+          patientsSolo: Math.max(1, +document.getElementById('editPatients').value || 0),
+          storageGb:    Math.max(1, +document.getElementById('editStorage').value || 0),
           graceMonthly: Math.max(0, +document.getElementById('editGraceM').value || 0),
           graceAnnual:  Math.max(0, +document.getElementById('editGraceA').value || 0)
         });
       } else {
-        savePlanConfig({ patientsFree: patients });
+        savePlanConfig({ capFree: Math.max(1, +document.getElementById('editCap').value || 0) });
       }
       hydratePlanConfig(); // répercute quotas (matrice) + grâce (carte) sans recharger
       if (editModal) editModal.hide();
